@@ -1201,6 +1201,27 @@
   <!-- VISTA 2: ESCÁNER DE AULA (CÁMARA MÓVIL)                   -->
   <!-- ========================================================= -->
   <div id="view-scan" class="view-content">
+
+    <!-- GUARDRAIL 7: Sesión sin configurar -->
+    <div id="g7-no-session-banner" style="display:none; align-items:center; gap:10px; background:#1e1b4b; border-bottom:2px solid #818cf8; padding:12px 16px;">
+      <span style="font-size:1.4rem;">⚙️</span>
+      <div style="flex:1;">
+        <div style="font-weight:700; color:#a5b4fc; font-size:0.85rem;">Configurá la sesión antes de escanear</div>
+        <div style="color:#c7d2fe; font-size:0.75rem; margin-top:2px;">Todavía no generaste fichas para ningún salón en esta sesión.</div>
+      </div>
+      <button onclick="switchTab('create')" style="background:#4f46e5; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.8rem; font-weight:700; cursor:pointer; white-space:nowrap;">✏️ Ir a Redactar</button>
+    </div>
+
+    <!-- GUARDRAIL 8: Sesión completa -->
+    <div id="g8-session-complete-banner" style="display:none; align-items:center; gap:10px; background:#052e16; border-bottom:2px solid #22c55e; padding:12px 16px;">
+      <span style="font-size:1.4rem;">🎉</span>
+      <div style="flex:1;">
+        <div style="font-weight:700; color:#4ade80; font-size:0.85rem;" id="g8-complete-title">¡Sesión completa!</div>
+        <div style="color:#86efac; font-size:0.75rem; margin-top:2px;">Todos los alumnos fueron evaluados. La cámara se pausó.</div>
+      </div>
+      <button onclick="Scanner.nextScan(); document.getElementById('g8-session-complete-banner').style.display='none';" style="background:#16a34a; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.8rem; font-weight:700; cursor:pointer; white-space:nowrap;">↩️ Continuar igual</button>
+    </div>
+
     <!-- Barra de Sesión Activa -->
     <div class="session-bar">
       <div class="session-field">
@@ -1215,6 +1236,28 @@
       <div class="session-counter" id="session-counter">
         0 / 10 evaluados
       </div>
+    </div>
+
+    <!-- Panel de Nómina en Tiempo Real -->
+    <div id="roster-panel" style="background:#0f172a; border-bottom:1px solid #1e293b;">
+
+      <!-- Botón toggle -->
+      <button id="roster-toggle-btn" onclick="toggleRosterPanel()"
+        style="width:100%; display:flex; align-items:center; justify-content:space-between; background:transparent; border:none; padding:9px 16px; cursor:pointer; color:#94a3b8; font-size:0.78rem;">
+        <span style="display:flex; align-items:center; gap:6px;">
+          <span>📋</span>
+          <span id="roster-toggle-label">Ver nómina — 10 pendientes</span>
+        </span>
+        <span id="roster-chevron" style="font-size:0.7rem; transition:transform 0.2s;">▼</span>
+      </button>
+
+      <!-- Lista de alumnos (colapsada por defecto) -->
+      <div id="roster-list-wrap" style="display:none; padding:0 12px 10px; display:none;">
+        <div id="roster-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:6px; margin-top:4px;">
+          <!-- Generado por renderRosterPanel() en scanner.js -->
+        </div>
+      </div>
+
     </div>
 
     <!-- Visor de la cámara -->
@@ -1350,6 +1393,12 @@
           </div>
         </div>
 
+        <!-- GUARDRAIL 9: Imagen demasiado oscura -->
+        <div id="g9-dark-image-warning" style="display:none; align-items:center; gap:8px; background:#1c0a00; border:1.5px solid #f97316; border-radius:8px; padding:7px 11px; margin-top:4px;">
+          <span style="font-size:1.1rem;">🌑</span>
+          <span style="font-size:0.76rem; color:#fb923c; font-weight:700; line-height:1.3;">Imagen muy oscura — brillo: <strong id="g9-brightness-val">--</strong>%<br><span style="color:#fdba74; font-weight:400;">La respuesta puede ser ilegible. Mejorá la iluminación.</span></span>
+        </div>
+
         <button class="btn-next" onclick="nextScan()">
           ✓ Escanear Siguiente Alumno
         </button>
@@ -1371,6 +1420,15 @@
       setTimeout(() => { t.style.display = 'none'; }, 2800);
     }
 
+    function toggleRosterPanel() {
+      const wrap = document.getElementById('roster-list-wrap');
+      const chevron = document.getElementById('roster-chevron');
+      if (!wrap) return;
+      const isOpen = wrap.style.display !== 'none';
+      wrap.style.display = isOpen ? 'none' : 'block';
+      if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
     function switchTab(tabId) {
       activeTab = tabId;
       document.getElementById('tab-btn-create').classList.toggle('active', tabId === 'create');
@@ -1383,6 +1441,18 @@
       const btnSwitch = document.getElementById('btn-switch');
       if (btnTorch) btnTorch.style.display = (tabId === 'scan') ? 'flex' : 'none';
       if (btnSwitch) btnSwitch.style.display = (tabId === 'scan') ? 'flex' : 'none';
+
+      // GUARDRAIL 7: Al entrar al tab de escáner, verificar si hay sesión configurada
+      if (tabId === 'scan') {
+        const g7Banner = document.getElementById('g7-no-session-banner');
+        if (g7Banner) {
+          // Hay sesión si localStorage tiene datos con prompt y expectedAnswer completos
+          const session = ClassroomData.getActiveSession();
+          const sessionValid = session && session.expectedAnswer && session.expectedAnswer.trim() !== ''
+                               && session.prompt && session.prompt.trim() !== '';
+          g7Banner.style.display = sessionValid ? 'none' : 'flex';
+        }
+      }
     }
 
     function onClassroomSelectChanged(classId) {

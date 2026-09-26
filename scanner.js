@@ -84,6 +84,9 @@
     currentClassroomId = classId || '3A';
     currentEvaluationId = evalId || 'EVA_01';
     evaluatedStudentIds.clear();
+    // Ocultar banner de sesión completa si venía de una sesión anterior
+    const g8Banner = document.getElementById('g8-session-complete-banner');
+    if (g8Banner) g8Banner.style.display = 'none';
     updateSessionCounter();
   }
 
@@ -103,11 +106,82 @@
     if (!counterEl) return;
     const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
     const total = cls ? cls.students.length : 10;
-    counterEl.textContent = `${evaluatedStudentIds.size} / ${total} evaluados`;
+    const evaluated = evaluatedStudentIds.size;
+    counterEl.textContent = `${evaluated} / ${total} evaluados`;
+
     // Colorear el contador con el color del salón activo
     if (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor) {
       counterEl.style.color = ClassroomData.getClassroomColor(currentClassroomId);
     }
+
+    // GUARDRAIL 8: Detectar sesión completa y pausar cámara
+    const g8Banner = document.getElementById('g8-session-complete-banner');
+    if (g8Banner && evaluated >= total && total > 0) {
+      g8Banner.style.display = 'flex';
+      const titleEl = document.getElementById('g8-complete-title');
+      if (titleEl) titleEl.textContent = `🎉 ¡Sesión completa! ${cls ? cls.name : ''} — ${evaluated}/${total} alumnos`;
+      // Pausar el bucle de escaneo
+      isScanning = false;
+    }
+
+    // Actualizar el panel de nómina en tiempo real
+    renderRosterPanel();
+  }
+
+  function renderRosterPanel() {
+    const listEl = document.getElementById('roster-list');
+    const labelEl = document.getElementById('roster-toggle-label');
+    if (!listEl) return;
+
+    const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
+    if (!cls) return;
+
+    const color = typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor
+      ? ClassroomData.getClassroomColor(currentClassroomId)
+      : '#3b82f6';
+
+    const total = cls.students.length;
+    const pendingCount = total - evaluatedStudentIds.size;
+
+    // Actualizar label del toggle
+    if (labelEl) {
+      if (pendingCount === 0) {
+        labelEl.textContent = `✅ Nómina completa — todos escaneados`;
+        labelEl.style.color = '#4ade80';
+      } else {
+        labelEl.textContent = `📋 Ver nómina — ${pendingCount} pendiente${pendingCount !== 1 ? 's' : ''}`;
+        labelEl.style.color = color;
+      }
+    }
+
+    // Reconstruir la grilla de alumnos
+    listEl.innerHTML = '';
+    cls.students.forEach(student => {
+      const done = evaluatedStudentIds.has(student.id);
+      const card = document.createElement('div');
+      card.style.cssText = [
+        'display:flex', 'align-items:center', 'gap:6px',
+        'padding:5px 8px', 'border-radius:7px', 'font-size:0.72rem',
+        'border:1px solid ' + (done ? '#1a3a1a' : color + '55'),
+        'background:' + (done ? '#0d1f0d' : color + '12'),
+        'color:' + (done ? '#4b5563' : '#f1f5f9'),
+        'transition:all 0.25s',
+      ].join(';');
+
+      const icon = document.createElement('span');
+      icon.textContent = done ? '✓' : '⏳';
+      icon.style.cssText = 'font-size:0.8rem; min-width:14px; color:' + (done ? '#22c55e' : color);
+
+      const name = document.createElement('span');
+      name.textContent = student.shortName;
+      name.style.cssText = done
+        ? 'text-decoration:line-through; opacity:0.45;'
+        : 'font-weight:600;';
+
+      card.appendChild(icon);
+      card.appendChild(name);
+      listEl.appendChild(card);
+    });
   }
 
   function populateManualStudentSelect() {
@@ -949,6 +1023,34 @@
       console.error('[Scanner] Error en triggerAutoCapture:', err);
     }
 
+    // GUARDRAIL 9: Análisis de brillo de la imagen capturada
+    // Muestrea una cuadrícula de píxeles del canvas warpeado para estimar el brillo promedio.
+    // Umbral: < 30% → imagen probablemente ilegible por baja luz.
+    const BRIGHTNESS_THRESHOLD = 30;
+    let brightnessPercent = 100;
+    let imageTooDark = false;
+    if (fullWarpCanvas) {
+      try {
+        const bCtx = fullWarpCanvas.getContext('2d');
+        const sampleStep = Math.floor(fullWarpCanvas.width / 40); // ~40x27 muestras
+        const sampleData = bCtx.getImageData(0, 0, fullWarpCanvas.width, fullWarpCanvas.height);
+        const pixels = sampleData.data;
+        let totalLuminance = 0, count = 0;
+        for (let y = 0; y < fullWarpCanvas.height; y += sampleStep) {
+          for (let x = 0; x < fullWarpCanvas.width; x += sampleStep) {
+            const i = (y * fullWarpCanvas.width + x) * 4;
+            // Luminancia perceptual (rec. 709)
+            totalLuminance += 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
+            count++;
+          }
+        }
+        brightnessPercent = count > 0 ? Math.round((totalLuminance / count / 255) * 100) : 100;
+        imageTooDark = brightnessPercent < BRIGHTNESS_THRESHOLD;
+      } catch (e) {
+        console.warn('[G9] Error analizando brillo:', e);
+      }
+    }
+
     // Decodificación del alumno desde el payload QR (Soporta formato nuevo 'ALUM_01' y legado 'MATEVAL|ALUM_01|...')
     let studentId = null;
     let qrSuccess = false;
@@ -1044,6 +1146,12 @@
 
       const sharpEl = document.getElementById('res-sharpness');
       if (sharpEl) sharpEl.textContent = sharpness + '%';
+
+      // GUARDRAIL 9: Mostrar/ocultar advertencia de imagen oscura
+      const g9Banner = document.getElementById('g9-dark-image-warning');
+      const g9Val = document.getElementById('g9-brightness-val');
+      if (g9Banner) g9Banner.style.display = imageTooDark ? 'flex' : 'none';
+      if (g9Val) g9Val.textContent = brightnessPercent;
 
       const focusDuration = targetLockStartTime ? ((Date.now() - targetLockStartTime) / 1000).toFixed(2) : '0.20';
       const timeEl = document.getElementById('res-time');
