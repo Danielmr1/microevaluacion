@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v2.1.0 - ArUco 4 Esquinas Autónomo</title>
+  <title>Escáner Inteligente A5 v2.2.0 - ArUco con Expansión Exterior</title>
   <script src="jsqr.min.js"></script>
   <script>
 /*
@@ -1885,7 +1885,7 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v2.1.0</span></h1>
+        <h1>Escáner de Aula A5 <span class="version-tag">v2.2.0</span></h1>
         <p>Detector ArUco 4 Esquinas (Sin Disparos)</p>
       </div>
     </div>
@@ -1906,7 +1906,7 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
       <div class="placeholder-icon">📸</div>
       <div class="placeholder-title">Visor Inmersivo A5</div>
       <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v2.1.0</span>
+      <span class="version-tag" style="margin-top: 4px;">v2.2.0</span>
     </div>
 
     <!-- Indicador de Estado Flotante -->
@@ -2472,6 +2472,37 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
       destCtx.restore();
     }
 
+    // EXPANSIÓN VECTORIAL DEL CUADRILÁTERO HACIA LOS BORDES EXTERIORES DE LA FICHA A5
+    function getExpandedSheetQuad(quad, marginX = 0.058, marginY = 0.085) {
+      const vTopX = quad.pTR.x - quad.pTL.x;
+      const vTopY = quad.pTR.y - quad.pTL.y;
+      const vBotX = quad.pBR.x - quad.pBL.x;
+      const vBotY = quad.pBR.y - quad.pBL.y;
+      const vLeftX = quad.pBL.x - quad.pTL.x;
+      const vLeftY = quad.pBL.y - quad.pTL.y;
+      const vRightX = quad.pBR.x - quad.pTR.x;
+      const vRightY = quad.pBR.y - quad.pTR.y;
+
+      return {
+        pTL: {
+          x: quad.pTL.x - marginX * vTopX - marginY * vLeftX,
+          y: quad.pTL.y - marginX * vTopY - marginY * vLeftY
+        },
+        pTR: {
+          x: quad.pTR.x + marginX * vTopX - marginY * vRightX,
+          y: quad.pTR.y + marginX * vTopY - marginY * vRightY
+        },
+        pBR: {
+          x: quad.pBR.x + marginX * vBotX + marginY * vRightX,
+          y: quad.pBR.y + marginX * vBotY + marginY * vRightY
+        },
+        pBL: {
+          x: quad.pBL.x - marginX * vBotX + marginY * vLeftX,
+          y: quad.pBL.y - marginX * vBotY + marginY * vLeftY
+        }
+      };
+    }
+
     let isProcessing = false;
 
     // CICLO DE PROCESAMIENTO EN TIEMPO REAL (Gatekeeper continuo)
@@ -2528,20 +2559,24 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
             // Evaluar paralelismo / rectángulo casi perfecto vs trapecio con inclinación
             const rectCheck = checkRectanglePerfection(activeTarget.quad);
 
-            // Sensor de esquinas dentro de los límites visibles de la pantalla
-            const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
+            // Cuadrilátero expandido hacia los bordes reales exteriores de la hoja A5
+            const expandedSheet = getExpandedSheetQuad(activeTarget.quad);
 
-            // Dibujar cuadrilátero elástico sobre las 4 esquinas ArUco
+            // Sensor de esquinas dentro de los límites visibles de la pantalla
+            const cornerCheck = checkCornersInFrame(expandedSheet, overlay.width, overlay.height);
+
+            // Dibujar cuadrilátero elástico envolvente con marcadores ArUco anclados
             drawDynamicQuadrilateral(activeTarget.quad, coverage, cornerCheck, rectCheck);
 
-            handleValidTarget(sharpness, activeTarget.quad, coverage, cornerCheck, rectCheck);
+            handleValidTarget(sharpness, expandedSheet, coverage, cornerCheck, rectCheck);
           } else if (activeTarget && lostFramesCount < MAX_LOST_FRAMES) {
             // Retención breve en cuadro borroso o movimiento rápido
             lostFramesCount++;
             const quadArea = getQuadArea(activeTarget.quad.pTL, activeTarget.quad.pTR, activeTarget.quad.pBR, activeTarget.quad.pBL);
             const screenArea = overlay.width * overlay.height;
             const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
-            const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
+            const expandedSheet = getExpandedSheetQuad(activeTarget.quad);
+            const cornerCheck = checkCornersInFrame(expandedSheet, overlay.width, overlay.height);
             const rectCheck = checkRectanglePerfection(activeTarget.quad);
 
             drawDynamicQuadrilateral(activeTarget.quad, coverage, cornerCheck, rectCheck);
@@ -2567,6 +2602,9 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
       const isAlmostPerfect = rectCheck ? rectCheck.isAlmostPerfect : true;
       const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
 
+      // Calcular contorno exterior expandido para cubrir el 100% de la ficha
+      const sheetQuad = getExpandedSheetQuad(quad);
+
       let color = '#22c55e'; // Verde Neón
       let fillColor = 'rgba(34, 197, 94, 0.22)';
       let labelText = `✓ ¡Encuadre Óptimo! (${coverage}%)`;
@@ -2587,12 +2625,12 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
 
       ctx.save();
 
-      // 1. Cuadrilátero elástico puro conectando los 4 puntos ArUco
+      // 1. Cuadrilátero elástico envolviendo los bordes exteriores de la ficha
       ctx.beginPath();
-      ctx.moveTo(quad.pTL.x, quad.pTL.y);
-      ctx.lineTo(quad.pTR.x, quad.pTR.y);
-      ctx.lineTo(quad.pBR.x, quad.pBR.y);
-      ctx.lineTo(quad.pBL.x, quad.pBL.y);
+      ctx.moveTo(sheetQuad.pTL.x, sheetQuad.pTL.y);
+      ctx.lineTo(sheetQuad.pTR.x, sheetQuad.pTR.y);
+      ctx.lineTo(sheetQuad.pBR.x, sheetQuad.pBR.y);
+      ctx.lineTo(sheetQuad.pBL.x, sheetQuad.pBL.y);
       ctx.closePath();
 
       ctx.fillStyle = fillColor;
