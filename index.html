@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v1.2.0 - Microevaluación</title>
+  <title>Escáner Inteligente A5 v1.2.1 - Microevaluación</title>
   <script src="jsqr.min.js"></script>
   <style>
     * {
@@ -30,11 +30,12 @@
     header {
       background: #111827;
       border-bottom: 1px solid #1f2937;
-      padding: 12px 16px;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       z-index: 20;
+      transition: background 0.3s ease;
     }
 
     .brand {
@@ -55,7 +56,7 @@
     }
 
     .brand-text h1 {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: -0.2px;
       display: flex;
@@ -113,14 +114,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 440px;
+      min-height: 0;
     }
 
     video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       position: absolute;
+      top: 0;
+      left: 0;
     }
 
     canvas.overlay {
@@ -129,8 +132,111 @@
       left: 0;
       width: 100%;
       height: 100%;
+      object-fit: contain;
       pointer-events: none;
       z-index: 5;
+    }
+
+    /* Placeholder cuando la cámara no está iniciada */
+    .camera-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      gap: 12px;
+      z-index: 4;
+      color: #94a3b8;
+    }
+
+    .placeholder-icon {
+      font-size: 3rem;
+      background: #1f2937;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed #374151;
+    }
+
+    .placeholder-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .placeholder-desc {
+      font-size: 0.85rem;
+      max-width: 320px;
+      line-height: 1.4;
+    }
+
+    /* MODO INMERSIVO DE CÁMARA (Estilo App Nativa de Smartphone) */
+    body.camera-active {
+      overflow: hidden;
+    }
+
+    body.camera-active .camera-placeholder {
+      display: none;
+    }
+
+    body.camera-active header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, rgba(11, 15, 25, 0.88) 0%, rgba(11, 15, 25, 0) 100%);
+      border-bottom: none;
+      padding: 8px 16px;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    body.camera-active header .brand,
+    body.camera-active header .header-actions {
+      pointer-events: auto;
+    }
+
+    body.camera-active .viewport-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      z-index: 10;
+    }
+
+    body.camera-active .controls-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(0deg, rgba(11, 15, 25, 0.88) 0%, rgba(11, 15, 25, 0) 100%);
+      border-top: none;
+      padding: 10px 16px;
+      z-index: 30;
+      pointer-events: none;
+    }
+
+    body.camera-active .controls-panel .action-row {
+      pointer-events: auto;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    body.camera-active .quality-metrics {
+      position: absolute;
+      bottom: 64px;
+      left: 16px;
+      right: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      z-index: 25;
+      pointer-events: none;
     }
 
     /* Retícula de Enfoque en Pantalla (HUD) */
@@ -476,7 +582,7 @@
         font-size: 1.1rem;
       }
       .brand-text h1 {
-        font-size: 0.95rem;
+        font-size: 0.88rem;
       }
       .brand-text p {
         display: none;
@@ -487,15 +593,16 @@
         font-size: 1rem;
       }
       .status-badge {
-        top: 8px;
+        top: 48px;
         padding: 4px 12px;
-        font-size: 0.75rem;
+        font-size: 0.72rem;
       }
-      .quality-metrics {
-        bottom: 8px;
+      body.camera-active .quality-metrics {
+        bottom: 50px;
         left: 10px;
         right: 10px;
-        gap: 8px;
+        max-width: 440px;
+        gap: 6px;
       }
       .metric-card {
         padding: 4px 8px;
@@ -507,12 +614,12 @@
       .progress-bar-bg {
         height: 5px;
       }
-      .controls-panel {
-        padding: 6px 12px;
+      body.camera-active .controls-panel {
+        padding: 4px 12px;
       }
       .btn-main, .btn-secondary {
-        padding: 8px 16px;
-        font-size: 0.88rem;
+        padding: 7px 14px;
+        font-size: 0.84rem;
       }
 
       /* MODAL HORIZONTAL EN 2 COLUMNAS (100% VISIBLE SIN SCROLL) */
@@ -588,7 +695,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v1.2.0</span></h1>
+        <h1>Escáner de Aula A5 <span class="version-tag">v1.2.1</span></h1>
         <p>Auto-Disparo por Nitidez y QR</p>
       </div>
     </div>
@@ -603,6 +710,14 @@
   <div class="viewport-container" id="viewport">
     <video id="video-feed" playsinline autoplay muted></video>
     <canvas id="overlay-canvas" class="overlay"></canvas>
+
+    <!-- Placeholder cuando la cámara no está activa -->
+    <div class="camera-placeholder" id="camera-placeholder">
+      <div class="placeholder-icon">📸</div>
+      <div class="placeholder-title">Visor Inmersivo A5</div>
+      <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
+      <span class="version-tag" style="margin-top: 4px;">v1.2.1</span>
+    </div>
 
     <!-- Indicador de Estado Flotante -->
     <div class="status-badge" id="status-badge">
@@ -674,7 +789,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.2.0</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.2.1</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -797,20 +912,18 @@
       }
     }
 
+    let activeTarget = null;
+    let lostFramesCount = 0;
+    const MAX_LOST_FRAMES = 12; // Retener objetivo durante ~300ms de movimiento o desenfoque temporal
+
     // INICIAR / DETENER CÁMARA
     async function toggleCamera() {
       const btn = document.getElementById('btn-start');
       if (isScanning) {
         stopCamera();
-        btn.innerHTML = '<span>▶ Iniciar Cámara</span>';
-        btn.style.background = '#2563eb';
       } else {
         enterFullscreen(); // Ocultar barra de navegación de Chrome automáticamente
         await startCamera();
-        if (isScanning) {
-          btn.innerHTML = '<span>⏹ Detener Cámara</span>';
-          btn.style.background = '#ef4444';
-        }
       }
     }
 
@@ -846,12 +959,21 @@
 
         overlay.width = video.videoWidth;
         overlay.height = video.videoHeight;
-        procCanvas.width = 960;
-        procCanvas.height = Math.round((960 * video.videoHeight) / video.videoWidth);
+        procCanvas.width = 1080;
+        procCanvas.height = Math.round((1080 * video.videoHeight) / video.videoWidth);
+
+        document.body.classList.add('camera-active');
+        const btn = document.getElementById('btn-start');
+        if (btn) {
+          btn.innerHTML = '<span>⏹ Detener Cámara</span>';
+          btn.style.background = '#dc2626';
+        }
 
         isScanning = true;
         scanStartTime = Date.now();
         targetLockStartTime = null;
+        activeTarget = null;
+        lostFramesCount = 0;
         requestAnimationFrame(processFrame);
       } catch (err) {
         alert('No se pudo acceder a la cámara: ' + err.message);
@@ -860,6 +982,14 @@
 
     function stopCamera() {
       isScanning = false;
+      document.body.classList.remove('camera-active');
+      const btn = document.getElementById('btn-start');
+      if (btn) {
+        btn.innerHTML = '<span>▶ Iniciar Cámara</span>';
+        btn.style.background = '#2563eb';
+      }
+      activeTarget = null;
+      lostFramesCount = 0;
       if (videoStream) {
         videoStream.getTracks().forEach(t => t.stop());
         videoStream = null;
@@ -1111,20 +1241,51 @@
           }
 
           if (detectedText && detectedBox) {
-            // Calcular cuadrilátero dinámico de la ficha completa A5
-            const sheetQuad = estimateSheetQuad(detectedBox.p1, detectedBox.p2, detectedBox.p3, detectedBox.p4);
-            const quadArea = getQuadArea(sheetQuad.pTL, sheetQuad.pTR, sheetQuad.pBR, sheetQuad.pBL);
+            const rawQuad = estimateSheetQuad(detectedBox.p1, detectedBox.p2, detectedBox.p3, detectedBox.p4);
+
+            if (!activeTarget) {
+              activeTarget = {
+                quad: rawQuad,
+                qrBox: detectedBox,
+                qrData: detectedText
+              };
+            } else {
+              // Suavizado temporal exponencial (Lerp) para eliminar parpadeo y vibración
+              const alpha = 0.65;
+              activeTarget.quad = {
+                pTL: { x: activeTarget.quad.pTL.x * (1 - alpha) + rawQuad.pTL.x * alpha, y: activeTarget.quad.pTL.y * (1 - alpha) + rawQuad.pTL.y * alpha },
+                pTR: { x: activeTarget.quad.pTR.x * (1 - alpha) + rawQuad.pTR.x * alpha, y: activeTarget.quad.pTR.y * (1 - alpha) + rawQuad.pTR.y * alpha },
+                pBR: { x: activeTarget.quad.pBR.x * (1 - alpha) + rawQuad.pBR.x * alpha, y: activeTarget.quad.pBR.y * (1 - alpha) + rawQuad.pBR.y * alpha },
+                pBL: { x: activeTarget.quad.pBL.x * (1 - alpha) + rawQuad.pBL.x * alpha, y: activeTarget.quad.pBL.y * (1 - alpha) + rawQuad.pBL.y * alpha }
+              };
+              activeTarget.qrBox = detectedBox;
+              activeTarget.qrData = detectedText;
+            }
+            lostFramesCount = 0;
+
+            const quadArea = getQuadArea(activeTarget.quad.pTL, activeTarget.quad.pTR, activeTarget.quad.pBR, activeTarget.quad.pBL);
             const screenArea = overlay.width * overlay.height;
             const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
 
-            // Verificar si los 4 cuadrados negros están 100% dentro del encuadre
-            const cornerCheck = checkCornersInFrame(sheetQuad, overlay.width, overlay.height);
+            // Sensor de 4 cuadrados negros completos dentro de los bordes
+            const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
 
-            // Dibujar cuadrilátero dinámico con brackets AR
-            drawDynamicQuadrilateral(sheetQuad, detectedBox, coverage, cornerCheck);
+            // Dibujar lámina verde semitransparente que crece conforme te acercas
+            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck);
 
-            handleValidTarget(detectedText, sharpness, sheetQuad, coverage, cornerCheck);
+            handleValidTarget(detectedText, sharpness, activeTarget.quad, coverage, cornerCheck);
+          } else if (activeTarget && lostFramesCount < MAX_LOST_FRAMES) {
+            // Cuadro intermedio borroso por movimiento del celular: NO perder el rectángulo verde
+            lostFramesCount++;
+            const quadArea = getQuadArea(activeTarget.quad.pTL, activeTarget.quad.pTR, activeTarget.quad.pBR, activeTarget.quad.pBL);
+            const screenArea = overlay.width * overlay.height;
+            const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
+            const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
+
+            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck);
+            updateCoverageUI(coverage);
           } else {
+            activeTarget = null;
             targetLockStartTime = null;
             handleLostTarget();
           }
@@ -1140,19 +1301,18 @@
 
     // DIBUJO DEL RECTÁNGULO VERDE SEMI-TRANSPARENTE EN TIEMPO REAL (AR)
     function drawDynamicQuadrilateral(quad, qrBox, coverage, cornerCheck) {
-      const isFullyInside = cornerCheck.isFullyInside;
+      const isFullyInside = cornerCheck ? cornerCheck.isFullyInside : true;
       const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
 
-      // SIEMPRE VERDE SEMI-TRANSPARENTE (Lámina AR que crece conforme te acercas)
+      // Lámina AR Verde Neón semitransparente claramente perceptible
       let color = '#22c55e'; // Verde Neón
-      let fillColor = 'rgba(34, 197, 94, 0.25)'; // Relleno verde semi-transparente bien visible
+      let fillColor = 'rgba(34, 197, 94, 0.30)'; // Verde translúcido de alta visibilidad
       let isDashed = false;
-      let labelText = isOptimalDistance ? `✓ ¡Distancia Óptima! (${coverage}%)` : `Acércate a la hoja (${coverage}%)`;
+      let labelText = isOptimalDistance ? `✓ ¡Distancia Óptima! (${coverage}%)` : `🔍 Acércate a la hoja (${coverage}%)`;
 
-      if (!isFullyInside) {
-        // Alerta: Una o más esquinas están fuera del sensor de la cámara
+      if (!isFullyInside && cornerCheck && cornerCheck.outsideCorners) {
         color = '#ef4444';
-        fillColor = 'rgba(239, 68, 68, 0.18)';
+        fillColor = 'rgba(239, 68, 68, 0.22)';
         isDashed = true;
 
         const hasLeft = cornerCheck.outsideCorners.some(c => c.id === 'TL' || c.id === 'BL');
@@ -1161,13 +1321,13 @@
         const hasBottom = cornerCheck.outsideCorners.some(c => c.id === 'BL' || c.id === 'BR');
 
         if (hasLeft && !hasRight) {
-          labelText = '⚠️ Mueve la cámara a la izquierda ⬅️';
+          labelText = '⚠️ Mueve a la izquierda ⬅️';
         } else if (hasRight && !hasLeft) {
-          labelText = '⚠️ Mueve la cámara a la derecha ➡️';
+          labelText = '⚠️ Mueve a la derecha ➡️';
         } else if (hasTop && !hasBottom) {
-          labelText = '⚠️ Mueve la cámara hacia arriba ⬆️';
+          labelText = '⚠️ Mueve hacia arriba ⬆️';
         } else if (hasBottom && !hasTop) {
-          labelText = '⚠️ Mueve la cámara hacia abajo ⬇️';
+          labelText = '⚠️ Mueve hacia abajo ⬇️';
         } else {
           labelText = '⚠️ Centra la hoja: faltan esquinas';
         }
@@ -1175,7 +1335,7 @@
 
       ctx.save();
 
-      // 1. Lámina / Rectángulo verde semi-transparente que cubre la ficha
+      // 1. Lámina verde semitransparente cubriendo la ficha completa
       ctx.beginPath();
       ctx.moveTo(quad.pTL.x, quad.pTL.y);
       ctx.lineTo(quad.pTR.x, quad.pTR.y);
@@ -1189,49 +1349,52 @@
       ctx.lineWidth = 4;
       ctx.strokeStyle = color;
       if (isDashed) {
-        ctx.setLineDash([10, 8]);
+        ctx.setLineDash([12, 8]);
       } else {
         ctx.setLineDash([]);
         ctx.shadowColor = '#22c55e';
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 12;
       }
       ctx.stroke();
       ctx.restore();
 
-      // 2. Brackets en las 4 esquinas de la ficha
-      drawCornerBracket(quad.pTL, 24, 0, color);
-      drawCornerBracket(quad.pTR, 24, Math.PI / 2, color);
-      drawCornerBracket(quad.pBR, 24, Math.PI, color);
-      drawCornerBracket(quad.pBL, 24, -Math.PI / 2, color);
+      // 2. Brackets grandes en las 4 esquinas de la ficha
+      const bracketSize = Math.max(28, Math.min(60, Math.round(overlay.width * 0.038)));
+      drawCornerBracket(quad.pTL, bracketSize, 0, color);
+      drawCornerBracket(quad.pTR, bracketSize, Math.PI / 2, color);
+      drawCornerBracket(quad.pBR, bracketSize, Math.PI, color);
+      drawCornerBracket(quad.pBL, bracketSize, -Math.PI / 2, color);
 
-      // 3. Mini caja del código QR
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(qrBox.p1.x, qrBox.p1.y);
-      ctx.lineTo(qrBox.p2.x, qrBox.p2.y);
-      ctx.lineTo(qrBox.p3.x, qrBox.p3.y);
-      ctx.lineTo(qrBox.p4.x, qrBox.p4.y);
-      ctx.closePath();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = color;
-      ctx.stroke();
-      ctx.restore();
+      // 3. Mini recuadro sobre el QR si existe
+      if (qrBox) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(qrBox.p1.x, qrBox.p1.y);
+        ctx.lineTo(qrBox.p2.x, qrBox.p2.y);
+        ctx.lineTo(qrBox.p3.x, qrBox.p3.y);
+        ctx.lineTo(qrBox.p4.x, qrBox.p4.y);
+        ctx.closePath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = color;
+        ctx.stroke();
+        ctx.restore();
+      }
 
-      // 4. Etiqueta flotante indicadora de proximidad / centrado
+      // 4. Etiqueta flotante indicadora de proximidad
       const centerX = (quad.pTL.x + quad.pTR.x) / 2;
-      const centerY = Math.max(25, Math.min(quad.pTL.y, quad.pTR.y) - 18);
+      const centerY = Math.max(30, Math.min(quad.pTL.y, quad.pTR.y) - 20);
 
       ctx.save();
-      ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       const textMetrics = ctx.measureText(labelText);
-      const pillW = textMetrics.width + 24;
-      const pillH = 30;
+      const pillW = textMetrics.width + 26;
+      const pillH = 32;
       const pillX = centerX - pillW / 2;
-      const pillY = centerY - 15;
+      const pillY = centerY - 16;
 
-      ctx.fillStyle = !isFullyInside ? 'rgba(153, 27, 27, 0.94)' : (isOptimalDistance ? 'rgba(22, 101, 52, 0.94)' : 'rgba(120, 53, 15, 0.94)');
+      ctx.fillStyle = !isFullyInside ? 'rgba(185, 28, 28, 0.95)' : (isOptimalDistance ? 'rgba(21, 128, 61, 0.95)' : 'rgba(180, 83, 9, 0.95)');
       ctx.beginPath();
-      ctx.roundRect(pillX, pillY, pillW, pillH, 15);
+      ctx.roundRect(pillX, pillY, pillW, pillH, 16);
       ctx.fill();
 
       ctx.strokeStyle = color;
