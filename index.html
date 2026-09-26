@@ -239,29 +239,9 @@
       pointer-events: none;
     }
 
-    /* Retícula de Enfoque en Pantalla (HUD) */
+    /* Retícula de Enfoque en Pantalla (HUD) - DESHABILITADO PARA MODO CUADRILÁTERO DINÁMICO */
     .hud-guide {
-      position: absolute;
-      width: 84%;
-      height: 70%;
-      border: 2px dashed rgba(255, 255, 255, 0.4);
-      border-radius: 16px;
-      pointer-events: none;
-      z-index: 6;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 12px;
-    }
-
-    .hud-guide {
-      transition: opacity 0.25s ease, border-color 0.2s ease;
-    }
-
-    .hud-guide.tracking {
-      opacity: 0.05;
-      pointer-events: none;
+      display: none !important;
     }
 
     .hud-guide.locked {
@@ -1156,18 +1136,14 @@
       // Verificar que los 4 puntos sean esquinas distintas
       const uniqueSet = new Set([bTL, bTR, bBR, bBL]);
       if (uniqueSet.size === 4) {
-        const wTop = Math.hypot(bTR.cx - bTL.cx, bTR.cy - bTL.cy);
-        const wBot = Math.hypot(bBR.cx - bBL.cx, bBR.cy - bBL.cy);
-        const hLeft = Math.hypot(bBL.cx - bTL.cx, bBL.cy - bTL.cy);
-        const hRight = Math.hypot(bBR.cx - bTR.cx, bBR.cy - bTR.cy);
-        const avgW = (wTop + wBot) / 2;
-        const avgH = (hLeft + hRight) / 2;
-        const aspect = avgW / avgH;
-
-        if (aspect >= 1.15 && aspect <= 1.85) {
+        // Área del cuadrilátero (admite cualquier trapecio con inclinación y perspectiva real)
+        const area = Math.abs(
+          (bTR.cx - bTL.cx) * (bBL.cy - bTL.cy) - (bBL.cx - bTL.cx) * (bTR.cy - bTL.cy)
+        );
+        if (area > 200) {
           return {
             found: true,
-            quad: { pTL: bTL, pTR: bTR, pBR: bBR, pBL: bBL, aspect }
+            quad: { pTL: bTL, pTR: bTR, pBR: bBR, pBL: bBL }
           };
         }
       }
@@ -1208,18 +1184,8 @@
       const pBR = { x: fQuad.pBR.cx * sx, y: fQuad.pBR.cy * sy };
       const pBL = { x: fQuad.pBL.cx * sx, y: fQuad.pBL.cy * sy };
 
-      const vx = { x: (pTR.x - pTL.x + pBR.x - pBL.x) / 2, y: (pTR.y - pTL.y + pBR.y - pBL.y) / 2 };
-      const vy = { x: (pBL.x - pTL.x + pBR.x - pTR.x) / 2, y: (pBL.y - pTL.y + pBR.y - pTR.y) / 2 };
-
-      // Expansión proporcional exacta sobre el marco exterior negro
-      const ex = 0.035;
-      const ey = 0.045;
-
       return {
-        pTL: { x: pTL.x - ex * vx.x - ey * vy.x, y: pTL.y - ex * vx.y - ey * vy.y },
-        pTR: { x: pTR.x + ex * vx.x - ey * vy.x, y: pTR.y + ex * vx.y - ey * vy.y },
-        pBR: { x: pBR.x + ex * vx.x + ey * vy.x, y: pBR.y + ex * vx.y + ey * vy.y },
-        pBL: { x: pBL.x - ex * vx.x + ey * vy.x, y: pBL.y - ex * vx.y + ey * vy.y },
+        pTL, pTR, pBR, pBL,
         fiducials: { pTL, pTR, pBR, pBL }
       };
     }
@@ -1428,8 +1394,8 @@
                 qrData: detectedText
               };
             } else {
-              // Suavizado temporal exponencial (Lerp) para eliminar parpadeo y vibración
-              const alpha = 0.65;
+              // Suavizado temporal exponencial (Lerp) de alta respuesta en tiempo real
+              const alpha = 0.80;
               activeTarget.quad = {
                 pTL: { x: activeTarget.quad.pTL.x * (1 - alpha) + rawQuad.pTL.x * alpha, y: activeTarget.quad.pTL.y * (1 - alpha) + rawQuad.pTL.y * alpha },
                 pTR: { x: activeTarget.quad.pTR.x * (1 - alpha) + rawQuad.pTR.x * alpha, y: activeTarget.quad.pTR.y * (1 - alpha) + rawQuad.pTR.y * alpha },
@@ -1515,16 +1481,16 @@
           labelText = '⚠️ Centra la hoja: faltan esquinas';
         }
       } else if (!isAlmostPerfect) {
-        // Alerta: celular inclinado (la figura es un trapecio con perspectiva)
+        // Alerta: celular inclinado (la figura es un trapecio con perspectiva real)
         color = '#f59e0b';
-        fillColor = 'rgba(245, 158, 11, 0.22)';
-        isDashed = true;
-        labelText = '📐 Pon el celular plano sobre la hoja';
+        fillColor = 'rgba(245, 158, 11, 0.25)';
+        isDashed = false;
+        labelText = `📐 Trapecio en perspectiva (${coverage}%)`;
       }
 
       ctx.save();
 
-      // 1. Lámina verde semitransparente cubriendo la ficha completa
+      // 1. Lámina semitransparente cubriendo la ficha completa
       ctx.beginPath();
       ctx.moveTo(quad.pTL.x, quad.pTL.y);
       ctx.lineTo(quad.pTR.x, quad.pTR.y);
@@ -1537,13 +1503,8 @@
 
       ctx.lineWidth = 4;
       ctx.strokeStyle = color;
-      if (isDashed) {
-        ctx.setLineDash([12, 8]);
-      } else {
-        ctx.setLineDash([]);
-        ctx.shadowColor = '#22c55e';
-        ctx.shadowBlur = 12;
-      }
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
       ctx.stroke();
       ctx.restore();
 
@@ -1553,6 +1514,19 @@
       drawCornerBracket(quad.pTR, bracketSize, Math.PI / 2, color);
       drawCornerBracket(quad.pBR, bracketSize, Math.PI, color);
       drawCornerBracket(quad.pBL, bracketSize, -Math.PI / 2, color);
+
+      // 2b. Puntos de anclaje visibles en los 4 cuadrados negros de la hoja
+      [quad.pTL, quad.pTR, quad.pBR, quad.pBL].forEach(pt => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+        ctx.restore();
+      });
 
       // 3. Mini recuadro sobre el QR si existe
       if (qrBox) {
