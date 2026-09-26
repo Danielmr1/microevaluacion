@@ -541,11 +541,11 @@
     const procCanvas = document.createElement('canvas');
     const procCtx = procCanvas.getContext('2d', { willReadFrequently: true });
 
-    // Variables de control de estabilidad
     let stableFrameCount = 0;
-    const REQUIRED_STABLE_FRAMES = 3; // ~150-200ms de estabilidad requerida
+    const REQUIRED_STABLE_FRAMES = 2; // ~100ms de estabilidad requerida
     let lastDetectedQR = null;
     let scanStartTime = null;
+    let targetLockStartTime = null;
 
     // SINTETIZADOR DE AUDIO (Cero archivos externos)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -611,6 +611,15 @@
         video.srcObject = videoStream;
         track = videoStream.getVideoTracks()[0];
 
+        // Intentar activar autoenfoque continuo de hardware en Android
+        try {
+          if (track && track.applyConstraints) {
+            await track.applyConstraints({
+              advanced: [{ focusMode: "continuous" }]
+            });
+          }
+        } catch (e) {}
+
         await new Promise(resolve => {
           video.onloadedmetadata = () => {
             video.play();
@@ -625,6 +634,7 @@
 
         isScanning = true;
         scanStartTime = Date.now();
+        targetLockStartTime = null;
         requestAnimationFrame(processFrame);
       } catch (err) {
         alert('No se pudo acceder a la cámara: ' + err.message);
@@ -751,9 +761,11 @@
           }
 
           if (detectedText) {
+            if (!targetLockStartTime) targetLockStartTime = Date.now();
             if (detectedBox) drawDetectedBox(detectedBox);
             handleValidTarget(detectedText, sharpness);
           } else {
+            targetLockStartTime = null;
             handleLostTarget();
           }
         } finally {
@@ -786,8 +798,8 @@
 
       hud.classList.add('tracking');
 
-      // Umbral calibrado para detectar con luz normal de aula (40% o superior)
-      const SHARPNESS_THRESHOLD = 40;
+      // Umbral calibrado para detectar con luz normal de aula (35% o superior)
+      const SHARPNESS_THRESHOLD = 35;
 
       if (sharpness >= SHARPNESS_THRESHOLD) {
         stableFrameCount++;
@@ -811,6 +823,7 @@
 
     function handleLostTarget() {
       stableFrameCount = 0;
+      targetLockStartTime = null;
       updateStabilityUI(0);
       resetHUD();
     }
@@ -861,7 +874,7 @@
         document.getElementById('res-student-id').textContent = 'ID: ' + studentId;
         document.getElementById('res-test-id').textContent = 'Resultado Esperado: ' + expectedAns;
         document.getElementById('res-sharpness').textContent = sharpness + '%';
-        const focusDuration = scanStartTime ? ((Date.now() - scanStartTime) / 1000).toFixed(2) : '0.18';
+        const focusDuration = targetLockStartTime ? ((Date.now() - targetLockStartTime) / 1000).toFixed(2) : '0.24';
         document.getElementById('res-time').textContent = focusDuration + ' s';
 
         document.getElementById('capture-modal').classList.add('open');
@@ -920,6 +933,7 @@
       const file = e.target.files[0];
       if (!file) return;
       scanStartTime = Date.now();
+      targetLockStartTime = Date.now() - 250;
       const reader = new FileReader();
       reader.onload = (event) => {
         const dataUrl = event.target.result;
