@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v2.2.0 - ArUco con Expansión Exterior</title>
+  <title>Escáner Inteligente A5 v2.3.0 - ArUco Calibrado y Franja Rpta</title>
   <script src="jsqr.min.js"></script>
   <script>
 /*
@@ -1885,7 +1885,7 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v2.2.0</span></h1>
+        <h1>Escáner de Aula A5 <span class="version-tag">v2.3.0</span></h1>
         <p>Detector ArUco 4 Esquinas (Sin Disparos)</p>
       </div>
     </div>
@@ -1906,7 +1906,7 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
       <div class="placeholder-icon">📸</div>
       <div class="placeholder-title">Visor Inmersivo A5</div>
       <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v2.2.0</span>
+      <span class="version-tag" style="margin-top: 4px;">v2.3.0</span>
     </div>
 
     <!-- Indicador de Estado Flotante -->
@@ -2036,7 +2036,7 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
 
     let stableFrameCount = 0;
     const REQUIRED_STABLE_FRAMES = 3; // 3 cuadros continuos (~150-200ms) para garantizar estabilidad absoluta
-    const COVERAGE_THRESHOLD = 50; // Mínimo 50% de cobertura de la pantalla para permitir disparo
+    const COVERAGE_THRESHOLD = 45; // Calibrado al 45% para evitar competencia con los bordes de pantalla
     const SHARPNESS_THRESHOLD = 60; // Umbral calibrado de alta nitidez (mínimo 60%)
     let lastDetectedQR = null;
     let scanStartTime = null;
@@ -2472,8 +2472,8 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
       destCtx.restore();
     }
 
-    // EXPANSIÓN VECTORIAL DEL CUADRILÁTERO HACIA LOS BORDES EXTERIORES DE LA FICHA A5
-    function getExpandedSheetQuad(quad, marginX = 0.058, marginY = 0.085) {
+    // EXPANSIÓN VECTORIAL MODERADA (2% exterior) PARA ENGLOBAR LOS BORDES SIN SATURAR LA PANTALLA
+    function getExpandedSheetQuad(quad, marginX = 0.020, marginY = 0.025) {
       const vTopX = quad.pTR.x - quad.pTL.x;
       const vTopY = quad.pTR.y - quad.pTL.y;
       const vBotX = quad.pBR.x - quad.pBL.x;
@@ -2559,11 +2559,11 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
             // Evaluar paralelismo / rectángulo casi perfecto vs trapecio con inclinación
             const rectCheck = checkRectanglePerfection(activeTarget.quad);
 
-            // Cuadrilátero expandido hacia los bordes reales exteriores de la hoja A5
+            // Cuadrilátero con expansión calibrada
             const expandedSheet = getExpandedSheetQuad(activeTarget.quad);
 
-            // Sensor de esquinas dentro de los límites visibles de la pantalla
-            const cornerCheck = checkCornersInFrame(expandedSheet, overlay.width, overlay.height);
+            // Sensor de esquinas: comprobar los 4 marcadores ArUco con margen calibrado (8px) para no competir con la cobertura
+            const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height, 8);
 
             // Dibujar cuadrilátero elástico envolvente con marcadores ArUco anclados
             drawDynamicQuadrilateral(activeTarget.quad, coverage, cornerCheck, rectCheck);
@@ -2575,8 +2575,7 @@ AR.Detector.prototype.rotate2 = function (src, rotation) {
             const quadArea = getQuadArea(activeTarget.quad.pTL, activeTarget.quad.pTR, activeTarget.quad.pBR, activeTarget.quad.pBL);
             const screenArea = overlay.width * overlay.height;
             const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
-            const expandedSheet = getExpandedSheetQuad(activeTarget.quad);
-            const cornerCheck = checkCornersInFrame(expandedSheet, overlay.width, overlay.height);
+            const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height, 8);
             const rectCheck = checkRectanglePerfection(activeTarget.quad);
 
             drawDynamicQuadrilateral(activeTarget.quad, coverage, cornerCheck, rectCheck);
