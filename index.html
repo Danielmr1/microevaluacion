@@ -1306,10 +1306,18 @@
         </div>
 
         <div class="student-badge-result">
+
+          <!-- Banner de duplicado: visible solo cuando el alumno ya fue evaluado -->
+          <div id="res-duplicate-warning" style="display:none; align-items:center; gap:8px; background:#431407; border:1.5px solid #f97316; border-radius:8px; padding:7px 11px; margin-bottom:8px;">
+            <span style="font-size:1.1rem;">⚠️</span>
+            <span style="font-size:0.78rem; color:#fb923c; font-weight:700; line-height:1.3;">Este alumno ya fue evaluado en esta sesión.<br><span style="color:#fdba74; font-weight:400;">Revisá si es la misma ficha o un error de cámara.</span></span>
+          </div>
+
           <div class="badge-name" id="res-student-name">MATEO GARCÍA RODRÍGUEZ</div>
           <div class="badge-details">
             <span id="res-student-id">ID: ALUM_01</span>
             <span id="res-test-id">Respuesta Esperada: 85</span>
+            <span id="res-classroom-name" style="color:#60a5fa; font-weight:700;">3° Primaria "A"</span>
           </div>
 
           <!-- Selector de Respaldo si el QR no se lee -->
@@ -1541,11 +1549,22 @@
     }
 
     function updateScannerSessionBar(session) {
+      const color = ClassroomData.getClassroomColor(session.classroomId);
+
+      // Badge del salón: texto + color del salón
       const clsEl = document.getElementById('scan-active-classroom');
       if (clsEl) {
         const cls = ClassroomData.getClassroom(session.classroomId);
         clsEl.textContent = cls ? cls.name : session.classroomId;
+        clsEl.style.color = color;
+        clsEl.style.borderColor = color;
+        clsEl.style.background = color + '18'; // 10% opacidad del color
       }
+
+      // Borde izquierdo de la barra completa para identificación de un vistazo
+      const barEl = document.querySelector('.session-bar');
+      if (barEl) barEl.style.borderLeft = `4px solid ${color}`;
+
       const targetEl = document.getElementById('scan-active-target');
       if (targetEl) targetEl.textContent = session.expectedAnswer;
     }
@@ -1586,6 +1605,10 @@
         };
         ClassroomData.setActiveSession(initialSession);
         updateScannerSessionBar(initialSession);
+        // BUGFIX: también sincronizar el scanner en el caso de sesión inicial por defecto
+        if (typeof Scanner !== 'undefined' && Scanner.setSession) {
+          Scanner.setSession('3A', 'EVA_01');
+        }
       }
     });
   </script>

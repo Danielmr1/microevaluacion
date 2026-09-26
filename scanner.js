@@ -104,6 +104,10 @@
     const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
     const total = cls ? cls.students.length : 10;
     counterEl.textContent = `${evaluatedStudentIds.size} / ${total} evaluados`;
+    // Colorear el contador con el color del salón activo
+    if (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor) {
+      counterEl.style.color = ClassroomData.getClassroomColor(currentClassroomId);
+    }
   }
 
   function populateManualStudentSelect() {
@@ -969,8 +973,11 @@
     const expectedAns = activeEval ? activeEval.expectedAnswer : '85';
 
     let studentName = '';
+    let alreadyEvaluated = false;
     if (studentObj) {
       studentName = studentObj.name;
+      // Verificar ANTES de agregar si este alumno ya fue registrado en esta sesión
+      alreadyEvaluated = evaluatedStudentIds.has(studentId);
       evaluatedStudentIds.add(studentId);
       updateSessionCounter();
     } else if (studentId) {
@@ -985,14 +992,33 @@
       const imgEl = document.getElementById('captured-img');
       if (imgEl && resolutionPreviewUrl) imgEl.src = resolutionPreviewUrl;
 
+      // Advertencia de duplicado: banner naranja + nombre en color distinto
+      const dupBanner = document.getElementById('res-duplicate-warning');
+      if (dupBanner) dupBanner.style.display = alreadyEvaluated ? 'flex' : 'none';
+
       const nameEl = document.getElementById('res-student-name');
       if (nameEl) {
         nameEl.textContent = studentName.toUpperCase();
-        nameEl.style.color = qrSuccess ? '#f8fafc' : '#f59e0b';
+        nameEl.style.color = alreadyEvaluated ? '#f97316' : (qrSuccess ? '#f8fafc' : '#f59e0b');
       }
 
       const idEl = document.getElementById('res-student-id');
       if (idEl) idEl.textContent = 'ID: ' + studentId;
+
+      // Mostrar salón activo en el modal con su color identificador
+      const classroomEl = document.getElementById('res-classroom-name');
+      if (classroomEl) {
+        const clsObj = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
+        const clsColor = typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor
+          ? ClassroomData.getClassroomColor(currentClassroomId)
+          : '#60a5fa';
+        classroomEl.textContent = clsObj ? clsObj.name : currentClassroomId;
+        classroomEl.style.color = clsColor;
+        classroomEl.style.background = clsColor + '18';
+        classroomEl.style.border = `1px solid ${clsColor}40`;
+        classroomEl.style.borderRadius = '5px';
+        classroomEl.style.padding = '1px 6px';
+      }
 
       const testEl = document.getElementById('res-test-id');
       if (testEl) testEl.textContent = 'Resultado Esperado: ' + expectedAns;
@@ -1113,6 +1139,20 @@
     // Verificar dependencias e inicializar ArUco y Nóminas
     checkDependencies();
     initArUco();
+
+    // BUGFIX: Restaurar salón activo desde localStorage al inicio del scanner.
+    // Esto garantiza que currentClassroomId sea correcto incluso si el script
+    // inline del portal aún no corrió su propio DOMContentLoaded, o si el docente
+    // navegó directo al tab de escáner sin presionar "Generar".
+    if (typeof ClassroomData !== 'undefined') {
+      const savedSession = ClassroomData.getActiveSession();
+      if (savedSession && savedSession.classroomId) {
+        currentClassroomId = savedSession.classroomId;
+        currentEvaluationId = savedSession.evalId || currentEvaluationId;
+        console.log('[Scanner] Sesión restaurada desde localStorage → salón:', currentClassroomId);
+      }
+    }
+
     updateSessionCounter();
   });
 

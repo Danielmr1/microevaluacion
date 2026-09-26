@@ -11,13 +11,26 @@
 (function (global) {
   'use strict';
 
-  // --- CATÁLOGO DE SALONES Y NÓMINAS (2 Salones x 20 Alumnos) ---
+  // --- PALETA DE COLORES PARA SALONES (escalable: se asigna por orden si el salón no tiene color explícito) ---
+  const CLASSROOM_COLOR_PALETTE = [
+    '#3b82f6', // azul     — 3° A
+    '#22c55e', // verde    — 3° B
+    '#a855f7', // violeta  — 3° C (futuro)
+    '#f59e0b', // ámbar    — 3° D (futuro)
+    '#ec4899', // rosa     — 3° E (futuro)
+    '#14b8a6', // teal     — 3° F (futuro)
+    '#f97316', // naranja  — 3° G (futuro)
+    '#06b6d4', // cian     — 3° H (futuro)
+  ];
+
+  // --- CATÁLOGO DE SALONES Y NÓMINAS ---
   const CLASSROOMS = {
     '3A': {
       id: '3A',
       name: '3° Primaria "A"',
       grade: '3° de Primaria',
       section: 'A',
+      color: '#3b82f6',
       students: [
         { id: 'ALUM_01', name: 'Mateo García Rodríguez', shortName: 'Mateo García' },
         { id: 'ALUM_02', name: 'Sofía López Pérez', shortName: 'Sofía López' },
@@ -37,6 +50,7 @@
       name: '3° Primaria "B"',
       grade: '3° de Primaria',
       section: 'B',
+      color: '#22c55e',
       students: [
         { id: 'ALUM_01', name: 'Álvaro Guzmán Miranda', shortName: 'Álvaro Guzmán' },
         { id: 'ALUM_02', name: 'Daniela Salazar Rojas', shortName: 'Daniela Salazar' },
@@ -124,6 +138,22 @@
   }
 
   /**
+   * Devuelve el color asociado a un salón.
+   * - Si el salón tiene propiedad `color` explícita, la usa.
+   * - Si no (salón dinámico o futuro), elige de la paleta por índice de registro.
+   * Nunca retorna undefined: el último color de la paleta actúa como fallback.
+   */
+  function getClassroomColor(classroomId) {
+    const cls = CLASSROOMS[classroomId];
+    if (cls && cls.color) return cls.color;
+    // Fallback por posición en el catálogo
+    const keys = Object.keys(CLASSROOMS);
+    const idx = keys.indexOf(classroomId);
+    const paletteIdx = idx >= 0 ? idx : keys.length;
+    return CLASSROOM_COLOR_PALETTE[paletteIdx % CLASSROOM_COLOR_PALETTE.length];
+  }
+
+  /**
    * Registra o actualiza una evaluación personalizada redactada por el docente
    * y la añade al banco disponible.
    */
@@ -184,6 +214,7 @@
     getClassroomList,
     getEvaluationList,
     getClassroom,
+    getClassroomColor,
     getEvaluation,
     getStudent,
     saveCustomEvaluation,
