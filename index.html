@@ -620,8 +620,8 @@
 
         overlay.width = video.videoWidth;
         overlay.height = video.videoHeight;
-        procCanvas.width = 640;
-        procCanvas.height = Math.round((640 * video.videoHeight) / video.videoWidth);
+        procCanvas.width = 960;
+        procCanvas.height = Math.round((960 * video.videoHeight) / video.videoWidth);
 
         isScanning = true;
         scanStartTime = Date.now();
@@ -661,6 +661,16 @@
       document.getElementById('btn-torch').classList.toggle('active', torchActive);
     }
 
+    // Detector nativo de Android Chrome si está disponible
+    let nativeBarcodeDetector = null;
+    if ('BarcodeDetector' in window) {
+      try {
+        nativeBarcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+      } catch (e) {
+        nativeBarcodeDetector = null;
+      }
+    }
+
     // ALGORITMO DE ESTIMACIÓN DE NITIDEZ (Frecuencias altas / Varianza de gradiente)
     function calculateSharpness(imgData) {
       const data = imgData.data;
@@ -669,11 +679,9 @@
       let totalGradient = 0;
       let sampleCount = 0;
 
-      // Muestreo rápido de gradiente horizontal y vertical (Laplaciano simplificado)
       for (let y = 1; y < height - 1; y += 4) {
         for (let x = 1; x < width - 1; x += 4) {
           const idx = (y * width + x) * 4;
-          // Luminancia
           const lumCenter = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
           const lumRight = (data[idx + 4] + data[idx + 5] + data[idx + 6]) / 3;
           const lumDown = (data[((y + 1) * width + x) * 4] + data[((y + 1) * width + x) * 4 + 1]) / 2;
@@ -686,42 +694,88 @@
       }
 
       const avgGradient = totalGradient / sampleCount;
-      // Normalizar a porcentaje (En imágenes normales con texto, 12-25 es nítido)
-      const sharpnessScore = Math.min(100, Math.round((avgGradient / 18) * 100));
+      const sharpnessScore = Math.min(100, Math.round((avgGradient / 15) * 100));
       return sharpnessScore;
     }
 
+    let isProcessing = false;
+
     // CICLO DE PROCESAMIENTO EN TIEMPO REAL (Gatekeeper continuo)
-    function processFrame() {
+    async function processFrame() {
       if (!isScanning) return;
 
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        // Redimensionar para análisis ultra-rápido en memoria
-        procCtx.drawImage(video, 0, 0, procCanvas.width, procCanvas.height);
-        const imgData = procCtx.getImageData(0, 0, procCanvas.width, procCanvas.height);
+      if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
+        isProcessing = true;
+        try {
+          procCtx.drawImage(video, 0, 0, procCanvas.width, procCanvas.height);
+          const imgData = procCtx.getImageData(0, 0, procCanvas.width, procCanvas.height);
 
-        // 1. Detección de Nitidez
-        const sharpness = calculateSharpness(imgData);
-        updateSharpnessUI(sharpness);
+          const sharpness = calculateSharpness(imgData);
+          updateSharpnessUI(sharpness);
 
-        // 2. Detección de Código QR con jsQR
-        const qrCode = jsQR(imgData.data, imgData.width, imgData.height, {
-          inversionAttempts: "dontInvert",
-        });
+          ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-        ctx.clearRect(0, 0, overlay.width, overlay.height);
+          let detectedText = null;
+          let detectedBox = null;
 
-        if (qrCode && qrCode.data.startsWith('MATEVAL')) {
-          // Hoja reconocida
-          drawQRBoundingBox(qrCode.location);
-          handleValidTarget(qrCode.data, sharpness);
-        } else {
-          // Buscando objetivo
-          handleLostTarget();
+          // 1. Probar primero con el BarcodeDetector nativo (ultra rápido en Android)
+          if (nativeBarcodeDetector) {
+            try {
+              const barcodes = await nativeBarcodeDetector.detect(video);
+              if (barcodes && barcodes.length > 0) {
+                detectedText = barcodes[0].rawValue;
+                const pts = barcodes[0].cornerPoints;
+                if (pts && pts.length >= 4) {
+                  detectedBox = { p1: pts[0], p2: pts[1], p3: pts[2], p4: pts[3] };
+                }
+              }
+            } catch (err) {}
+          }
+
+          // 2. Si no se detectó con el nativo, usar jsQR
+          if (!detectedText && typeof jsQR !== 'undefined') {
+            const qrCode = jsQR(imgData.data, imgData.width, imgData.height, {
+              inversionAttempts: "attemptBoth",
+            });
+            if (qrCode) {
+              detectedText = qrCode.data;
+              const sx = overlay.width / procCanvas.width;
+              const sy = overlay.height / procCanvas.height;
+              detectedBox = {
+                p1: { x: qrCode.location.topLeftCorner.x * sx, y: qrCode.location.topLeftCorner.y * sy },
+                p2: { x: qrCode.location.topRightCorner.x * sx, y: qrCode.location.topRightCorner.y * sy },
+                p3: { x: qrCode.location.bottomRightCorner.x * sx, y: qrCode.location.bottomRightCorner.y * sy },
+                p4: { x: qrCode.location.bottomLeftCorner.x * sx, y: qrCode.location.bottomLeftCorner.y * sy }
+              };
+            }
+          }
+
+          if (detectedText) {
+            if (detectedBox) drawDetectedBox(detectedBox);
+            handleValidTarget(detectedText, sharpness);
+          } else {
+            handleLostTarget();
+          }
+        } finally {
+          isProcessing = false;
         }
       }
 
-      requestAnimationFrame(processFrame);
+      if (isScanning) {
+        requestAnimationFrame(processFrame);
+      }
+    }
+
+    function drawDetectedBox(box) {
+      ctx.beginPath();
+      ctx.moveTo(box.p1.x, box.p1.y);
+      ctx.lineTo(box.p2.x, box.p2.y);
+      ctx.lineTo(box.p3.x, box.p3.y);
+      ctx.lineTo(box.p4.x, box.p4.y);
+      ctx.closePath();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#22c55e';
+      ctx.stroke();
     }
 
     // CONTROL DE ESTABILIDAD Y AUTO-DISPARO (Zero-Click Gatekeeper)
@@ -732,23 +786,22 @@
 
       hud.classList.add('tracking');
 
-      // Umbral mínimo de nitidez para considerar que la mano no está temblando
-      const SHARPNESS_THRESHOLD = 55;
+      // Umbral calibrado para detectar con luz normal de aula (40% o superior)
+      const SHARPNESS_THRESHOLD = 40;
 
       if (sharpness >= SHARPNESS_THRESHOLD) {
         stableFrameCount++;
-        const stabilityPct = Math.min(100, Math.round((stableFrameCount / REQUIRED_STABLE_FRAMES) * 100));
+        const stabilityPct = Math.min(100, Math.round((stableFrameCount / 2) * 100));
         updateStabilityUI(stabilityPct);
 
         badge.classList.add('locked');
-        statusText.textContent = '¡Ficha enfocada! Mantén quieto...';
+        statusText.textContent = '¡Ficha detectada! Congelando...';
 
-        // CONDICIÓN CUMPLIDA: 3 cuadros nítidos y estables seguidos (~150ms)
-        if (stableFrameCount >= REQUIRED_STABLE_FRAMES) {
+        // Disparo al completar 2 cuadros nítidos y estables (~100ms)
+        if (stableFrameCount >= 2) {
           triggerAutoCapture(qrData, sharpness);
         }
       } else {
-        // La cámara se está moviendo o está fuera de foco
         stableFrameCount = Math.max(0, stableFrameCount - 1);
         updateStabilityUI(0);
         badge.classList.remove('locked');
