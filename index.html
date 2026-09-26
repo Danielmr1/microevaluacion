@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v1.2.1 - Microevaluación</title>
+  <title>Escáner Inteligente A5 v1.3.0 - Microevaluación</title>
   <script src="jsqr.min.js"></script>
   <style>
     * {
@@ -695,8 +695,8 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v1.2.1</span></h1>
-        <p>Auto-Disparo por Nitidez y QR</p>
+        <h1>Escáner de Aula A5 <span class="version-tag">v1.3.0</span></h1>
+        <p>Detector de 4 Cuadrados Negros</p>
       </div>
     </div>
     <div class="header-actions">
@@ -716,7 +716,7 @@
       <div class="placeholder-icon">📸</div>
       <div class="placeholder-title">Visor Inmersivo A5</div>
       <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v1.2.1</span>
+      <span class="version-tag" style="margin-top: 4px;">v1.3.0</span>
     </div>
 
     <!-- Indicador de Estado Flotante -->
@@ -789,7 +789,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.2.1</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.3.0</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -959,8 +959,8 @@
 
         overlay.width = video.videoWidth;
         overlay.height = video.videoHeight;
-        procCanvas.width = 1080;
-        procCanvas.height = Math.round((1080 * video.videoHeight) / video.videoWidth);
+        procCanvas.width = 480;
+        procCanvas.height = Math.round((480 * video.videoHeight) / video.videoWidth);
 
         document.body.classList.add('camera-active');
         const btn = document.getElementById('btn-start');
@@ -1053,6 +1053,149 @@
       const avgGradient = totalGradient / sampleCount;
       const sharpnessScore = Math.min(100, Math.round((avgGradient / 15) * 100));
       return sharpnessScore;
+    }
+
+    // MOTOR DE VISIÓN ARTIFICIAL: DETECTOR DE LOS 4 CUADRADOS NEGROS
+    function detectFiducials(imgData, width, height) {
+      const data = imgData.data;
+      const bin = new Uint8Array(width * height);
+      
+      let sum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        sum += (data[i] + data[i+1] + data[i+2]) / 3;
+      }
+      const avgLum = sum / (width * height);
+      // Umbral adaptativo para encontrar marcas negras sobre papel blanco / fondo iluminado
+      const darkThreshold = Math.min(95, Math.max(40, avgLum * 0.55));
+
+      for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+        const lum = (data[i] * 299 + data[i+1] * 587 + data[i+2] * 114) / 1000;
+        bin[j] = lum < darkThreshold ? 1 : 0;
+      }
+
+      const visited = new Uint8Array(width * height);
+      const blobs = [];
+
+      for (let y = 2; y < height - 2; y++) {
+        for (let x = 2; x < width - 2; x++) {
+          const idx = y * width + x;
+          if (bin[idx] === 1 && !visited[idx]) {
+            let qHead = 0;
+            const queue = [idx];
+            visited[idx] = 1;
+            let minX = x, maxX = x, minY = y, maxY = y;
+            let count = 0;
+            let sumX = 0, sumY = 0;
+
+            while (qHead < queue.length) {
+              const curr = queue[qHead++];
+              const cx = curr % width;
+              const cy = Math.floor(curr / width);
+              count++;
+              sumX += cx;
+              sumY += cy;
+              if (cx < minX) minX = cx;
+              if (cx > maxX) maxX = cx;
+              if (cy < minY) minY = cy;
+              if (cy > maxY) maxY = cy;
+
+              const neighbors = [curr - 1, curr + 1, curr - width, curr + width];
+              for (let k = 0; k < 4; k++) {
+                const n = neighbors[k];
+                if (n >= 0 && n < visited.length && bin[n] === 1 && !visited[n]) {
+                  visited[n] = 1;
+                  queue.push(n);
+                }
+              }
+            }
+
+            const bw = maxX - minX + 1;
+            const bh = maxY - minY + 1;
+            const area = count;
+            const bboxArea = bw * bh;
+            const solidity = area / bboxArea;
+            const aspect = bw / bh;
+
+            // Filtro morfológico: cuadrados negros (desde 3px hasta 55px)
+            if (bw >= 3 && bw <= 55 && bh >= 3 && bh <= 55 &&
+                aspect >= 0.55 && aspect <= 1.75 &&
+                solidity >= 0.65 && area >= 8) {
+              blobs.push({
+                cx: sumX / count,
+                cy: sumY / count,
+                minX, maxX, minY, maxY,
+                bw, bh, area
+              });
+            }
+          }
+        }
+      }
+
+      if (blobs.length < 4) {
+        return { found: false, blobCount: blobs.length };
+      }
+
+      let bestQuad = null;
+      let maxArea = 0;
+
+      for (let i = 0; i < blobs.length; i++) {
+        for (let j = 0; j < blobs.length; j++) {
+          if (i === j) continue;
+          for (let k = 0; k < blobs.length; k++) {
+            if (k === i || k === j) continue;
+            for (let l = 0; l < blobs.length; l++) {
+              if (l === i || l === j || l === k) continue;
+
+              const b1 = blobs[i], b2 = blobs[j], b3 = blobs[k], b4 = blobs[l];
+              if (b1.cx < b2.cx && b4.cx < b3.cx && b1.cy < b4.cy && b2.cy < b3.cy) {
+                const area = Math.abs(
+                  (b1.cx * (b2.cy - b4.cy) + b2.cx * (b3.cy - b1.cy) + b3.cx * (b4.cy - b2.cy) + b4.cx * (b1.cy - b3.cy)) / 2
+                );
+                const wTop = Math.hypot(b2.cx - b1.cx, b2.cy - b1.cy);
+                const wBot = Math.hypot(b3.cx - b4.cx, b3.cy - b4.cy);
+                const hLeft = Math.hypot(b4.cx - b1.cx, b4.cy - b1.cy);
+                const hRight = Math.hypot(b3.cx - b2.cx, b3.cy - b2.cy);
+                const avgW = (wTop + wBot) / 2;
+                const avgH = (hLeft + hRight) / 2;
+                const aspect = avgW / avgH;
+
+                // Ficha A5 en horizontal (relación de aspecto ~1.4)
+                if (aspect >= 1.15 && aspect <= 1.85 && area > maxArea) {
+                  maxArea = area;
+                  bestQuad = { pTL: b1, pTR: b2, pBR: b3, pBL: b4, area, aspect };
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (bestQuad) {
+        return { found: true, quad: bestQuad };
+      }
+      return { found: false, blobCount: blobs.length };
+    }
+
+    function expandFiducialQuad(fQuad, sx, sy) {
+      const pTL = { x: fQuad.pTL.cx * sx, y: fQuad.pTL.cy * sy };
+      const pTR = { x: fQuad.pTR.cx * sx, y: fQuad.pTR.cy * sy };
+      const pBR = { x: fQuad.pBR.cx * sx, y: fQuad.pBR.cy * sy };
+      const pBL = { x: fQuad.pBL.cx * sx, y: fQuad.pBL.cy * sy };
+
+      const vx = { x: (pTR.x - pTL.x + pBR.x - pBL.x) / 2, y: (pTR.y - pTL.y + pBR.y - pBL.y) / 2 };
+      const vy = { x: (pBL.x - pTL.x + pBR.x - pTR.x) / 2, y: (pBL.y - pTL.y + pBR.y - pTR.y) / 2 };
+
+      // Expansión hacia afuera para abarcar los 4 cuadrados negros completos con margen holgado
+      const ex = 0.065;
+      const ey = 0.075;
+
+      return {
+        pTL: { x: pTL.x - ex * vx.x - ey * vy.x, y: pTL.y - ex * vx.y - ey * vy.y },
+        pTR: { x: pTR.x + ex * vx.x - ey * vy.x, y: pTR.y + ex * vx.y - ey * vy.y },
+        pBR: { x: pBR.x + ex * vx.x + ey * vy.x, y: pBR.y + ex * vx.y + ey * vy.y },
+        pBL: { x: pBL.x - ex * vx.x + ey * vy.x, y: pBL.y - ex * vx.y + ey * vy.y },
+        fiducials: { pTL, pTR, pBR, pBL }
+      };
     }
 
     // MÓDULO MATEMÁTICO: Estimación de Cuadrilátero A5 y Deformación de Perspectiva
@@ -1205,10 +1348,20 @@
 
           ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-          let detectedText = null;
-          let detectedBox = null;
+          // 1. DETECCIÓN DE LOS 4 CUADRADOS NEGROS EN TIEMPO REAL
+          const sx = overlay.width / procCanvas.width;
+          const sy = overlay.height / procCanvas.height;
+          const fidResult = detectFiducials(imgData, procCanvas.width, procCanvas.height);
+          
+          let rawQuad = null;
+          if (fidResult.found) {
+            rawQuad = expandFiducialQuad(fidResult.quad, sx, sy);
+          }
 
-          // 1. Probar primero con el BarcodeDetector nativo (ultra rápido en Android)
+          // 2. Intentar leer código QR (con BarcodeDetector nativo o jsQR)
+          let detectedText = activeTarget ? activeTarget.qrData : null;
+          let detectedBox = activeTarget ? activeTarget.qrBox : null;
+
           if (nativeBarcodeDetector) {
             try {
               const barcodes = await nativeBarcodeDetector.detect(video);
@@ -1222,15 +1375,12 @@
             } catch (err) {}
           }
 
-          // 2. Si no se detectó con el nativo, usar jsQR
           if (!detectedText && typeof jsQR !== 'undefined') {
             const qrCode = jsQR(imgData.data, imgData.width, imgData.height, {
-              inversionAttempts: "attemptBoth",
+              inversionAttempts: "dontInvert",
             });
             if (qrCode) {
               detectedText = qrCode.data;
-              const sx = overlay.width / procCanvas.width;
-              const sy = overlay.height / procCanvas.height;
               detectedBox = {
                 p1: { x: qrCode.location.topLeftCorner.x * sx, y: qrCode.location.topLeftCorner.y * sy },
                 p2: { x: qrCode.location.topRightCorner.x * sx, y: qrCode.location.topRightCorner.y * sy },
@@ -1240,9 +1390,12 @@
             }
           }
 
-          if (detectedText && detectedBox) {
-            const rawQuad = estimateSheetQuad(detectedBox.p1, detectedBox.p2, detectedBox.p3, detectedBox.p4);
+          // Fallback: si no se detectaron los 4 cuadrados pero sí el QR, estimar la hoja
+          if (!rawQuad && detectedText && detectedBox) {
+            rawQuad = estimateSheetQuad(detectedBox.p1, detectedBox.p2, detectedBox.p3, detectedBox.p4);
+          }
 
+          if (rawQuad) {
             if (!activeTarget) {
               activeTarget = {
                 quad: rawQuad,
@@ -1258,8 +1411,8 @@
                 pBR: { x: activeTarget.quad.pBR.x * (1 - alpha) + rawQuad.pBR.x * alpha, y: activeTarget.quad.pBR.y * (1 - alpha) + rawQuad.pBR.y * alpha },
                 pBL: { x: activeTarget.quad.pBL.x * (1 - alpha) + rawQuad.pBL.x * alpha, y: activeTarget.quad.pBL.y * (1 - alpha) + rawQuad.pBL.y * alpha }
               };
-              activeTarget.qrBox = detectedBox;
-              activeTarget.qrData = detectedText;
+              if (detectedBox) activeTarget.qrBox = detectedBox;
+              if (detectedText) activeTarget.qrData = detectedText;
             }
             lostFramesCount = 0;
 
@@ -1273,7 +1426,7 @@
             // Dibujar lámina verde semitransparente que crece conforme te acercas
             drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck);
 
-            handleValidTarget(detectedText, sharpness, activeTarget.quad, coverage, cornerCheck);
+            handleValidTarget(activeTarget.qrData, sharpness, activeTarget.quad, coverage, cornerCheck);
           } else if (activeTarget && lostFramesCount < MAX_LOST_FRAMES) {
             // Cuadro intermedio borroso por movimiento del celular: NO perder el rectángulo verde
             lostFramesCount++;
@@ -1482,8 +1635,10 @@
         statusText.textContent = `¡Nitidez excelente (${sharpness}%)! Congelando...`;
 
         // Disparo al completar los cuadros nítidos y estables (~150-200ms)
-        if (stableFrameCount >= REQUIRED_STABLE_FRAMES) {
+        if (stableFrameCount >= REQUIRED_STABLE_FRAMES && qrData) {
           triggerAutoCapture(qrData, sharpness, null, sheetQuad);
+        } else if (stableFrameCount >= REQUIRED_STABLE_FRAMES && !qrData) {
+          statusText.textContent = `Encuadre perfecto. Leyendo datos del QR...`;
         }
       } else {
         stableFrameCount = Math.max(0, stableFrameCount - 1);
@@ -1618,11 +1773,13 @@
           const sharpness = calculateSharpness(imgData);
 
           if (qr && qr.data.startsWith('MATEVAL')) {
-            const qTL = qr.location.topLeftCorner;
-            const qTR = qr.location.topRightCorner;
-            const qBR = qr.location.bottomRightCorner;
-            const qBL = qr.location.bottomLeftCorner;
-            const sheetQuad = estimateSheetQuad(qTL, qTR, qBR, qBL);
+            const fid = detectFiducials(imgData, img.width, img.height);
+            let sheetQuad = null;
+            if (fid.found) {
+              sheetQuad = expandFiducialQuad(fid.quad, 1, 1);
+            } else {
+              sheetQuad = estimateSheetQuad(qr.location.topLeftCorner, qr.location.topRightCorner, qr.location.bottomRightCorner, qr.location.bottomLeftCorner);
+            }
             const warpedCanvas = renderPerspectiveWarp(img, sheetQuad, 1400, 953);
             const warpedDataUrl = warpedCanvas.toDataURL('image/jpeg', 0.95);
             triggerAutoCapture(qr.data, sharpness, warpedDataUrl, sheetQuad);
