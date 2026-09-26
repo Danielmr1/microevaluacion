@@ -6,8 +6,9 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v1.5.0 - Cuadrilátero Puro 4 Esquinas</title>
+  <title>Escáner Inteligente A5 v2.0.0 - Detector ArUco 4 Esquinas</title>
   <script src="jsqr.min.js"></script>
+  <script src="aruco.bundle.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -675,8 +676,8 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v1.5.0</span></h1>
-        <p>Cuadrilátero Puro 4 Esquinas (Sin Disparos)</p>
+        <h1>Escáner de Aula A5 <span class="version-tag">v2.0.0</span></h1>
+        <p>Detector ArUco 4 Esquinas (Sin Disparos)</p>
       </div>
     </div>
     <div class="header-actions">
@@ -696,7 +697,7 @@
       <div class="placeholder-icon">📸</div>
       <div class="placeholder-title">Visor Inmersivo A5</div>
       <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v1.5.0</span>
+      <span class="version-tag" style="margin-top: 4px;">v2.0.0</span>
     </div>
 
     <!-- Indicador de Estado Flotante -->
@@ -814,6 +815,15 @@
     // Canvas de procesamiento en memoria
     const procCanvas = document.createElement('canvas');
     const procCtx = procCanvas.getContext('2d', { willReadFrequently: true });
+
+    let arucoDetector = null;
+    try {
+      if (typeof AR !== 'undefined') {
+        arucoDetector = new AR.Detector({ dictionaryName: 'ARUCO' });
+      }
+    } catch (e) {
+      console.error('Error inicializando ArUco:', e);
+    }
 
     let stableFrameCount = 0;
     const REQUIRED_STABLE_FRAMES = 3; // 3 cuadros continuos (~150-200ms) para garantizar estabilidad absoluta
@@ -939,8 +949,8 @@
 
         overlay.width = video.videoWidth;
         overlay.height = video.videoHeight;
-        procCanvas.width = 480;
-        procCanvas.height = Math.round((480 * video.videoHeight) / video.videoWidth);
+        procCanvas.width = 640;
+        procCanvas.height = Math.round((640 * video.videoHeight) / video.videoWidth);
 
         document.body.classList.add('camera-active');
         const btn = document.getElementById('btn-start');
@@ -1035,120 +1045,92 @@
       return sharpnessScore;
     }
 
-    // MOTOR DE VISIÓN ARTIFICIAL: DETECTOR RÁPIDO DE LOS 4 CUADRADOS NEGROS
-    function detectFiducials(imgData, width, height) {
-      const data = imgData.data;
-      const bin = new Uint8Array(width * height);
-      
-      // Muestreo dinámico de luminancia (soporta pantallas de PC brillantes y papel impreso)
-      let minL = 255, maxL = 0;
-      for (let i = 0; i < data.length; i += 16) {
-        const lum = (data[i] * 299 + data[i+1] * 587 + data[i+2] * 114) / 1000;
-        if (lum < minL) minL = lum;
-        if (lum > maxL) maxL = lum;
-      }
-      const range = maxL - minL;
-      const darkThreshold = range > 35 ? minL + range * 0.42 : 80;
-
-      for (let i = 0, j = 0; i < data.length; i += 4, j++) {
-        const lum = (data[i] * 299 + data[i+1] * 587 + data[i+2] * 114) / 1000;
-        bin[j] = lum < darkThreshold ? 1 : 0;
+    // MOTOR DE VISIÓN ARTIFICIAL: DETECTOR ARUCO 4 ESQUINAS (ID 0: TL, ID 1: TR, ID 2: BR, ID 3: BL)
+    function detectArucoQuad(imgData) {
+      if (!arucoDetector) return { found: false };
+      let markers = [];
+      try {
+        markers = arucoDetector.detect(imgData);
+      } catch (err) {
+        return { found: false };
       }
 
-      const visited = new Uint8Array(width * height);
-      const blobs = [];
+      if (!markers || markers.length === 0) return { found: false, count: 0 };
 
-      for (let y = 2; y < height - 2; y += 2) {
-        for (let x = 2; x < width - 2; x += 2) {
-          const idx = y * width + x;
-          if (bin[idx] === 1 && !visited[idx]) {
-            let qHead = 0;
-            const queue = [idx];
-            visited[idx] = 1;
-            let minX = x, maxX = x, minY = y, maxY = y;
-            let count = 0;
-            let sumX = 0, sumY = 0;
+      // Calcular centro de cada marcador detectado
+      const markerList = markers.map(m => {
+        let cx = 0, cy = 0;
+        for (let i = 0; i < 4; i++) {
+          cx += m.corners[i].x;
+          cy += m.corners[i].y;
+        }
+        return {
+          id: m.id,
+          cx: cx / 4,
+          cy: cy / 4
+        };
+      });
 
-            while (qHead < queue.length) {
-              const curr = queue[qHead++];
-              const cx = curr % width;
-              const cy = Math.floor(curr / width);
-              count++;
-              sumX += cx;
-              sumY += cy;
-              if (cx < minX) minX = cx;
-              if (cx > maxX) maxX = cx;
-              if (cy < minY) minY = cy;
-              if (cy > maxY) maxY = cy;
+      const m0s = markerList.filter(m => m.id === 0);
+      const m1s = markerList.filter(m => m.id === 1);
+      const m2s = markerList.filter(m => m.id === 2);
+      const m3s = markerList.filter(m => m.id === 3);
 
-              const neighbors = [curr - 1, curr + 1, curr - width, curr + width];
-              for (let k = 0; k < 4; k++) {
-                const n = neighbors[k];
-                if (n >= 0 && n < visited.length && bin[n] === 1 && !visited[n]) {
-                  visited[n] = 1;
-                  queue.push(n);
-                }
+      if (m0s.length === 0 || m1s.length === 0 || m2s.length === 0 || m3s.length === 0) {
+        return {
+          found: false,
+          count: markerList.length,
+          detectedIds: markerList.map(m => m.id)
+        };
+      }
+
+      // Si hay exactamente 1 de cada marcador (caso estándar y más común):
+      if (m0s.length === 1 && m1s.length === 1 && m2s.length === 1 && m3s.length === 1) {
+        return {
+          found: true,
+          quad: {
+            pTL: { x: m0s[0].cx, y: m0s[0].cy },
+            pTR: { x: m1s[0].cx, y: m1s[0].cy },
+            pBR: { x: m2s[0].cx, y: m2s[0].cy },
+            pBL: { x: m3s[0].cx, y: m3s[0].cy }
+          }
+        };
+      }
+
+      // Si hay múltiples (ej. 2 fichas A5 en una hoja A4): buscar el cuarteto con mayor área coherente
+      let bestQuad = null;
+      let maxArea = 0;
+
+      for (const m0 of m0s) {
+        for (const m1 of m1s) {
+          for (const m3 of m3s) {
+            for (const m2 of m2s) {
+              const area = 0.5 * Math.abs(
+                m0.cx * (m1.cy - m3.cy) +
+                m1.cx * (m2.cy - m0.cy) +
+                m2.cx * (m3.cy - m1.cy) +
+                m3.cx * (m0.cy - m2.cy)
+              );
+
+              if (area > maxArea) {
+                maxArea = area;
+                bestQuad = {
+                  pTL: { x: m0.cx, y: m0.cy },
+                  pTR: { x: m1.cx, y: m1.cy },
+                  pBR: { x: m2.cx, y: m2.cy },
+                  pBL: { x: m3.cx, y: m3.cy }
+                };
               }
-            }
-
-            const bw = maxX - minX + 1;
-            const bh = maxY - minY + 1;
-            const area = count;
-            const bboxArea = bw * bh;
-            const solidity = area / bboxArea;
-            const aspect = bw / bh;
-
-            // Filtrar cuadrados negros de las esquinas (soporta marcas de 11mm y pantalla PC)
-            if (bw >= 3 && bw <= 85 && bh >= 3 && bh <= 85 &&
-                aspect >= 0.55 && aspect <= 1.80 &&
-                solidity >= 0.55 && area >= 8) {
-              blobs.push({
-                cx: sumX / count,
-                cy: sumY / count,
-                bw, bh, area
-              });
             }
           }
         }
       }
 
-      if (blobs.length < 4) {
-        return { found: false, blobCount: blobs.length };
+      if (bestQuad && maxArea > 300) {
+        return { found: true, quad: bestQuad };
       }
 
-      // BÚSQUEDA RÁPIDA O(N): Las 4 esquinas exteriores son los puntos diagonales extremos
-      let bTL = blobs[0], bTR = blobs[0], bBR = blobs[0], bBL = blobs[0];
-      let minSum = bTL.cx + bTL.cy;
-      let maxDiff = bTR.cx - bTR.cy;
-      let maxSum = bBR.cx + bBR.cy;
-      let minDiff = bBL.cx - bBL.cy;
-
-      for (let i = 1; i < blobs.length; i++) {
-        const b = blobs[i];
-        const s = b.cx + b.cy;
-        const d = b.cx - b.cy;
-        if (s < minSum) { minSum = s; bTL = b; }
-        if (d > maxDiff) { maxDiff = d; bTR = b; }
-        if (s > maxSum) { maxSum = s; bBR = b; }
-        if (d < minDiff) { minDiff = d; bBL = b; }
-      }
-
-      // Verificar que los 4 puntos sean esquinas distintas
-      const uniqueSet = new Set([bTL, bTR, bBR, bBL]);
-      if (uniqueSet.size === 4) {
-        // Área del cuadrilátero (admite cualquier trapecio con inclinación y perspectiva real)
-        const area = Math.abs(
-          (bTR.cx - bTL.cx) * (bBL.cy - bTL.cy) - (bBL.cx - bTL.cx) * (bTR.cy - bTL.cy)
-        );
-        if (area > 200) {
-          return {
-            found: true,
-            quad: { pTL: bTL, pTR: bTR, pBR: bBR, pBL: bBL }
-          };
-        }
-      }
-
-      return { found: false, blobCount: blobs.length };
+      return { found: false, count: markerList.length };
     }
 
     // EVALUADOR DEL REQUISITO: "RECTÁNGULO CASI PERFECTO (SIN INCLINACIÓN)"
@@ -1158,35 +1140,17 @@
       const leftH = Math.hypot(quad.pBL.x - quad.pTL.x, quad.pBL.y - quad.pTL.y);
       const rightH = Math.hypot(quad.pBR.x - quad.pTR.x, quad.pBR.y - quad.pTR.y);
 
-      // Diagonales (en un rectángulo plano son casi idénticas)
-      const diag1 = Math.hypot(quad.pBR.x - quad.pTL.x, quad.pBR.y - quad.pTL.y);
-      const diag2 = Math.hypot(quad.pBL.x - quad.pTR.x, quad.pBL.y - quad.pTR.y);
-
       // Relación de paralelismo entre lados opuestos
       const widthRatio = Math.min(topW, botW) / Math.max(topW, botW);
       const heightRatio = Math.min(leftH, rightH) / Math.max(leftH, rightH);
-      const diagRatio = Math.min(diag1, diag2) / Math.max(diag1, diag2);
 
-      // Rectángulo casi perfecto si lados opuestos difieren menos del 12% y diagonales menos del 10%
-      const isAlmostPerfect = widthRatio >= 0.88 && heightRatio >= 0.88 && diagRatio >= 0.90;
+      // Plano cuando la diferencia entre lados opuestos es menor al 18% (< ~20° de inclinación)
+      const isAlmostPerfect = widthRatio >= 0.82 && heightRatio >= 0.82;
 
       return {
         isAlmostPerfect,
         widthRatio,
-        heightRatio,
-        diagRatio
-      };
-    }
-
-    function expandFiducialQuad(fQuad, sx, sy) {
-      const pTL = { x: fQuad.pTL.cx * sx, y: fQuad.pTL.cy * sy };
-      const pTR = { x: fQuad.pTR.cx * sx, y: fQuad.pTR.cy * sy };
-      const pBR = { x: fQuad.pBR.cx * sx, y: fQuad.pBR.cy * sy };
-      const pBL = { x: fQuad.pBL.cx * sx, y: fQuad.pBL.cy * sy };
-
-      return {
-        pTL, pTR, pBR, pBL,
-        fiducials: { pTL, pTR, pBR, pBL }
+        heightRatio
       };
     }
 
@@ -1316,64 +1280,35 @@
 
           ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-          // 1. DETECCIÓN DE LOS 4 CUADRADOS NEGROS EN TIEMPO REAL
+          // 1. DETECCIÓN ARUCO DE LAS 4 ESQUINAS EN TIEMPO REAL (ID 0, 1, 2, 3)
           const sx = overlay.width / procCanvas.width;
           const sy = overlay.height / procCanvas.height;
-          const fidResult = detectFiducials(imgData, procCanvas.width, procCanvas.height);
+          const arucoResult = detectArucoQuad(imgData);
           
           let rawQuad = null;
-          if (fidResult.found) {
-            rawQuad = expandFiducialQuad(fidResult.quad, sx, sy);
-          }
-
-          // 2. Intentar leer código QR (con BarcodeDetector nativo o jsQR)
-          let detectedText = activeTarget ? activeTarget.qrData : null;
-          let detectedBox = activeTarget ? activeTarget.qrBox : null;
-
-          if (nativeBarcodeDetector) {
-            try {
-              const barcodes = await nativeBarcodeDetector.detect(video);
-              if (barcodes && barcodes.length > 0) {
-                detectedText = barcodes[0].rawValue;
-                const pts = barcodes[0].cornerPoints;
-                if (pts && pts.length >= 4) {
-                  detectedBox = { p1: pts[0], p2: pts[1], p3: pts[2], p4: pts[3] };
-                }
-              }
-            } catch (err) {}
-          }
-
-          if (!detectedText && typeof jsQR !== 'undefined') {
-            const qrCode = jsQR(imgData.data, imgData.width, imgData.height, {
-              inversionAttempts: "dontInvert",
-            });
-            if (qrCode) {
-              detectedText = qrCode.data;
-              detectedBox = {
-                p1: { x: qrCode.location.topLeftCorner.x * sx, y: qrCode.location.topLeftCorner.y * sy },
-                p2: { x: qrCode.location.topRightCorner.x * sx, y: qrCode.location.topRightCorner.y * sy },
-                p3: { x: qrCode.location.bottomRightCorner.x * sx, y: qrCode.location.bottomRightCorner.y * sy },
-                p4: { x: qrCode.location.bottomLeftCorner.x * sx, y: qrCode.location.bottomLeftCorner.y * sy }
-              };
-            }
+          if (arucoResult.found) {
+            rawQuad = {
+              pTL: { x: arucoResult.quad.pTL.x * sx, y: arucoResult.quad.pTL.y * sy },
+              pTR: { x: arucoResult.quad.pTR.x * sx, y: arucoResult.quad.pTR.y * sy },
+              pBR: { x: arucoResult.quad.pBR.x * sx, y: arucoResult.quad.pBR.y * sy },
+              pBL: { x: arucoResult.quad.pBL.x * sx, y: arucoResult.quad.pBL.y * sy }
+            };
           }
 
           if (rawQuad) {
             if (!activeTarget) {
               activeTarget = {
-                quad: rawQuad,
-                qrData: detectedText
+                quad: rawQuad
               };
             } else {
-              // Suavizado temporal exponencial (Lerp) de alta respuesta en tiempo real
-              const alpha = 0.80;
+              // Suavizado ultra responsivo (alpha = 0.88 para respuesta elástica instantánea)
+              const alpha = 0.88;
               activeTarget.quad = {
                 pTL: { x: activeTarget.quad.pTL.x * (1 - alpha) + rawQuad.pTL.x * alpha, y: activeTarget.quad.pTL.y * (1 - alpha) + rawQuad.pTL.y * alpha },
                 pTR: { x: activeTarget.quad.pTR.x * (1 - alpha) + rawQuad.pTR.x * alpha, y: activeTarget.quad.pTR.y * (1 - alpha) + rawQuad.pTR.y * alpha },
                 pBR: { x: activeTarget.quad.pBR.x * (1 - alpha) + rawQuad.pBR.x * alpha, y: activeTarget.quad.pBR.y * (1 - alpha) + rawQuad.pBR.y * alpha },
                 pBL: { x: activeTarget.quad.pBL.x * (1 - alpha) + rawQuad.pBL.x * alpha, y: activeTarget.quad.pBL.y * (1 - alpha) + rawQuad.pBL.y * alpha }
               };
-              if (detectedText) activeTarget.qrData = detectedText;
             }
             lostFramesCount = 0;
 
@@ -1381,18 +1316,18 @@
             const screenArea = overlay.width * overlay.height;
             const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
 
-            // 3. Evaluar paralelismo / rectángulo casi perfecto (sin inclinación)
+            // Evaluar paralelismo / rectángulo casi perfecto vs trapecio con inclinación
             const rectCheck = checkRectanglePerfection(activeTarget.quad);
 
-            // Sensor de 4 cuadrados negros completos dentro de los bordes
+            // Sensor de esquinas dentro de los límites visibles de la pantalla
             const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
 
-            // Dibujar cuadrilátero elástico puro sobre los 4 cuadrados negros
+            // Dibujar cuadrilátero elástico sobre las 4 esquinas ArUco
             drawDynamicQuadrilateral(activeTarget.quad, coverage, cornerCheck, rectCheck);
 
-            handleValidTarget(activeTarget.qrData, sharpness, activeTarget.quad, coverage, cornerCheck, rectCheck);
+            handleValidTarget(sharpness, activeTarget.quad, coverage, cornerCheck, rectCheck);
           } else if (activeTarget && lostFramesCount < MAX_LOST_FRAMES) {
-            // Cuadro intermedio borroso por movimiento del celular: NO perder el cuadrilátero verde
+            // Retención breve en cuadro borroso o movimiento rápido
             lostFramesCount++;
             const quadArea = getQuadArea(activeTarget.quad.pTL, activeTarget.quad.pTR, activeTarget.quad.pBR, activeTarget.quad.pBL);
             const screenArea = overlay.width * overlay.height;
@@ -1423,44 +1358,27 @@
       const isAlmostPerfect = rectCheck ? rectCheck.isAlmostPerfect : true;
       const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
 
-      // Lámina AR Verde Neón semitransparente claramente perceptible
       let color = '#22c55e'; // Verde Neón
-      let fillColor = 'rgba(34, 197, 94, 0.30)'; // Verde translúcido de alta visibilidad
-      let isDashed = false;
-      let labelText = isOptimalDistance ? `✓ ¡Rectángulo Plano y Alineado! (${coverage}%)` : `🔍 Acércate a la hoja (${coverage}%)`;
+      let fillColor = 'rgba(34, 197, 94, 0.22)';
+      let labelText = `✓ ¡Encuadre Óptimo! (${coverage}%)`;
 
-      if (!isFullyInside && cornerCheck && cornerCheck.outsideCorners) {
-        color = '#ef4444';
-        fillColor = 'rgba(239, 68, 68, 0.22)';
-        isDashed = true;
-
-        const hasLeft = cornerCheck.outsideCorners.some(c => c.id === 'TL' || c.id === 'BL');
-        const hasRight = cornerCheck.outsideCorners.some(c => c.id === 'TR' || c.id === 'BR');
-        const hasTop = cornerCheck.outsideCorners.some(c => c.id === 'TL' || c.id === 'TR');
-        const hasBottom = cornerCheck.outsideCorners.some(c => c.id === 'BL' || c.id === 'BR');
-
-        if (hasLeft && !hasRight) {
-          labelText = '⚠️ Mueve a la izquierda ⬅️';
-        } else if (hasRight && !hasLeft) {
-          labelText = '⚠️ Mueve a la derecha ➡️';
-        } else if (hasTop && !hasBottom) {
-          labelText = '⚠️ Mueve hacia arriba ⬆️';
-        } else if (hasBottom && !hasTop) {
-          labelText = '⚠️ Mueve hacia abajo ⬇️';
-        } else {
-          labelText = '⚠️ Centra la hoja: faltan esquinas';
-        }
+      if (!isFullyInside) {
+        color = '#ef4444'; // Rojo si toca bordes
+        fillColor = 'rgba(239, 68, 68, 0.20)';
+        labelText = '⚠️ Centra la hoja: esquinas al borde';
+      } else if (!isOptimalDistance) {
+        color = '#f59e0b'; // Naranja/Ámbar
+        fillColor = 'rgba(245, 158, 11, 0.20)';
+        labelText = `🔍 Acerca más la cámara (${coverage}% / ${COVERAGE_THRESHOLD}%)`;
       } else if (!isAlmostPerfect) {
-        // Alerta: celular inclinado (la figura es un trapecio con perspectiva real)
-        color = '#f59e0b';
-        fillColor = 'rgba(245, 158, 11, 0.25)';
-        isDashed = false;
-        labelText = `📐 Trapecio en perspectiva (${coverage}%)`;
+        color = '#f59e0b'; // Naranja/Ámbar
+        fillColor = 'rgba(245, 158, 11, 0.20)';
+        labelText = `📐 Ponte más paralelo a la hoja`;
       }
 
       ctx.save();
 
-      // 1. Lámina semitransparente cubriendo la ficha completa
+      // 1. Cuadrilátero elástico puro conectando los 4 puntos ArUco
       ctx.beginPath();
       ctx.moveTo(quad.pTL.x, quad.pTL.y);
       ctx.lineTo(quad.pTR.x, quad.pTR.y);
@@ -1471,48 +1389,45 @@
       ctx.fillStyle = fillColor;
       ctx.fill();
 
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 3.5;
       ctx.strokeStyle = color;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 8;
       ctx.stroke();
       ctx.restore();
 
-      // 2. Brackets grandes en las 4 esquinas de la ficha
-      const bracketSize = Math.max(28, Math.min(60, Math.round(overlay.width * 0.038)));
-      drawCornerBracket(quad.pTL, bracketSize, 0, color);
-      drawCornerBracket(quad.pTR, bracketSize, Math.PI / 2, color);
-      drawCornerBracket(quad.pBR, bracketSize, Math.PI, color);
-      drawCornerBracket(quad.pBL, bracketSize, -Math.PI / 2, color);
-
-      // Puntos de anclaje visibles en los 4 cuadrados negros de la hoja
+      // 2. Marcadores visibles en los 4 centros ArUco (puntos anclados)
       [quad.pTL, quad.pTR, quad.pBR, quad.pBL].forEach(pt => {
         ctx.save();
+        // Anillo exterior
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
+        ctx.arc(pt.x, pt.y, 9, 0, Math.PI * 2);
+        ctx.strokeStyle = color;
         ctx.lineWidth = 2.5;
-        ctx.strokeStyle = '#ffffff';
         ctx.stroke();
+        // Punto central blanco
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
         ctx.restore();
       });
 
-      // 4. Etiqueta flotante indicadora de proximidad / alineación
-      const centerX = (quad.pTL.x + quad.pTR.x) / 2;
-      const centerY = Math.max(30, Math.min(quad.pTL.y, quad.pTR.y) - 20);
+      // 3. Etiqueta flotante guía en pantalla
+      const centerX = (quad.pTL.x + quad.pTR.x + quad.pBR.x + quad.pBL.x) / 4;
+      const minY = Math.min(quad.pTL.y, quad.pTR.y);
+      const pillY = Math.max(30, minY - 24);
 
       ctx.save();
       ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       const textMetrics = ctx.measureText(labelText);
-      const pillW = textMetrics.width + 26;
+      const pillW = textMetrics.width + 28;
       const pillH = 32;
       const pillX = centerX - pillW / 2;
-      const pillY = centerY - 16;
 
-      ctx.fillStyle = !isFullyInside ? 'rgba(185, 28, 28, 0.95)' : (!isAlmostPerfect ? 'rgba(180, 83, 9, 0.95)' : (isOptimalDistance ? 'rgba(21, 128, 61, 0.95)' : 'rgba(180, 83, 9, 0.95)'));
+      ctx.fillStyle = (!isFullyInside) ? 'rgba(185, 28, 28, 0.95)' : ((!isOptimalDistance || !isAlmostPerfect) ? 'rgba(180, 83, 9, 0.95)' : 'rgba(21, 128, 61, 0.95)');
       ctx.beginPath();
-      ctx.roundRect(pillX, pillY, pillW, pillH, 16);
+      ctx.roundRect(pillX, pillY - pillH / 2, pillW, pillH, 16);
       ctx.fill();
 
       ctx.strokeStyle = color;
@@ -1522,27 +1437,12 @@
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(labelText, centerX, pillY + pillH / 2);
+      ctx.fillText(labelText, centerX, pillY);
       ctx.restore();
     }
 
-    function drawCornerBracket(pt, size, angle, color) {
-      ctx.save();
-      ctx.translate(pt.x, pt.y);
-      ctx.rotate(angle);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(0, size);
-      ctx.lineTo(0, 0);
-      ctx.lineTo(size, 0);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // CONTROL DE ESTABILIDAD, COBERTURA Y AUTO-DISPARO (Zero-Click Gatekeeper)
-    function handleValidTarget(qrData, sharpness, sheetQuad, coverage, cornerCheck, rectCheck) {
+    // CONTROL DE ESTABILIDAD, COBERTURA Y GUÍA VISUAL
+    function handleValidTarget(sharpness, sheetQuad, coverage, cornerCheck, rectCheck) {
       const hud = document.getElementById('hud-guide');
       const badge = document.getElementById('status-badge');
       const statusText = document.getElementById('status-text');
@@ -1550,70 +1450,44 @@
 
       updateCoverageUI(coverage);
 
-      // REGLA 1: Los 4 cuadrados negros deben estar 100% dentro del encuadre
+      // REGLA 1: Esquinas dentro del encuadre
       if (!cornerCheck.isFullyInside) {
-        targetLockStartTime = null;
-        stableFrameCount = 0;
-        updateStabilityUI(0);
-        hud.classList.remove('locked');
-        hud.classList.add('tracking');
         badge.classList.remove('locked');
         badge.style.background = 'rgba(153, 27, 27, 0.92)';
         statusDot.style.background = '#ef4444';
         statusDot.style.boxShadow = '0 0 10px #ef4444';
-        statusText.textContent = '⚠️ Los 4 cuadrados negros deben verse completos en pantalla';
+        statusText.textContent = '⚠️ Centra la hoja: las 4 esquinas deben verse';
         return;
       }
 
-      // REGLA 2: Rectángulo casi perfecto (Sin inclinación / Plano sobre la mesa)
-      if (rectCheck && !rectCheck.isAlmostPerfect) {
-        targetLockStartTime = null;
-        stableFrameCount = 0;
-        updateStabilityUI(0);
-        hud.classList.remove('locked');
-        hud.classList.add('tracking');
+      // REGLA 2: Cobertura mínima (>= 50%)
+      const isCoverageOk = coverage >= COVERAGE_THRESHOLD;
+      if (!isCoverageOk) {
         badge.classList.remove('locked');
         badge.style.background = 'rgba(180, 83, 9, 0.92)';
         statusDot.style.background = '#f59e0b';
         statusDot.style.boxShadow = '0 0 10px #f59e0b';
-        statusText.textContent = '📐 Pon el celular plano sobre la hoja (está inclinado)';
-        return;
-      }
-
-      // Restaurar estilo normal del badge
-      badge.style.background = '';
-      statusDot.style.background = '';
-      statusDot.style.boxShadow = '';
-
-      // REGLA 3: Cobertura mínima (Distancia adecuada >= 50%)
-      const isCoverageOk = coverage >= COVERAGE_THRESHOLD;
-      if (!isCoverageOk) {
-        targetLockStartTime = null;
-        stableFrameCount = 0;
-        updateStabilityUI(0);
-        hud.classList.remove('locked');
-        hud.classList.add('tracking');
-        badge.classList.remove('locked');
         statusText.textContent = `Acércate más a la hoja (${coverage}% / ${COVERAGE_THRESHOLD}%)...`;
         return;
       }
 
-      // Iniciar conteo de enfoque aquí
-      if (!targetLockStartTime) {
-        targetLockStartTime = Date.now();
+      // REGLA 3: Paralelo a la mesa
+      if (rectCheck && !rectCheck.isAlmostPerfect) {
+        badge.classList.remove('locked');
+        badge.style.background = 'rgba(180, 83, 9, 0.92)';
+        statusDot.style.background = '#f59e0b';
+        statusDot.style.boxShadow = '0 0 10px #f59e0b';
+        statusText.textContent = '📐 Ponte más paralelo a la hoja (inclinada)';
+        return;
       }
 
-      // REGLA 4: Alta nitidez (>= 60%) y 3 cuadros de estabilidad continua
-      if (isSharpnessOk) {
-        badge.classList.add('locked');
-        statusText.textContent = `✓ Rectángulo verde en vivo (${coverage}% cobertura, ${sharpness}% nitidez)`;
-        // AUTO-DISPARO Y MODAL DESHABILITADOS: MODO SOLO GUÍA VISUAL CONTINUA EN TIEMPO REAL
-      } else {
-        stableFrameCount = Math.max(0, stableFrameCount - 1);
-        updateStabilityUI(0);
-        badge.classList.remove('locked');
-        statusText.textContent = `Rectángulo plano detectado. Enfocando nitidez (${sharpness}%)...`;
-      }
+      // Restaurar estilo normal verde del badge
+      badge.style.background = '';
+      statusDot.style.background = '';
+      statusDot.style.boxShadow = '';
+      badge.classList.add('locked');
+      statusText.textContent = `✓ Encuadre óptimo (${coverage}% cobertura, ${sharpness}% nitidez)`;
+      // AUTO-DISPARO Y MODALES DESHABILITADOS: MODO GUÍA VISUAL CONTINUA
     }
 
     function handleLostTarget() {
