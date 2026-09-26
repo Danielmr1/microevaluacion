@@ -6,15 +6,22 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v2.5.0 - Motor Modular con Guardrails</title>
+  <title>Microevaluación Formativa A5 - Portal Docente y Escáner</title>
 
-  <!-- MÓDULOS DE ARQUITECTURA (Separación funcional sin monolito) -->
+  <!-- MÓDULOS DE ARQUITECTURA (Modularidad con Guardrails) -->
+  <script src="classroom-data.js"></script>
+  <script src="qrcode.bundle.js"></script>
   <script src="aruco.bundle.js"></script>
   <script src="jsqr.min.js"></script>
   <script src="roi-processor.js"></script>
   <script src="scanner.js"></script>
 
   <style>
+    @page {
+      size: A4 portrait;
+      margin: 6mm;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -32,7 +39,7 @@
       flex-direction: column;
     }
 
-    /* Cabecera de la App */
+    /* Cabecera Principal de la App */
     header {
       background: #111827;
       border-bottom: 1px solid #1f2937;
@@ -40,8 +47,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      z-index: 20;
-      transition: background 0.3s ease;
+      z-index: 30;
+      flex-shrink: 0;
     }
 
     .brand {
@@ -51,8 +58,8 @@
     }
 
     .brand-icon {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       background: #2563eb;
       border-radius: 8px;
       display: flex;
@@ -62,7 +69,7 @@
     }
 
     .brand-text h1 {
-      font-size: 0.95rem;
+      font-size: 0.96rem;
       font-weight: 700;
       letter-spacing: -0.2px;
       display: flex;
@@ -78,7 +85,6 @@
       padding: 2px 7px;
       border-radius: 6px;
       border: 1px solid #3b82f6;
-      letter-spacing: 0.4px;
     }
 
     .brand-text p {
@@ -111,7 +117,557 @@
       border-color: #fbbf24;
     }
 
-    /* Visor de Cámara Principal */
+    /* Pestañas de Navegación */
+    .tab-bar {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      padding: 0 16px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #f8fafc;
+    }
+
+    .tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .tab-badge {
+      background: rgba(14, 165, 233, 0.2);
+      color: #38bdf8;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    /* VISTAS PRINCIPALES */
+    .view-content {
+      display: none;
+      flex: 1;
+      width: 100%;
+    }
+
+    .view-content.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ========================================================= */
+    /* VISTA 1: REDACTAR E IMPRIMIR FICHAS                       */
+    /* ========================================================= */
+    #view-create {
+      background: #0b0f19;
+      padding: 16px;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    .teacher-panel {
+      width: 100%;
+      max-width: 900px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .panel-header h2 {
+      font-size: 1.15rem;
+      color: #f8fafc;
+      font-weight: 800;
+    }
+
+    .panel-header p {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-control {
+      background: #0f172a;
+      border: 1.5px solid #334155;
+      color: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 75px;
+      line-height: 1.45;
+    }
+
+    .builder-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 8px;
+    }
+
+    .btn-generate {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s;
+    }
+
+    .btn-generate:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-print-action {
+      background: #0f766e;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-print-action:hover {
+      background: #115e59;
+    }
+
+    .btn-goto-scan {
+      background: #16a34a;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      transition: all 0.2s;
+    }
+
+    .btn-goto-scan:hover {
+      background: #15803d;
+    }
+
+    /* ESTILOS DE IMPRESIÓN Y HOJAS A4 (Plantilla de 10 Alumnos) */
+    #pages-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .sheet-a4 {
+      background: white;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 4mm 0;
+      margin: 0 auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      page-break-after: always;
+      break-after: page;
+      position: relative;
+    }
+
+    .card-a5 {
+      width: 200mm;
+      height: 140mm;
+      margin: 0 auto;
+      padding: 3mm 4mm;
+      box-sizing: border-box;
+      position: relative;
+      background: #ffffff;
+      border: 3.5px solid #000000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .fiducial {
+      position: absolute;
+      width: 9.5mm;
+      height: 9.5mm;
+      z-index: 10;
+    }
+    .fiducial svg { width: 100%; height: 100%; display: block; }
+    .fiducial-tl { top: 2.2mm; left: 2.2mm; }
+    .fiducial-tr { top: 2.2mm; right: 2.2mm; }
+    .fiducial-br { bottom: 2.2mm; right: 2.2mm; }
+    .fiducial-bl { bottom: 2.2mm; left: 2.2mm; }
+
+    .cut-line {
+      width: 100%;
+      height: 1mm;
+      border-top: 1.5px dashed #94a3b8;
+      position: relative;
+      margin: 1mm 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cut-line span {
+      background: white;
+      padding: 0 10px;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 2mm;
+      margin-bottom: 2.5mm;
+      margin-left: 5mm;
+      margin-right: 5mm;
+    }
+
+    .student-block {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-left: 2mm;
+    }
+
+    .student-label {
+      font-size: 13pt;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .student-name {
+      font-size: 15pt;
+      color: #0f172a;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    .student-grade {
+      font-size: 10.5pt;
+      color: #64748b;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .qr-block {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 2mm;
+    }
+
+    .qr-code-text {
+      font-family: monospace;
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+
+    .qr-box {
+      width: 22mm;
+      height: 22mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .problem-wide {
+      margin-bottom: 3.5mm;
+      padding: 3mm 5mm;
+      background: #f8fafc;
+      border-left: 4px solid #2563eb;
+      border-radius: 4px;
+    }
+
+    .problem-text {
+      font-size: 12.5pt;
+      line-height: 1.5;
+      color: #1e293b;
+    }
+
+    .problem-text strong {
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .grid-wrapper {
+      margin: 0 auto;
+    }
+
+    .notebook-grid-full {
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid #d4d4d8;
+      background: #ffffff;
+    }
+
+    .notebook-grid-full td {
+      width: 10mm;
+      height: 9.8mm;
+      max-width: 10mm;
+      max-height: 9.8mm;
+      border-right: 1px solid #d4d4d8;
+      border-bottom: 1px solid #d4d4d8;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 14pt;
+      color: #0f172a;
+    }
+
+    .notebook-grid-full tr td:last-child {
+      border-right: none;
+    }
+
+    .notebook-grid-full tr:last-child td {
+      border-bottom: none;
+    }
+
+    .answer-strip {
+      width: 160mm;
+      margin: 3mm auto 0 auto;
+      height: 11.5mm;
+      border: 1.5px solid #0f172a;
+      background: #ffffff;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+
+    .answer-tag {
+      font-size: 11.5pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+
+    .answer-box-open {
+      width: 44mm;
+      height: 9.2mm;
+      border: 1.5px solid #0f172a;
+      background: #ffffff;
+      border-radius: 3px;
+    }
+
+    .answer-line {
+      flex: 1;
+      height: 7mm;
+      border-bottom: 1.5px dashed #64748b;
+      margin-left: 6px;
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 1px;
+    }
+
+    .answer-line-hint {
+      font-size: 7.5pt;
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    /* ========================================================= */
+    /* VISTA 2: ESCÁNER DE AULA (CÁMARA MÓVIL)                   */
+    /* ========================================================= */
+    #view-scan {
+      flex-direction: column;
+      position: relative;
+    }
+
+    .session-bar {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.82rem;
+      z-index: 15;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .session-field {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .session-field label {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .session-badge-active {
+      background: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    .session-counter {
+      margin-left: auto;
+      background: rgba(13, 148, 136, 0.25);
+      color: #2dd4bf;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      border: 1px solid rgba(45, 212, 191, 0.4);
+    }
+
+    /* Tarjeta de Aviso si la sesión no está generada */
+    .session-guardrail-card {
+      margin: 20px auto;
+      max-width: 500px;
+      background: #1e293b;
+      border: 2px dashed #f59e0b;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .guardrail-icon {
+      font-size: 2.8rem;
+    }
+
+    .guardrail-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #f59e0b;
+    }
+
+    .guardrail-desc {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .btn-arm-session {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    /* Visor de Cámara */
     .viewport-container {
       position: relative;
       flex: 1;
@@ -143,7 +699,6 @@
       z-index: 5;
     }
 
-    /* Placeholder cuando la cámara no está iniciada */
     .camera-placeholder {
       display: flex;
       flex-direction: column;
@@ -180,139 +735,90 @@
       line-height: 1.4;
     }
 
-    /* MODO INMERSIVO DE CÁMARA (Estilo App Nativa de Smartphone) */
-    body.camera-active {
-      overflow: hidden;
-    }
-
-    body.camera-active .camera-placeholder {
-      display: none;
-    }
-
     body.camera-active header {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       background: linear-gradient(180deg, rgba(11, 15, 25, 0.88) 0%, rgba(11, 15, 25, 0) 100%);
       border-bottom: none;
       padding: 8px 16px;
       z-index: 30;
       pointer-events: none;
     }
-
-    body.camera-active header .brand,
     body.camera-active header .header-actions {
       pointer-events: auto;
     }
-
-    body.camera-active .viewport-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-      z-index: 10;
+    body.camera-active .tab-bar {
+      display: none;
+    }
+    body.camera-active .camera-placeholder {
+      display: none;
     }
 
-    body.camera-active .controls-panel {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(0deg, rgba(11, 15, 25, 0.88) 0%, rgba(11, 15, 25, 0) 100%);
-      border-top: none;
-      padding: 10px 16px;
-      z-index: 30;
-      pointer-events: none;
-    }
-
-    body.camera-active .controls-panel .action-row {
-      pointer-events: auto;
-      max-width: 440px;
-      margin: 0 auto;
-    }
-
-    body.camera-active .quality-metrics {
-      position: absolute;
-      bottom: 64px;
-      left: 16px;
-      right: 16px;
-      max-width: 480px;
-      margin: 0 auto;
-      z-index: 25;
-      pointer-events: none;
-    }
-
-    /* Retícula de Enfoque en Pantalla (HUD) - DESHABILITADO PARA MODO CUADRILÁTERO DINÁMICO */
+    /* Retícula HUD */
     .hud-guide {
-      display: none !important;
+      position: absolute;
+      top: 14%;
+      bottom: 22%;
+      left: 6%;
+      right: 6%;
+      border: 2px dashed rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      pointer-events: none;
+      z-index: 6;
+      transition: all 0.25s ease;
     }
-
-    .hud-guide.locked {
-      opacity: 0;
-    }
-
     .corner-bracket {
       position: absolute;
-      width: 24px;
-      height: 24px;
-      border-color: #ffffff;
+      width: 28px;
+      height: 28px;
+      border-color: #38bdf8;
       border-style: solid;
       pointer-events: none;
     }
+    .c-tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-top-left-radius: 14px; }
+    .c-tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 14px; }
+    .c-bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 14px; }
+    .c-br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 14px; }
 
-    .hud-guide.locked .corner-bracket {
-      border-color: #22c55e;
-    }
-
-    .c-tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-top-left-radius: 12px; }
-    .c-tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 12px; }
-    .c-bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 12px; }
-    .c-br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 12px; }
-
-    /* Barra de Estado Superior en el Visor */
+    /* Indicador de Estado Flotante */
     .status-badge {
       position: absolute;
-      top: 14px;
+      top: 70px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(17, 24, 39, 0.85);
+      background: rgba(17, 24, 39, 0.92);
       backdrop-filter: blur(8px);
-      padding: 8px 16px;
+      border: 1px solid #374151;
+      padding: 6px 16px;
       border-radius: 20px;
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.8rem;
+      font-weight: 700;
       color: #f8fafc;
-      border: 1px solid rgba(255,255,255,0.15);
-      z-index: 10;
       display: flex;
       align-items: center;
       gap: 8px;
+      z-index: 10;
       white-space: nowrap;
-      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: all 0.2s ease;
     }
-
     .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #f59e0b;
-      box-shadow: 0 0 8px #f59e0b;
+      background: #eab308;
+      box-shadow: 0 0 8px #eab308;
     }
-
     .status-badge.locked {
       background: rgba(22, 101, 52, 0.9);
       border-color: #22c55e;
     }
-
     .status-badge.locked .status-dot {
       background: #22c55e;
       box-shadow: 0 0 10px #22c55e;
     }
 
-    /* Medidores de Calidad en Vivo (Nitidez + Estabilidad) */
+    /* Medidores de Calidad en Vivo */
     .quality-metrics {
       position: absolute;
       bottom: 16px;
@@ -322,7 +828,6 @@
       gap: 12px;
       z-index: 10;
     }
-
     .metric-card {
       flex: 1;
       background: rgba(17, 24, 39, 0.8);
@@ -331,7 +836,6 @@
       border-radius: 10px;
       padding: 8px 12px;
     }
-
     .metric-header {
       display: flex;
       justify-content: space-between;
@@ -341,7 +845,6 @@
       text-transform: uppercase;
       margin-bottom: 4px;
     }
-
     .progress-bar-bg {
       width: 100%;
       height: 6px;
@@ -349,7 +852,6 @@
       border-radius: 3px;
       overflow: hidden;
     }
-
     .progress-bar-fill {
       height: 100%;
       width: 0%;
@@ -367,14 +869,13 @@
       flex-direction: column;
       gap: 12px;
       z-index: 20;
+      flex-shrink: 0;
     }
-
     .action-row {
       display: flex;
       gap: 12px;
       align-items: center;
     }
-
     .btn-main {
       flex: 1;
       background: #2563eb;
@@ -390,13 +891,8 @@
       gap: 10px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-      transition: background 0.2s, transform 0.1s;
+      transition: background 0.2s;
     }
-
-    .btn-main:active {
-      transform: scale(0.98);
-    }
-
     .btn-secondary {
       background: #1f2937;
       color: #e2e8f0;
@@ -411,14 +907,11 @@
       gap: 6px;
     }
 
-    /* Modal de Captura Congelada (Resultado) */
+    /* Modal de Captura Congelada */
     .capture-modal {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.92);
       backdrop-filter: blur(10px);
       z-index: 100;
       display: none;
@@ -426,17 +919,14 @@
       padding: 20px;
       overflow-y: auto;
     }
-
     .capture-modal.open {
       display: flex;
       animation: fadeIn 0.2s ease;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.97); }
       to { opacity: 1; transform: scale(1); }
     }
-
     .card-preview-box {
       background: #1f2937;
       border-radius: 16px;
@@ -449,27 +939,12 @@
       margin: auto;
       width: 100%;
     }
-
     .modal-col-left {
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-
-    .modal-col-right {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .modal-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
     .preview-img-container {
       width: 100%;
       border-radius: 8px;
@@ -480,28 +955,35 @@
       align-items: center;
       justify-content: center;
     }
-
     .preview-img-container img {
       width: 100%;
       height: auto;
-      max-height: 48vh;
+      max-height: 44vh;
       object-fit: contain;
       display: block;
     }
-
+    .modal-col-right {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modal-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .student-badge-result {
       background: #0f172a;
       padding: 10px 12px;
       border-radius: 10px;
       border-left: 4px solid #22c55e;
     }
-
     .badge-name {
       font-size: 1.1rem;
       font-weight: 800;
       color: #f8fafc;
     }
-
     .badge-details {
       font-size: 0.78rem;
       color: #94a3b8;
@@ -509,13 +991,11 @@
       display: flex;
       gap: 12px;
     }
-
     .metrics-summary {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
-
     .stat-pill {
       background: #111827;
       padding: 8px;
@@ -523,19 +1003,16 @@
       text-align: center;
       border: 1px solid #374151;
     }
-
     .stat-pill .val {
       font-size: 1.05rem;
       font-weight: 800;
       color: #22c55e;
     }
-
     .stat-pill .lbl {
       font-size: 0.65rem;
       color: #94a3b8;
       text-transform: uppercase;
     }
-
     .btn-next {
       background: #22c55e;
       color: #000;
@@ -549,220 +1026,265 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.15s;
     }
 
-    .btn-next:active {
-      transform: scale(0.98);
-      background: #16a34a;
+    /* Toast Flotante */
+    #toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid #38bdf8;
+      color: #f8fafc;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      z-index: 9999;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      display: none;
+      animation: fadeIn 0.2s ease;
     }
 
-    /* VISTA HORIZONTAL COMPACTA (Modo Apaisado / Celular Horizontal) */
-    @media (orientation: landscape) and (max-height: 550px), (max-height: 520px) {
-      header {
-        padding: 6px 14px;
+    /* VISTA DE IMPRESIÓN (CTRL + P) */
+    @media print {
+      body {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
-      .brand-icon {
-        width: 28px;
-        height: 28px;
-        font-size: 1.1rem;
+      header, .tab-bar, .teacher-panel, #view-scan, .controls-panel, .capture-modal, #dependency-error-banner, #toast-msg {
+        display: none !important;
       }
-      .brand-text h1 {
-        font-size: 0.88rem;
+      #view-create {
+        display: block !important;
+        background: transparent !important;
+        padding: 0 !important;
       }
-      .brand-text p {
-        display: none;
+      #pages-container {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
       }
-      .header-actions .btn-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 1rem;
+      .sheet-a4 {
+        box-shadow: none !important;
+        width: 100% !important;
+        min-height: auto !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        margin: 0 0 8mm 0 !important;
+        padding: 3mm 0 !important;
       }
-      .status-badge {
-        top: 48px;
-        padding: 4px 12px;
-        font-size: 0.72rem;
-      }
-      body.camera-active .quality-metrics {
-        bottom: 50px;
-        left: 10px;
-        right: 10px;
-        max-width: 440px;
-        gap: 6px;
-      }
-      .metric-card {
-        padding: 4px 8px;
-      }
-      .metric-header {
-        font-size: 0.62rem;
-        margin-bottom: 2px;
-      }
-      .progress-bar-bg {
-        height: 5px;
-      }
-      body.camera-active .controls-panel {
-        padding: 4px 12px;
-      }
-      .btn-main, .btn-secondary {
-        padding: 7px 14px;
-        font-size: 0.84rem;
-      }
-
-      /* MODAL HORIZONTAL EN 2 COLUMNAS (100% VISIBLE SIN SCROLL) */
-      .capture-modal {
-        padding: 8px 14px;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-      }
-      .card-preview-box {
-        max-width: 96vw;
-        max-height: 94vh;
-        width: 100%;
-        padding: 10px 14px;
-        flex-direction: row;
-        align-items: center;
-        gap: 16px;
-      }
-      .modal-col-left {
-        flex: 1.4;
-        height: 100%;
-        max-height: 86vh;
-        min-width: 0;
-      }
-      .preview-img-container {
-        height: 100%;
-        max-height: 84vh;
-        width: 100%;
-      }
-      .preview-img-container img {
-        max-height: 82vh;
-        width: auto;
-        max-width: 100%;
-        object-fit: contain;
-      }
-      .modal-col-right {
-        flex: 1;
-        height: 100%;
-        max-height: 86vh;
-        justify-content: space-between;
-        gap: 6px;
-        min-width: 250px;
-      }
-      .student-badge-result {
-        padding: 8px 10px;
-      }
-      .badge-name {
-        font-size: 1rem;
-      }
-      .badge-details {
-        font-size: 0.72rem;
-      }
-      .metrics-summary {
-        gap: 6px;
-      }
-      .stat-pill {
-        padding: 6px;
-      }
-      .stat-pill .val {
-        font-size: 0.95rem;
-      }
-      .btn-next {
-        padding: 10px 14px;
-        font-size: 0.92rem;
+      .card-a5 {
+        border: 3.5px solid #000000 !important;
       }
     }
   </style>
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
-  <div id="dependency-error-banner" style="display:none; background:#b91c1c; color:#ffffff; padding:12px 16px; font-weight:600; font-size:0.85rem; text-align:center; position:fixed; top:0; left:0; right:0; z-index:9999; box-shadow:0 2px 10px rgba(0,0,0,0.5);"></div>
+  <div id="dependency-error-banner" style="display:none; background:#b91c1c; color:#ffffff; padding:12px 16px; font-weight:600; font-size:0.85rem; text-align:center; position:fixed; top:0; left:0; right:0; z-index:9999;"></div>
 
-  <!-- Cabecera -->
+  <!-- Cabecera de la App -->
   <header>
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v2.5.0</span></h1>
-        <p>Detector ArUco 4 Esquinas (Auto-Disparo)</p>
+        <h1>Microevaluación A5 <span class="version-tag">v2.6.0</span></h1>
+        <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn-icon" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa (Ocultar barra web)">⛶</button>
-      <button class="btn-icon" id="btn-torch" onclick="toggleTorch()" title="Encender linterna">🔦</button>
-      <button class="btn-icon" id="btn-switch" onclick="switchCamera()" title="Cambiar cámara">🔄</button>
+      <button class="btn-icon" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+      <button class="btn-icon" id="btn-torch" onclick="toggleTorch()" title="Encender linterna" style="display:none;">🔦</button>
+      <button class="btn-icon" id="btn-switch" onclick="switchCamera()" title="Cambiar cámara" style="display:none;">🔄</button>
     </div>
   </header>
 
-  <!-- Visor de la cámara -->
-  <div class="viewport-container" id="viewport">
-    <video id="video-feed" playsinline autoplay muted></video>
-    <canvas id="overlay-canvas" class="overlay"></canvas>
-
-    <!-- Placeholder cuando la cámara no está activa -->
-    <div class="camera-placeholder" id="camera-placeholder">
-      <div class="placeholder-icon">📸</div>
-      <div class="placeholder-title">Visor Inmersivo A5</div>
-      <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v2.5.0</span>
-    </div>
-
-    <!-- Indicador de Estado Flotante -->
-    <div class="status-badge" id="status-badge" style="display: none;">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text"></span>
-    </div>
-
-    <!-- Retícula HUD -->
-    <div class="hud-guide" id="hud-guide">
-      <div class="corner-bracket c-tl"></div>
-      <div class="corner-bracket c-tr"></div>
-      <div class="corner-bracket c-bl"></div>
-      <div class="corner-bracket c-br"></div>
-    </div>
-
-    <!-- Medidores de Calidad en tiempo real -->
-    <div class="quality-metrics">
-      <div class="metric-card">
-        <div class="metric-header">
-          <span>Cobertura (Cerca)</span>
-          <span id="val-coverage">0%</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="bar-coverage"></div>
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-header">
-          <span>Nitidez</span>
-          <span id="val-sharpness">0%</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="bar-sharpness"></div>
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-header">
-          <span>Estabilidad</span>
-          <span id="val-stability">0%</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="bar-stability"></div>
-        </div>
-      </div>
-    </div>
+  <!-- Pestañas de Navegación Unificada -->
+  <div class="tab-bar">
+    <button id="tab-btn-create" class="tab-btn active" onclick="switchTab('create')">
+      <span>📝 1. Redactar e Imprimir Fichas</span>
+    </button>
+    <button id="tab-btn-scan" class="tab-btn" onclick="switchTab('scan')">
+      <span>📷 2. Escáner de Aula</span>
+      <span class="tab-badge" id="nav-students-badge">10 Alumnos</span>
+    </button>
   </div>
 
-  <!-- Controles Inferiores -->
-  <div class="controls-panel">
-    <div class="action-row">
-      <button class="btn-main" id="btn-start" onclick="toggleCamera()">
-        <span>▶ Iniciar Cámara</span>
-      </button>
-      <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(event)">
-      <button class="btn-secondary" onclick="document.getElementById('file-input').click()" title="Probar con foto guardada">
-        📁 Probar Foto
-      </button>
+  <!-- ========================================================= -->
+  <!-- VISTA 1: REDACTAR E IMPRIMIR FICHAS                       -->
+  <!-- ========================================================= -->
+  <div id="view-create" class="view-content active">
+    <!-- Panel del Docente -->
+    <div class="teacher-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Configuración de la Microevaluación</h2>
+          <p>Redacta el problema que enseñaste hoy, fija el resultado esperado y genera las 5 hojas A4 listas para el salón.</p>
+        </div>
+        <div style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; font-weight: 700; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; border: 1px solid rgba(56, 189, 248, 0.3);">
+          📄 5 Hojas A4 (10 Alumnos)
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <!-- 1. Salón -->
+        <div class="form-group">
+          <label for="builder-classroom">1. Salón de Clases:</label>
+          <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)">
+            <option value="3A">3° Primaria "A" (10 alumnos: Mateo García a Emma Chávez)</option>
+            <option value="3B">3° Primaria "B" (10 alumnos: Álvaro Guzmán a Constanza Aguilar)</option>
+          </select>
+        </div>
+
+        <!-- 2. Banco Rápido -->
+        <div class="form-group">
+          <label for="builder-bank">2. Cargar del Banco o Crear Nueva:</label>
+          <select id="builder-bank" class="form-control" onchange="onBankSelectionChanged(this.value)">
+            <option value="EVA_01">EVA_01: Suma con Canje - Biblioteca (Obj: 85)</option>
+            <option value="EVA_02">EVA_02: Resta con Canje - Panadería (Obj: 38)</option>
+            <option value="EVA_03">EVA_03: Multiplicación Inicial - Cajas Manzanas (Obj: 48)</option>
+            <option value="NEW">✏️ Escribir Nueva Pregunta Personalizada...</option>
+          </select>
+        </div>
+
+        <!-- 3. Título / Tema -->
+        <div class="form-group">
+          <label for="input-eval-title">3. Título del Problema:</label>
+          <input type="text" id="input-eval-title" class="form-control" value="Suma con Canje: Biblioteca" placeholder="Ej. Suma con Canje: Biblioteca">
+        </div>
+
+        <!-- 4. Respuesta Esperada -->
+        <div class="form-group">
+          <label for="input-eval-expected">4. Resultado Esperado (Número):</label>
+          <input type="text" id="input-eval-expected" class="form-control" value="85" placeholder="Ej. 85" style="font-weight: 800; color: #22c55e;">
+        </div>
+
+        <!-- 5. Unidad / Pista -->
+        <div class="form-group">
+          <label for="input-eval-unit">5. Unidad o Pista (Opcional):</label>
+          <input type="text" id="input-eval-unit" class="form-control" value="libros, cuentos" placeholder="Ej. libros, panes">
+        </div>
+
+        <!-- 6. Enunciado Completo -->
+        <div class="form-group full-width">
+          <label for="input-eval-prompt">6. Enunciado del Problema Matemático:</label>
+          <textarea id="input-eval-prompt" class="form-control" placeholder="Escribe aquí el enunciado del problema que enseñaste hoy en el aula...">En la biblioteca había 47 libros de cuentos y llegaron 38 libros nuevos. ¿Cuántos libros hay ahora en total?</textarea>
+        </div>
+      </div>
+
+      <!-- Acciones de Generación -->
+      <div class="builder-actions">
+        <button class="btn-generate" onclick="generateAndActivateSession()">
+          ✨ Generar Fichas y Activar Sesión
+        </button>
+
+        <button class="btn-print-action" id="btn-print-sheets" onclick="window.print()">
+          🖨️ Imprimir 5 Hojas A4 (Ctrl + P)
+        </button>
+
+        <button class="btn-goto-scan" onclick="goToScannerWithSession()">
+          📷 Ir al Escáner con este Salón ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenedor dinámico de las 5 páginas A4 (10 fichas A5) -->
+    <div id="pages-container"></div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- VISTA 2: ESCÁNER DE AULA (CÁMARA MÓVIL)                   -->
+  <!-- ========================================================= -->
+  <div id="view-scan" class="view-content">
+    <!-- Barra de Sesión Activa -->
+    <div class="session-bar">
+      <div class="session-field">
+        <label>Salón:</label>
+        <span class="session-badge-active" id="scan-active-classroom">3° Primaria "A"</span>
+      </div>
+      <div class="session-field">
+        <label>Objetivo:</label>
+        <span class="session-badge-active" id="scan-active-target" style="color: #22c55e;">85</span>
+      </div>
+      <button onclick="switchTab('create')" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:3px 8px; font-size:0.75rem; cursor:pointer;" title="Cambiar salón o problema">✏️ Modificar</button>
+      <div class="session-counter" id="session-counter">
+        0 / 10 evaluados
+      </div>
+    </div>
+
+    <!-- Visor de la cámara -->
+    <div class="viewport-container" id="viewport">
+      <video id="video-feed" playsinline autoplay muted></video>
+      <canvas id="overlay-canvas" class="overlay"></canvas>
+
+      <!-- Placeholder cuando la cámara no está activa -->
+      <div class="camera-placeholder" id="camera-placeholder">
+        <div class="placeholder-icon">📸</div>
+        <div class="placeholder-title">Escáner Listo para el Salón</div>
+        <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear las fichas A5 de los 10 alumnos en pantalla completa.</div>
+        <span class="version-tag" style="margin-top: 4px;">ArUco 4 Esquinas Activo</span>
+      </div>
+
+      <!-- Indicador de Estado Flotante -->
+      <div class="status-badge" id="status-badge" style="display: none;">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text"></span>
+      </div>
+
+      <!-- Retícula HUD -->
+      <div class="hud-guide" id="hud-guide">
+        <div class="corner-bracket c-tl"></div>
+        <div class="corner-bracket c-tr"></div>
+        <div class="corner-bracket c-bl"></div>
+        <div class="corner-bracket c-br"></div>
+      </div>
+
+      <!-- Medidores de Calidad en tiempo real -->
+      <div class="quality-metrics">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Cobertura</span>
+            <span id="val-coverage">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="bar-coverage"></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Nitidez</span>
+            <span id="val-sharpness">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="bar-sharpness"></div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Estabilidad</span>
+            <span id="val-stability">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="bar-stability"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles Inferiores -->
+    <div class="controls-panel">
+      <div class="action-row">
+        <button class="btn-main" id="btn-start" onclick="toggleCamera()">
+          <span>▶ Iniciar Cámara</span>
+        </button>
+        <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(event)">
+        <button class="btn-secondary" onclick="document.getElementById('file-input').click()" title="Probar con foto guardada">
+          📁 Probar Foto
+        </button>
+      </div>
     </div>
   </div>
 
@@ -777,7 +1299,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v2.5.0</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v2.6.0</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -786,6 +1308,24 @@
           <div class="badge-details">
             <span id="res-student-id">ID: ALUM_01</span>
             <span id="res-test-id">Respuesta Esperada: 85</span>
+          </div>
+
+          <!-- Selector de Respaldo si el QR no se lee -->
+          <div id="manual-student-wrap" style="display: none; margin-top: 8px;">
+            <label style="font-size: 0.72rem; color: #f59e0b; font-weight: 700; display: block; margin-bottom: 2px;">⚠️ QR no leído: Selecciona el alumno:</label>
+            <select id="manual-student-select" onchange="assignManualStudent(this.value)" style="width: 100%; padding: 6px 10px; background: #0f172a; color: #f8fafc; border: 1.5px solid #f59e0b; border-radius: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer;">
+            </select>
+          </div>
+        </div>
+
+        <!-- Caja de Respuesta Zoom y Cotejo Inmediato -->
+        <div class="answer-comparison-box" style="background:#0f172a; border-radius:10px; padding:10px 12px; border:1px solid #334155; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; font-weight:700;">
+            <span>CAJA DE RESPUESTA EN FICHA</span>
+            <span style="color:#94a3b8;">ESPERADO: <strong id="res-expected-val" style="color:#22c55e; font-size:0.95rem;">85</strong></span>
+          </div>
+          <div style="background:#ffffff; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; min-height:48px; max-height:64px; overflow:hidden; border:1.5px solid #cbd5e1;">
+            <img id="captured-answer-img" src="" alt="Respuesta escrita por el alumno" style="max-height:56px; width:auto; max-width:100%; object-fit:contain; filter:contrast(1.15);">
           </div>
         </div>
 
@@ -806,5 +1346,246 @@
       </div>
     </div>
   </div>
+
+  <div id="toast-msg"></div>
+
+  <!-- SCRIPT DE COORDINACIÓN Y GESTIÓN DE SESIÓN DOCENTE -->
+  <script>
+    let activeTab = 'create';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast-msg');
+      if (!t) return;
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2800);
+    }
+
+    function switchTab(tabId) {
+      activeTab = tabId;
+      document.getElementById('tab-btn-create').classList.toggle('active', tabId === 'create');
+      document.getElementById('tab-btn-scan').classList.toggle('active', tabId === 'scan');
+      document.getElementById('view-create').classList.toggle('active', tabId === 'create');
+      document.getElementById('view-scan').classList.toggle('active', tabId === 'scan');
+
+      // Botones de cámara solo visibles en la pestaña de escáner
+      const btnTorch = document.getElementById('btn-torch');
+      const btnSwitch = document.getElementById('btn-switch');
+      if (btnTorch) btnTorch.style.display = (tabId === 'scan') ? 'flex' : 'none';
+      if (btnSwitch) btnSwitch.style.display = (tabId === 'scan') ? 'flex' : 'none';
+    }
+
+    function onClassroomSelectChanged(classId) {
+      const cls = ClassroomData.getClassroom(classId);
+      if (cls) {
+        document.getElementById('nav-students-badge').textContent = `${cls.students.length} Alumnos`;
+      }
+    }
+
+    function onBankSelectionChanged(evalId) {
+      if (evalId === 'NEW') {
+        document.getElementById('input-eval-title').value = '';
+        document.getElementById('input-eval-prompt').value = '';
+        document.getElementById('input-eval-expected').value = '';
+        document.getElementById('input-eval-unit').value = '';
+        document.getElementById('input-eval-prompt').focus();
+        return;
+      }
+      const evalData = ClassroomData.getEvaluation(evalId);
+      if (evalData) {
+        document.getElementById('input-eval-title').value = evalData.title || '';
+        document.getElementById('input-eval-prompt').value = evalData.prompt || '';
+        document.getElementById('input-eval-expected').value = evalData.expectedAnswer || '';
+        document.getElementById('input-eval-unit').value = (evalData.unitHint || '').replace(/[()]/g, '').replace('unidades:', '').trim();
+      }
+    }
+
+    function createA5Card(student, classroom, evaluation) {
+      return `
+        <div class="card-a5">
+          <div class="fiducial fiducial-tl" title="ArUco 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/></svg></div>
+          <div class="fiducial fiducial-tr" title="ArUco 1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+          <div class="fiducial fiducial-br" title="ArUco 2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+          <div class="fiducial fiducial-bl" title="ArUco 3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/></svg></div>
+
+          <div class="card-header">
+            <div class="student-block">
+              <span class="student-label">Nombre:</span>
+              <span class="student-name">${student.name.toUpperCase()}</span>
+              <span class="student-grade">(${classroom.name})</span>
+            </div>
+            <div class="qr-block">
+              <span class="qr-code-text">${student.id}</span>
+              <div class="qr-box" id="qr-box-${student.id}"></div>
+            </div>
+          </div>
+
+          <div class="problem-wide">
+            <div class="problem-text">
+              ${evaluation.prompt}
+            </div>
+          </div>
+
+          <div class="grid-wrapper">
+            <table class="notebook-grid-full">
+              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </table>
+          </div>
+
+          <div class="answer-strip">
+            <span class="answer-tag">Rpta:</span>
+            <div class="answer-box-open"></div>
+            <div class="answer-line">
+              <span class="answer-line-hint">${evaluation.unitHint || '(unidades)'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAllPrintPages(classId, evaluation) {
+      const container = document.getElementById('pages-container');
+      if (!container) return;
+      const classroom = ClassroomData.getClassroom(classId);
+      const students = classroom.students;
+      container.innerHTML = '';
+
+      // Generar exactamente 5 hojas A4 (2 fichas por hoja = 10 alumnos)
+      for (let i = 0; i < students.length; i += 2) {
+        const sTop = students[i];
+        const sBot = students[i + 1] || students[i];
+
+        const sheetEl = document.createElement('div');
+        sheetEl.className = 'sheet-a4';
+        sheetEl.innerHTML = `
+          ${createA5Card(sTop, classroom, evaluation)}
+          <div class="cut-line">
+            <span>✂️ cortar por aquí ✂️</span>
+          </div>
+          ${createA5Card(sBot, classroom, evaluation)}
+        `;
+        container.appendChild(sheetEl);
+
+        // Generar QR ultra-grueso simplificado (23x23) para cada alumno
+        if (typeof QRCode !== 'undefined' && QRCode.toString) {
+          QRCode.toString(sTop.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+            if (!err) {
+              const el = document.getElementById('qr-box-' + sTop.id);
+              if (el) el.innerHTML = svg;
+            }
+          });
+          QRCode.toString(sBot.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+            if (!err) {
+              const el = document.getElementById('qr-box-' + sBot.id);
+              if (el) el.innerHTML = svg;
+            }
+          });
+        }
+      }
+    }
+
+    function generateAndActivateSession() {
+      const classId = document.getElementById('builder-classroom').value || '3A';
+      const title = document.getElementById('input-eval-title').value.trim() || 'Evaluación del Día';
+      const prompt = document.getElementById('input-eval-prompt').value.trim();
+      const expectedAnswer = document.getElementById('input-eval-expected').value.trim();
+      const unit = document.getElementById('input-eval-unit').value.trim();
+
+      if (!prompt) {
+        alert('Por favor redacta el enunciado del problema.');
+        document.getElementById('input-eval-prompt').focus();
+        return;
+      }
+      if (!expectedAnswer) {
+        alert('Por favor indica la respuesta o número esperado.');
+        document.getElementById('input-eval-expected').focus();
+        return;
+      }
+
+      // 1. Guardar en banco
+      const savedEval = ClassroomData.saveCustomEvaluation({
+        title: title,
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        unitHint: unit ? `(${unit})` : ''
+      });
+
+      // 2. Guardar sesión activa persistente
+      const session = {
+        classroomId: classId,
+        evalId: savedEval.id,
+        title: title,
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        unitHint: unit,
+        timestamp: Date.now()
+      };
+      ClassroomData.setActiveSession(session);
+
+      // 3. Renderizar las 5 hojas A4
+      renderAllPrintPages(classId, savedEval);
+
+      // 4. Sincronizar el escáner con este salón y evaluación
+      if (typeof Scanner !== 'undefined' && Scanner.setSession) {
+        Scanner.setSession(classId, savedEval.id);
+      }
+      updateScannerSessionBar(session);
+
+      showToast('✓ ¡Fichas generadas y sesión armada! Listas para imprimir o escanear.');
+    }
+
+    function updateScannerSessionBar(session) {
+      const clsEl = document.getElementById('scan-active-classroom');
+      if (clsEl) {
+        const cls = ClassroomData.getClassroom(session.classroomId);
+        clsEl.textContent = cls ? cls.name : session.classroomId;
+      }
+      const targetEl = document.getElementById('scan-active-target');
+      if (targetEl) targetEl.textContent = session.expectedAnswer;
+    }
+
+    function goToScannerWithSession() {
+      generateAndActivateSession();
+      switchTab('scan');
+    }
+
+    // Inicialización al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+      // Restaurar sesión previa si existe
+      const session = ClassroomData.getActiveSession();
+      if (session) {
+        document.getElementById('builder-classroom').value = session.classroomId || '3A';
+        document.getElementById('input-eval-title').value = session.title || '';
+        document.getElementById('input-eval-prompt').value = session.prompt || '';
+        document.getElementById('input-eval-expected').value = session.expectedAnswer || '';
+        document.getElementById('input-eval-unit').value = session.unitHint || '';
+
+        const evalObj = ClassroomData.getEvaluation(session.evalId);
+        renderAllPrintPages(session.classroomId, evalObj || session);
+        updateScannerSessionBar(session);
+        if (typeof Scanner !== 'undefined' && Scanner.setSession) {
+          Scanner.setSession(session.classroomId, session.evalId);
+        }
+      } else {
+        // Carga inicial por defecto con EVA_01 y 3A
+        const evalObj = ClassroomData.getEvaluation('EVA_01');
+        renderAllPrintPages('3A', evalObj);
+        const initialSession = {
+          classroomId: '3A',
+          evalId: 'EVA_01',
+          title: evalObj.title,
+          prompt: evalObj.prompt,
+          expectedAnswer: evalObj.expectedAnswer,
+          unitHint: evalObj.unitHint
+        };
+        ClassroomData.setActiveSession(initialSession);
+        updateScannerSessionBar(initialSession);
+      }
+    });
+  </script>
 </body>
 </html>
