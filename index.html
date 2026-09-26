@@ -1121,20 +1121,21 @@
       }
     }
 
-    // DIBUJO DEL CUADRILÁTERO DINÁMICO EN TIEMPO REAL (AR)
+    // DIBUJO DEL RECTÁNGULO VERDE SEMI-TRANSPARENTE EN TIEMPO REAL (AR)
     function drawDynamicQuadrilateral(quad, qrBox, coverage, cornerCheck) {
       const isFullyInside = cornerCheck.isFullyInside;
       const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
 
-      let color = '#22c55e'; // Verde
-      let fillColor = 'rgba(34, 197, 94, 0.12)';
+      // SIEMPRE VERDE SEMI-TRANSPARENTE (Lámina AR que crece conforme te acercas)
+      let color = '#22c55e'; // Verde Neón
+      let fillColor = 'rgba(34, 197, 94, 0.25)'; // Relleno verde semi-transparente bien visible
       let isDashed = false;
-      let labelText = `✓ ¡Distancia Óptima! (${coverage}%)`;
+      let labelText = isOptimalDistance ? `✓ ¡Distancia Óptima! (${coverage}%)` : `Acércate a la hoja (${coverage}%)`;
 
       if (!isFullyInside) {
-        // Alerta roja: Una o más esquinas están fuera de la pantalla
+        // Alerta: Una o más esquinas están fuera del sensor de la cámara
         color = '#ef4444';
-        fillColor = 'rgba(239, 68, 68, 0.14)';
+        fillColor = 'rgba(239, 68, 68, 0.18)';
         isDashed = true;
 
         const hasLeft = cornerCheck.outsideCorners.some(c => c.id === 'TL' || c.id === 'BL');
@@ -1151,19 +1152,13 @@
         } else if (hasBottom && !hasTop) {
           labelText = '⚠️ Mueve la cámara hacia abajo ⬇️';
         } else {
-          labelText = '⚠️ Aleja un poco: faltan esquinas en pantalla';
+          labelText = '⚠️ Centra la hoja: faltan esquinas';
         }
-      } else if (!isOptimalDistance) {
-        // Advertencia amarilla: Está demasiado lejos
-        color = '#f59e0b';
-        fillColor = 'rgba(245, 158, 11, 0.08)';
-        isDashed = true;
-        labelText = `⚠️ Acércate a la hoja (${coverage}% / ${COVERAGE_THRESHOLD}%)`;
       }
 
       ctx.save();
 
-      // 1. Polígono de la ficha
+      // 1. Lámina / Rectángulo verde semi-transparente que cubre la ficha
       ctx.beginPath();
       ctx.moveTo(quad.pTL.x, quad.pTL.y);
       ctx.lineTo(quad.pTR.x, quad.pTR.y);
@@ -1174,14 +1169,14 @@
       ctx.fillStyle = fillColor;
       ctx.fill();
 
-      ctx.lineWidth = isDashed ? 3 : 4;
+      ctx.lineWidth = 4;
       ctx.strokeStyle = color;
       if (isDashed) {
-        ctx.setLineDash([12, 8]);
+        ctx.setLineDash([10, 8]);
       } else {
         ctx.setLineDash([]);
         ctx.shadowColor = '#22c55e';
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
       }
       ctx.stroke();
       ctx.restore();
