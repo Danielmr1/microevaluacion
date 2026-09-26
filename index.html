@@ -132,15 +132,17 @@
       padding: 12px;
     }
 
+    .hud-guide {
+      transition: opacity 0.25s ease, border-color 0.2s ease;
+    }
+
     .hud-guide.tracking {
-      border-color: #3b82f6;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      opacity: 0.05;
+      pointer-events: none;
     }
 
     .hud-guide.locked {
-      border: 3px solid #22c55e;
-      box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
-      background: rgba(34, 197, 94, 0.05);
+      opacity: 0;
     }
 
     .corner-bracket {
@@ -456,7 +458,16 @@
     <div class="quality-metrics">
       <div class="metric-card">
         <div class="metric-header">
-          <span>Nitidez (Enfoque)</span>
+          <span>Cobertura (Cerca)</span>
+          <span id="val-coverage">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="bar-coverage"></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <span>Nitidez</span>
           <span id="val-sharpness">0%</span>
         </div>
         <div class="progress-bar-bg">
@@ -708,7 +719,112 @@
       return sharpnessScore;
     }
 
+    // MÓDULO MATEMÁTICO: Estimación de Cuadrilátero A5 y Deformación de Perspectiva
+    function estimateSheetQuad(qTL, qTR, qBR, qBL) {
+      const vx = {
+        x: ((qTR.x - qTL.x) + (qBR.x - qBL.x)) / 2,
+        y: ((qTR.y - qTL.y) + (qBR.y - qBL.y)) / 2
+      };
+      const vy = {
+        x: ((qBL.x - qTL.x) + (qBR.x - qTR.x)) / 2,
+        y: ((qBL.y - qTL.y) + (qBR.y - qTR.y)) / 2
+      };
+
+      return {
+        pTL: { x: qTL.x - 5.78 * vx.x - 0.129 * vy.x, y: qTL.y - 5.78 * vx.y - 0.129 * vy.y },
+        pTR: { x: qTL.x + 1.433 * vx.x - 0.129 * vy.x, y: qTL.y + 1.433 * vx.y - 0.129 * vy.y },
+        pBR: { x: qTL.x + 1.433 * vx.x + 4.775 * vy.x, y: qTL.y + 1.433 * vx.y + 4.775 * vy.y },
+        pBL: { x: qTL.x - 5.78 * vx.x + 4.775 * vy.x, y: qTL.y - 5.78 * vx.y + 4.775 * vy.y }
+      };
+    }
+
+    function getQuadArea(pTL, pTR, pBR, pBL) {
+      const x = [pTL.x, pTR.x, pBR.x, pBL.x];
+      const y = [pTL.y, pTR.y, pBR.y, pBL.y];
+      let area = 0;
+      for (let i = 0; i < 4; i++) {
+        const j = (i + 1) % 4;
+        area += x[i] * y[j] - x[j] * y[i];
+      }
+      return Math.abs(area) / 2;
+    }
+
+    function renderPerspectiveWarp(sourceCanvas, quad, destWidth, destHeight) {
+      const destCanvas = document.createElement('canvas');
+      destCanvas.width = destWidth;
+      destCanvas.height = destHeight;
+      const ctx = destCanvas.getContext('2d');
+
+      const subdivisions = 8;
+      for (let i = 0; i < subdivisions; i++) {
+        for (let j = 0; j < subdivisions; j++) {
+          const u0 = i / subdivisions;
+          const v0 = j / subdivisions;
+          const u1 = (i + 1) / subdivisions;
+          const v1 = (j + 1) / subdivisions;
+
+          const dx0 = u0 * destWidth;
+          const dy0 = v0 * destHeight;
+          const dx1 = u1 * destWidth;
+          const dy1 = v1 * destHeight;
+
+          function interp(u, v) {
+            const topX = quad.pTL.x + u * (quad.pTR.x - quad.pTL.x);
+            const topY = quad.pTL.y + u * (quad.pTR.y - quad.pTL.y);
+            const botX = quad.pBL.x + u * (quad.pBR.x - quad.pBL.x);
+            const botY = quad.pBL.y + u * (quad.pBR.y - quad.pBL.y);
+            return {
+              x: topX + v * (botX - topX),
+              y: topY + v * (botY - topY)
+            };
+          }
+
+          const p00 = interp(u0, v0);
+          const p10 = interp(u1, v0);
+          const p11 = interp(u1, v1);
+          const p01 = interp(u0, v1);
+
+          drawTriangleAffine(ctx, sourceCanvas, p00, p10, p01, {x: dx0, y: dy0}, {x: dx1, y: dy0}, {x: dx0, y: dy1});
+          drawTriangleAffine(ctx, sourceCanvas, p10, p11, p01, {x: dx1, y: dy0}, {x: dx1, y: dy1}, {x: dx0, y: dy1});
+        }
+      }
+      return destCanvas;
+    }
+
+    function drawTriangleAffine(destCtx, srcImg, s0, s1, s2, d0, d1, d2) {
+      const x0 = s0.x, y0 = s0.y;
+      const x1 = s1.x, y1 = s1.y;
+      const x2 = s2.x, y2 = s2.y;
+
+      const det = x0 * (y1 - y2) + x1 * (y2 - y0) + x2 * (y0 - y1);
+      if (Math.abs(det) < 1e-6) return;
+
+      const u0 = d0.x, u1 = d1.x, u2 = d2.x;
+      const v0 = d0.y, v1 = d1.y, v2 = d2.y;
+
+      const a = (u0 * (y1 - y2) + u1 * (y2 - y0) + u2 * (y0 - y1)) / det;
+      const c = (u0 * (x2 - x1) + u1 * (x0 - x2) + u2 * (x1 - x0)) / det;
+      const e = (u0 * (x1 * y2 - x2 * y1) + u1 * (x2 * y0 - x0 * y2) + u2 * (x0 * y1 - x1 * y0)) / det;
+
+      const b = (v0 * (y1 - y2) + v1 * (y2 - y0) + v2 * (y0 - y1)) / det;
+      const d = (v0 * (x2 - x1) + v1 * (x0 - x2) + v2 * (x1 - x0)) / det;
+      const f = (v0 * (x1 * y2 - x2 * y1) + v1 * (x2 * y0 - x0 * y2) + v2 * (x0 * y1 - x1 * y0)) / det;
+
+      destCtx.save();
+      destCtx.beginPath();
+      destCtx.moveTo(d0.x, d0.y);
+      destCtx.lineTo(d1.x, d1.y);
+      destCtx.lineTo(d2.x, d2.y);
+      destCtx.closePath();
+      destCtx.clip();
+
+      destCtx.transform(a, b, c, d, e, f);
+      destCtx.drawImage(srcImg, 0, 0);
+      destCtx.restore();
+    }
+
     let isProcessing = false;
+    const COVERAGE_THRESHOLD = 45; // Mínimo 45% de cobertura de la pantalla para permitir disparo
 
     // CICLO DE PROCESAMIENTO EN TIEMPO REAL (Gatekeeper continuo)
     async function processFrame() {
@@ -760,10 +876,19 @@
             }
           }
 
-          if (detectedText) {
+          if (detectedText && detectedBox) {
             if (!targetLockStartTime) targetLockStartTime = Date.now();
-            if (detectedBox) drawDetectedBox(detectedBox);
-            handleValidTarget(detectedText, sharpness);
+
+            // Calcular cuadrilátero dinámico de la ficha completa A5
+            const sheetQuad = estimateSheetQuad(detectedBox.p1, detectedBox.p2, detectedBox.p3, detectedBox.p4);
+            const quadArea = getQuadArea(sheetQuad.pTL, sheetQuad.pTR, sheetQuad.pBR, sheetQuad.pBL);
+            const screenArea = overlay.width * overlay.height;
+            const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
+
+            // Dibujar cuadrilátero dinámico con brackets AR
+            drawDynamicQuadrilateral(sheetQuad, detectedBox, coverage);
+
+            handleValidTarget(detectedText, sharpness, sheetQuad, coverage);
           } else {
             targetLockStartTime = null;
             handleLostTarget();
@@ -778,46 +903,141 @@
       }
     }
 
-    function drawDetectedBox(box) {
+    // DIBUJO DEL CUADRILÁTERO DINÁMICO EN TIEMPO REAL (AR)
+    function drawDynamicQuadrilateral(quad, qrBox, coverage) {
+      const isOptimal = coverage >= COVERAGE_THRESHOLD;
+      const color = isOptimal ? '#22c55e' : '#f59e0b';
+      const fillColor = isOptimal ? 'rgba(34, 197, 94, 0.12)' : 'rgba(245, 158, 11, 0.08)';
+
+      ctx.save();
+
+      // 1. Polígono de la ficha
       ctx.beginPath();
-      ctx.moveTo(box.p1.x, box.p1.y);
-      ctx.lineTo(box.p2.x, box.p2.y);
-      ctx.lineTo(box.p3.x, box.p3.y);
-      ctx.lineTo(box.p4.x, box.p4.y);
+      ctx.moveTo(quad.pTL.x, quad.pTL.y);
+      ctx.lineTo(quad.pTR.x, quad.pTR.y);
+      ctx.lineTo(quad.pBR.x, quad.pBR.y);
+      ctx.lineTo(quad.pBL.x, quad.pBL.y);
       ctx.closePath();
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#22c55e';
+
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+
+      ctx.lineWidth = isOptimal ? 4 : 3;
+      ctx.strokeStyle = color;
+      if (!isOptimal) {
+        ctx.setLineDash([12, 8]);
+      } else {
+        ctx.setLineDash([]);
+        ctx.shadowColor = '#22c55e';
+        ctx.shadowBlur = 12;
+      }
       ctx.stroke();
+      ctx.restore();
+
+      // 2. Brackets en las 4 esquinas de la ficha
+      drawCornerBracket(quad.pTL, 24, 0, color);
+      drawCornerBracket(quad.pTR, 24, Math.PI / 2, color);
+      drawCornerBracket(quad.pBR, 24, Math.PI, color);
+      drawCornerBracket(quad.pBL, 24, -Math.PI / 2, color);
+
+      // 3. Mini caja del código QR
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(qrBox.p1.x, qrBox.p1.y);
+      ctx.lineTo(qrBox.p2.x, qrBox.p2.y);
+      ctx.lineTo(qrBox.p3.x, qrBox.p3.y);
+      ctx.lineTo(qrBox.p4.x, qrBox.p4.y);
+      ctx.closePath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      ctx.restore();
+
+      // 4. Etiqueta flotante indicadora de proximidad
+      const centerX = (quad.pTL.x + quad.pTR.x) / 2;
+      const centerY = Math.min(quad.pTL.y, quad.pTR.y) - 18;
+      const labelText = isOptimal ? `✓ ¡Distancia Óptima! (${coverage}%)` : `⚠️ Acércate a la hoja (${coverage}% / ${COVERAGE_THRESHOLD}%)`;
+
+      ctx.save();
+      ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const textMetrics = ctx.measureText(labelText);
+      const pillW = textMetrics.width + 24;
+      const pillH = 30;
+      const pillX = centerX - pillW / 2;
+      const pillY = centerY - 15;
+
+      ctx.fillStyle = isOptimal ? 'rgba(22, 101, 52, 0.92)' : 'rgba(120, 53, 15, 0.92)';
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, pillW, pillH, 15);
+      ctx.fill();
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labelText, centerX, pillY + pillH / 2);
+      ctx.restore();
     }
 
-    // CONTROL DE ESTABILIDAD Y AUTO-DISPARO (Zero-Click Gatekeeper)
-    function handleValidTarget(qrData, sharpness) {
+    function drawCornerBracket(pt, size, angle, color) {
+      ctx.save();
+      ctx.translate(pt.x, pt.y);
+      ctx.rotate(angle);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, size);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(size, 0);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // CONTROL DE ESTABILIDAD, COBERTURA Y AUTO-DISPARO (Zero-Click Gatekeeper)
+    function handleValidTarget(qrData, sharpness, sheetQuad, coverage) {
       const hud = document.getElementById('hud-guide');
       const badge = document.getElementById('status-badge');
       const statusText = document.getElementById('status-text');
 
-      hud.classList.add('tracking');
+      updateCoverageUI(coverage);
 
-      // Umbral calibrado para detectar con luz normal de aula (35% o superior)
+      const isCoverageOk = coverage >= COVERAGE_THRESHOLD;
       const SHARPNESS_THRESHOLD = 35;
+      const isSharpnessOk = sharpness >= SHARPNESS_THRESHOLD;
 
-      if (sharpness >= SHARPNESS_THRESHOLD) {
+      if (!isCoverageOk) {
+        // Bloquear disparo: está demasiado lejos
+        stableFrameCount = 0;
+        updateStabilityUI(0);
+        hud.classList.remove('locked');
+        hud.classList.add('tracking');
+        badge.classList.remove('locked');
+        statusText.textContent = `Acércate más a la hoja (${coverage}% / ${COVERAGE_THRESHOLD}%)...`;
+        return;
+      }
+
+      // Distancia correcta (>= 45%)
+      if (isSharpnessOk) {
         stableFrameCount++;
         const stabilityPct = Math.min(100, Math.round((stableFrameCount / 2) * 100));
         updateStabilityUI(stabilityPct);
 
         badge.classList.add('locked');
-        statusText.textContent = '¡Ficha detectada! Congelando...';
+        statusText.textContent = '¡Distancia y nitidez perfectas! Congelando...';
 
         // Disparo al completar 2 cuadros nítidos y estables (~100ms)
         if (stableFrameCount >= 2) {
-          triggerAutoCapture(qrData, sharpness);
+          triggerAutoCapture(qrData, sharpness, null, sheetQuad);
         }
       } else {
         stableFrameCount = Math.max(0, stableFrameCount - 1);
         updateStabilityUI(0);
         badge.classList.remove('locked');
-        statusText.textContent = 'Ficha detectada pero borrosa. Enfoca...';
+        statusText.textContent = 'Distancia buena. Enfocando nitidez...';
       }
     }
 
@@ -825,6 +1045,7 @@
       stableFrameCount = 0;
       targetLockStartTime = null;
       updateStabilityUI(0);
+      updateCoverageUI(0);
       resetHUD();
     }
 
@@ -837,8 +1058,8 @@
       statusText.textContent = 'Apuntando cámara a la ficha A5...';
     }
 
-    // DISPARO AUTOMÁTICO CONFIRMADO
-    function triggerAutoCapture(qrData, sharpness, directDataUrl = null) {
+    // DISPARO AUTOMÁTICO CONFIRMADO CON PERSPECTIVE WARP & AUTO-CROP
+    function triggerAutoCapture(qrData, sharpness, directDataUrl = null, sheetQuad = null) {
       isScanning = false; // Pausar ciclo
       playBeep(); // Sonido ¡BIP!
       if (navigator.vibrate) navigator.vibrate([70]);
@@ -848,12 +1069,18 @@
 
       let capturedDataUrl = directDataUrl;
       if (!capturedDataUrl) {
-        const highResCanvas = document.createElement('canvas');
-        highResCanvas.width = video.videoWidth || 1280;
-        highResCanvas.height = video.videoHeight || 720;
-        const hCtx = highResCanvas.getContext('2d');
-        hCtx.drawImage(video, 0, 0);
-        capturedDataUrl = highResCanvas.toDataURL('image/jpeg', 0.92);
+        if (sheetQuad) {
+          // Perspective Warp: Recortar y enderezar exactamente la ficha A5 entre sus 4 esquinas
+          const warpedCanvas = renderPerspectiveWarp(video, sheetQuad, 1400, 953);
+          capturedDataUrl = warpedCanvas.toDataURL('image/jpeg', 0.95);
+        } else {
+          const highResCanvas = document.createElement('canvas');
+          highResCanvas.width = video.videoWidth || 1280;
+          highResCanvas.height = video.videoHeight || 720;
+          const hCtx = highResCanvas.getContext('2d');
+          hCtx.drawImage(video, 0, 0);
+          capturedDataUrl = highResCanvas.toDataURL('image/jpeg', 0.92);
+        }
       }
 
       // Decodificar payload: MATEVAL|ID|RESULTADO|NOMBRE o MATEVAL|ID|N1|OP|N2|RESULTADO|NOMBRE
@@ -882,6 +1109,13 @@
       }, 150);
     }
 
+    function updateCoverageUI(val) {
+      document.getElementById('val-coverage').textContent = val + '%';
+      const bar = document.getElementById('bar-coverage');
+      bar.style.width = Math.min(100, Math.round((val / COVERAGE_THRESHOLD) * 100)) + '%';
+      bar.style.background = val >= COVERAGE_THRESHOLD ? '#22c55e' : (val >= 25 ? '#f59e0b' : '#ef4444');
+    }
+
     function updateSharpnessUI(val) {
       document.getElementById('val-sharpness').textContent = val + '%';
       const bar = document.getElementById('bar-sharpness');
@@ -894,21 +1128,6 @@
       const bar = document.getElementById('bar-stability');
       bar.style.width = val + '%';
       bar.style.background = val === 100 ? '#22c55e' : '#3b82f6';
-    }
-
-    function drawQRBoundingBox(loc) {
-      const scaleX = overlay.width / procCanvas.width;
-      const scaleY = overlay.height / procCanvas.height;
-
-      ctx.beginPath();
-      ctx.moveTo(loc.topLeftCorner.x * scaleX, loc.topLeftCorner.y * scaleY);
-      ctx.lineTo(loc.topRightCorner.x * scaleX, loc.topRightCorner.y * scaleY);
-      ctx.lineTo(loc.bottomRightCorner.x * scaleX, loc.bottomRightCorner.y * scaleY);
-      ctx.lineTo(loc.bottomLeftCorner.x * scaleX, loc.bottomLeftCorner.y * scaleY);
-      ctx.closePath();
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#22c55e';
-      ctx.stroke();
     }
 
     function nextScan() {
@@ -947,7 +1166,14 @@
           const sharpness = calculateSharpness(imgData);
 
           if (qr && qr.data.startsWith('MATEVAL')) {
-            triggerAutoCapture(qr.data, sharpness, dataUrl);
+            const qTL = qr.location.topLeftCorner;
+            const qTR = qr.location.topRightCorner;
+            const qBR = qr.location.bottomRightCorner;
+            const qBL = qr.location.bottomLeftCorner;
+            const sheetQuad = estimateSheetQuad(qTL, qTR, qBR, qBL);
+            const warpedCanvas = renderPerspectiveWarp(img, sheetQuad, 1400, 953);
+            const warpedDataUrl = warpedCanvas.toDataURL('image/jpeg', 0.95);
+            triggerAutoCapture(qr.data, sharpness, warpedDataUrl, sheetQuad);
           } else {
             alert('No se detectó un código QR válido de la microevaluación en la imagen.');
           }
