@@ -57,6 +57,7 @@
   // --- GUARDRAIL 1: VERIFICACIÓN DE DEPENDENCIAS AL INICIAR ---
   function checkDependencies() {
     const missing = [];
+    if (typeof ClassroomData === 'undefined') missing.push('classroom-data.js (Nóminas del Aula)');
     if (typeof AR === 'undefined' || !AR.Detector) missing.push('aruco.bundle.js (Detector ArUco)');
     if (typeof CV === 'undefined') missing.push('CV (Visión Computacional)');
     if (typeof jsQR === 'undefined' && !nativeBarcodeDetector) missing.push('jsqr.min.js (Lector QR)');
@@ -72,6 +73,75 @@
       return false;
     }
     return true;
+  }
+
+  // --- GESTIÓN DE SESIÓN Y NÓMINA DEL AULA ---
+  let currentClassroomId = '3A';
+  let currentEvaluationId = 'EVA_01';
+  let evaluatedStudentIds = new Set();
+
+  function setSession(classId, evalId) {
+    currentClassroomId = classId || '3A';
+    currentEvaluationId = evalId || 'EVA_01';
+    evaluatedStudentIds.clear();
+    updateSessionCounter();
+  }
+
+  function onClassroomChanged(classId) {
+    currentClassroomId = classId;
+    evaluatedStudentIds.clear();
+    updateSessionCounter();
+  }
+
+  function onEvaluationChanged(evalId) {
+    currentEvaluationId = evalId;
+    updateSessionCounter();
+  }
+
+  function updateSessionCounter() {
+    const counterEl = document.getElementById('session-counter');
+    if (!counterEl) return;
+    const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
+    const total = cls ? cls.students.length : 10;
+    counterEl.textContent = `${evaluatedStudentIds.size} / ${total} evaluados`;
+  }
+
+  function populateManualStudentSelect() {
+    const sel = document.getElementById('manual-student-select');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Toca aquí para elegir al alumno --</option>';
+    const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
+    if (!cls) return;
+    cls.students.forEach(s => {
+      const isDone = evaluatedStudentIds.has(s.id);
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = `${s.id}: ${s.name} ${isDone ? '✓ (Ya evaluado)' : ''}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  function assignManualStudent(studentId) {
+    if (!studentId) return;
+    const s = typeof ClassroomData !== 'undefined' ? ClassroomData.getStudent(currentClassroomId, studentId) : null;
+    if (!s) return;
+    evaluatedStudentIds.add(studentId);
+    updateSessionCounter();
+
+    const nameEl = document.getElementById('res-student-name');
+    if (nameEl) {
+      nameEl.textContent = s.name.toUpperCase();
+      nameEl.style.color = '#f8fafc';
+    }
+    const idEl = document.getElementById('res-student-id');
+    if (idEl) idEl.textContent = 'ID: ' + s.id;
+
+    const ev = typeof ClassroomData !== 'undefined' ? ClassroomData.getEvaluation(currentEvaluationId) : null;
+    const testEl = document.getElementById('res-test-id');
+    if (testEl && ev) testEl.textContent = 'Resultado Esperado: ' + ev.expectedAnswer;
+
+    const wrap = document.getElementById('manual-student-wrap');
+    if (wrap) wrap.style.display = 'none';
   }
 
   // Inicializar detector ArUco de forma segura
@@ -802,6 +872,7 @@
 
     let fullWarpCanvas = null;
     let resolutionPreviewUrl = null;
+    let answerPreviewUrl = null;
     let qrText = qrData;
 
     try {
@@ -860,6 +931,9 @@
         if (procResult.success && procResult.resolutionCanvas) {
           resolutionPreviewUrl = procResult.resolutionCanvas.toDataURL('image/jpeg', 0.92);
         }
+        if (procResult.success && procResult.answerCanvas) {
+          answerPreviewUrl = procResult.answerCanvas.toDataURL('image/jpeg', 0.92);
+        }
       }
 
       // Si no se pudo recortar la ROI, usar la hoja completa como respaldo seguro
@@ -871,24 +945,38 @@
       console.error('[Scanner] Error en triggerAutoCapture:', err);
     }
 
-    // Decodificación del alumno desde el payload QR
-    let studentId = 'PENDIENTE';
-    let studentName = 'ALUMNO REGISTRADO';
-    let expectedAns = '--';
+    // Decodificación del alumno desde el payload QR (Soporta formato nuevo 'ALUM_01' y legado 'MATEVAL|ALUM_01|...')
+    let studentId = null;
     let qrSuccess = false;
 
-    if (qrText && qrText.startsWith('MATEVAL')) {
-      qrSuccess = true;
-      const parts = qrText.split('|');
-      if (parts.length >= 2) studentId = parts[1];
-      if (parts.length >= 4) expectedAns = parts[2];
-      if (parts.length >= 7) expectedAns = parts[5];
-      if (parts.length >= 1) studentName = (parts[parts.length - 1] || studentName).replace(/_/g, ' ');
-    } else if (qrText) {
-      studentName = 'ALUMNO (' + qrText.slice(0, 15) + ')';
+    if (qrText) {
+      const match = qrText.match(/ALUM_\d{2}/i);
+      if (match) {
+        studentId = match[0].toUpperCase();
+        qrSuccess = true;
+      } else if (qrText.trim().startsWith('ALUM_')) {
+        studentId = qrText.trim().toUpperCase();
+        qrSuccess = true;
+      }
+    }
+
+    let studentObj = null;
+    if (studentId && typeof ClassroomData !== 'undefined') {
+      studentObj = ClassroomData.getStudent(currentClassroomId, studentId);
+    }
+
+    const activeEval = typeof ClassroomData !== 'undefined' ? ClassroomData.getEvaluation(currentEvaluationId) : null;
+    const expectedAns = activeEval ? activeEval.expectedAnswer : '85';
+
+    let studentName = '';
+    if (studentObj) {
+      studentName = studentObj.name;
+      evaluatedStudentIds.add(studentId);
+      updateSessionCounter();
+    } else if (studentId) {
+      studentName = 'ALUMNO (' + studentId + ')';
     } else {
-      // Guardrail 4: Aviso amable de QR no identificado (sin romper el flujo)
-      studentName = '⚠️ QR NO LEÍDO (ALUMNO PENDIENTE)';
+      studentName = '⚠️ QR NO LEÍDO';
       studentId = 'MANUAL';
     }
 
@@ -909,12 +997,42 @@
       const testEl = document.getElementById('res-test-id');
       if (testEl) testEl.textContent = 'Resultado Esperado: ' + expectedAns;
 
+      // Vista previa de la caja de respuesta recortada y cotejo con el resultado esperado
+      const ansImgEl = document.getElementById('captured-answer-img');
+      if (ansImgEl) {
+        if (answerPreviewUrl) {
+          ansImgEl.src = answerPreviewUrl;
+          ansImgEl.style.display = 'block';
+        } else {
+          ansImgEl.style.display = 'none';
+        }
+      }
+
+      const expValEl = document.getElementById('res-expected-val');
+      if (expValEl) expValEl.textContent = expectedAns;
+
+      const evalPromptEl = document.getElementById('res-eval-prompt');
+      if (evalPromptEl && activeEval) {
+        evalPromptEl.textContent = activeEval.prompt;
+      }
+
       const sharpEl = document.getElementById('res-sharpness');
       if (sharpEl) sharpEl.textContent = sharpness + '%';
 
       const focusDuration = targetLockStartTime ? ((Date.now() - targetLockStartTime) / 1000).toFixed(2) : '0.20';
       const timeEl = document.getElementById('res-time');
       if (timeEl) timeEl.textContent = focusDuration + ' s';
+
+      // Selector de respaldo de 1 toque si el QR no se pudo decodificar
+      const manualWrap = document.getElementById('manual-student-wrap');
+      if (manualWrap) {
+        if (!qrSuccess) {
+          manualWrap.style.display = 'block';
+          populateManualStudentSelect();
+        } else {
+          manualWrap.style.display = 'none';
+        }
+      }
 
       const modal = document.getElementById('capture-modal');
       if (modal) modal.classList.add('open');
@@ -956,9 +1074,14 @@
   // --- GUARDRAIL 6: LIMPIEZA DE ESTADO Y MEMORIA AL ESCANEAR SIGUIENTE ---
   function nextScan() {
     closeModal();
-    // Liberar imagen anterior del modal
+    // Liberar imágenes anteriores del modal
     const imgEl = document.getElementById('captured-img');
     if (imgEl) imgEl.src = '';
+    const ansImgEl = document.getElementById('captured-answer-img');
+    if (ansImgEl) ansImgEl.src = '';
+
+    const manualWrap = document.getElementById('manual-student-wrap');
+    if (manualWrap) manualWrap.style.display = 'none';
 
     isScanning = true;
     scanStartTime = Date.now();
@@ -987,9 +1110,10 @@
     document.addEventListener('fullscreenchange', updateFullscreenIcon);
     document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
 
-    // Verificar dependencias e inicializar ArUco
+    // Verificar dependencias e inicializar ArUco y Nóminas
     checkDependencies();
     initArUco();
+    updateSessionCounter();
   });
 
   // Exportar funciones para interacción con la interfaz HTML
@@ -999,15 +1123,23 @@
     toggleTorch,
     toggleFullscreen,
     nextScan,
-    closeModal
+    closeModal,
+    setSession,
+    onClassroomChanged,
+    onEvaluationChanged,
+    assignManualStudent
   };
 
-  // Bindings directos para eventos onclick en HTML
+  // Bindings directos para eventos onclick / onchange en HTML
   global.toggleCamera = toggleCamera;
   global.switchCamera = switchCamera;
   global.toggleTorch = toggleTorch;
   global.toggleFullscreen = toggleFullscreen;
   global.nextScan = nextScan;
   global.closeModal = closeModal;
+  global.setSession = setSession;
+  global.onClassroomChanged = onClassroomChanged;
+  global.onEvaluationChanged = onEvaluationChanged;
+  global.assignManualStudent = assignManualStudent;
 
 })(typeof window !== 'undefined' ? window : this);

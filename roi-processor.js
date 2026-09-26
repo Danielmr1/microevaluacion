@@ -161,23 +161,29 @@
    */
   function processCapturedSheet(sheetCanvas) {
     if (!isValidCanvas(sheetCanvas)) {
-      return { success: false, resolutionCanvas: null, error: 'Lienzo de hoja inválido' };
+      return { success: false, resolutionCanvas: null, answerCanvas: null, error: 'Lienzo de hoja inválido' };
     }
 
-    // 1. Extraer ROI de Resolución (Cuadrícula + Respuesta)
+    // 1. Extraer ROI de Resolución (Cuadrícula + Franja de respuesta)
     const extResult = extractROI(sheetCanvas, ROI_CONFIG.RESOLUTION);
     if (!extResult.success) {
       return extResult;
     }
-
     const resolutionCanvas = extResult.canvas;
-
-    // 2. Aplicar normalización y contraste de grafito
     enhanceHandwritingContrast(resolutionCanvas);
+
+    // 2. Extraer Sub-ROI de la Caja de Respuesta (Zoom para cotejo rápido)
+    let answerCanvas = null;
+    const ansResult = extractROI(sheetCanvas, ROI_CONFIG.ANSWER_BOX);
+    if (ansResult.success) {
+      answerCanvas = ansResult.canvas;
+      enhanceHandwritingContrast(answerCanvas);
+    }
 
     return {
       success: true,
       resolutionCanvas: resolutionCanvas,
+      answerCanvas: answerCanvas,
       error: null
     };
   }
