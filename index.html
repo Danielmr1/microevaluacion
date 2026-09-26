@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v1.3.0 - Microevaluación</title>
+  <title>Escáner Inteligente A5 v1.3.1 - Microevaluación</title>
   <script src="jsqr.min.js"></script>
   <style>
     * {
@@ -695,8 +695,8 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v1.3.0</span></h1>
-        <p>Detector de 4 Cuadrados Negros</p>
+        <h1>Escáner de Aula A5 <span class="version-tag">v1.3.1</span></h1>
+        <p>Detector de Rectángulo Plano A5</p>
       </div>
     </div>
     <div class="header-actions">
@@ -716,7 +716,7 @@
       <div class="placeholder-icon">📸</div>
       <div class="placeholder-title">Visor Inmersivo A5</div>
       <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v1.3.0</span>
+      <span class="version-tag" style="margin-top: 4px;">v1.3.1</span>
     </div>
 
     <!-- Indicador de Estado Flotante -->
@@ -789,7 +789,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.3.0</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.3.1</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -837,7 +837,7 @@
 
     let stableFrameCount = 0;
     const REQUIRED_STABLE_FRAMES = 3; // 3 cuadros continuos (~150-200ms) para garantizar estabilidad absoluta
-    const COVERAGE_THRESHOLD = 45; // Mínimo 45% de cobertura de la pantalla para permitir disparo
+    const COVERAGE_THRESHOLD = 50; // Mínimo 50% de cobertura de la pantalla para permitir disparo
     const SHARPNESS_THRESHOLD = 60; // Umbral calibrado de alta nitidez (mínimo 60%)
     let lastDetectedQR = null;
     let scanStartTime = null;
@@ -1055,7 +1055,7 @@
       return sharpnessScore;
     }
 
-    // MOTOR DE VISIÓN ARTIFICIAL: DETECTOR DE LOS 4 CUADRADOS NEGROS
+    // MOTOR DE VISIÓN ARTIFICIAL: DETECTOR RÁPIDO DE LOS 4 CUADRADOS NEGROS
     function detectFiducials(imgData, width, height) {
       const data = imgData.data;
       const bin = new Uint8Array(width * height);
@@ -1065,7 +1065,6 @@
         sum += (data[i] + data[i+1] + data[i+2]) / 3;
       }
       const avgLum = sum / (width * height);
-      // Umbral adaptativo para encontrar marcas negras sobre papel blanco / fondo iluminado
       const darkThreshold = Math.min(95, Math.max(40, avgLum * 0.55));
 
       for (let i = 0, j = 0; i < data.length; i += 4, j++) {
@@ -1076,8 +1075,8 @@
       const visited = new Uint8Array(width * height);
       const blobs = [];
 
-      for (let y = 2; y < height - 2; y++) {
-        for (let x = 2; x < width - 2; x++) {
+      for (let y = 2; y < height - 2; y += 2) {
+        for (let x = 2; x < width - 2; x += 2) {
           const idx = y * width + x;
           if (bin[idx] === 1 && !visited[idx]) {
             let qHead = 0;
@@ -1116,14 +1115,13 @@
             const solidity = area / bboxArea;
             const aspect = bw / bh;
 
-            // Filtro morfológico: cuadrados negros (desde 3px hasta 55px)
-            if (bw >= 3 && bw <= 55 && bh >= 3 && bh <= 55 &&
-                aspect >= 0.55 && aspect <= 1.75 &&
-                solidity >= 0.65 && area >= 8) {
+            // Filtrar cuadrados negros de las esquinas (ignora letras delgadas y cuadrículas)
+            if (bw >= 4 && bw <= 55 && bh >= 4 && bh <= 55 &&
+                aspect >= 0.60 && aspect <= 1.60 &&
+                solidity >= 0.65 && area >= 12) {
               blobs.push({
                 cx: sumX / count,
                 cy: sumY / count,
-                minX, maxX, minY, maxY,
                 bw, bh, area
               });
             }
@@ -1135,45 +1133,70 @@
         return { found: false, blobCount: blobs.length };
       }
 
-      let bestQuad = null;
-      let maxArea = 0;
+      // BÚSQUEDA RÁPIDA O(N): Las 4 esquinas exteriores son los puntos diagonales extremos
+      let bTL = blobs[0], bTR = blobs[0], bBR = blobs[0], bBL = blobs[0];
+      let minSum = bTL.cx + bTL.cy;
+      let maxDiff = bTR.cx - bTR.cy;
+      let maxSum = bBR.cx + bBR.cy;
+      let minDiff = bBL.cx - bBL.cy;
 
-      for (let i = 0; i < blobs.length; i++) {
-        for (let j = 0; j < blobs.length; j++) {
-          if (i === j) continue;
-          for (let k = 0; k < blobs.length; k++) {
-            if (k === i || k === j) continue;
-            for (let l = 0; l < blobs.length; l++) {
-              if (l === i || l === j || l === k) continue;
+      for (let i = 1; i < blobs.length; i++) {
+        const b = blobs[i];
+        const s = b.cx + b.cy;
+        const d = b.cx - b.cy;
+        if (s < minSum) { minSum = s; bTL = b; }
+        if (d > maxDiff) { maxDiff = d; bTR = b; }
+        if (s > maxSum) { maxSum = s; bBR = b; }
+        if (d < minDiff) { minDiff = d; bBL = b; }
+      }
 
-              const b1 = blobs[i], b2 = blobs[j], b3 = blobs[k], b4 = blobs[l];
-              if (b1.cx < b2.cx && b4.cx < b3.cx && b1.cy < b4.cy && b2.cy < b3.cy) {
-                const area = Math.abs(
-                  (b1.cx * (b2.cy - b4.cy) + b2.cx * (b3.cy - b1.cy) + b3.cx * (b4.cy - b2.cy) + b4.cx * (b1.cy - b3.cy)) / 2
-                );
-                const wTop = Math.hypot(b2.cx - b1.cx, b2.cy - b1.cy);
-                const wBot = Math.hypot(b3.cx - b4.cx, b3.cy - b4.cy);
-                const hLeft = Math.hypot(b4.cx - b1.cx, b4.cy - b1.cy);
-                const hRight = Math.hypot(b3.cx - b2.cx, b3.cy - b2.cy);
-                const avgW = (wTop + wBot) / 2;
-                const avgH = (hLeft + hRight) / 2;
-                const aspect = avgW / avgH;
+      // Verificar que los 4 puntos sean esquinas distintas
+      const uniqueSet = new Set([bTL, bTR, bBR, bBL]);
+      if (uniqueSet.size === 4) {
+        const wTop = Math.hypot(bTR.cx - bTL.cx, bTR.cy - bTL.cy);
+        const wBot = Math.hypot(bBR.cx - bBL.cx, bBR.cy - bBL.cy);
+        const hLeft = Math.hypot(bBL.cx - bTL.cx, bBL.cy - bTL.cy);
+        const hRight = Math.hypot(bBR.cx - bTR.cx, bBR.cy - bTR.cy);
+        const avgW = (wTop + wBot) / 2;
+        const avgH = (hLeft + hRight) / 2;
+        const aspect = avgW / avgH;
 
-                // Ficha A5 en horizontal (relación de aspecto ~1.4)
-                if (aspect >= 1.15 && aspect <= 1.85 && area > maxArea) {
-                  maxArea = area;
-                  bestQuad = { pTL: b1, pTR: b2, pBR: b3, pBL: b4, area, aspect };
-                }
-              }
-            }
-          }
+        if (aspect >= 1.15 && aspect <= 1.85) {
+          return {
+            found: true,
+            quad: { pTL: bTL, pTR: bTR, pBR: bBR, pBL: bBL, aspect }
+          };
         }
       }
 
-      if (bestQuad) {
-        return { found: true, quad: bestQuad };
-      }
       return { found: false, blobCount: blobs.length };
+    }
+
+    // EVALUADOR DEL REQUISITO: "RECTÁNGULO CASI PERFECTO (SIN INCLINACIÓN)"
+    function checkRectanglePerfection(quad) {
+      const topW = Math.hypot(quad.pTR.x - quad.pTL.x, quad.pTR.y - quad.pTL.y);
+      const botW = Math.hypot(quad.pBR.x - quad.pBL.x, quad.pBR.y - quad.pBL.y);
+      const leftH = Math.hypot(quad.pBL.x - quad.pTL.x, quad.pBL.y - quad.pTL.y);
+      const rightH = Math.hypot(quad.pBR.x - quad.pTR.x, quad.pBR.y - quad.pTR.y);
+
+      // Diagonales (en un rectángulo plano son casi idénticas)
+      const diag1 = Math.hypot(quad.pBR.x - quad.pTL.x, quad.pBR.y - quad.pTL.y);
+      const diag2 = Math.hypot(quad.pBL.x - quad.pTR.x, quad.pBL.y - quad.pTR.y);
+
+      // Relación de paralelismo entre lados opuestos
+      const widthRatio = Math.min(topW, botW) / Math.max(topW, botW);
+      const heightRatio = Math.min(leftH, rightH) / Math.max(leftH, rightH);
+      const diagRatio = Math.min(diag1, diag2) / Math.max(diag1, diag2);
+
+      // Rectángulo casi perfecto si lados opuestos difieren menos del 12% y diagonales menos del 10%
+      const isAlmostPerfect = widthRatio >= 0.88 && heightRatio >= 0.88 && diagRatio >= 0.90;
+
+      return {
+        isAlmostPerfect,
+        widthRatio,
+        heightRatio,
+        diagRatio
+      };
     }
 
     function expandFiducialQuad(fQuad, sx, sy) {
@@ -1420,13 +1443,16 @@
             const screenArea = overlay.width * overlay.height;
             const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
 
+            // 3. Evaluar paralelismo / rectángulo casi perfecto (sin inclinación)
+            const rectCheck = checkRectanglePerfection(activeTarget.quad);
+
             // Sensor de 4 cuadrados negros completos dentro de los bordes
             const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
 
             // Dibujar lámina verde semitransparente que crece conforme te acercas
-            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck);
+            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck, rectCheck);
 
-            handleValidTarget(activeTarget.qrData, sharpness, activeTarget.quad, coverage, cornerCheck);
+            handleValidTarget(activeTarget.qrData, sharpness, activeTarget.quad, coverage, cornerCheck, rectCheck);
           } else if (activeTarget && lostFramesCount < MAX_LOST_FRAMES) {
             // Cuadro intermedio borroso por movimiento del celular: NO perder el rectángulo verde
             lostFramesCount++;
@@ -1434,8 +1460,9 @@
             const screenArea = overlay.width * overlay.height;
             const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
             const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
+            const rectCheck = checkRectanglePerfection(activeTarget.quad);
 
-            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck);
+            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck, rectCheck);
             updateCoverageUI(coverage);
           } else {
             activeTarget = null;
@@ -1453,15 +1480,16 @@
     }
 
     // DIBUJO DEL RECTÁNGULO VERDE SEMI-TRANSPARENTE EN TIEMPO REAL (AR)
-    function drawDynamicQuadrilateral(quad, qrBox, coverage, cornerCheck) {
+    function drawDynamicQuadrilateral(quad, qrBox, coverage, cornerCheck, rectCheck) {
       const isFullyInside = cornerCheck ? cornerCheck.isFullyInside : true;
+      const isAlmostPerfect = rectCheck ? rectCheck.isAlmostPerfect : true;
       const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
 
       // Lámina AR Verde Neón semitransparente claramente perceptible
       let color = '#22c55e'; // Verde Neón
       let fillColor = 'rgba(34, 197, 94, 0.30)'; // Verde translúcido de alta visibilidad
       let isDashed = false;
-      let labelText = isOptimalDistance ? `✓ ¡Distancia Óptima! (${coverage}%)` : `🔍 Acércate a la hoja (${coverage}%)`;
+      let labelText = isOptimalDistance ? `✓ ¡Rectángulo Plano y Alineado! (${coverage}%)` : `🔍 Acércate a la hoja (${coverage}%)`;
 
       if (!isFullyInside && cornerCheck && cornerCheck.outsideCorners) {
         color = '#ef4444';
@@ -1484,6 +1512,12 @@
         } else {
           labelText = '⚠️ Centra la hoja: faltan esquinas';
         }
+      } else if (!isAlmostPerfect) {
+        // Alerta: celular inclinado (la figura es un trapecio con perspectiva)
+        color = '#f59e0b';
+        fillColor = 'rgba(245, 158, 11, 0.22)';
+        isDashed = true;
+        labelText = '📐 Pon el celular plano sobre la hoja';
       }
 
       ctx.save();
@@ -1533,7 +1567,7 @@
         ctx.restore();
       }
 
-      // 4. Etiqueta flotante indicadora de proximidad
+      // 4. Etiqueta flotante indicadora de proximidad / alineación
       const centerX = (quad.pTL.x + quad.pTR.x) / 2;
       const centerY = Math.max(30, Math.min(quad.pTL.y, quad.pTR.y) - 20);
 
@@ -1545,7 +1579,7 @@
       const pillX = centerX - pillW / 2;
       const pillY = centerY - 16;
 
-      ctx.fillStyle = !isFullyInside ? 'rgba(185, 28, 28, 0.95)' : (isOptimalDistance ? 'rgba(21, 128, 61, 0.95)' : 'rgba(180, 83, 9, 0.95)');
+      ctx.fillStyle = !isFullyInside ? 'rgba(185, 28, 28, 0.95)' : (!isAlmostPerfect ? 'rgba(180, 83, 9, 0.95)' : (isOptimalDistance ? 'rgba(21, 128, 61, 0.95)' : 'rgba(180, 83, 9, 0.95)'));
       ctx.beginPath();
       ctx.roundRect(pillX, pillY, pillW, pillH, 16);
       ctx.fill();
@@ -1577,7 +1611,7 @@
     }
 
     // CONTROL DE ESTABILIDAD, COBERTURA Y AUTO-DISPARO (Zero-Click Gatekeeper)
-    function handleValidTarget(qrData, sharpness, sheetQuad, coverage, cornerCheck) {
+    function handleValidTarget(qrData, sharpness, sheetQuad, coverage, cornerCheck, rectCheck) {
       const hud = document.getElementById('hud-guide');
       const badge = document.getElementById('status-badge');
       const statusText = document.getElementById('status-text');
@@ -1587,7 +1621,7 @@
 
       // REGLA 1: Los 4 cuadrados negros deben estar 100% dentro del encuadre
       if (!cornerCheck.isFullyInside) {
-        targetLockStartTime = null; // Reiniciar cronómetro: aún no está bien encuadrado
+        targetLockStartTime = null;
         stableFrameCount = 0;
         updateStabilityUI(0);
         hud.classList.remove('locked');
@@ -1600,15 +1634,30 @@
         return;
       }
 
+      // REGLA 2: Rectángulo casi perfecto (Sin inclinación / Plano sobre la mesa)
+      if (rectCheck && !rectCheck.isAlmostPerfect) {
+        targetLockStartTime = null;
+        stableFrameCount = 0;
+        updateStabilityUI(0);
+        hud.classList.remove('locked');
+        hud.classList.add('tracking');
+        badge.classList.remove('locked');
+        badge.style.background = 'rgba(180, 83, 9, 0.92)';
+        statusDot.style.background = '#f59e0b';
+        statusDot.style.boxShadow = '0 0 10px #f59e0b';
+        statusText.textContent = '📐 Pon el celular plano sobre la hoja (está inclinado)';
+        return;
+      }
+
       // Restaurar estilo normal del badge
       badge.style.background = '';
       statusDot.style.background = '';
       statusDot.style.boxShadow = '';
 
-      // REGLA 2: Cobertura mínima (no muy lejos)
+      // REGLA 3: Cobertura mínima (Distancia adecuada >= 50%)
       const isCoverageOk = coverage >= COVERAGE_THRESHOLD;
       if (!isCoverageOk) {
-        targetLockStartTime = null; // Reiniciar cronómetro: aún está lejos
+        targetLockStartTime = null;
         stableFrameCount = 0;
         updateStabilityUI(0);
         hud.classList.remove('locked');
@@ -1618,12 +1667,12 @@
         return;
       }
 
-      // Los 4 cuadrados están dentro y la distancia es óptima: iniciar conteo de enfoque aquí
+      // Iniciar conteo de enfoque aquí
       if (!targetLockStartTime) {
         targetLockStartTime = Date.now();
       }
 
-      // REGLA 3: Alta nitidez (>= 60%) y 3 cuadros de estabilidad continua
+      // REGLA 4: Alta nitidez (>= 60%) y 3 cuadros de estabilidad continua
       const isSharpnessOk = sharpness >= SHARPNESS_THRESHOLD;
 
       if (isSharpnessOk) {
@@ -1632,19 +1681,19 @@
         updateStabilityUI(stabilityPct);
 
         badge.classList.add('locked');
-        statusText.textContent = `¡Nitidez excelente (${sharpness}%)! Congelando...`;
+        statusText.textContent = `¡Rectángulo plano y nítido (${sharpness}%)! Congelando...`;
 
-        // Disparo al completar los cuadros nítidos y estables (~150-200ms)
+        // REGLA 5: Alumno identificado por QR
         if (stableFrameCount >= REQUIRED_STABLE_FRAMES && qrData) {
           triggerAutoCapture(qrData, sharpness, null, sheetQuad);
         } else if (stableFrameCount >= REQUIRED_STABLE_FRAMES && !qrData) {
-          statusText.textContent = `Encuadre perfecto. Leyendo datos del QR...`;
+          statusText.textContent = `Encuadre plano perfecto. Leyendo datos del QR...`;
         }
       } else {
         stableFrameCount = Math.max(0, stableFrameCount - 1);
         updateStabilityUI(0);
         badge.classList.remove('locked');
-        statusText.textContent = `Encuadre perfecto. Enfocando nitidez (${sharpness}% / ${SHARPNESS_THRESHOLD}%)...`;
+        statusText.textContent = `Rectángulo plano alineado. Enfocando nitidez (${sharpness}% / ${SHARPNESS_THRESHOLD}%)...`;
       }
     }
 
