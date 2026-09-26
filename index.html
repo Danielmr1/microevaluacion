@@ -334,11 +334,31 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       border: 1px solid #374151;
-      max-width: 500px;
+      max-width: 520px;
       margin: auto;
       width: 100%;
+    }
+
+    .modal-col-left {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-col-right {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .preview-img-container {
@@ -347,31 +367,36 @@
       overflow: hidden;
       border: 2px solid #22c55e;
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .preview-img-container img {
       width: 100%;
       height: auto;
+      max-height: 48vh;
+      object-fit: contain;
       display: block;
     }
 
     .student-badge-result {
       background: #0f172a;
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-radius: 10px;
       border-left: 4px solid #22c55e;
     }
 
     .badge-name {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: #f8fafc;
     }
 
     .badge-details {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: #94a3b8;
-      margin-top: 4px;
+      margin-top: 3px;
       display: flex;
       gap: 12px;
     }
@@ -379,25 +404,25 @@
     .metrics-summary {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 8px;
     }
 
     .stat-pill {
       background: #111827;
-      padding: 10px;
+      padding: 8px;
       border-radius: 8px;
       text-align: center;
       border: 1px solid #374151;
     }
 
     .stat-pill .val {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: #22c55e;
     }
 
     .stat-pill .lbl {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: #94a3b8;
       text-transform: uppercase;
     }
@@ -406,15 +431,136 @@
       background: #22c55e;
       color: #000;
       border: none;
-      padding: 14px;
+      padding: 12px;
       border-radius: 10px;
       font-weight: 800;
-      font-size: 1rem;
+      font-size: 0.95rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .btn-next:active {
+      transform: scale(0.98);
+      background: #16a34a;
+    }
+
+    /* VISTA HORIZONTAL COMPACTA (Modo Apaisado / Celular Horizontal) */
+    @media (orientation: landscape) and (max-height: 550px), (max-height: 520px) {
+      header {
+        padding: 6px 14px;
+      }
+      .brand-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 1.1rem;
+      }
+      .brand-text h1 {
+        font-size: 0.95rem;
+      }
+      .brand-text p {
+        display: none;
+      }
+      .header-actions .btn-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+      }
+      .status-badge {
+        top: 8px;
+        padding: 4px 12px;
+        font-size: 0.75rem;
+      }
+      .quality-metrics {
+        bottom: 8px;
+        left: 10px;
+        right: 10px;
+        gap: 8px;
+      }
+      .metric-card {
+        padding: 4px 8px;
+      }
+      .metric-header {
+        font-size: 0.62rem;
+        margin-bottom: 2px;
+      }
+      .progress-bar-bg {
+        height: 5px;
+      }
+      .controls-panel {
+        padding: 6px 12px;
+      }
+      .btn-main, .btn-secondary {
+        padding: 8px 16px;
+        font-size: 0.88rem;
+      }
+
+      /* MODAL HORIZONTAL EN 2 COLUMNAS (100% VISIBLE SIN SCROLL) */
+      .capture-modal {
+        padding: 8px 14px;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+      .card-preview-box {
+        max-width: 96vw;
+        max-height: 94vh;
+        width: 100%;
+        padding: 10px 14px;
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+      }
+      .modal-col-left {
+        flex: 1.4;
+        height: 100%;
+        max-height: 86vh;
+        min-width: 0;
+      }
+      .preview-img-container {
+        height: 100%;
+        max-height: 84vh;
+        width: 100%;
+      }
+      .preview-img-container img {
+        max-height: 82vh;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+      }
+      .modal-col-right {
+        flex: 1;
+        height: 100%;
+        max-height: 86vh;
+        justify-content: space-between;
+        gap: 6px;
+        min-width: 250px;
+      }
+      .student-badge-result {
+        padding: 8px 10px;
+      }
+      .badge-name {
+        font-size: 1rem;
+      }
+      .badge-details {
+        font-size: 0.72rem;
+      }
+      .metrics-summary {
+        gap: 6px;
+      }
+      .stat-pill {
+        padding: 6px;
+      }
+      .stat-pill .val {
+        font-size: 0.95rem;
+      }
+      .btn-next {
+        padding: 10px 14px;
+        font-size: 0.92rem;
+      }
     }
   </style>
 </head>
@@ -503,37 +649,41 @@
   <!-- Modal de Captura Congelada (Zero-Click Result) -->
   <div class="capture-modal" id="capture-modal">
     <div class="card-preview-box">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-weight:700; color:#22c55e; font-size:0.88rem;">📸 ¡CAPTURA PERFECTA CONGELADA!</span>
-        <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;">✕</button>
-      </div>
-
-      <div class="preview-img-container">
-        <img id="captured-img" src="" alt="Captura de ficha">
-      </div>
-
-      <div class="student-badge-result">
-        <div class="badge-name" id="res-student-name">MATEO GARCÍA RODRÍGUEZ</div>
-        <div class="badge-details">
-          <span id="res-student-id">ID: ALUM_01</span>
-          <span id="res-test-id">Respuesta Esperada: 85</span>
+      <div class="modal-col-left">
+        <div class="preview-img-container">
+          <img id="captured-img" src="" alt="Captura de ficha">
         </div>
       </div>
 
-      <div class="metrics-summary">
-        <div class="stat-pill">
-          <div class="val" id="res-sharpness">94%</div>
-          <div class="lbl">Índice de Nitidez</div>
+      <div class="modal-col-right">
+        <div class="modal-header-row">
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem;">📸 ¡CAPTURA CONGELADA!</span>
+          <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
-        <div class="stat-pill">
-          <div class="val" id="res-time">0.18 s</div>
-          <div class="lbl">Tiempo de Enfoque</div>
-        </div>
-      </div>
 
-      <button class="btn-next" onclick="nextScan()">
-        ✓ Escanear Siguiente Alumno
-      </button>
+        <div class="student-badge-result">
+          <div class="badge-name" id="res-student-name">MATEO GARCÍA RODRÍGUEZ</div>
+          <div class="badge-details">
+            <span id="res-student-id">ID: ALUM_01</span>
+            <span id="res-test-id">Respuesta Esperada: 85</span>
+          </div>
+        </div>
+
+        <div class="metrics-summary">
+          <div class="stat-pill">
+            <div class="val" id="res-sharpness">94%</div>
+            <div class="lbl">Índice de Nitidez</div>
+          </div>
+          <div class="stat-pill">
+            <div class="val" id="res-time">0.18 s</div>
+            <div class="lbl">Tiempo de Enfoque</div>
+          </div>
+        </div>
+
+        <button class="btn-next" onclick="nextScan()">
+          ✓ Escanear Siguiente Alumno
+        </button>
+      </div>
     </div>
   </div>
 
@@ -769,12 +919,12 @@
         y: ((qBL.y - qTL.y) + (qBR.y - qTR.y)) / 2
       };
 
-      // Calibrado con margen exterior de 3.5mm hacia afuera de los 4 marcadores negros
-      // para asegurar que los 4 cuadrados negros queden 100% íntegros y holgados dentro de la foto
-      const uL = -5.91; // Margen exterior izquierdo
-      const uR = 1.563; // Margen exterior derecho
-      const vT = -0.259; // Margen exterior superior
-      const vB = 4.905; // Margen exterior inferior
+      // Calibrado con margen exterior holgado (~6mm) hacia afuera de los 4 marcadores negros
+      // para asegurar que los 4 cuadrados negros queden 100% íntegros, libres de cortes y holgados
+      const uL = -6.02; // Margen exterior izquierdo ampliado
+      const uR = 1.67;  // Margen exterior derecho ampliado
+      const vT = -0.37; // Margen exterior superior ampliado
+      const vB = 5.02;  // Margen exterior inferior ampliado
 
       return {
         pTL: { x: qTL.x + uL * vx.x + vT * vy.x, y: qTL.y + uL * vx.y + vT * vy.y },
