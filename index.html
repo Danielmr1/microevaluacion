@@ -553,7 +553,9 @@
     const procCtx = procCanvas.getContext('2d', { willReadFrequently: true });
 
     let stableFrameCount = 0;
-    const REQUIRED_STABLE_FRAMES = 2; // ~100ms de estabilidad requerida
+    const REQUIRED_STABLE_FRAMES = 3; // 3 cuadros continuos (~150-200ms) para garantizar estabilidad absoluta
+    const COVERAGE_THRESHOLD = 45; // Mínimo 45% de cobertura de la pantalla para permitir disparo
+    const SHARPNESS_THRESHOLD = 60; // Umbral calibrado de alta nitidez (mínimo 60%)
     let lastDetectedQR = null;
     let scanStartTime = null;
     let targetLockStartTime = null;
@@ -730,11 +732,40 @@
         y: ((qBL.y - qTL.y) + (qBR.y - qTR.y)) / 2
       };
 
+      // Calibrado con margen exterior de 3.5mm hacia afuera de los 4 marcadores negros
+      // para asegurar que los 4 cuadrados negros queden 100% íntegros y holgados dentro de la foto
+      const uL = -5.91; // Margen exterior izquierdo
+      const uR = 1.563; // Margen exterior derecho
+      const vT = -0.259; // Margen exterior superior
+      const vB = 4.905; // Margen exterior inferior
+
       return {
-        pTL: { x: qTL.x - 5.78 * vx.x - 0.129 * vy.x, y: qTL.y - 5.78 * vx.y - 0.129 * vy.y },
-        pTR: { x: qTL.x + 1.433 * vx.x - 0.129 * vy.x, y: qTL.y + 1.433 * vx.y - 0.129 * vy.y },
-        pBR: { x: qTL.x + 1.433 * vx.x + 4.775 * vy.x, y: qTL.y + 1.433 * vx.y + 4.775 * vy.y },
-        pBL: { x: qTL.x - 5.78 * vx.x + 4.775 * vy.x, y: qTL.y - 5.78 * vx.y + 4.775 * vy.y }
+        pTL: { x: qTL.x + uL * vx.x + vT * vy.x, y: qTL.y + uL * vx.y + vT * vy.y },
+        pTR: { x: qTL.x + uR * vx.x + vT * vy.x, y: qTL.y + uR * vx.y + vT * vy.y },
+        pBR: { x: qTL.x + uR * vx.x + vB * vy.x, y: qTL.y + uR * vx.y + vB * vy.y },
+        pBL: { x: qTL.x + uL * vx.x + vB * vy.x, y: qTL.y + uL * vx.y + vB * vy.y }
+      };
+    }
+
+    // SENSOR DE SEGURIDAD: Verificar que los 4 marcadores negros estén dentro del lente
+    function checkCornersInFrame(quad, width, height, margin = 14) {
+      const corners = [
+        { id: 'TL', name: 'superior izquierda', p: quad.pTL },
+        { id: 'TR', name: 'superior derecha', p: quad.pTR },
+        { id: 'BR', name: 'inferior derecha', p: quad.pBR },
+        { id: 'BL', name: 'inferior izquierda', p: quad.pBL }
+      ];
+
+      const outside = [];
+      for (const c of corners) {
+        if (c.p.x < margin || c.p.x > width - margin || c.p.y < margin || c.p.y > height - margin) {
+          outside.push(c);
+        }
+      }
+
+      return {
+        isFullyInside: outside.length === 0,
+        outsideCorners: outside
       };
     }
 
@@ -824,7 +855,6 @@
     }
 
     let isProcessing = false;
-    const COVERAGE_THRESHOLD = 45; // Mínimo 45% de cobertura de la pantalla para permitir disparo
 
     // CICLO DE PROCESAMIENTO EN TIEMPO REAL (Gatekeeper continuo)
     async function processFrame() {
@@ -885,10 +915,13 @@
             const screenArea = overlay.width * overlay.height;
             const coverage = Math.min(100, Math.round((quadArea / screenArea) * 100));
 
-            // Dibujar cuadrilátero dinámico con brackets AR
-            drawDynamicQuadrilateral(sheetQuad, detectedBox, coverage);
+            // Verificar si los 4 cuadrados negros están 100% dentro del encuadre
+            const cornerCheck = checkCornersInFrame(sheetQuad, overlay.width, overlay.height);
 
-            handleValidTarget(detectedText, sharpness, sheetQuad, coverage);
+            // Dibujar cuadrilátero dinámico con brackets AR
+            drawDynamicQuadrilateral(sheetQuad, detectedBox, coverage, cornerCheck);
+
+            handleValidTarget(detectedText, sharpness, sheetQuad, coverage, cornerCheck);
           } else {
             targetLockStartTime = null;
             handleLostTarget();
@@ -904,10 +937,44 @@
     }
 
     // DIBUJO DEL CUADRILÁTERO DINÁMICO EN TIEMPO REAL (AR)
-    function drawDynamicQuadrilateral(quad, qrBox, coverage) {
-      const isOptimal = coverage >= COVERAGE_THRESHOLD;
-      const color = isOptimal ? '#22c55e' : '#f59e0b';
-      const fillColor = isOptimal ? 'rgba(34, 197, 94, 0.12)' : 'rgba(245, 158, 11, 0.08)';
+    function drawDynamicQuadrilateral(quad, qrBox, coverage, cornerCheck) {
+      const isFullyInside = cornerCheck.isFullyInside;
+      const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
+
+      let color = '#22c55e'; // Verde
+      let fillColor = 'rgba(34, 197, 94, 0.12)';
+      let isDashed = false;
+      let labelText = `✓ ¡Distancia Óptima! (${coverage}%)`;
+
+      if (!isFullyInside) {
+        // Alerta roja: Una o más esquinas están fuera de la pantalla
+        color = '#ef4444';
+        fillColor = 'rgba(239, 68, 68, 0.14)';
+        isDashed = true;
+
+        const hasLeft = cornerCheck.outsideCorners.some(c => c.id === 'TL' || c.id === 'BL');
+        const hasRight = cornerCheck.outsideCorners.some(c => c.id === 'TR' || c.id === 'BR');
+        const hasTop = cornerCheck.outsideCorners.some(c => c.id === 'TL' || c.id === 'TR');
+        const hasBottom = cornerCheck.outsideCorners.some(c => c.id === 'BL' || c.id === 'BR');
+
+        if (hasLeft && !hasRight) {
+          labelText = '⚠️ Mueve la cámara a la izquierda ⬅️';
+        } else if (hasRight && !hasLeft) {
+          labelText = '⚠️ Mueve la cámara a la derecha ➡️';
+        } else if (hasTop && !hasBottom) {
+          labelText = '⚠️ Mueve la cámara hacia arriba ⬆️';
+        } else if (hasBottom && !hasTop) {
+          labelText = '⚠️ Mueve la cámara hacia abajo ⬇️';
+        } else {
+          labelText = '⚠️ Aleja un poco: faltan esquinas en pantalla';
+        }
+      } else if (!isOptimalDistance) {
+        // Advertencia amarilla: Está demasiado lejos
+        color = '#f59e0b';
+        fillColor = 'rgba(245, 158, 11, 0.08)';
+        isDashed = true;
+        labelText = `⚠️ Acércate a la hoja (${coverage}% / ${COVERAGE_THRESHOLD}%)`;
+      }
 
       ctx.save();
 
@@ -922,9 +989,9 @@
       ctx.fillStyle = fillColor;
       ctx.fill();
 
-      ctx.lineWidth = isOptimal ? 4 : 3;
+      ctx.lineWidth = isDashed ? 3 : 4;
       ctx.strokeStyle = color;
-      if (!isOptimal) {
+      if (isDashed) {
         ctx.setLineDash([12, 8]);
       } else {
         ctx.setLineDash([]);
@@ -953,20 +1020,19 @@
       ctx.stroke();
       ctx.restore();
 
-      // 4. Etiqueta flotante indicadora de proximidad
+      // 4. Etiqueta flotante indicadora de proximidad / centrado
       const centerX = (quad.pTL.x + quad.pTR.x) / 2;
-      const centerY = Math.min(quad.pTL.y, quad.pTR.y) - 18;
-      const labelText = isOptimal ? `✓ ¡Distancia Óptima! (${coverage}%)` : `⚠️ Acércate a la hoja (${coverage}% / ${COVERAGE_THRESHOLD}%)`;
+      const centerY = Math.max(25, Math.min(quad.pTL.y, quad.pTR.y) - 18);
 
       ctx.save();
-      ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       const textMetrics = ctx.measureText(labelText);
       const pillW = textMetrics.width + 24;
       const pillH = 30;
       const pillX = centerX - pillW / 2;
       const pillY = centerY - 15;
 
-      ctx.fillStyle = isOptimal ? 'rgba(22, 101, 52, 0.92)' : 'rgba(120, 53, 15, 0.92)';
+      ctx.fillStyle = !isFullyInside ? 'rgba(153, 27, 27, 0.94)' : (isOptimalDistance ? 'rgba(22, 101, 52, 0.94)' : 'rgba(120, 53, 15, 0.94)');
       ctx.beginPath();
       ctx.roundRect(pillX, pillY, pillW, pillH, 15);
       ctx.fill();
@@ -998,19 +1064,36 @@
     }
 
     // CONTROL DE ESTABILIDAD, COBERTURA Y AUTO-DISPARO (Zero-Click Gatekeeper)
-    function handleValidTarget(qrData, sharpness, sheetQuad, coverage) {
+    function handleValidTarget(qrData, sharpness, sheetQuad, coverage, cornerCheck) {
       const hud = document.getElementById('hud-guide');
       const badge = document.getElementById('status-badge');
       const statusText = document.getElementById('status-text');
+      const statusDot = document.getElementById('status-dot');
 
       updateCoverageUI(coverage);
 
-      const isCoverageOk = coverage >= COVERAGE_THRESHOLD;
-      const SHARPNESS_THRESHOLD = 35;
-      const isSharpnessOk = sharpness >= SHARPNESS_THRESHOLD;
+      // REGLA 1: Los 4 cuadrados negros deben estar 100% dentro del encuadre
+      if (!cornerCheck.isFullyInside) {
+        stableFrameCount = 0;
+        updateStabilityUI(0);
+        hud.classList.remove('locked');
+        hud.classList.add('tracking');
+        badge.classList.remove('locked');
+        badge.style.background = 'rgba(153, 27, 27, 0.92)';
+        statusDot.style.background = '#ef4444';
+        statusDot.style.boxShadow = '0 0 10px #ef4444';
+        statusText.textContent = '⚠️ Los 4 cuadrados negros deben verse completos en pantalla';
+        return;
+      }
 
+      // Restaurar estilo normal del badge
+      badge.style.background = '';
+      statusDot.style.background = '';
+      statusDot.style.boxShadow = '';
+
+      // REGLA 2: Cobertura mínima (no muy lejos)
+      const isCoverageOk = coverage >= COVERAGE_THRESHOLD;
       if (!isCoverageOk) {
-        // Bloquear disparo: está demasiado lejos
         stableFrameCount = 0;
         updateStabilityUI(0);
         hud.classList.remove('locked');
@@ -1020,24 +1103,26 @@
         return;
       }
 
-      // Distancia correcta (>= 45%)
+      // REGLA 3: Alta nitidez (>= 60%) y 3 cuadros de estabilidad continua
+      const isSharpnessOk = sharpness >= SHARPNESS_THRESHOLD;
+
       if (isSharpnessOk) {
         stableFrameCount++;
-        const stabilityPct = Math.min(100, Math.round((stableFrameCount / 2) * 100));
+        const stabilityPct = Math.min(100, Math.round((stableFrameCount / REQUIRED_STABLE_FRAMES) * 100));
         updateStabilityUI(stabilityPct);
 
         badge.classList.add('locked');
-        statusText.textContent = '¡Distancia y nitidez perfectas! Congelando...';
+        statusText.textContent = `¡Nitidez excelente (${sharpness}%)! Congelando...`;
 
-        // Disparo al completar 2 cuadros nítidos y estables (~100ms)
-        if (stableFrameCount >= 2) {
+        // Disparo al completar los cuadros nítidos y estables (~150-200ms)
+        if (stableFrameCount >= REQUIRED_STABLE_FRAMES) {
           triggerAutoCapture(qrData, sharpness, null, sheetQuad);
         }
       } else {
         stableFrameCount = Math.max(0, stableFrameCount - 1);
         updateStabilityUI(0);
         badge.classList.remove('locked');
-        statusText.textContent = 'Distancia buena. Enfocando nitidez...';
+        statusText.textContent = `Encuadre perfecto. Enfocando nitidez (${sharpness}% / ${SHARPNESS_THRESHOLD}%)...`;
       }
     }
 
@@ -1119,8 +1204,8 @@
     function updateSharpnessUI(val) {
       document.getElementById('val-sharpness').textContent = val + '%';
       const bar = document.getElementById('bar-sharpness');
-      bar.style.width = val + '%';
-      bar.style.background = val >= 55 ? '#22c55e' : (val >= 35 ? '#f59e0b' : '#ef4444');
+      bar.style.width = Math.min(100, Math.round((val / SHARPNESS_THRESHOLD) * 100)) + '%';
+      bar.style.background = val >= SHARPNESS_THRESHOLD ? '#22c55e' : (val >= 40 ? '#f59e0b' : '#ef4444');
     }
 
     function updateStabilityUI(val) {
