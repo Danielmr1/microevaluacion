@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v1.3.1 - Microevaluación</title>
+  <title>Escáner Inteligente A5 v1.3.2 - Microevaluación</title>
   <script src="jsqr.min.js"></script>
   <style>
     * {
@@ -695,8 +695,8 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v1.3.1</span></h1>
-        <p>Detector de Rectángulo Plano A5</p>
+        <h1>Escáner de Aula A5 <span class="version-tag">v1.3.2</span></h1>
+        <p>Detector de Rectángulo en Tiempo Real (Pantalla PC / Papel)</p>
       </div>
     </div>
     <div class="header-actions">
@@ -716,7 +716,7 @@
       <div class="placeholder-icon">📸</div>
       <div class="placeholder-title">Visor Inmersivo A5</div>
       <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v1.3.1</span>
+      <span class="version-tag" style="margin-top: 4px;">v1.3.2</span>
     </div>
 
     <!-- Indicador de Estado Flotante -->
@@ -789,7 +789,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.3.1</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡CAPTURA CONGELADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v1.3.2</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -1060,12 +1060,15 @@
       const data = imgData.data;
       const bin = new Uint8Array(width * height);
       
-      let sum = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        sum += (data[i] + data[i+1] + data[i+2]) / 3;
+      // Muestreo dinámico de luminancia (soporta pantallas de PC brillantes y papel impreso)
+      let minL = 255, maxL = 0;
+      for (let i = 0; i < data.length; i += 16) {
+        const lum = (data[i] * 299 + data[i+1] * 587 + data[i+2] * 114) / 1000;
+        if (lum < minL) minL = lum;
+        if (lum > maxL) maxL = lum;
       }
-      const avgLum = sum / (width * height);
-      const darkThreshold = Math.min(95, Math.max(40, avgLum * 0.55));
+      const range = maxL - minL;
+      const darkThreshold = range > 35 ? minL + range * 0.42 : 80;
 
       for (let i = 0, j = 0; i < data.length; i += 4, j++) {
         const lum = (data[i] * 299 + data[i+1] * 587 + data[i+2] * 114) / 1000;
@@ -1115,10 +1118,10 @@
             const solidity = area / bboxArea;
             const aspect = bw / bh;
 
-            // Filtrar cuadrados negros de las esquinas (ignora letras delgadas y cuadrículas)
-            if (bw >= 4 && bw <= 55 && bh >= 4 && bh <= 55 &&
-                aspect >= 0.60 && aspect <= 1.60 &&
-                solidity >= 0.65 && area >= 12) {
+            // Filtrar cuadrados negros de las esquinas (soporta marcas de 11mm y pantalla PC)
+            if (bw >= 3 && bw <= 85 && bh >= 3 && bh <= 85 &&
+                aspect >= 0.55 && aspect <= 1.80 &&
+                solidity >= 0.55 && area >= 8) {
               blobs.push({
                 cx: sumX / count,
                 cy: sumY / count,
@@ -1208,9 +1211,9 @@
       const vx = { x: (pTR.x - pTL.x + pBR.x - pBL.x) / 2, y: (pTR.y - pTL.y + pBR.y - pBL.y) / 2 };
       const vy = { x: (pBL.x - pTL.x + pBR.x - pTR.x) / 2, y: (pBL.y - pTL.y + pBR.y - pTR.y) / 2 };
 
-      // Expansión hacia afuera para abarcar los 4 cuadrados negros completos con margen holgado
-      const ex = 0.065;
-      const ey = 0.075;
+      // Expansión proporcional exacta sobre el marco exterior negro
+      const ex = 0.035;
+      const ey = 0.045;
 
       return {
         pTL: { x: pTL.x - ex * vx.x - ey * vy.x, y: pTL.y - ex * vx.y - ey * vy.y },
@@ -1221,7 +1224,7 @@
       };
     }
 
-    // MÓDULO MATEMÁTICO: Estimación de Cuadrilátero A5 y Deformación de Perspectiva
+    // MÓDULO MATEMÁTICO: Estimación de Cuadrilátero A5 desde Código QR (Anclaje Inmediato)
     function estimateSheetQuad(qTL, qTR, qBR, qBL) {
       const vx = {
         x: ((qTR.x - qTL.x) + (qBR.x - qBL.x)) / 2,
@@ -1232,12 +1235,11 @@
         y: ((qBL.y - qTL.y) + (qBR.y - qTR.y)) / 2
       };
 
-      // Calibrado con margen exterior holgado (~6mm) hacia afuera de los 4 marcadores negros
-      // para asegurar que los 4 cuadrados negros queden 100% íntegros, libres de cortes y holgados
-      const uL = -6.02; // Margen exterior izquierdo ampliado
-      const uR = 1.67;  // Margen exterior derecho ampliado
-      const vT = -0.37; // Margen exterior superior ampliado
-      const vB = 5.02;  // Margen exterior inferior ampliado
+      // Vector de escala respecto al tamaño del código QR (28mm en hoja de 198x137mm)
+      const uL = -5.57; // Margen hacia el borde izquierdo de la ficha
+      const uR = 1.50;  // Margen hacia el borde derecho de la ficha
+      const vT = -0.21; // Margen hacia el borde superior de la ficha
+      const vB = 4.68;  // Margen hacia el borde inferior de la ficha
 
       return {
         pTL: { x: qTL.x + uL * vx.x + vT * vy.x, y: qTL.y + uL * vx.y + vT * vy.y },
