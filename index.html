@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Escáner Inteligente A5 v1.4.1 - Cuadrilátero Elástico</title>
+  <title>Escáner Inteligente A5 v1.5.0 - Cuadrilátero Puro 4 Esquinas</title>
   <script src="jsqr.min.js"></script>
   <style>
     * {
@@ -675,8 +675,8 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Escáner de Aula A5 <span class="version-tag">v1.4.1</span></h1>
-        <p>Cuadrilátero Elástico en Vivo (Sin Disparos)</p>
+        <h1>Escáner de Aula A5 <span class="version-tag">v1.5.0</span></h1>
+        <p>Cuadrilátero Puro 4 Esquinas (Sin Disparos)</p>
       </div>
     </div>
     <div class="header-actions">
@@ -696,7 +696,7 @@
       <div class="placeholder-icon">📸</div>
       <div class="placeholder-title">Visor Inmersivo A5</div>
       <div class="placeholder-desc">Toca <strong>"Iniciar Cámara"</strong> para escanear en pantalla completa sin barras molestas.</div>
-      <span class="version-tag" style="margin-top: 4px;">v1.4.1</span>
+      <span class="version-tag" style="margin-top: 4px;">v1.5.0</span>
     </div>
 
     <!-- Indicador de Estado Flotante -->
@@ -1190,30 +1190,7 @@
       };
     }
 
-    // MÓDULO MATEMÁTICO: Estimación de Cuadrilátero A5 desde Código QR (Anclaje Inmediato)
-    function estimateSheetQuad(qTL, qTR, qBR, qBL) {
-      const vx = {
-        x: ((qTR.x - qTL.x) + (qBR.x - qBL.x)) / 2,
-        y: ((qTR.y - qTL.y) + (qBR.y - qBL.y)) / 2
-      };
-      const vy = {
-        x: ((qBL.x - qTL.x) + (qBR.x - qTR.x)) / 2,
-        y: ((qBL.y - qTL.y) + (qBR.y - qTR.y)) / 2
-      };
 
-      // Vector de escala respecto al tamaño del código QR (28mm en hoja de 198x137mm)
-      const uL = -5.57; // Margen hacia el borde izquierdo de la ficha
-      const uR = 1.50;  // Margen hacia el borde derecho de la ficha
-      const vT = -0.21; // Margen hacia el borde superior de la ficha
-      const vB = 4.68;  // Margen hacia el borde inferior de la ficha
-
-      return {
-        pTL: { x: qTL.x + uL * vx.x + vT * vy.x, y: qTL.y + uL * vx.y + vT * vy.y },
-        pTR: { x: qTL.x + uR * vx.x + vT * vy.x, y: qTL.y + uR * vx.y + vT * vy.y },
-        pBR: { x: qTL.x + uR * vx.x + vB * vy.x, y: qTL.y + uR * vx.y + vB * vy.y },
-        pBL: { x: qTL.x + uL * vx.x + vB * vy.x, y: qTL.y + uL * vx.y + vB * vy.y }
-      };
-    }
 
     // SENSOR DE SEGURIDAD: Verificar que los 4 marcadores negros estén dentro del lente
     function checkCornersInFrame(quad, width, height, margin = 14) {
@@ -1381,16 +1358,10 @@
             }
           }
 
-          // Fallback: si no se detectaron los 4 cuadrados pero sí el QR, estimar la hoja
-          if (!rawQuad && detectedText && detectedBox) {
-            rawQuad = estimateSheetQuad(detectedBox.p1, detectedBox.p2, detectedBox.p3, detectedBox.p4);
-          }
-
           if (rawQuad) {
             if (!activeTarget) {
               activeTarget = {
                 quad: rawQuad,
-                qrBox: detectedBox,
                 qrData: detectedText
               };
             } else {
@@ -1402,7 +1373,6 @@
                 pBR: { x: activeTarget.quad.pBR.x * (1 - alpha) + rawQuad.pBR.x * alpha, y: activeTarget.quad.pBR.y * (1 - alpha) + rawQuad.pBR.y * alpha },
                 pBL: { x: activeTarget.quad.pBL.x * (1 - alpha) + rawQuad.pBL.x * alpha, y: activeTarget.quad.pBL.y * (1 - alpha) + rawQuad.pBL.y * alpha }
               };
-              if (detectedBox) activeTarget.qrBox = detectedBox;
               if (detectedText) activeTarget.qrData = detectedText;
             }
             lostFramesCount = 0;
@@ -1417,12 +1387,12 @@
             // Sensor de 4 cuadrados negros completos dentro de los bordes
             const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
 
-            // Dibujar lámina verde semitransparente que crece conforme te acercas
-            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck, rectCheck);
+            // Dibujar cuadrilátero elástico puro sobre los 4 cuadrados negros
+            drawDynamicQuadrilateral(activeTarget.quad, coverage, cornerCheck, rectCheck);
 
             handleValidTarget(activeTarget.qrData, sharpness, activeTarget.quad, coverage, cornerCheck, rectCheck);
           } else if (activeTarget && lostFramesCount < MAX_LOST_FRAMES) {
-            // Cuadro intermedio borroso por movimiento del celular: NO perder el rectángulo verde
+            // Cuadro intermedio borroso por movimiento del celular: NO perder el cuadrilátero verde
             lostFramesCount++;
             const quadArea = getQuadArea(activeTarget.quad.pTL, activeTarget.quad.pTR, activeTarget.quad.pBR, activeTarget.quad.pBL);
             const screenArea = overlay.width * overlay.height;
@@ -1430,7 +1400,7 @@
             const cornerCheck = checkCornersInFrame(activeTarget.quad, overlay.width, overlay.height);
             const rectCheck = checkRectanglePerfection(activeTarget.quad);
 
-            drawDynamicQuadrilateral(activeTarget.quad, activeTarget.qrBox, coverage, cornerCheck, rectCheck);
+            drawDynamicQuadrilateral(activeTarget.quad, coverage, cornerCheck, rectCheck);
             updateCoverageUI(coverage);
           } else {
             activeTarget = null;
@@ -1447,8 +1417,8 @@
       }
     }
 
-    // DIBUJO DEL RECTÁNGULO VERDE SEMI-TRANSPARENTE EN TIEMPO REAL (AR)
-    function drawDynamicQuadrilateral(quad, qrBox, coverage, cornerCheck, rectCheck) {
+    // DIBUJO DEL CUADRILÁTERO ELÁSTICO EN TIEMPO REAL (AR)
+    function drawDynamicQuadrilateral(quad, coverage, cornerCheck, rectCheck) {
       const isFullyInside = cornerCheck ? cornerCheck.isFullyInside : true;
       const isAlmostPerfect = rectCheck ? rectCheck.isAlmostPerfect : true;
       const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
@@ -1515,7 +1485,7 @@
       drawCornerBracket(quad.pBR, bracketSize, Math.PI, color);
       drawCornerBracket(quad.pBL, bracketSize, -Math.PI / 2, color);
 
-      // 2b. Puntos de anclaje visibles en los 4 cuadrados negros de la hoja
+      // Puntos de anclaje visibles en los 4 cuadrados negros de la hoja
       [quad.pTL, quad.pTR, quad.pBR, quad.pBL].forEach(pt => {
         ctx.save();
         ctx.beginPath();
@@ -1527,21 +1497,6 @@
         ctx.stroke();
         ctx.restore();
       });
-
-      // 3. Mini recuadro sobre el QR si existe
-      if (qrBox) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(qrBox.p1.x, qrBox.p1.y);
-        ctx.lineTo(qrBox.p2.x, qrBox.p2.y);
-        ctx.lineTo(qrBox.p3.x, qrBox.p3.y);
-        ctx.lineTo(qrBox.p4.x, qrBox.p4.y);
-        ctx.closePath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = color;
-        ctx.stroke();
-        ctx.restore();
-      }
 
       // 4. Etiqueta flotante indicadora de proximidad / alineación
       const centerX = (quad.pTL.x + quad.pTR.x) / 2;
