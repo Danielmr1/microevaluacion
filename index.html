@@ -430,6 +430,7 @@
       </div>
     </div>
     <div class="header-actions">
+      <button class="btn-icon" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa (Ocultar barra web)">⛶</button>
       <button class="btn-icon" id="btn-torch" onclick="toggleTorch()" title="Encender linterna">🔦</button>
       <button class="btn-icon" id="btn-switch" onclick="switchCamera()" title="Cambiar cámara">🔄</button>
     </div>
@@ -594,6 +595,41 @@
       });
     }
 
+    // MODO PANTALLA COMPLETA (Ocultar barra de navegación web de Android Chrome)
+    function enterFullscreen() {
+      const docEl = document.documentElement;
+      const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+      if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
+        req.call(docEl).then(() => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+          }
+        }).catch(() => {});
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        enterFullscreen();
+      } else {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+        if (exit) exit.call(document).catch(() => {});
+      }
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenIcon);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+    function updateFullscreenIcon() {
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      const btn = document.getElementById('btn-fullscreen');
+      if (btn) {
+        btn.innerHTML = isFs ? '🗗' : '⛶';
+        btn.classList.toggle('active', isFs);
+        btn.title = isFs ? 'Salir de pantalla completa' : 'Pantalla completa (Ocultar barra web)';
+      }
+    }
+
     // INICIAR / DETENER CÁMARA
     async function toggleCamera() {
       const btn = document.getElementById('btn-start');
@@ -602,6 +638,7 @@
         btn.innerHTML = '<span>▶ Iniciar Cámara</span>';
         btn.style.background = '#2563eb';
       } else {
+        enterFullscreen(); // Ocultar barra de navegación de Chrome automáticamente
         await startCamera();
         if (isScanning) {
           btn.innerHTML = '<span>⏹ Detener Cámara</span>';
@@ -907,8 +944,6 @@
           }
 
           if (detectedText && detectedBox) {
-            if (!targetLockStartTime) targetLockStartTime = Date.now();
-
             // Calcular cuadrilátero dinámico de la ficha completa A5
             const sheetQuad = estimateSheetQuad(detectedBox.p1, detectedBox.p2, detectedBox.p3, detectedBox.p4);
             const quadArea = getQuadArea(sheetQuad.pTL, sheetQuad.pTR, sheetQuad.pBR, sheetQuad.pBL);
@@ -1074,6 +1109,7 @@
 
       // REGLA 1: Los 4 cuadrados negros deben estar 100% dentro del encuadre
       if (!cornerCheck.isFullyInside) {
+        targetLockStartTime = null; // Reiniciar cronómetro: aún no está bien encuadrado
         stableFrameCount = 0;
         updateStabilityUI(0);
         hud.classList.remove('locked');
@@ -1094,6 +1130,7 @@
       // REGLA 2: Cobertura mínima (no muy lejos)
       const isCoverageOk = coverage >= COVERAGE_THRESHOLD;
       if (!isCoverageOk) {
+        targetLockStartTime = null; // Reiniciar cronómetro: aún está lejos
         stableFrameCount = 0;
         updateStabilityUI(0);
         hud.classList.remove('locked');
@@ -1101,6 +1138,11 @@
         badge.classList.remove('locked');
         statusText.textContent = `Acércate más a la hoja (${coverage}% / ${COVERAGE_THRESHOLD}%)...`;
         return;
+      }
+
+      // Los 4 cuadrados están dentro y la distancia es óptima: iniciar conteo de enfoque aquí
+      if (!targetLockStartTime) {
+        targetLockStartTime = Date.now();
       }
 
       // REGLA 3: Alta nitidez (>= 60%) y 3 cuadros de estabilidad continua
