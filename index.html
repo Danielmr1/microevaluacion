@@ -1178,8 +1178,8 @@
           <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;"
             onchange="handleExcelImport(this)">
           <button onclick="document.getElementById('excel-file-input').click()"
-            style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #475569; color:#64748b; border-radius:8px; padding:7px 12px; font-size:0.76rem; cursor:pointer;">
-            📂 Importar nómina (.xlsx / .csv)
+            style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #475569; color:#94a3b8; border-radius:8px; padding:7px 12px; font-size:0.76rem; cursor:pointer;">
+            📂 Importar salón (.xlsx / .csv)
           </button>
           <span id="excel-import-status" style="font-size:0.72rem; color:#64748b;"></span>
         </div>
@@ -1967,14 +1967,15 @@
      * Carga los salones del docente desde Supabase y puebla el selector.
      * Si no tiene salones aún, el selector solo muestra un mensaje guía.
      */
-    async function loadAndRenderClassrooms(user) {
+    async function loadAndRenderClassrooms(user, selectClassroomId = null) {
       const classrooms = await SupabaseClient.loadClassrooms();
       const sel = document.getElementById('builder-classroom');
       if (!sel) return;
       sel.innerHTML = '<option value="">— Elegí un salón —</option>';
 
       if (classrooms.length === 0) {
-        sel.innerHTML += '<option value="" disabled>No tenés salones aún. Importá una nómina ↓</option>';
+        sel.innerHTML += '<option value="" disabled>No tenés salones aún. Importá un salón ↓</option>';
+        syncClassroomsToLocal([]);
         return;
       }
 
@@ -1988,6 +1989,11 @@
 
       // Guardar en ClassroomData local para compatibilidad con el resto del sistema
       syncClassroomsToLocal(classrooms);
+
+      if (selectClassroomId) {
+        sel.value = selectClassroomId;
+        onClassroomSelectChanged(selectClassroomId);
+      }
     }
 
     /**
@@ -2011,20 +2017,14 @@
     }
 
     /**
-     * Lee el archivo Excel/CSV seleccionado y lo importa como nómina del salón activo.
+     * Lee el archivo Excel/CSV seleccionado y lo importa como un nuevo salón o actualiza el seleccionado.
      */
     async function handleExcelImport(input) {
       const file = input.files[0];
       if (!file) return;
       const statusEl = document.getElementById('excel-import-status');
       const sel = document.getElementById('builder-classroom');
-      const classroomId = sel ? sel.value : '';
-
-      if (!classroomId) {
-        if (statusEl) { statusEl.textContent = '⚠️ Primero seleccioná el salón'; statusEl.style.color = '#f87171'; }
-        input.value = '';
-        return;
-      }
+      let classroomId = sel ? sel.value : '';
 
       if (statusEl) { statusEl.textContent = '⏳ Leyendo archivo...'; statusEl.style.color = '#94a3b8'; }
 
@@ -2034,10 +2034,19 @@
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
-        // Detectar encabezado (primera fila)
-        const dataRows = rows.slice(1).filter(r => r[0] && r[0].toString().trim());
+        // Detectar si la primera fila es encabezado
+        let startIndex = 0;
+        if (rows.length > 0) {
+          const firstCol = (rows[0][0] || '').toString().toLowerCase();
+          if (firstCol.includes('nombre') || firstCol.includes('alumno') || firstCol.includes('estudiante')) {
+            startIndex = 1;
+          }
+        }
+
+        const dataRows = rows.slice(startIndex).filter(r => r[0] && r[0].toString().trim());
         if (dataRows.length === 0) {
           if (statusEl) { statusEl.textContent = '⚠️ No se encontraron alumnos en el archivo'; statusEl.style.color = '#f87171'; }
+          input.value = '';
           return;
         }
 
@@ -2046,19 +2055,65 @@
           shortName: (r[1] || r[0] || '').toString().trim()
         }));
 
-        const ok = await SupabaseClient.importStudents(classroomId, students);
-        if (ok) {
-          if (statusEl) { statusEl.textContent = `✅ ${students.length} alumnos importados`; statusEl.style.color = '#4ade80'; }
-          // Recargar la lista de salones para reflejar el cambio
-          const user = await SupabaseClient.getCurrentUser();
-          if (user) await loadAndRenderClassrooms(user);
-          showToast(`✅ Nómina importada: ${students.length} alumnos`);
+        let targetClassroomId = classroomId;
+
+        // Si no hay salón seleccionado: crear un nuevo salón automáticamente con nombre sugerido
+        if (!targetClassroomId) {
+          let suggested = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+          if (/3a/i.test(suggested)) suggested = '3° Primaria "A"';
+          else if (/3b/i.test(suggested)) suggested = '3° Primaria "B"';
+          else suggested = suggested.charAt(0).toUpperCase() + suggested.slice(1);
+
+          const name = prompt('Nombre para este nuevo salón de clases:', suggested);
+          if (!name || !name.trim()) {
+            if (statusEl) { statusEl.textContent = '⚠️ Importación cancelada'; statusEl.style.color = '#f87171'; }
+            input.value = '';
+            return;
+          }
+
+          const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
+          const res = await SupabaseClient.createClassroom(name.trim(), gradeCode);
+          if (res.error || !res.data) {
+            if (statusEl) { statusEl.textContent = '❌ Error al crear el salón: ' + (res.error || ''); statusEl.style.color = '#f87171'; }
+            input.value = '';
+            return;
+          }
+          targetClassroomId = res.data.id;
         } else {
-          if (statusEl) { statusEl.textContent = '❌ Error al guardar. Revisá tu conexión.'; statusEl.style.color = '#f87171'; }
+          // Si ya había un salón seleccionado, confirmar si desea sobreescribir o crear uno nuevo
+          const selectedText = sel.options[sel.selectedIndex]?.textContent || 'este salón';
+          const wantUpdate = confirm(`¿Deseas actualizar la lista de alumnos de:\n"${selectedText}"?\n\n(Aceptar = Actualizar este salón / Cancelar = Crear un nuevo salón)`);
+          if (!wantUpdate) {
+            let suggested = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+            const name = prompt('Nombre para el nuevo salón de clases:', suggested);
+            if (!name || !name.trim()) {
+              if (statusEl) { statusEl.textContent = '⚠️ Importación cancelada'; statusEl.style.color = '#f87171'; }
+              input.value = '';
+              return;
+            }
+            const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
+            const res = await SupabaseClient.createClassroom(name.trim(), gradeCode);
+            if (res.error || !res.data) {
+              if (statusEl) { statusEl.textContent = '❌ Error al crear el salón: ' + (res.error || ''); statusEl.style.color = '#f87171'; }
+              input.value = '';
+              return;
+            }
+            targetClassroomId = res.data.id;
+          }
+        }
+
+        const importRes = await SupabaseClient.importStudents(targetClassroomId, students);
+        if (importRes.success) {
+          if (statusEl) { statusEl.textContent = `✅ ${students.length} alumnos guardados`; statusEl.style.color = '#4ade80'; }
+          const user = await SupabaseClient.getCurrentUser();
+          if (user) await loadAndRenderClassrooms(user, targetClassroomId);
+          showToast(`✅ Salón y nómina guardados: ${students.length} alumnos`);
+        } else {
+          if (statusEl) { statusEl.textContent = '❌ Error al guardar alumnos: ' + (importRes.error || ''); statusEl.style.color = '#f87171'; }
         }
       } catch (e) {
         console.error('[ExcelImport]', e);
-        if (statusEl) { statusEl.textContent = '❌ Archivo inválido'; statusEl.style.color = '#f87171'; }
+        if (statusEl) { statusEl.textContent = '❌ Archivo inválido o error al procesar'; statusEl.style.color = '#f87171'; }
       }
       input.value = '';  // Resetear el input para permitir reimportar el mismo archivo
     }

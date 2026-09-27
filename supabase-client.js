@@ -108,9 +108,9 @@
    */
   async function createClassroom(name, gradeCode, color) {
     const client = getClient();
-    if (!client) return null;
+    if (!client) return { error: 'SDK Supabase no inicializado' };
     const user = await getCurrentUser();
-    if (!user) return null;
+    if (!user) return { error: 'No hay usuario autenticado' };
 
     const { data, error } = await client
       .from('microeval_classrooms')
@@ -118,8 +118,11 @@
       .select()
       .single();
 
-    if (error) { console.error('[SupabaseClient] Error creando salón:', error.message); return null; }
-    return data;
+    if (error) {
+      console.error('[SupabaseClient] Error creando salón:', error.message);
+      return { error: error.message };
+    }
+    return { data };
   }
 
   /**
@@ -143,7 +146,7 @@
    */
   async function importStudents(classroomId, students) {
     const client = getClient();
-    if (!client) return false;
+    if (!client) return { error: 'SDK Supabase no inicializado' };
 
     // Borrar alumnos anteriores
     await client.from('microeval_students').delete().eq('classroom_id', classroomId);
@@ -157,8 +160,11 @@
     }));
 
     const { error } = await client.from('microeval_students').insert(rows);
-    if (error) { console.error('[SupabaseClient] Error importando alumnos:', error.message); return false; }
-    return true;
+    if (error) {
+      console.error('[SupabaseClient] Error importando alumnos:', error.message);
+      return { error: error.message };
+    }
+    return { success: true, count: rows.length };
   }
 
   // ─────────────────────────────────────────────
