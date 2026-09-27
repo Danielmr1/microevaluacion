@@ -36,7 +36,7 @@
     if (!client) return;
     const { error } = await client.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href }
+      options: { redirectTo: 'https://danielmr1.github.io/microevaluacion/' }
     });
     if (error) console.error('[Auth] Error al iniciar con Google:', error.message);
   }
