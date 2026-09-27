@@ -219,7 +219,48 @@
     getStudent,
     saveCustomEvaluation,
     setActiveSession,
-    getActiveSession
+    getActiveSession,
+
+    /**
+     * Reemplaza el runtime de salones con datos frescos de Supabase.
+     * Recibe un array en el formato { id, name, gradeCode, color, students[] }.
+     * Preserva la paleta de colores si el salón no tiene color propio.
+     */
+    setClassrooms(list) {
+      // Limpiar los salones del runtime (conservar el objeto para no romper referencias)
+      Object.keys(CLASSROOMS).forEach(k => delete CLASSROOMS[k]);
+      list.forEach((cls, idx) => {
+        CLASSROOMS[cls.id] = {
+          id: cls.id,
+          name: cls.name,
+          gradeCode: cls.gradeCode || cls.id,
+          color: cls.color || CLASSROOM_COLOR_PALETTE[idx % CLASSROOM_COLOR_PALETTE.length],
+          students: (cls.students || []).map((s, si) => ({
+            id: s.id || `ALUM_${String(si + 1).padStart(2, '0')}`,
+            name: s.name || s.fullName || '',
+            shortName: s.shortName || s.short_name || s.name || ''
+          }))
+        };
+      });
+    },
+
+    /**
+     * Carga el historial de evaluaciones recientes del docente (desde Supabase)
+     * al banco local, para que renderBankCards() las muestre.
+     * Recibe un array con { id, title, prompt, expected_answer }.
+     */
+    setRecentEvaluations(list) {
+      list.forEach(ev => {
+        const id = ev.id || `EVA_REC_${Date.now()}`;
+        EVALUATIONS[id] = {
+          id,
+          title: ev.title || 'Evaluación',
+          prompt: ev.prompt,
+          expectedAnswer: ev.expected_answer,
+          unitHint: ''
+        };
+      });
+    }
   };
 
   global.ClassroomData = ClassroomData;
