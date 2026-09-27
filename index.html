@@ -2073,12 +2073,13 @@
 
           const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
           const res = await SupabaseClient.createClassroom(name.trim(), gradeCode);
-          if (res.error || !res.data) {
-            if (statusEl) { statusEl.textContent = '❌ Error al crear el salón: ' + (res.error || ''); statusEl.style.color = '#f87171'; }
+          const newId = (res && res.id) || (res && res.data && res.data.id);
+          if (!newId) {
+            if (statusEl) { statusEl.textContent = '❌ Error al crear el salón'; statusEl.style.color = '#f87171'; }
             input.value = '';
             return;
           }
-          targetClassroomId = res.data.id;
+          targetClassroomId = newId;
         } else {
           // Si ya había un salón seleccionado, confirmar si desea sobreescribir o crear uno nuevo
           const selectedText = sel.options[sel.selectedIndex]?.textContent || 'este salón';
@@ -2093,23 +2094,25 @@
             }
             const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
             const res = await SupabaseClient.createClassroom(name.trim(), gradeCode);
-            if (res.error || !res.data) {
-              if (statusEl) { statusEl.textContent = '❌ Error al crear el salón: ' + (res.error || ''); statusEl.style.color = '#f87171'; }
+            const newId = (res && res.id) || (res && res.data && res.data.id);
+            if (!newId) {
+              if (statusEl) { statusEl.textContent = '❌ Error al crear el salón'; statusEl.style.color = '#f87171'; }
               input.value = '';
               return;
             }
-            targetClassroomId = res.data.id;
+            targetClassroomId = newId;
           }
         }
 
         const importRes = await SupabaseClient.importStudents(targetClassroomId, students);
-        if (importRes.success) {
+        const importOk = importRes === true || (importRes && importRes.success === true);
+        if (importOk) {
           if (statusEl) { statusEl.textContent = `✅ ${students.length} alumnos guardados`; statusEl.style.color = '#4ade80'; }
           const user = await SupabaseClient.getCurrentUser();
           if (user) await loadAndRenderClassrooms(user, targetClassroomId);
           showToast(`✅ Salón y nómina guardados: ${students.length} alumnos`);
         } else {
-          if (statusEl) { statusEl.textContent = '❌ Error al guardar alumnos: ' + (importRes.error || ''); statusEl.style.color = '#f87171'; }
+          if (statusEl) { statusEl.textContent = '❌ Error al guardar alumnos'; statusEl.style.color = '#f87171'; }
         }
       } catch (e) {
         console.error('[ExcelImport]', e);
