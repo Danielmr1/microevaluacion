@@ -1580,6 +1580,8 @@
       if (!classId) return;
       wizardClassroomId = classId;
       wizardEval = null;
+      const pages = document.getElementById('pages-container');
+      if (pages) pages.innerHTML = '';
 
       // Actualizar badge de alumnos en la tab bar
       const cls = ClassroomData.getClassroom(classId);
@@ -2078,23 +2080,13 @@
           if (typeof ClassroomData !== 'undefined' && ClassroomData.setRecentEvaluations) {
             ClassroomData.setRecentEvaluations(recentEvals);
           }
-          // Restaurar sesión activa previa si existe
-          const savedSession = ClassroomData.getActiveSession();
-          if (savedSession && savedSession.classroomId && savedSession.prompt && savedSession.expectedAnswer) {
-            wizardClassroomId = savedSession.classroomId;
-            wizardEval = { id: savedSession.evalId, title: savedSession.title, prompt: savedSession.prompt, expectedAnswer: savedSession.expectedAnswer };
-            const sel = document.getElementById('builder-classroom');
-            if (sel) sel.value = savedSession.classroomId;
-            document.getElementById('input-eval-title').value = savedSession.title || '';
-            document.getElementById('input-eval-prompt').value = savedSession.prompt || '';
-            document.getElementById('input-eval-expected').value = savedSession.expectedAnswer || '';
-            document.getElementById('input-eval-unit').value = '';
-            document.getElementById('step-source').style.display = 'block';
-            showSummary();
-            updateScannerSessionBar(savedSession);
-            if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession(savedSession.classroomId, savedSession.evalId);
-          }
-          // Si no hay sesión previa guardada: el docente empieza desde el paso 1 (salón limpio)
+          // Siempre iniciar con sesión desactivada y wizard limpio
+          ClassroomData.setActiveSession(null);
+          wizardClassroomId = null;
+          wizardEval = null;
+          const pages = document.getElementById('pages-container');
+          if (pages) pages.innerHTML = '';
+          resetWizard();
         } else {
           // Sin sesión → mostrar overlay de login
           showLoginOverlay();
