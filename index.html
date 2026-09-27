@@ -1119,78 +1119,108 @@
   <!-- VISTA 1: REDACTAR E IMPRIMIR FICHAS                       -->
   <!-- ========================================================= -->
   <div id="view-create" class="view-content active">
-    <!-- Panel del Docente -->
-    <div class="teacher-panel">
-      <div class="panel-header">
-        <div>
-          <h2>Configuración de la Microevaluación</h2>
-          <p>Redacta el problema que enseñaste hoy, fija el resultado esperado y genera las 5 hojas A4 listas para el salón.</p>
-        </div>
-        <div style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; font-weight: 700; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; border: 1px solid rgba(56, 189, 248, 0.3);">
-          📄 5 Hojas A4 (10 Alumnos)
+    <!-- Panel del Docente — Flujo Wizard -->
+    <div class="teacher-panel" style="padding:0;">
+
+      <!-- ── PASO 1: Selección de Salón ── -->
+      <div id="step-classroom" style="padding:18px 20px; border-bottom:1px solid #1e293b;">
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">1 · Salón de Clases</label>
+        <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)"
+          style="font-size:1rem; font-weight:700; padding:10px 14px;">
+        </select>
+      </div>
+
+      <!-- ── PASO 2: Botones Banco / Nueva ── -->
+      <div id="step-source" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">2 · ¿Qué evaluación usás hoy?</label>
+        <div style="display:flex; gap:10px;">
+          <button id="btn-mode-bank" onclick="selectMode('bank')"
+            style="flex:1; padding:12px; border-radius:10px; border:2px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.88rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+            📚 Cargar del banco
+          </button>
+          <button id="btn-mode-new" onclick="selectMode('new')"
+            style="flex:1; padding:12px; border-radius:10px; border:2px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.88rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+            ✏️ Crear nueva
+          </button>
         </div>
       </div>
 
-      <div class="form-grid">
-        <!-- 1. Salón -->
-        <div class="form-group">
-          <label for="builder-classroom">1. Salón de Clases:</label>
-          <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)">
-            <option value="3A">3° Primaria "A" (10 alumnos: Mateo García a Emma Chávez)</option>
-            <option value="3B">3° Primaria "B" (10 alumnos: Álvaro Guzmán a Constanza Aguilar)</option>
-          </select>
-        </div>
-
-        <!-- 2. Banco Rápido -->
-        <div class="form-group">
-          <label for="builder-bank">2. Cargar del Banco o Crear Nueva:</label>
-          <select id="builder-bank" class="form-control" onchange="onBankSelectionChanged(this.value)">
-            <option value="EVA_01">EVA_01: Suma con Canje - Biblioteca (Obj: 85)</option>
-            <option value="EVA_02">EVA_02: Resta con Canje - Panadería (Obj: 38)</option>
-            <option value="EVA_03">EVA_03: Multiplicación Inicial - Cajas Manzanas (Obj: 48)</option>
-            <option value="NEW">✏️ Escribir Nueva Pregunta Personalizada...</option>
-          </select>
-        </div>
-
-        <!-- 3. Título / Tema -->
-        <div class="form-group">
-          <label for="input-eval-title">3. Título del Problema:</label>
-          <input type="text" id="input-eval-title" class="form-control" value="Suma con Canje: Biblioteca" placeholder="Ej. Suma con Canje: Biblioteca">
-        </div>
-
-        <!-- 4. Respuesta Esperada -->
-        <div class="form-group">
-          <label for="input-eval-expected">4. Resultado Esperado (Número):</label>
-          <input type="text" id="input-eval-expected" class="form-control" value="85" placeholder="Ej. 85" style="font-weight: 800; color: #22c55e;">
-        </div>
-
-        <!-- 5. Unidad / Pista -->
-        <div class="form-group">
-          <label for="input-eval-unit">5. Unidad o Pista (Opcional):</label>
-          <input type="text" id="input-eval-unit" class="form-control" value="libros, cuentos" placeholder="Ej. libros, panes">
-        </div>
-
-        <!-- 6. Enunciado Completo -->
-        <div class="form-group full-width">
-          <label for="input-eval-prompt">6. Enunciado del Problema Matemático:</label>
-          <textarea id="input-eval-prompt" class="form-control" placeholder="Escribe aquí el enunciado del problema que enseñaste hoy en el aula...">En la biblioteca había 47 libros de cuentos y llegaron 38 libros nuevos. ¿Cuántos libros hay ahora en total?</textarea>
+      <!-- ── PASO 3a: Lista del Banco ── -->
+      <div id="step-bank-list" style="display:none; padding:12px 20px; border-bottom:1px solid #1e293b;">
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">3 · Seleccioná una evaluación</label>
+        <div id="bank-cards" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- generado por renderBankCards() -->
         </div>
       </div>
 
-      <!-- Acciones de Generación -->
-      <div class="builder-actions">
-        <button class="btn-generate" onclick="generateAndActivateSession()">
-          ✨ Generar Fichas y Activar Sesión
-        </button>
+      <!-- ── PASO 3b: Formulario Nueva ── -->
+      <div id="step-new-form" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">3 · Redactá la evaluación nueva</label>
 
-        <button class="btn-print-action" id="btn-print-sheets" onclick="window.print()">
-          🖨️ Imprimir 5 Hojas A4 (Ctrl + P)
-        </button>
-
-        <button class="btn-goto-scan" onclick="goToScannerWithSession()">
-          📷 Ir al Escáner con este Salón ➔
-        </button>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado del problema</label>
+            <textarea id="input-eval-prompt" class="form-control" rows="3"
+              placeholder="Ej: En la biblioteca había 47 libros y llegaron 38 más. ¿Cuántos hay en total?"
+              style="resize:vertical; font-size:0.9rem;"></textarea>
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px;">Respuesta esperada</label>
+            <input type="text" id="input-eval-expected" class="form-control"
+              placeholder="Ej: 85"
+              style="font-size:1.2rem; font-weight:800; color:#22c55e; text-align:center; letter-spacing:0.05em;">
+          </div>
+          <button onclick="confirmNewEval()"
+            style="background:#3b82f6; border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.88rem; font-weight:700; cursor:pointer;">
+            ✓ Confirmar evaluación
+          </button>
+        </div>
       </div>
+
+      <!-- ── PASO 4: Tarjeta Resumen + Acciones ── -->
+      <div id="step-summary" style="display:none; padding:16px 20px;">
+
+        <!-- Tarjeta de sesión -->
+        <div id="summary-card" style="border-radius:12px; border:2px solid #1e293b; overflow:hidden; margin-bottom:14px;">
+          <div id="summary-card-header" style="padding:10px 14px; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.1rem;">🏫</span>
+            <span id="summary-classroom-name" style="font-weight:800; font-size:0.95rem;"></span>
+          </div>
+          <div style="background:#0f172a; padding:12px 14px; display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <div style="font-size:0.65rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:3px;">Enunciado</div>
+              <div id="summary-prompt" style="font-size:0.85rem; color:#e2e8f0; line-height:1.45;"></div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#1e293b; border-radius:8px; padding:8px 12px;">
+              <span style="font-size:0.72rem; color:#64748b; font-weight:700; text-transform:uppercase;">Respuesta esperada</span>
+              <span id="summary-answer" style="font-size:1.5rem; font-weight:900; color:#22c55e;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn-generate" onclick="generateAndActivateSession()">
+            ✨ Generar Fichas y Activar Sesión
+          </button>
+          <button class="btn-print-action" id="btn-print-sheets" onclick="window.print()">
+            🖨️ Imprimir 5 Hojas A4
+          </button>
+          <button class="btn-goto-scan" onclick="goToScannerWithSession()">
+            📷 Ir al Escáner ➔
+          </button>
+        </div>
+
+        <!-- Enlace para volver a cambiar -->
+        <button onclick="resetWizard()" style="margin-top:10px; width:100%; background:transparent; border:none; color:#475569; font-size:0.75rem; cursor:pointer; padding:6px;">
+          ↩ Cambiar salón o evaluación
+        </button>
+
+        <!-- Campos ocultos para compatibilidad con generateAndActivateSession -->
+        <input type="hidden" id="input-eval-title">
+        <input type="hidden" id="input-eval-unit">
+      </div>
+
     </div>
 
     <!-- Contenedor dinámico de las 5 páginas A4 (10 fichas A5) -->
@@ -1469,30 +1499,219 @@
       }
     }
 
+    // ── Estado interno del wizard ──
+    let wizardClassroomId = null;
+    let wizardEval = null; // { id, title, prompt, expectedAnswer }
+
+    function renderClassroomSelect() {
+      const sel = document.getElementById('builder-classroom');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">— Elegí un salón —</option>';
+      ClassroomData.getClassroomList().forEach(cls => {
+        const opt = document.createElement('option');
+        opt.value = cls.id;
+        opt.textContent = `${cls.name}  (${cls.count} alumnos)`;
+        sel.appendChild(opt);
+      });
+      // Restaurar selección si hay sesión activa
+      const session = ClassroomData.getActiveSession();
+      if (session && session.classroomId) sel.value = session.classroomId;
+    }
+
     function onClassroomSelectChanged(classId) {
+      if (!classId) return;
+      wizardClassroomId = classId;
+      wizardEval = null;
+
+      // Actualizar badge de alumnos en la tab bar
       const cls = ClassroomData.getClassroom(classId);
       if (cls) {
-        document.getElementById('nav-students-badge').textContent = `${cls.students.length} Alumnos`;
+        const badge = document.getElementById('nav-students-badge');
+        if (badge) badge.textContent = `${cls.students.length} Alumnos`;
+      }
+
+      // Colorear el selector con el color del salón
+      const color = ClassroomData.getClassroomColor(classId);
+      const sel = document.getElementById('builder-classroom');
+      if (sel) {
+        sel.style.borderColor = color;
+        sel.style.color = color;
+      }
+
+      // Mostrar paso 2, ocultar pasos 3 y 4
+      document.getElementById('step-source').style.display = 'block';
+      document.getElementById('step-bank-list').style.display = 'none';
+      document.getElementById('step-new-form').style.display = 'none';
+      document.getElementById('step-summary').style.display = 'none';
+
+      // Resetear estado visual de botones de modo
+      resetModeButtons();
+    }
+
+    function resetModeButtons() {
+      ['btn-mode-bank', 'btn-mode-new'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.style.borderColor = '#334155';
+          btn.style.background = '#1e293b';
+          btn.style.color = '#94a3b8';
+        }
+      });
+    }
+
+    function selectMode(mode) {
+      resetModeButtons();
+      const activeBtn = document.getElementById(mode === 'bank' ? 'btn-mode-bank' : 'btn-mode-new');
+      if (activeBtn) {
+        const color = wizardClassroomId ? ClassroomData.getClassroomColor(wizardClassroomId) : '#3b82f6';
+        activeBtn.style.borderColor = color;
+        activeBtn.style.background = color + '18';
+        activeBtn.style.color = color;
+      }
+
+      document.getElementById('step-bank-list').style.display = mode === 'bank' ? 'block' : 'none';
+      document.getElementById('step-new-form').style.display = mode === 'new' ? 'block' : 'none';
+      document.getElementById('step-summary').style.display = 'none';
+
+      if (mode === 'bank') renderBankCards();
+      if (mode === 'new') {
+        document.getElementById('input-eval-prompt').value = '';
+        document.getElementById('input-eval-expected').value = '';
+        document.getElementById('input-eval-prompt').focus();
       }
     }
 
-    function onBankSelectionChanged(evalId) {
-      if (evalId === 'NEW') {
-        document.getElementById('input-eval-title').value = '';
-        document.getElementById('input-eval-prompt').value = '';
-        document.getElementById('input-eval-expected').value = '';
-        document.getElementById('input-eval-unit').value = '';
+    function renderBankCards() {
+      const container = document.getElementById('bank-cards');
+      if (!container) return;
+      container.innerHTML = '';
+      const evals = ClassroomData.getEvaluationList();
+      const color = wizardClassroomId ? ClassroomData.getClassroomColor(wizardClassroomId) : '#3b82f6';
+
+      evals.forEach(ev => {
+        const card = document.createElement('button');
+        card.style.cssText = [
+          'display:flex', 'flex-direction:column', 'align-items:flex-start',
+          'gap:4px', 'width:100%', 'padding:10px 12px',
+          'background:#1e293b', 'border:1.5px solid #334155',
+          'border-radius:10px', 'cursor:pointer', 'text-align:left',
+          'transition:all 0.15s'
+        ].join(';');
+
+        const title = document.createElement('span');
+        title.textContent = ev.title;
+        title.style.cssText = 'font-size:0.85rem; font-weight:700; color:#f1f5f9;';
+
+        const preview = document.createElement('span');
+        // Mostrar primeros 80 chars del prompt
+        preview.textContent = (ev.prompt || '').substring(0, 80) + (ev.prompt && ev.prompt.length > 80 ? '…' : '');
+        preview.style.cssText = 'font-size:0.72rem; color:#64748b; line-height:1.3;';
+
+        const answer = document.createElement('span');
+        answer.textContent = `Resp: ${ev.expectedAnswer}`;
+        answer.style.cssText = `font-size:0.78rem; font-weight:800; color:${color};`;
+
+        card.appendChild(title);
+        card.appendChild(preview);
+        card.appendChild(answer);
+
+        card.addEventListener('mouseenter', () => {
+          card.style.borderColor = color;
+          card.style.background = color + '14';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.borderColor = '#334155';
+          card.style.background = '#1e293b';
+        });
+
+        card.addEventListener('click', () => {
+          const fullEval = ClassroomData.getEvaluation(ev.id);
+          selectEvaluation(fullEval || ev);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function selectEvaluation(evalObj) {
+      wizardEval = evalObj;
+      showSummary();
+    }
+
+    function confirmNewEval() {
+      const prompt = (document.getElementById('input-eval-prompt').value || '').trim();
+      const expectedAnswer = (document.getElementById('input-eval-expected').value || '').trim();
+
+      if (!prompt) {
+        document.getElementById('input-eval-prompt').style.borderColor = '#ef4444';
         document.getElementById('input-eval-prompt').focus();
+        showToast('⚠️ Escribí el enunciado del problema.');
         return;
       }
-      const evalData = ClassroomData.getEvaluation(evalId);
-      if (evalData) {
-        document.getElementById('input-eval-title').value = evalData.title || '';
-        document.getElementById('input-eval-prompt').value = evalData.prompt || '';
-        document.getElementById('input-eval-expected').value = evalData.expectedAnswer || '';
-        document.getElementById('input-eval-unit').value = (evalData.unitHint || '').replace(/[()]/g, '').replace('unidades:', '').trim();
+      if (!expectedAnswer) {
+        document.getElementById('input-eval-expected').style.borderColor = '#ef4444';
+        document.getElementById('input-eval-expected').focus();
+        showToast('⚠️ Indicá la respuesta esperada.');
+        return;
       }
+
+      // Guardar como evaluación personalizada
+      const saved = ClassroomData.saveCustomEvaluation({
+        title: 'Evaluación del Día',
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        unitHint: ''
+      });
+      wizardEval = saved;
+      showSummary();
     }
+
+    function showSummary() {
+      if (!wizardClassroomId || !wizardEval) return;
+
+      const cls = ClassroomData.getClassroom(wizardClassroomId);
+      const color = ClassroomData.getClassroomColor(wizardClassroomId);
+
+      // Poblar tarjeta resumen
+      const header = document.getElementById('summary-card-header');
+      if (header) {
+        header.style.background = color + '22';
+        header.style.borderBottom = `1px solid ${color}33`;
+      }
+      const summaryCard = document.getElementById('summary-card');
+      if (summaryCard) summaryCard.style.borderColor = color + '55';
+
+      const nameEl = document.getElementById('summary-classroom-name');
+      if (nameEl) { nameEl.textContent = cls ? cls.name : wizardClassroomId; nameEl.style.color = color; }
+
+      const promptEl = document.getElementById('summary-prompt');
+      if (promptEl) promptEl.textContent = wizardEval.prompt;
+
+      const answerEl = document.getElementById('summary-answer');
+      if (answerEl) answerEl.textContent = wizardEval.expectedAnswer;
+
+      // Sincronizar campos hidden para que generateAndActivateSession funcione
+      document.getElementById('input-eval-title').value = wizardEval.title || 'Evaluación del Día';
+      document.getElementById('input-eval-prompt').value = wizardEval.prompt;
+      document.getElementById('input-eval-expected').value = wizardEval.expectedAnswer;
+      document.getElementById('input-eval-unit').value = '';
+
+      // Mostrar paso 4
+      document.getElementById('step-bank-list').style.display = 'none';
+      document.getElementById('step-new-form').style.display = 'none';
+      document.getElementById('step-summary').style.display = 'block';
+    }
+
+    function resetWizard() {
+      wizardEval = null;
+      document.getElementById('step-source').style.display = wizardClassroomId ? 'block' : 'none';
+      document.getElementById('step-bank-list').style.display = 'none';
+      document.getElementById('step-new-form').style.display = 'none';
+      document.getElementById('step-summary').style.display = 'none';
+      resetModeButtons();
+    }
+
+    function onBankSelectionChanged() {} // legacy — ya no se usa, queda vacío por compatibilidad
 
     function createA5Card(student, classroom, evaluation) {
       return `
@@ -1583,50 +1802,29 @@
     }
 
     function generateAndActivateSession() {
-      const classId = document.getElementById('builder-classroom').value || '3A';
-      const title = document.getElementById('input-eval-title').value.trim() || 'Evaluación del Día';
-      const prompt = document.getElementById('input-eval-prompt').value.trim();
-      const expectedAnswer = document.getElementById('input-eval-expected').value.trim();
-      const unit = document.getElementById('input-eval-unit').value.trim();
+      // Lee del estado del wizard (o de los campos hidden sincronizados por showSummary)
+      const classId = wizardClassroomId || document.getElementById('builder-classroom').value || '3A';
+      const prompt = (document.getElementById('input-eval-prompt').value || '').trim();
+      const expectedAnswer = (document.getElementById('input-eval-expected').value || '').trim();
+      const title = (document.getElementById('input-eval-title').value || '').trim() || 'Evaluación del Día';
 
-      if (!prompt) {
-        alert('Por favor redacta el enunciado del problema.');
-        document.getElementById('input-eval-prompt').focus();
-        return;
-      }
-      if (!expectedAnswer) {
-        alert('Por favor indica la respuesta o número esperado.');
-        document.getElementById('input-eval-expected').focus();
+      if (!prompt || !expectedAnswer) {
+        showToast('⚠️ Completá el enunciado y la respuesta esperada primero.');
         return;
       }
 
       // 1. Guardar en banco
-      const savedEval = ClassroomData.saveCustomEvaluation({
-        title: title,
-        prompt: prompt,
-        expectedAnswer: expectedAnswer,
-        unitHint: unit ? `(${unit})` : ''
-      });
+      const savedEval = ClassroomData.saveCustomEvaluation({ title, prompt, expectedAnswer, unitHint: '' });
 
       // 2. Guardar sesión activa persistente
-      const session = {
-        classroomId: classId,
-        evalId: savedEval.id,
-        title: title,
-        prompt: prompt,
-        expectedAnswer: expectedAnswer,
-        unitHint: unit,
-        timestamp: Date.now()
-      };
+      const session = { classroomId: classId, evalId: savedEval.id, title, prompt, expectedAnswer, unitHint: '', timestamp: Date.now() };
       ClassroomData.setActiveSession(session);
 
       // 3. Renderizar las 5 hojas A4
       renderAllPrintPages(classId, savedEval);
 
-      // 4. Sincronizar el escáner con este salón y evaluación
-      if (typeof Scanner !== 'undefined' && Scanner.setSession) {
-        Scanner.setSession(classId, savedEval.id);
-      }
+      // 4. Sincronizar el escáner
+      if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession(classId, savedEval.id);
       updateScannerSessionBar(session);
 
       showToast('✓ ¡Fichas generadas y sesión armada! Listas para imprimir o escanear.');
@@ -1634,21 +1832,16 @@
 
     function updateScannerSessionBar(session) {
       const color = ClassroomData.getClassroomColor(session.classroomId);
-
-      // Badge del salón: texto + color del salón
       const clsEl = document.getElementById('scan-active-classroom');
       if (clsEl) {
         const cls = ClassroomData.getClassroom(session.classroomId);
         clsEl.textContent = cls ? cls.name : session.classroomId;
         clsEl.style.color = color;
         clsEl.style.borderColor = color;
-        clsEl.style.background = color + '18'; // 10% opacidad del color
+        clsEl.style.background = color + '18';
       }
-
-      // Borde izquierdo de la barra completa para identificación de un vistazo
       const barEl = document.querySelector('.session-bar');
       if (barEl) barEl.style.borderLeft = `4px solid ${color}`;
-
       const targetEl = document.getElementById('scan-active-target');
       if (targetEl) targetEl.textContent = session.expectedAnswer;
     }
@@ -1660,39 +1853,42 @@
 
     // Inicialización al cargar la página
     document.addEventListener('DOMContentLoaded', () => {
-      // Restaurar sesión previa si existe
+      // 1. Poblar el selector de salones dinámicamente desde ClassroomData
+      renderClassroomSelect();
+
+      // 2. Restaurar sesión previa si existe → mostrar wizard en paso 4 directo
       const session = ClassroomData.getActiveSession();
-      if (session) {
-        document.getElementById('builder-classroom').value = session.classroomId || '3A';
+      if (session && session.classroomId && session.prompt && session.expectedAnswer) {
+        wizardClassroomId = session.classroomId;
+        wizardEval = { id: session.evalId, title: session.title, prompt: session.prompt, expectedAnswer: session.expectedAnswer };
+
+        // Restaurar selector
+        const sel = document.getElementById('builder-classroom');
+        if (sel) sel.value = session.classroomId;
+
+        // Sincronizar campos hidden
         document.getElementById('input-eval-title').value = session.title || '';
         document.getElementById('input-eval-prompt').value = session.prompt || '';
         document.getElementById('input-eval-expected').value = session.expectedAnswer || '';
-        document.getElementById('input-eval-unit').value = session.unitHint || '';
+        document.getElementById('input-eval-unit').value = '';
 
+        // Mostrar paso 2 y 4 directo (salón ya seleccionado, eval ya elegida)
+        document.getElementById('step-source').style.display = 'block';
+        showSummary();
+
+        // Renderizar fichas y barra del escáner
         const evalObj = ClassroomData.getEvaluation(session.evalId);
         renderAllPrintPages(session.classroomId, evalObj || session);
         updateScannerSessionBar(session);
-        if (typeof Scanner !== 'undefined' && Scanner.setSession) {
-          Scanner.setSession(session.classroomId, session.evalId);
-        }
+        if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession(session.classroomId, session.evalId);
       } else {
-        // Carga inicial por defecto con EVA_01 y 3A
+        // Sin sesión previa: solo mostrar paso 1 (selector de salón)
+        // Sincronizar escáner con sesión por defecto
         const evalObj = ClassroomData.getEvaluation('EVA_01');
-        renderAllPrintPages('3A', evalObj);
-        const initialSession = {
-          classroomId: '3A',
-          evalId: 'EVA_01',
-          title: evalObj.title,
-          prompt: evalObj.prompt,
-          expectedAnswer: evalObj.expectedAnswer,
-          unitHint: evalObj.unitHint
-        };
+        const initialSession = { classroomId: '3A', evalId: 'EVA_01', title: evalObj.title, prompt: evalObj.prompt, expectedAnswer: evalObj.expectedAnswer, unitHint: '' };
         ClassroomData.setActiveSession(initialSession);
         updateScannerSessionBar(initialSession);
-        // BUGFIX: también sincronizar el scanner en el caso de sesión inicial por defecto
-        if (typeof Scanner !== 'undefined' && Scanner.setSession) {
-          Scanner.setSession('3A', 'EVA_01');
-        }
+        if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession('3A', 'EVA_01');
       }
     });
   </script>
