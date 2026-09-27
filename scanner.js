@@ -184,6 +184,50 @@
     });
   }
 
+  function renderModalPending() {
+    const listEl = document.getElementById('modal-pending-list');
+    const allDoneEl = document.getElementById('modal-pending-all-done');
+    if (!listEl) return;
+
+    const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
+    if (!cls) return;
+
+    const color = typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor
+      ? ClassroomData.getClassroomColor(currentClassroomId)
+      : '#3b82f6';
+
+    // Solo los que aún NO fueron escaneados
+    const pending = cls.students.filter(s => !evaluatedStudentIds.has(s.id));
+
+    listEl.innerHTML = '';
+
+    if (pending.length === 0) {
+      listEl.style.display = 'none';
+      if (allDoneEl) allDoneEl.style.display = 'block';
+      return;
+    }
+
+    if (allDoneEl) allDoneEl.style.display = 'none';
+    listEl.style.display = 'flex';
+
+    pending.forEach(student => {
+      const chip = document.createElement('span');
+      chip.textContent = student.shortName;
+      chip.style.cssText = [
+        'display:inline-block',
+        'padding:3px 8px',
+        'border-radius:20px',
+        'font-size:0.7rem',
+        'font-weight:600',
+        'background:' + color + '18',
+        'color:' + color,
+        'border:1px solid ' + color + '40',
+        'white-space:nowrap',
+      ].join(';');
+      listEl.appendChild(chip);
+    });
+  }
+
   function populateManualStudentSelect() {
     const sel = document.getElementById('manual-student-select');
     if (!sel) return;
@@ -1170,6 +1214,8 @@
 
       const modal = document.getElementById('capture-modal');
       if (modal) modal.classList.add('open');
+      // Poblar pendientes en el modal (quiénes faltan escanear)
+      renderModalPending();
       playDing();
     }, 150);
   }
