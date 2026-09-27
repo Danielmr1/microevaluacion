@@ -1201,7 +1201,7 @@
         <!-- Botones de acción -->
         <div style="display:flex; flex-direction:column; gap:8px;">
           <button class="btn-generate" onclick="generateAndActivateSession()">
-            ✨ Generar Fichas y Activar Sesión
+            ✅ Activar Sesión
           </button>
           <button class="btn-print-action" id="btn-print-sheets" onclick="window.print()">
             🖨️ Imprimir 5 Hojas A4
@@ -1690,7 +1690,7 @@
       const answerEl = document.getElementById('summary-answer');
       if (answerEl) answerEl.textContent = wizardEval.expectedAnswer;
 
-      // Sincronizar campos hidden para que generateAndActivateSession funcione
+      // Sincronizar campos hidden
       document.getElementById('input-eval-title').value = wizardEval.title || 'Evaluación del Día';
       document.getElementById('input-eval-prompt').value = wizardEval.prompt;
       document.getElementById('input-eval-expected').value = wizardEval.expectedAnswer;
@@ -1700,10 +1700,16 @@
       document.getElementById('step-bank-list').style.display = 'none';
       document.getElementById('step-new-form').style.display = 'none';
       document.getElementById('step-summary').style.display = 'block';
+
+      // ── Generar fichas automáticamente ──
+      renderAllPrintPages(wizardClassroomId, wizardEval);
     }
 
     function resetWizard() {
       wizardEval = null;
+      // Limpiar fichas al volver atrás
+      const pagesContainer = document.getElementById('pages-container');
+      if (pagesContainer) pagesContainer.innerHTML = '';
       document.getElementById('step-source').style.display = wizardClassroomId ? 'block' : 'none';
       document.getElementById('step-bank-list').style.display = 'none';
       document.getElementById('step-new-form').style.display = 'none';
@@ -1802,7 +1808,7 @@
     }
 
     function generateAndActivateSession() {
-      // Lee del estado del wizard (o de los campos hidden sincronizados por showSummary)
+      // Lee del estado del wizard (campos hidden sincronizados por showSummary)
       const classId = wizardClassroomId || document.getElementById('builder-classroom').value || '3A';
       const prompt = (document.getElementById('input-eval-prompt').value || '').trim();
       const expectedAnswer = (document.getElementById('input-eval-expected').value || '').trim();
@@ -1820,14 +1826,11 @@
       const session = { classroomId: classId, evalId: savedEval.id, title, prompt, expectedAnswer, unitHint: '', timestamp: Date.now() };
       ClassroomData.setActiveSession(session);
 
-      // 3. Renderizar las 5 hojas A4
-      renderAllPrintPages(classId, savedEval);
-
-      // 4. Sincronizar el escáner
+      // 3. Sincronizar el escáner (las fichas ya están renderizadas por showSummary)
       if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession(classId, savedEval.id);
       updateScannerSessionBar(session);
 
-      showToast('✓ ¡Fichas generadas y sesión armada! Listas para imprimir o escanear.');
+      showToast('✅ ¡Sesión activada! Ya podés ir al escáner.');
     }
 
     function updateScannerSessionBar(session) {
@@ -1856,13 +1859,13 @@
       // 1. Poblar el selector de salones dinámicamente desde ClassroomData
       renderClassroomSelect();
 
-      // 2. Restaurar sesión previa si existe → mostrar wizard en paso 4 directo
+      // 2. Restaurar sesión previa si existe → ir directo al paso 4
       const session = ClassroomData.getActiveSession();
       if (session && session.classroomId && session.prompt && session.expectedAnswer) {
         wizardClassroomId = session.classroomId;
         wizardEval = { id: session.evalId, title: session.title, prompt: session.prompt, expectedAnswer: session.expectedAnswer };
 
-        // Restaurar selector
+        // Restaurar selector con color del salón
         const sel = document.getElementById('builder-classroom');
         if (sel) sel.value = session.classroomId;
 
@@ -1872,24 +1875,15 @@
         document.getElementById('input-eval-expected').value = session.expectedAnswer || '';
         document.getElementById('input-eval-unit').value = '';
 
-        // Mostrar paso 2 y 4 directo (salón ya seleccionado, eval ya elegida)
+        // Mostrar paso 2 visible + showSummary genera fichas automáticamente
         document.getElementById('step-source').style.display = 'block';
-        showSummary();
+        showSummary(); // ← ya llama renderAllPrintPages internamente
 
-        // Renderizar fichas y barra del escáner
-        const evalObj = ClassroomData.getEvaluation(session.evalId);
-        renderAllPrintPages(session.classroomId, evalObj || session);
         updateScannerSessionBar(session);
         if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession(session.classroomId, session.evalId);
-      } else {
-        // Sin sesión previa: solo mostrar paso 1 (selector de salón)
-        // Sincronizar escáner con sesión por defecto
-        const evalObj = ClassroomData.getEvaluation('EVA_01');
-        const initialSession = { classroomId: '3A', evalId: 'EVA_01', title: evalObj.title, prompt: evalObj.prompt, expectedAnswer: evalObj.expectedAnswer, unitHint: '' };
-        ClassroomData.setActiveSession(initialSession);
-        updateScannerSessionBar(initialSession);
-        if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession('3A', 'EVA_01');
       }
+      // Sin sesión previa: solo el paso 1 (selector de salón) es visible.
+      // Sin fichas, sin sesión por defecto — el docente elige desde cero.
     });
   </script>
 </body>
