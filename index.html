@@ -1479,22 +1479,22 @@
         </div>
 
         <!-- ── GRADO DEL SALÓN ──
-             El grado se elige al CREAR el salón, en el formulario de arriba.
-             Acá abajo solo se muestra el que ya tiene, para que no sea un paso
-             más del flujo. El selector aparece únicamente en dos casos:
-               · al salón le falta el grado (creado antes de este cambio);
-               · el docente toca "cambiar" porque se equivocó al crearlo. -->
+             El grado se elige al CREAR el salón y NO se cambia después.
+             El motivo es fuerte: cada rúbrica se genera tomando el grado como
+             contexto, así que si el grado cambiara, todas las rúbricas ya hechas
+             para ese salón quedarían apuntando a otro criterio.
+             El selector aparece en un único caso: un salón al que le falta el
+             grado porque se creó antes de que el grado fuera obligatorio. -->
         <div id="grade-block" style="display:none; margin-top:14px;">
           <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
             Grado del salón
           </label>
 
+          <!-- Solo lectura: el grado se eligió al crear el salón y no se cambia.
+               Cambiarlo dejaría inconsistentes las rúbricas ya generadas, porque
+               cada rúbrica se hizo tomando un grado como contexto. -->
           <div id="grade-readonly" style="display:none; align-items:center; gap:10px;">
             <span id="grade-value" style="font-size:0.95rem; font-weight:800; color:#4ade80;"></span>
-            <button onclick="showGradeEditor()"
-              style="background:transparent; border:none; color:#38bdf8; font-size:0.7rem; font-weight:700; cursor:pointer; padding:0; text-decoration:underline;">
-              cambiar
-            </button>
           </div>
 
           <select id="builder-grade" class="form-control" onchange="onGradeChanged(this.value)"
@@ -1523,9 +1523,15 @@
 
       <!-- ── PASO 3a: Lista del Banco ── -->
       <div id="step-bank-list" style="display:none; padding:12px 20px; border-bottom:1px solid #1e293b;">
-        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">3 · Seleccioná una evaluación</label>
+        <label id="bank-title" style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">3 · Seleccioná una evaluación</label>
         <div id="bank-cards" style="display:flex; flex-direction:column; gap:8px;">
           <!-- generado por renderBankCards() -->
+        </div>
+        <!-- El banco muestra solo las preguntas del grado del salón elegido, así
+             que puede estar vacío aunque haya preguntas de otros grados. -->
+        <div id="bank-empty" style="display:none; padding:14px; border:1.5px dashed #334155; border-radius:10px; text-align:center;">
+          <div id="bank-empty-title" style="font-size:0.85rem; font-weight:700; color:#94a3b8;"></div>
+          <div id="bank-empty-hint" style="font-size:0.72rem; color:#64748b; margin-top:6px; line-height:1.5;"></div>
         </div>
       </div>
 
@@ -2032,10 +2038,14 @@
 
     /* ── GRADO DEL SALÓN ──────────────────────────────────────────────
        El grado se elige al CREAR el salón (formulario de alta, que es el único
-       camino de creación). Acá abajo solo se MUESTRA, para que no sea un paso
-       más del flujo. El selector se despliega solo si al salón le falta el
-       grado (salones creados antes de este cambio) o si el docente pide
-       cambiarlo con el botón.
+       camino de creación) y NO se puede cambiar después. El motivo es que cada
+       rúbrica se genera tomando el grado como contexto: si el grado cambiara,
+       todas las rúbricas ya hechas para ese salón quedarían apuntando a otro
+       criterio, y la corrección juzgaría con una regla que ya no es la del
+       grado que se muestra.
+       Acá abajo, entonces, el grado solo se MUESTRA. El selector aparece en un
+       único caso: un salón al que le falta el grado porque se creó antes de que
+       fuera obligatorio.
 
        Las opciones se arman desde ClassroomData.getGradeStages(), así que
        habilitar secundaria más adelante es agregar números al catálogo de
@@ -2063,8 +2073,9 @@
     }
 
     /**
-     * Muestra el grado del salón elegido: como texto si ya lo tiene, o con el
-     * selector desplegado si le falta (para poder completarlo).
+     * Muestra el grado del salón elegido. Como texto si ya lo tiene —y en ese
+     * caso NO hay forma de cambiarlo—, o con el selector desplegado si le falta,
+     * que es el único caso en que se puede elegir desde acá.
      */
     function renderGradeSelect(classroomId) {
       const sel = document.getElementById('builder-grade');
@@ -2082,39 +2093,34 @@
       block.style.display = 'block';
 
       if (!grade) {
-        // Salón sin grado: se pide completarlo acá mismo.
-        sel.style.display = 'block';
-        sel.disabled = false;
+        // Único caso en que se elige acá: salón creado antes de que el grado
+        // fuera obligatorio.
         sel.value = '';
-        if (readonly) readonly.style.display = 'none';
-        if (hint) {
-          hint.textContent = '⚠️ A este salón le falta el grado. Completalo: define qué procedimiento de resolución se considera correcto.';
-          hint.style.color = '#f59e0b';
-        }
+        mostrarSelectorDeGrado('⚠️ A este salón le falta el grado. Completalo: define qué procedimiento de resolución se considera correcto.');
         return;
       }
 
-      // Con grado: solo se muestra.
+      // Con grado: solo se muestra, sin forma de cambiarlo.
       sel.value = cls.gradeStage + ':' + cls.gradeLevel;
       sel.style.display = 'none';
       if (readonly) readonly.style.display = 'flex';
       if (readValue) readValue.textContent = grade;
       if (hint) {
-        hint.textContent = 'Se eligió al crear el salón.';
+        hint.textContent = 'Se eligió al crear el salón y no se cambia: las rúbricas se generan con este grado.';
         hint.style.color = '#334155';
       }
     }
 
-    /** Despliega el selector para corregir el grado de un salón que ya lo tiene. */
-    function showGradeEditor() {
+    /** Despliega el selector SOLO para completar un salón al que le falta el grado. */
+    function mostrarSelectorDeGrado(motivo) {
       const sel = document.getElementById('builder-grade');
       const readonly = document.getElementById('grade-readonly');
       const hint = document.getElementById('grade-hint');
       if (sel) { sel.style.display = 'block'; sel.disabled = false; }
       if (readonly) readonly.style.display = 'none';
       if (hint) {
-        hint.textContent = 'Cambiá el grado si te equivocaste al crear el salón.';
-        hint.style.color = '#334155';
+        hint.textContent = motivo || 'Completá el grado: define qué procedimiento de resolución se considera correcto.';
+        hint.style.color = '#f59e0b';
       }
     }
 
@@ -2217,12 +2223,68 @@
       }
     }
 
+    /**
+     * Preguntas del banco que corresponden al grado del salón elegido.
+     *
+     * El banco se filtra por grado a propósito: cada pregunta se creó con un
+     * grado como contexto y su rúbrica se generó con ese grado. Ofrecer una
+     * pregunta de 4° a un salón de 6° sería corregir con el criterio equivocado.
+     *
+     * @returns {{lista: Array, grado: object}}
+     */
+    function evaluacionesDelGradoActual() {
+      const g = (typeof gradoDelSalonSeleccionado === 'function')
+        ? gradoDelSalonSeleccionado()
+        : { stage: null, level: null, texto: '' };
+
+      // Sin grado no se puede saber qué preguntas corresponden.
+      if (!g.stage || !g.level) return { lista: [], grado: g };
+
+      const lista = ClassroomData.getEvaluationList().filter(ev =>
+        ev.gradeStage === g.stage && ev.gradeLevel === g.level
+      );
+      return { lista: lista, grado: g };
+    }
+
     function renderBankCards() {
       const container = document.getElementById('bank-cards');
       if (!container) return;
       container.innerHTML = '';
-      const evals = ClassroomData.getEvaluationList();
+
+      const { lista: evals, grado } = evaluacionesDelGradoActual();
       const color = wizardClassroomId ? ClassroomData.getClassroomColor(wizardClassroomId) : '#3b82f6';
+
+      // Título y estado vacío: el banco puede no tener nada del grado elegido
+      // aunque sí tenga preguntas de otros grados.
+      const titulo = document.getElementById('bank-title');
+      const vacio = document.getElementById('bank-empty');
+      const vacioTitulo = document.getElementById('bank-empty-title');
+      const vacioAyuda = document.getElementById('bank-empty-hint');
+
+      if (titulo) {
+        titulo.textContent = grado.texto
+          ? '3 · Seleccioná una evaluación de ' + grado.texto
+          : '3 · Seleccioná una evaluación';
+      }
+
+      if (evals.length === 0) {
+        container.style.display = 'none';
+        if (vacio) vacio.style.display = 'block';
+        if (vacioTitulo) {
+          vacioTitulo.textContent = grado.texto
+            ? 'Todavía no hay preguntas para ' + grado.texto
+            : 'Este salón no tiene grado';
+        }
+        if (vacioAyuda) {
+          vacioAyuda.textContent = grado.texto
+            ? 'El banco muestra solo las preguntas del grado del salón. Creá la primera con "✏️ Crear nueva": se va a guardar con su rúbrica y su grado.'
+            : 'Completá el grado del salón en el paso 1 para poder usar el banco.';
+        }
+        return;
+      }
+
+      container.style.display = 'flex';
+      if (vacio) vacio.style.display = 'none';
 
       evals.forEach(ev => {
         const card = document.createElement('button');
@@ -2244,7 +2306,9 @@
         preview.style.cssText = 'font-size:0.72rem; color:#64748b; line-height:1.3;';
 
         const answer = document.createElement('span');
-        answer.textContent = `Resp: ${ev.expectedAnswer} · ${ev.gradeText || 'sin grado'}`;
+        // El grado no se repite en cada tarjeta: el banco ya está filtrado por
+        // el grado del salón y eso se ve en el título del paso.
+        answer.textContent = `Resp: ${ev.expectedAnswer}`;
         answer.style.cssText = `font-size:0.78rem; font-weight:800; color:${color};`;
 
         card.appendChild(title);

@@ -364,33 +364,29 @@
      * al banco local, para que renderBankCards() las muestre.
      * Recibe filas de microeval_evaluations.
      *
-     * IMPORTANTE: hay que copiar también `rubric` y el grado. Antes esto solo
-     * copiaba id, title, prompt y expected_answer, así que cada vez que la app
-     * recargaba el banco desde Supabase las rúbricas ya generadas desaparecían
-     * del banco local y había que volver a generarlas.
+     * Una evaluación se identifica por su ENUNCIADO, no por su id: el id local
+     * (EVA_DOC_1234) y el de la base (un uuid) son distintos para la MISMA
+     * pregunta. Comparando por id, el banco mostraba la misma pregunta DOS veces
+     * —una con su rúbrica y otra recién traída de la base, que podía aparecer
+     * como "falta la rúbrica"—. Que la identidad sea el enunciado es además
+     * coherente con saveEvaluation(), que ya busca por enunciado para no duplicar.
+     *
+     * Nunca se pierde lo que la copia local tiene y la de la base no.
      */
     setRecentEvaluations(list) {
       (list || []).forEach(ev => {
-        if (!ev) return;
-        const id = ev.id || `EVA_REC_${Date.now()}`;
+        if (!ev || !ev.prompt) return;
 
-        // No pisar una evaluación local que ya tiene rúbrica con una fila que
-        // todavía no la tiene: la local está más completa.
-        const previa = EVALUATIONS[id];
-        const traeRubrica = !!ev.rubric;
-        if (previa && previa.rubric && !traeRubrica) {
-          EVALUATIONS[id] = Object.assign({}, previa, {
-            title: ev.title || previa.title,
-            expectedAnswer: ev.expected_answer || previa.expectedAnswer
-          });
-          return;
-        }
+        const idLocal = Object.keys(EVALUATIONS)
+          .find(k => EVALUATIONS[k] && EVALUATIONS[k].prompt === ev.prompt);
+        const id = idLocal || ev.id || `EVA_REC_${Date.now()}`;
+        const previa = EVALUATIONS[id] || null;
 
         EVALUATIONS[id] = {
-          id,
-          title: ev.title || 'Evaluación',
+          id: id,
+          title: ev.title || (previa && previa.title) || 'Evaluación',
           prompt: ev.prompt,
-          expectedAnswer: ev.expected_answer,
+          expectedAnswer: ev.expected_answer || (previa && previa.expectedAnswer) || '',
           unitHint: '',
           rubric: ev.rubric || (previa ? previa.rubric : null) || undefined,
           gradeStage: ev.grade_stage || (previa ? previa.gradeStage : null) || null,

@@ -359,7 +359,7 @@
     if (d.gradeText) campos.grade_text = d.gradeText;
 
     if (existing) {
-      const { data } = await client
+      const { data, error } = await client
         .from('microeval_evaluations')
         .update(Object.assign({}, campos, {
           used_count: existing.used_count + 1,
@@ -368,41 +368,74 @@
         .eq('id', existing.id)
         .select()
         .single();
-      return data;
-    }
 
-    const { data, error } = await client
-      .from('microeval_evaluations')
-      .insert(Object.assign({
-        teacher_id: user.id,
-        prompt: prompt,
-        title: d.title || 'Evaluación'
-      }, campos))
-      .select()
-      .single();
+      if (!error) return data;
 
-    if (error) {
-      // Si las migraciones de rúbrica o de grado todavía no se aplicaron, el
-      // insert falla entero por las columnas nuevas. Se reintenta con lo mínimo:
-      // es preferible guardar la evaluación incompleta a no guardarla.
-      if (error.code === '42703' || /rubric|grade_text|grade_stage|grade_level/.test(error.message || '')) {
-        console.warn('[SupabaseClient] Faltan columnas nuevas; se guarda la evaluación sin rúbrica ni grado. ' +
+      // Mismo criterio que en el alta: si el problema son las columnas que
+      // todavía no existen, se guarda lo mínimo pero CONSERVANDO la rúbrica.
+      if (esColumnaFaltante(error)) {
+        console.warn('[SupabaseClient] Faltan columnas nuevas en microeval_evaluations; se guarda con lo que haya. ' +
           'Corré las migraciones de supabase/migrations/.');
+        const conservaRubrica = { expected_answer: expectedAnswer };
+        if (campos.rubric) conservaRubrica.rubric = campos.rubric;
         const reintento = await client
           .from('microeval_evaluations')
-          .insert({ teacher_id: user.id, prompt: prompt, expected_answer: expectedAnswer, title: d.title || 'Evaluación' })
+          .update(Object.assign({}, conservaRubrica, {
+            used_count: existing.used_count + 1,
+            last_used_at: new Date().toISOString()
+          }))
+          .eq('id', existing.id)
           .select()
           .single();
-        if (reintento.error) {
-          console.error('[SupabaseClient] Error guardando evaluación:', reintento.error.message);
-          return null;
-        }
-        return reintento.data;
+        if (!reintento.error) return reintento.data;
+        console.error('[SupabaseClient] Error guardando evaluación:', reintento.error.message);
+        return null;
       }
+
       console.error('[SupabaseClient] Error guardando evaluación:', error.message);
       return null;
     }
-    return data;
+
+    /* Alta de una evaluación nueva.
+       Si alguna migración no se aplicó, el insert falla entero por las columnas
+       que no existen. Se prueba de mayor a menor, PERO nunca se sacrifica la
+       rúbrica antes que el grado: la rúbrica es lo que hace que la pregunta sirva
+       para corregir, y perderla en silencio (guardándola sin ella en la base)
+       hacía que el banco mostrara la misma pregunta dos veces, una de ellas como
+       "falta la rúbrica". */
+    const intentos = [
+      Object.assign({ teacher_id: user.id, prompt: prompt, title: d.title || 'Evaluación' }, campos),
+      // Sin las columnas de grado, conservando la rúbrica
+      Object.assign({ teacher_id: user.id, prompt: prompt, title: d.title || 'Evaluación', expected_answer: expectedAnswer },
+        campos.rubric ? { rubric: campos.rubric } : {},
+        campos.grade_text ? { grade_text: campos.grade_text } : {}),
+      // Último recurso: lo mínimo
+      { teacher_id: user.id, prompt: prompt, expected_answer: expectedAnswer, title: d.title || 'Evaluación' }
+    ];
+
+    let ultimoError = null;
+    for (let i = 0; i < intentos.length; i++) {
+      const res = await client.from('microeval_evaluations').insert(intentos[i]).select().single();
+      if (!res.error) return res.data;
+
+      ultimoError = res.error;
+      if (!esColumnaFaltante(res.error)) break;
+
+      if (i === 0) {
+        console.warn('[SupabaseClient] Faltan columnas nuevas en microeval_evaluations; se guarda lo máximo posible. ' +
+          'Corré las migraciones de supabase/migrations/.');
+      }
+    }
+
+    console.error('[SupabaseClient] Error guardando evaluación:', ultimoError && ultimoError.message);
+    return null;
+  }
+
+  /** ¿El error es porque falta una columna que agrega alguna migración? */
+  function esColumnaFaltante(error) {
+    if (!error) return false;
+    if (error.code === '42703' || error.code === 'PGRST204') return true;
+    return /column .* does not exist|rubric|grade_text|grade_stage|grade_level/i.test(error.message || '');
   }
 
   /**
