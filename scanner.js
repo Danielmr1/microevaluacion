@@ -105,7 +105,10 @@
     const counterEl = document.getElementById('session-counter');
     if (!counterEl) return;
     const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
-    const total = cls ? cls.students.length : 10;
+    // Sin salón cargado el total es 0, no un 10 inventado: antes el contador
+    // mostraba "0 / 10" sin haber ningún salón elegido. Con 0, el guardrail 8
+    // (sesión completa) queda desactivado por su propia condición `total > 0`.
+    const total = cls ? cls.students.length : 0;
     const evaluated = evaluatedStudentIds.size;
     counterEl.textContent = `${evaluated} / ${total} evaluados`;
 
@@ -283,6 +286,98 @@
     updateSessionCounter();
     renderRosterPanel();
     renderModalPending();
+  }
+
+  // --- ENTRADA POR FOTO GUARDADA (botón "Probar Foto") ---
+  // Procesa una imagen guardada por el MISMO camino que una captura en vivo:
+  // se dibuja en el canvas de proceso de 640px, se buscan los 4 marcadores
+  // ArUco, se escala el cuadrilátero al tamaño real de la imagen y se dispara
+  // la misma captura (QR, ROIs, modal y guardado).
+  //
+  // Para qué sirve: reproducir una ficha que falló (con la cámara ese momento
+  // se pierde y no se puede repetir la misma foto), probar el escáner sin
+  // teléfono, y correr un conjunto fijo de fichas para medir la corrección con
+  // IA — con la cámara cada corrida tiene otro encuadre y otra luz, así que no
+  // se puede comparar un resultado con otro.
+  async function handleFile(e) {
+    const input = e && e.target;
+    const file = input && input.files && input.files[0];
+
+    // Se limpia el input YA MISMO para poder volver a elegir el MISMO archivo.
+    // Sin esto el navegador no dispara 'change' la segunda vez y parece que el
+    // botón dejó de funcionar.
+    if (input) input.value = '';
+
+    if (!file) return;
+    if (file.type && !file.type.startsWith('image/')) {
+      avisar('⚠️ Ese archivo no es una imagen.');
+      return;
+    }
+    if (!checkDependencies()) return;
+
+    if (!arucoDetector) {
+      avisar('⚠️ El detector ArUco no está disponible. Recargá la página.');
+      return;
+    }
+
+    let objectUrl = null;
+    try {
+      objectUrl = URL.createObjectURL(file);
+      const img = await cargarImagen(objectUrl);
+
+      // Mismo canvas de proceso que usa la cámara: 640px de ancho con la
+      // proporción de la imagen.
+      procCanvas.width = 640;
+      procCanvas.height = Math.max(1, Math.round(640 * img.naturalHeight / img.naturalWidth));
+      procCtx.drawImage(img, 0, 0, procCanvas.width, procCanvas.height);
+      const imgData = procCtx.getImageData(0, 0, procCanvas.width, procCanvas.height);
+
+      const aruco = detectArucoQuad(imgData);
+      if (!aruco.found) {
+        const vistos = (typeof aruco.count === 'number') ? aruco.count : 0;
+        avisar('⚠️ No se encontraron las 4 esquinas ArUco en la foto' +
+          (vistos ? ' (se vieron ' + vistos + ' marcador' + (vistos === 1 ? '' : 'es') + ')' : '') +
+          '. Asegurate de que la ficha esté completa, derecha y con buena luz.');
+        return;
+      }
+
+      // Del canvas de 640px al tamaño real de la imagen
+      const sx = img.naturalWidth / procCanvas.width;
+      const sy = img.naturalHeight / procCanvas.height;
+      const quad = {
+        pTL: { x: aruco.quad.pTL.x * sx, y: aruco.quad.pTL.y * sy },
+        pTR: { x: aruco.quad.pTR.x * sx, y: aruco.quad.pTR.y * sy },
+        pBR: { x: aruco.quad.pBR.x * sx, y: aruco.quad.pBR.y * sy },
+        pBL: { x: aruco.quad.pBL.x * sx, y: aruco.quad.pBL.y * sy }
+      };
+
+      const sharpness = calculateSharpness(imgData);
+      const sheetQuad = getExpandedSheetQuad(quad);
+
+      // El 5º argumento (img) hace que el warp salga de la foto y no del <video>
+      await triggerAutoCapture(sharpness, sheetQuad, null, null, img);
+    } catch (err) {
+      console.error('[Scanner] Error procesando la foto:', err);
+      avisar('❌ No se pudo procesar la foto: ' + ((err && err.message) || 'error desconocido'));
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  /** Carga una imagen desde una URL y resuelve cuando ya está lista. */
+  function cargarImagen(url) {
+    return new Promise((resolver, rechazar) => {
+      const img = new Image();
+      img.onload = () => resolver(img);
+      img.onerror = () => rechazar(new Error('la imagen no se pudo abrir'));
+      img.src = url;
+    });
+  }
+
+  /** Avisa al docente: usa el toast del portal si está cargado, si no un alert. */
+  function avisar(mensaje) {
+    if (typeof showToast === 'function') showToast(mensaje);
+    else alert(mensaje);
   }
 
   // --- PERSISTENCIA DEL RESULTADO EN SUPABASE ---
@@ -1065,10 +1160,22 @@
   }
 
   // --- DISPARO AUTOMÁTICO Y EXTRACCIÓN DE ROIs ---
-  async function triggerAutoCapture(sharpness, sheetQuad, directDataUrl = null, qrData = null) {
-    // GUARDRAIL 2: Cooldown anti-duplicados
+  /**
+   * @param {number} sharpness índice de nitidez medido
+   * @param {object|null} sheetQuad cuadrilátero YA expandido al borde de la ficha
+   * @param {string|null} directDataUrl imagen ya enderezada (vía legacy)
+   * @param {string|null} qrData texto del QR si ya se conoce
+   * @param {HTMLImageElement|null} source imagen de la que warpear. Si es null
+   *        se usa el <video> de la cámara. Lo usa handleFile() para procesar una
+   *        foto guardada por el mismo camino que una captura en vivo.
+   */
+  async function triggerAutoCapture(sharpness, sheetQuad, directDataUrl = null, qrData = null, source = null) {
+    // GUARDRAIL 2: cooldown anti-duplicados.
+    // NO se aplica a una foto elegida a mano: ahí el docente dispara una vez y
+    // quiere que se procese, aunque haya cargado otra imagen hace dos segundos.
+    const esFotoSubida = !!source;
     const now = Date.now();
-    if (now - lastCaptureTime < CAPTURE_COOLDOWN_MS) return;
+    if (!esFotoSubida && now - lastCaptureTime < CAPTURE_COOLDOWN_MS) return;
     lastCaptureTime = now;
 
     // GUARDRAIL 6: Pausar inmediatamente el bucle
@@ -1089,7 +1196,10 @@
         // 2000 x 1441 px = 10.75 px/mm sobre la ficha de 186 x 134 mm.
         const warpW = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_WIDTH) || 2000;
         const warpH = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_HEIGHT) || 1441;
-        fullWarpCanvas = renderPerspectiveWarp(video, sheetQuad, warpW, warpH);
+        // La fuente es el <video> con la cámara en vivo, o la imagen cargada a
+        // mano. Las coordenadas del cuadrilátero vienen en el espacio de
+        // píxeles de esa misma fuente, por eso el warp da igual en los dos casos.
+        fullWarpCanvas = renderPerspectiveWarp(source || video, sheetQuad, warpW, warpH);
       } else if (directDataUrl) {
         // Modo fallback con imagen precargada
         const img = new Image();
@@ -1415,10 +1525,14 @@
     setEvaluatedStudents,
     onClassroomChanged,
     onEvaluationChanged,
-    assignManualStudent
+    assignManualStudent,
+    handleFile
   };
 
   // Bindings directos para eventos onclick / onchange en HTML
+  // handleFile tiene que estar acá además de en Scanner: el input de archivo lo
+  // llama desde un atributo onchange, y esos se resuelven en el ámbito global.
+  global.handleFile = handleFile;
   global.toggleCamera = toggleCamera;
   global.switchCamera = switchCamera;
   global.toggleTorch = toggleTorch;
