@@ -846,6 +846,20 @@
       line-height: 1.4;
     }
 
+    /* ── MODO INMERSIVO DE CÁMARA ──────────────────────────────────────
+       Con la cámara encendida el visor pasa a ocupar TODA la pantalla y todo
+       lo demás se vuelve overlay. Estas reglas se habían perdido al refactorizar
+       el portal con pestañas: solo quedaban 4 y, sin las otras, la barra de
+       sesión y el panel de nómina seguían ocupando altura en el flujo normal,
+       así que el visor recibía únicamente el espacio sobrante y parecía que
+       "sobraban botones".
+       En el celular en horizontal (la orientación de escaneo) el alto es lo
+       escaso, por eso la media query de más abajo achica medidores y botón. */
+
+    body.camera-active {
+      overflow: hidden;
+    }
+
     body.camera-active header {
       position: absolute;
       top: 0; left: 0; right: 0;
@@ -855,14 +869,83 @@
       z-index: 30;
       pointer-events: none;
     }
+    body.camera-active header .brand,
     body.camera-active header .header-actions {
       pointer-events: auto;
     }
+    /* El subtítulo del header no aporta nada mientras se escanea */
+    body.camera-active header .brand-text p {
+      display: none;
+    }
+
     body.camera-active .tab-bar {
       display: none;
     }
     body.camera-active .camera-placeholder {
       display: none;
+    }
+
+    /* El visor sale del flujo y toma la pantalla completa */
+    body.camera-active .viewport-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      z-index: 10;
+    }
+
+    /* Salón, objetivo y contador se ocultan mientras se apunta: no se miran en
+       ese momento, y el contador reaparece en el modal después de cada captura
+       (ver #modal-counter) y en la barra al detener la cámara. El panel de
+       nómina también: los pendientes se ven en el modal. */
+    body.camera-active .session-bar,
+    body.camera-active #roster-panel {
+      display: none !important;
+    }
+
+    /* La barra de control deja de ser un bloque sólido y pasa a ser una franja
+       fina flotante sobre el video */
+    body.camera-active .controls-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(0deg, rgba(11, 15, 25, 0.88) 0%, rgba(11, 15, 25, 0) 100%);
+      border-top: none;
+      padding: 10px 16px 14px;
+      z-index: 30;
+      pointer-events: none;
+    }
+    body.camera-active .controls-panel .action-row {
+      pointer-events: auto;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+    /* El botón de detener se achica: queda como el único control de abajo */
+    body.camera-active .btn-main {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+    }
+
+    /* Durante el escaneo no se carga una foto: ya se está capturando en vivo.
+       Además le comía el ancho al botón principal en la misma fila flex. */
+    body.camera-active #file-input,
+    body.camera-active .btn-secondary {
+      display: none !important;
+    }
+
+    /* Los medidores flotan por encima de la franja de control */
+    body.camera-active .quality-metrics {
+      position: absolute;
+      bottom: 74px;
+      left: 16px;
+      right: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      z-index: 25;
+      pointer-events: none;
     }
 
     /* Retícula HUD */
@@ -1156,6 +1239,47 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.5);
       display: none;
       animation: fadeIn 0.2s ease;
+    }
+
+    /* ── CELULAR EN HORIZONTAL: la orientación real de escaneo ─────────
+       La ficha A5 es apaisada y enterFullscreen() bloquea la pantalla en
+       horizontal, así que este es el caso normal, no la excepción. En
+       horizontal el alto es lo escaso: sin estas reglas, los medidores y los
+       botones conservaban los tamaños de escritorio y se apretaban contra el
+       video. Reglas recuperadas del diseño original (backup v2.5.0). */
+    @media (orientation: landscape) and (max-height: 550px), (max-height: 520px) {
+      body.camera-active .quality-metrics {
+        bottom: 56px;
+        left: 10px;
+        right: 10px;
+        max-width: 440px;
+        gap: 6px;
+      }
+      .metric-card {
+        padding: 4px 8px;
+      }
+      .metric-header {
+        font-size: 0.62rem;
+        margin-bottom: 2px;
+      }
+      .progress-bar-bg {
+        height: 5px;
+      }
+      body.camera-active .controls-panel {
+        padding: 6px 12px 10px;
+      }
+      body.camera-active .btn-main {
+        padding: 8px 16px;
+        font-size: 0.84rem;
+      }
+      body.camera-active header {
+        padding: 4px 12px;
+      }
+      .header-actions .btn-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+      }
     }
 
     /* VISTA DE IMPRESIÓN (CTRL + P) */
@@ -1704,8 +1828,15 @@
 
         <!-- Pendientes: quiénes faltan tomar foto -->
         <div id="modal-pending-wrap" style="margin-top:6px;">
-          <div style="font-size:0.7rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:5px;">
-            Pendientes en esta sesión
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:5px;">
+            <span style="font-size:0.7rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">
+              Pendientes en esta sesión
+            </span>
+            <!-- El contador vive acá ADEMÁS de en la barra de sesión, porque
+                 durante el escaneo esa barra está oculta. Este es el único
+                 lugar donde el docente ve cuántos van mientras corrige. Lo
+                 actualiza updateSessionCounter() en scanner.js. -->
+            <span id="modal-counter" style="font-size:0.72rem; color:#38bdf8; font-weight:800; white-space:nowrap;">—</span>
           </div>
           <!-- chips generados por JS → renderModalPending() -->
           <div id="modal-pending-list" style="display:flex; flex-wrap:wrap; gap:5px; min-height:22px;">

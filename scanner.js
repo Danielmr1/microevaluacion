@@ -102,20 +102,29 @@
   }
 
   function updateSessionCounter() {
-    const counterEl = document.getElementById('session-counter');
-    if (!counterEl) return;
     const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
     // Sin salón cargado el total es 0, no un 10 inventado: antes el contador
     // mostraba "0 / 10" sin haber ningún salón elegido. Con 0, el guardrail 8
     // (sesión completa) queda desactivado por su propia condición `total > 0`.
     const total = cls ? cls.students.length : 0;
     const evaluated = evaluatedStudentIds.size;
-    counterEl.textContent = `${evaluated} / ${total} evaluados`;
+    const texto = `${evaluated} / ${total} evaluados`;
 
-    // Colorear el contador con el color del salón activo
-    if (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor) {
-      counterEl.style.color = ClassroomData.getClassroomColor(currentClassroomId);
+    const counterEl = document.getElementById('session-counter');
+    if (counterEl) {
+      counterEl.textContent = texto;
+      // Colorear el contador con el color del salón activo
+      if (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor) {
+        counterEl.style.color = ClassroomData.getClassroomColor(currentClassroomId);
+      }
     }
+
+    // El mismo contador dentro del modal de captura.
+    // Hace falta porque durante el escaneo la barra de sesión está oculta (modo
+    // inmersivo): al revisar cada ficha, este es el único lugar donde el
+    // docente ve cuántos van y cuántos faltan.
+    const modalCounter = document.getElementById('modal-counter');
+    if (modalCounter) modalCounter.textContent = texto;
 
     // GUARDRAIL 8: Detectar sesión completa y pausar cámara
     const g8Banner = document.getElementById('g8-session-complete-banner');
