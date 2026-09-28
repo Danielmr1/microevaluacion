@@ -2301,6 +2301,10 @@
 
     let wizardRubric = null;      // rúbrica aceptada, lista para guardar
     let wizardRubricMeta = null;  // de dónde salió, para trazabilidad
+    // Enunciado con el que se generó la rúbrica actual. Sirve para detectar que
+    // el docente cambió el problema DESPUÉS de generarla: si eso pasa, la rúbrica
+    // quedó vieja y corregir con ella sería un error silencioso en los 30 alumnos.
+    let wizardRubricPrompt = null;
 
     /** Escapa texto antes de meterlo en innerHTML. */
     function escaparHtml(t) {
@@ -2483,18 +2487,22 @@
     function descartarRubrica() {
       wizardRubric = null;
       wizardRubricMeta = null;
+      wizardRubricPrompt = null;
       const panel = document.getElementById('rubric-panel');
       if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
       const aviso = document.getElementById('answer-mismatch');
       if (aviso) aviso.style.display = 'none';
       const statusEl = document.getElementById('rubric-status');
       if (statusEl) { statusEl.textContent = ''; }
+      const btn = document.getElementById('btn-rubric');
+      if (btn) btn.style.borderColor = '';
     }
 
     /** Limpia todo el estado de la rúbrica (al abrir el formulario o resetear). */
     function resetRubrica() {
       wizardRubric = null;
       wizardRubricMeta = null;
+      wizardRubricPrompt = null;
       const panel = document.getElementById('rubric-panel');
       if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
       const aviso = document.getElementById('answer-mismatch');
@@ -2502,7 +2510,7 @@
       const statusEl = document.getElementById('rubric-status');
       if (statusEl) { statusEl.textContent = ''; statusEl.style.color = '#64748b'; }
       const btn = document.getElementById('btn-rubric');
-      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.borderColor = ''; }
     }
 
     /** Pide la rúbrica a la Edge Function. */
@@ -2533,6 +2541,10 @@
 
       wizardRubric = res.rubrica;
       wizardRubricMeta = res.meta || null;
+      wizardRubricPrompt = prompt;
+
+      const btnRub = document.getElementById('btn-rubric');
+      if (btnRub) btnRub.style.borderColor = '';
 
       if (statusEl) {
         statusEl.textContent = '✅ Rúbrica lista' +
@@ -2545,16 +2557,21 @@
       renderRubricPanel(res.rubrica, res.meta);
     }
 
-    /* ── LA RÚBRICA ES REQUISITO PARA CORREGIR ───────────────────────────
-       Regla acordada: se puede redactar y guardar una evaluación sin rúbrica
-       (por si la IA falla justo en ese momento), pero NO se puede empezar a
-       escanear sin ella. Sin rúbrica la IA no puede juzgar a todo el salón con
-       el mismo criterio ni decir QUÉ error cometió el alumno, que es el sentido
-       de todo esto.
-       Por eso el control está al encender la cámara, no al guardar. */
+    /* ── LA RÚBRICA SE GENERA AL CREAR LA PREGUNTA ───────────────────────
+       Regla acordada: TODA pregunta entra al banco con su rúbrica. No se genera
+       después ni queda a medias. Así el banco es una lista de evaluaciones listas
+       para usar y la corrección con IA siempre tiene lo que necesita.
+
+       Dos controles, entonces:
+         1. Acá: no se puede confirmar una evaluación sin rúbrica, ni con una
+            rúbrica que quedó vieja porque se cambió el enunciado.
+         2. Al encender la cámara: red de seguridad para las preguntas de ejemplo
+            que ya estaban en el banco antes de esta regla y no tienen rúbrica. */
 
     /**
      * Genera y guarda la rúbrica de la evaluación activa sin salir del escáner.
+     * Solo se usa para las preguntas viejas que no tienen: las nuevas ya nacen
+     * con la suya.
      * @returns {Promise<boolean>} true si quedó lista
      */
     async function generarRubricaDeLaSesion() {
@@ -2657,10 +2674,35 @@
         return;
       }
 
+      /* ── TODA PREGUNTA ENTRA AL BANCO CON SU RÚBRICA ──
+         Si falta, no se guarda: se señala el botón que la genera, que está justo
+         arriba. Es lo que hace que el banco sea una lista de evaluaciones listas
+         para corregir y no de preguntas a medio terminar. */
+      const btnRub = document.getElementById('btn-rubric');
+      if (!wizardRubric) {
+        if (btnRub) {
+          btnRub.style.borderColor = '#ef4444';
+          if (btnRub.scrollIntoView) btnRub.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          btnRub.focus();
+        }
+        showToast('⚠️ Falta la rúbrica: generála con el botón "✨ Generar rúbrica" y volvé a confirmar.');
+        return;
+      }
+
+      // Si el enunciado cambió después de generarla, la rúbrica quedó vieja y
+      // corregir con ella sería un error silencioso en los 30 alumnos.
+      if (wizardRubricPrompt && wizardRubricPrompt !== prompt) {
+        descartarRubrica();
+        const ta = document.getElementById('input-eval-prompt');
+        if (ta) ta.style.borderColor = '#f59e0b';
+        showToast('⚠️ Cambiaste el enunciado: la rúbrica ya no corresponde. Generala de nuevo.');
+        return;
+      }
+
       // Guardar como evaluación personalizada.
-      // La rúbrica (si se generó) y el GRADO viajan con la evaluación: la
-      // rúbrica se genera una vez y las 30 correcciones de la ficha usan el
-      // mismo criterio. El grado queda guardado porque condiciona ese criterio.
+      // La rúbrica y el GRADO viajan con la evaluación: la rúbrica se genera una
+      // vez y las 30 correcciones de la ficha usan el mismo criterio. El grado
+      // queda guardado porque condiciona ese criterio.
       const g = gradoDelSalonSeleccionado();
       const saved = ClassroomData.saveCustomEvaluation({
         title: 'Evaluación del Día',

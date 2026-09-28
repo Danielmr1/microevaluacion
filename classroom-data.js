@@ -101,42 +101,34 @@
   // llamadores ya lo verifican.
   const CLASSROOMS = {};
 
-  // --- CATÁLOGO DE MICROEVALUACIONES (Problemas Matemáticos) ---
-  const EVALUATIONS = {
-    'EVA_01': {
-      id: 'EVA_01',
-      title: 'Suma con Canje: Biblioteca',
-      prompt: 'En la biblioteca había 47 libros de cuentos y llegaron 38 libros nuevos. ¿Cuántos libros hay ahora en total?',
-      operation: '47 + 38',
-      expectedAnswer: '85',
-      unitHint: '(unidades: libros, cuentos)'
-    },
+  // --- CATÁLOGO DE MICROEVALUACIONES ---
+  // VACÍO A PROPÓSITO.
+  //
+  // Acá había tres problemas de ejemplo ("Biblioteca", "Panadería", "Cajas de
+  // Manzanas") que venían con la plantilla original. Se borraron junto con todo
+  // el banco por una razón de fondo: bajo la regla actual TODA pregunta entra al
+  // banco con su rúbrica y su grado, y esas tres no tenían ninguna de las dos
+  // cosas. Dejarlas era dejar preguntas rotas dentro de una lista que se supone
+  // lista para corregir.
+  //
+  // El banco se llena solo, con las preguntas que el docente va creando.
+  const EVALUATIONS = {};
 
-    'EVA_02': {
-      id: 'EVA_02',
-      title: 'Resta con Canje: Panadería',
-      prompt: 'La panadería de don Pepe horneó 94 panes en la mañana y vendió 56 al mediodía. ¿Cuántos panes le quedan por vender?',
-      operation: '94 - 56',
-      expectedAnswer: '38',
-      unitHint: '(unidades: panes)'
-    },
-
-    'EVA_03': {
-      id: 'EVA_03',
-      title: 'Multiplicación Inicial: Cajas de Manzanas',
-      prompt: 'En la tienda colocaron 6 cajas con 8 manzanas rojas cada una. ¿Cuántas manzanas hay en total en las cajas?',
-      operation: '6 × 8',
-      expectedAnswer: '48',
-      unitHint: '(unidades: manzanas)'
-    }
-  };
-
-  // Cargar evaluaciones guardadas previamente en localStorage
-  const STORAGE_KEY_BANK = 'microeval_teacher_bank_v1';
+  // Cargar evaluaciones guardadas previamente en localStorage.
+  //
+  // La clave subió a v2 para que el banco viejo de cada navegador quede
+  // ignorado: si no, las preguntas guardadas antes de esta regla (sin rúbrica ni
+  // grado) volverían a aparecer aunque se hubieran borrado de la base.
+  const STORAGE_KEY_BANK = 'microeval_teacher_bank_v2';
+  const STORAGE_KEY_BANK_VIEJO = 'microeval_teacher_bank_v1';
   const STORAGE_KEY_SESSION = 'microeval_active_session_v1';
 
   function loadSavedBank() {
     if (typeof window !== 'undefined' && window.localStorage) {
+      // Se borra el banco con la clave vieja para que no quede ocupando lugar ni
+      // pueda reaparecer si alguna vez se vuelve a usar esa clave.
+      try { window.localStorage.removeItem(STORAGE_KEY_BANK_VIEJO); } catch (e) {}
+
       try {
         const raw = window.localStorage.getItem(STORAGE_KEY_BANK);
         if (raw) {
@@ -190,8 +182,18 @@
     return CLASSROOMS[classroomId] || null;
   }
 
+  /**
+   * Devuelve la evaluación o null si no existe.
+   *
+   * Antes caía a 'EVA_01' del catálogo de ejemplo, lo que hacía que un id
+   * inexistente (por ejemplo una sesión restaurada de una evaluación borrada)
+   * devolviera silenciosamente OTRO problema, con otra respuesta esperada: el
+   * docente habría corregido contra una consigna que no era la suya.
+   * Devolver null obliga a quien llama a decidir, y todos los llamadores ya lo
+   * verifican.
+   */
   function getEvaluation(evalId) {
-    return EVALUATIONS[evalId] || EVALUATIONS['EVA_01'];
+    return EVALUATIONS[evalId] || null;
   }
 
   function getStudent(classroomId, studentId) {
