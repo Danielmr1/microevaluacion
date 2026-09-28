@@ -577,7 +577,9 @@
       document.body.classList.add('camera-active');
       const btn = document.getElementById('btn-start');
       if (btn) {
-        btn.innerHTML = '<span>⏹ Detener Cámara</span>';
+        // Etiqueta corta: en modo inmersivo el botón comparte la fila con los
+        // tres medidores y no entra "Detener Cámara" completo.
+        btn.innerHTML = '<span>⏹ Detener</span>';
         btn.style.background = '#dc2626';
       }
 
@@ -610,14 +612,6 @@
       ctx.clearRect(0, 0, overlay.width, overlay.height);
     }
     resetHUD();
-  }
-
-  async function switchCamera() {
-    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-    if (isScanning) {
-      stopCamera();
-      await startCamera();
-    }
   }
 
   async function toggleTorch() {
@@ -1525,7 +1519,6 @@
   // Exportar funciones para interacción con la interfaz HTML
   global.Scanner = {
     toggleCamera,
-    switchCamera,
     toggleTorch,
     toggleFullscreen,
     nextScan,
@@ -1543,7 +1536,6 @@
   // llama desde un atributo onchange, y esos se resuelven en el ámbito global.
   global.handleFile = handleFile;
   global.toggleCamera = toggleCamera;
-  global.switchCamera = switchCamera;
   global.toggleTorch = toggleTorch;
   global.toggleFullscreen = toggleFullscreen;
   global.nextScan = nextScan;
