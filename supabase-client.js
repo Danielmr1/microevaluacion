@@ -101,22 +101,46 @@
 
   /**
    * Crea un salón nuevo para el docente autenticado.
-   * @param {string} name Nombre del salón, ej. "3° Primaria A"
-   * @param {string} gradeCode Código corto, ej. "3A"
+   * @param {string} name Nombre del salón, ej. "4° Primaria A"
+   * @param {string} gradeCode Código corto, ej. "4A"
    * @param {string} color Color hex, ej. "#3b82f6"
+   * @param {string} [gradeStage] 'primaria' | 'secundaria' (opcional)
+   * @param {number} [gradeLevel] Número de grado (opcional)
    * @returns {Promise<object|null>} El salón creado o null si hubo error.
    */
-  async function createClassroom(name, gradeCode, color) {
+  async function createClassroom(name, gradeCode, color, gradeStage, gradeLevel) {
     const client = getClient();
     if (!client) return null;
     const user = await getCurrentUser();
     if (!user) return null;
 
-    const { data, error } = await client
+    const row = { teacher_id: user.id, name, grade_code: gradeCode, color: color || '#3b82f6' };
+    if (gradeStage && gradeLevel) {
+      row.grade_stage = gradeStage;
+      row.grade_level = gradeLevel;
+    }
+
+    let { data, error } = await client
       .from('microeval_classrooms')
-      .insert({ teacher_id: user.id, name, grade_code: gradeCode, color: color || '#3b82f6' })
+      .insert(row)
       .select()
       .single();
+
+    // Si la migración de grade_stage todavía no se aplicó, el insert CON las
+    // columnas de grado falla entero y el salón no se crearía. Se reintenta sin
+    // ellas: es preferible tener el salón sin grado (se completa después desde
+    // el selector) a no poder crearlo.
+    if (error && (error.code === '42703' || /grade_stage|grade_level/.test(error.message || ''))) {
+      console.warn('[SupabaseClient] Faltan las columnas de grado; se crea el salón sin grado. ' +
+        'Corré supabase/migrations/20260928010000_grade_stage.sql para que se guarde.');
+      const reintento = await client
+        .from('microeval_classrooms')
+        .insert({ teacher_id: user.id, name, grade_code: gradeCode, color: color || '#3b82f6' })
+        .select()
+        .single();
+      data = reintento.data;
+      error = reintento.error;
+    }
 
     if (error) {
       console.error('[SupabaseClient] Error creando salón:', error.message);
@@ -126,12 +150,77 @@
   }
 
   /**
-   * Elimina un salón (y sus alumnos por CASCADE).
+   * Elimina un salón.
+   *
+   * Por CASCADE se lleva sus alumnos (microeval_students) y todos los
+   * resultados guardados de ese salón (microeval_results). Conviene confirmarlo
+   * en la interfaz antes de llamar.
+   *
+   * Filtra además por teacher_id para no depender solo de la política RLS: si
+   * alguna vez esa política quedara mal escrita, esto evita que un docente
+   * borre el salón de otro.
+   *
+   * @param {string} classroomId UUID del salón
+   * @returns {Promise<boolean>} true si se borró
    */
   async function deleteClassroom(classroomId) {
     const client = getClient();
-    if (!client) return;
-    await client.from('microeval_classrooms').delete().eq('id', classroomId);
+    if (!client) return false;
+    if (!classroomId) return false;
+
+    const user = await getCurrentUser();
+    if (!user) {
+      console.error('[SupabaseClient] Sin sesión: no se puede borrar el salón.');
+      return false;
+    }
+
+    const { error } = await client
+      .from('microeval_classrooms')
+      .delete()
+      .eq('id', classroomId)
+      .eq('teacher_id', user.id);
+
+    if (error) {
+      console.error('[SupabaseClient] Error borrando el salón:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Guarda el grado de un salón.
+   *
+   * Es TOLERANTE a que la migración todavía no se haya aplicado: si las
+   * columnas grade_stage / grade_level no existen, avisa por consola con la
+   * instrucción concreta y devuelve false, pero NUNCA lanza ni bloquea el
+   * asistente. El grado sigue funcionando en memoria durante la sesión.
+   *
+   * @param {string} classroomId UUID del salón
+   * @param {string|null} stage 'primaria' | 'secundaria' | null para limpiar
+   * @param {number|null} level
+   * @returns {Promise<boolean>} true si quedó guardado en la base
+   */
+  async function updateClassroomGrade(classroomId, stage, level) {
+    const client = getClient();
+    if (!client) return false;
+    if (!classroomId) return false;
+
+    const { error } = await client
+      .from('microeval_classrooms')
+      .update({ grade_stage: stage || null, grade_level: (stage && level) ? level : null })
+      .eq('id', classroomId);
+
+    if (error) {
+      if (error.code === '42703' || /grade_stage|grade_level/.test(error.message || '')) {
+        console.warn('[SupabaseClient] Las columnas de grado no existen todavía. ' +
+          'Corré supabase/migrations/20260928010000_grade_stage.sql en el SQL Editor. ' +
+          'El grado queda solo en memoria por ahora.');
+      } else {
+        console.error('[SupabaseClient] Error guardando el grado:', error.message);
+      }
+      return false;
+    }
+    return true;
   }
 
   // ─────────────────────────────────────────────
@@ -227,6 +316,126 @@
   }
 
   // ─────────────────────────────────────────────
+  // RESULTADOS POR ALUMNO
+  // ─────────────────────────────────────────────
+
+  /**
+   * Guarda (o actualiza) el resultado de un alumno en una sesión.
+   *
+   * Usa upsert con onConflict sobre el índice único
+   * (teacher_id, session_ref, student_code): si el docente reescanea al mismo
+   * alumno en la misma sesión, ACTUALIZA la fila en vez de duplicarla.
+   *
+   * `result` debe incluir al menos: session_ref, student_code.
+   * El teacher_id lo pone esta función, no el llamador.
+   *
+   * Es tolerante a que la migración no se haya aplicado: avisa y devuelve null.
+   *
+   * @param {object} result
+   * @returns {Promise<object|null>}
+   */
+  async function saveResult(result) {
+    const client = getClient();
+    if (!client) return null;
+    const user = await getCurrentUser();
+    if (!user) return null;
+
+    if (!result || !result.session_ref) {
+      console.warn('[SupabaseClient] saveResult necesita session_ref: sin él no se ' +
+        'puede deduplicar (Postgres trata cada NULL como distinto).');
+      return null;
+    }
+
+    const row = Object.assign({}, result, { teacher_id: user.id });
+
+    const { data, error } = await client
+      .from('microeval_results')
+      .upsert(row, { onConflict: 'teacher_id,session_ref,student_code' })
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '42P01') {
+        console.warn('[SupabaseClient] La tabla microeval_results no existe todavía. ' +
+          'Corré supabase/migrations/20260928000000_grado_y_resultados.sql en el SQL Editor.');
+      } else {
+        console.error('[SupabaseClient] Error guardando resultado:', error.message);
+      }
+      return null;
+    }
+    return data;
+  }
+
+  /**
+   * Carga todos los resultados de una sesión, en orden de captura.
+   * @param {string} sessionRef
+   * @returns {Promise<Array>}
+   */
+  async function loadSessionResults(sessionRef) {
+    const client = getClient();
+    if (!client || !sessionRef) return [];
+
+    const { data, error } = await client
+      .from('microeval_results')
+      .select('*')
+      .eq('session_ref', sessionRef)
+      .order('captured_at', { ascending: true });
+
+    if (error) {
+      console.error('[SupabaseClient] Error cargando resultados de la sesión:', error.message);
+      return [];
+    }
+    return data || [];
+  }
+
+  // ─────────────────────────────────────────────
+  // CORRECCIÓN CON IA (Edge Function)
+  // ─────────────────────────────────────────────
+
+  /**
+   * Manda la ficha recortada a la Edge Function 'grade-sheet' y devuelve el
+   * veredicto. La clave del modelo vive en los secretos de Supabase, nunca
+   * acá: por eso la llamada pasa por la función y no directo al proveedor.
+   *
+   * El payload típico es:
+   *   { sessionRef, studentCode, gradeText, prompt, expectedAnswer,
+   *     answerImage, gridImage }   // imágenes como data URL (base64)
+   *
+   * Las dos imágenes juntas pesan unos 350 KB en base64, bastante por debajo
+   * del límite del cuerpo de una Edge Function.
+   *
+   * @param {object} payload
+   * @returns {Promise<{ok: boolean, data?: object, error?: string}>}
+   */
+  async function gradeSheet(payload) {
+    const client = getClient();
+    if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
+
+    try {
+      const { data, error } = await client.functions.invoke('grade-sheet', { body: payload });
+
+      if (error) {
+        // supabase-js deja la respuesta cruda en error.context; ahí viene el
+        // mensaje real de la función (por ejemplo "falta GEMINI_API_KEY").
+        let detail = error.message || String(error);
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const body = await error.context.json();
+            if (body && (body.error || body.message)) detail = body.error || body.message;
+          }
+        } catch (e) { /* la respuesta no era JSON */ }
+        console.error('[SupabaseClient] grade-sheet falló:', detail);
+        return { ok: false, error: detail };
+      }
+
+      return { ok: true, data: data };
+    } catch (e) {
+      console.error('[SupabaseClient] grade-sheet lanzó una excepción:', e);
+      return { ok: false, error: e.message || 'Error desconocido al llamar a la IA.' };
+    }
+  }
+
+  // ─────────────────────────────────────────────
   // EXPORTACIÓN
   // ─────────────────────────────────────────────
   global.SupabaseClient = {
@@ -237,9 +446,13 @@
     loadClassrooms,
     createClassroom,
     deleteClassroom,
+    updateClassroomGrade,
     importStudents,
     saveEvaluation,
-    loadRecentEvaluations
+    loadRecentEvaluations,
+    saveResult,
+    loadSessionResults,
+    gradeSheet
   };
 
 })(typeof window !== 'undefined' ? window : this);

@@ -1276,7 +1276,7 @@
   <!-- Pestañas de Navegación Unificada -->
   <div class="tab-bar">
     <button id="tab-btn-create" class="tab-btn active" onclick="switchTab('create')">
-      <span>📝 1. Redactar e Imprimir Fichas</span>
+      <span>📝 1. Preparar fichas</span>
     </button>
     <button id="tab-btn-scan" class="tab-btn" onclick="switchTab('scan')">
       <span>📷 2. Escáner de Aula</span>
@@ -1294,23 +1294,101 @@
       <!-- ── PASO 1: Selección de Salón ── -->
       <div id="step-classroom" style="padding:18px 20px; border-bottom:1px solid #1e293b;">
         <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">1 · Salón de Clases</label>
-        <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)"
-          style="font-size:1rem; font-weight:700; padding:10px 14px;">
-        </select>
 
-        <!-- Importar nómina desde Excel / CSV -->
+        <div style="display:flex; gap:8px; align-items:stretch;">
+          <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)"
+            style="flex:1; min-width:0; font-size:1rem; font-weight:700; padding:10px 14px;">
+          </select>
+          <button id="btn-delete-classroom" onclick="handleDeleteClassroom()" title="Borrar el salón seleccionado"
+            style="flex:0 0 auto; background:#1e293b; border:1px solid #7f1d1d; color:#f87171; border-radius:8px; padding:0 12px; font-size:0.95rem; cursor:pointer;">
+            🗑️
+          </button>
+        </div>
+
+        <!-- Importar nómina desde Excel / CSV  ·  Crear salón a mano -->
         <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;"
             onchange="handleExcelImport(this)">
           <button onclick="document.getElementById('excel-file-input').click()"
             style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #475569; color:#94a3b8; border-radius:8px; padding:7px 12px; font-size:0.76rem; cursor:pointer;">
-            📂 Importar salón (.xlsx / .csv)
+            📂 Importar (.xlsx / .csv)
+          </button>
+          <button id="btn-manual-classroom" onclick="toggleManualClassroomForm()"
+            style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #475569; color:#94a3b8; border-radius:8px; padding:7px 12px; font-size:0.76rem; cursor:pointer;">
+            ➕ Crear salón a mano
           </button>
           <span id="excel-import-status" style="font-size:0.72rem; color:#64748b;"></span>
         </div>
-        <p style="font-size:0.68rem; color:#334155; margin:6px 0 0;">
-          Columnas: <strong style="color:#475569;">Nombre Completo</strong> y <strong style="color:#475569;">Nombre Corto</strong>. Descargá la plantilla en <code>excel/salon_3A.csv</code>
-        </p>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0 0;">
+          <span style="font-size:0.68rem; color:#334155;">
+            Columnas: <strong style="color:#475569;">Nombre Completo</strong> y <strong style="color:#475569;">Nombre Corto</strong> (opcional).
+          </span>
+          <button onclick="downloadEmptyRosterTemplate()"
+            style="background:transparent; border:none; color:#38bdf8; font-size:0.7rem; font-weight:700; cursor:pointer; padding:0; text-decoration:underline;">
+            ⬇️ Descargar plantilla vacía
+          </button>
+        </div>
+
+        <!-- ── ALTA MANUAL DE SALÓN ──
+             Sirve para cargar una nómina chica sin pasar por Excel, y para
+             reemplazar un salón cuyo archivo vino mal codificado. -->
+        <div id="manual-classroom-form" style="display:none; margin-top:12px; padding:14px; border:1.5px solid #334155; border-radius:10px; background:#0f172a;">
+          <div style="font-weight:800; color:#e2e8f0; font-size:0.85rem; margin-bottom:10px;">➕ Nuevo salón a mano</div>
+
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Nombre del salón</label>
+          <input type="text" id="manual-classroom-name" class="form-control" maxlength="60"
+            placeholder='Ej: 4° Primaria "A"'
+            style="font-size:0.92rem; font-weight:700; padding:9px 12px; margin-bottom:10px;">
+
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Grado</label>
+          <select id="manual-classroom-grade" class="form-control"
+            style="font-size:0.92rem; font-weight:700; padding:9px 12px; margin-bottom:10px;">
+            <option value="">Sin especificar</option>
+          </select>
+
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">
+            Alumnos — uno por línea
+          </label>
+          <textarea id="manual-classroom-students" class="form-control" rows="10"
+            oninput="updateManualStudentCount()"
+            placeholder="Nombre y apellido&#10;Nombre y apellido, Nombre corto"
+            style="font-size:0.85rem; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;"></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; gap:8px;">
+            <span id="manual-student-hint" style="font-size:0.68rem; color:#64748b;">
+              Solo el nombre completo alcanza. Para un nombre corto distinto, separalo con coma: <code>Nombre completo, Nombre corto</code>. También podés pegar dos columnas desde Excel.
+            </span>
+            <span id="manual-student-count" style="font-size:0.7rem; font-weight:800; color:#38bdf8; flex:0 0 auto;">0</span>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <button onclick="handleCreateClassroomManual()"
+              style="flex:1; background:#3b82f6; border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.85rem; font-weight:700; cursor:pointer;">
+              ✓ Crear salón
+            </button>
+            <button onclick="toggleManualClassroomForm(false)"
+              style="flex:0 0 auto; background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:8px; padding:10px 14px; font-size:0.85rem; cursor:pointer;">
+              Cancelar
+            </button>
+          </div>
+        </div>
+
+        <!-- ── GRADO DEL SALÓN ──
+             Vive en el salón y no en la evaluación: un salón es de 4° o de 5°
+             y no cambia. Se guarda una sola vez y todas las evaluaciones de ese
+             salón lo heredan. Es el contexto que la IA necesita para decidir si
+             un método de resolución es válido en ese grado. -->
+        <div style="margin-top:14px;">
+          <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
+            Grado del salón
+          </label>
+          <select id="builder-grade" class="form-control" onchange="onGradeChanged(this.value)"
+            style="font-size:0.92rem; font-weight:700; padding:9px 12px;">
+            <option value="">— Elegí primero un salón —</option>
+          </select>
+          <p id="grade-hint" style="font-size:0.68rem; color:#334155; margin:6px 0 0;">
+            Define qué procedimiento de resolución se considera correcto y con qué lenguaje la IA le devuelve el resultado al alumno.
+          </p>
+        </div>
       </div>
 
       <!-- ── PASO 2: Botones Banco / Nueva ── -->
@@ -1386,16 +1464,17 @@
           </div>
         </div>
 
-        <!-- Botones de acción -->
+        <!-- Botones de acción.
+             Son DOS momentos físicos distintos y por eso van separados:
+             imprimir pasa antes de la clase y escanear después de que los
+             alumnos resuelven. La sesión ya quedó activa al confirmar la
+             evaluación (showSummary), así que no hace falta un botón para eso. -->
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn-generate" onclick="generateAndActivateSession()">
-            ✅ Activar Sesión
-          </button>
           <button class="btn-print-action" id="btn-print-sheets" onclick="window.print()">
-            🖨️ Imprimir 5 Hojas A4
+            🖨️ Imprimir fichas
           </button>
           <button class="btn-goto-scan" onclick="goToScannerWithSession()">
-            📷 Ir al Escáner ➔
+            📷 Ir al escáner ➔
           </button>
         </div>
 
@@ -1574,9 +1653,9 @@
             <span style="font-size:0.78rem; color:#fb923c; font-weight:700; line-height:1.3;">Este alumno ya fue evaluado en esta sesión.<br><span style="color:#fdba74; font-weight:400;">Revisá si es la misma ficha o un error de cámara.</span></span>
           </div>
 
-          <div class="badge-name" id="res-student-name">MATEO GARCÍA RODRÍGUEZ</div>
+          <div class="badge-name" id="res-student-name">NOMBRE DEL ALUMNO</div>
           <div class="badge-details">
-            <span id="res-student-id">ID: ALUM_01</span>
+            <span id="res-student-id">ID: —</span>
             <span id="res-test-id">Respuesta Esperada: 85</span>
             <span id="res-classroom-name" style="color:#60a5fa; font-weight:700;">3° Primaria "A"</span>
           </div>
@@ -1704,6 +1783,9 @@
       // Restaurar selección si hay sesión activa
       const session = ClassroomData.getActiveSession();
       if (session && session.classroomId) sel.value = session.classroomId;
+
+      // El selector de grado depende del salón elegido
+      renderGradeSelect(sel.value || null);
     }
 
     function onClassroomSelectChanged(classId) {
@@ -1734,8 +1816,91 @@
       document.getElementById('step-new-form').style.display = 'none';
       document.getElementById('step-summary').style.display = 'none';
 
+      // Reflejar el grado del salón elegido
+      renderGradeSelect(classId);
+
       // Resetear estado visual de botones de modo
       resetModeButtons();
+    }
+
+    /* ── GRADO DEL SALÓN ──────────────────────────────────────────────
+       El <select> se arma desde ClassroomData.getGradeStages(), así que
+       habilitar secundaria más adelante es agregar números al catálogo de
+       classroom-data.js. Acá no se toca nada.
+       Hoy el catálogo habilita 4°, 5° y 6° de primaria. */
+
+    function renderGradeSelect(classroomId) {
+      const sel = document.getElementById('builder-grade');
+      if (!sel) return;
+
+      if (!classroomId) {
+        sel.innerHTML = '<option value="">— Elegí primero un salón —</option>';
+        sel.disabled = true;
+        return;
+      }
+
+      sel.disabled = false;
+      sel.innerHTML = '<option value="">Sin especificar</option>';
+
+      ClassroomData.getGradeStages().forEach(stage => {
+        const group = document.createElement('optgroup');
+        group.label = stage.label;
+        stage.grades.forEach(level => {
+          const opt = document.createElement('option');
+          opt.value = stage.stage + ':' + level;
+          opt.textContent = level + '° de ' + stage.label.toLowerCase();
+          group.appendChild(opt);
+        });
+        sel.appendChild(group);
+      });
+
+      // Reflejar el grado ya guardado del salón
+      const cls = ClassroomData.getClassroom(classroomId);
+      sel.value = (cls && cls.gradeStage && cls.gradeLevel)
+        ? cls.gradeStage + ':' + cls.gradeLevel
+        : '';
+
+      updateGradeHint(classroomId);
+    }
+
+    function updateGradeHint(classroomId) {
+      const hint = document.getElementById('grade-hint');
+      if (!hint) return;
+      const grade = ClassroomData.getClassroomGrade(classroomId);
+      if (grade) {
+        hint.textContent = '✅ La IA va a evaluar como ' + grade + '.';
+        hint.style.color = '#4ade80';
+      } else {
+        hint.textContent = '⚠️ Sin grado, la IA evalúa solo si el resultado es correcto y no opina sobre el método.';
+        hint.style.color = '#f59e0b';
+      }
+    }
+
+    /* Guarda el grado: primero en memoria (respuesta instantánea) y después en
+       Supabase. Si la migración de grade_stage todavía no se aplicó, el guardado
+       en la base avisa por consola y el grado sigue vivo durante la sesión: el
+       asistente nunca se bloquea por esto. */
+    async function onGradeChanged(value) {
+      const classroomId = wizardClassroomId
+        || (document.getElementById('builder-classroom') || {}).value;
+      if (!classroomId) return;
+
+      let stage = null, level = null;
+      if (value) {
+        const parts = value.split(':');
+        stage = parts[0];
+        level = parseInt(parts[1], 10) || null;
+      }
+
+      ClassroomData.setClassroomGrade(classroomId, stage, level);
+      updateGradeHint(classroomId);
+
+      const saved = await SupabaseClient.updateClassroomGrade(classroomId, stage, level);
+      if (saved) {
+        showToast(stage ? '✅ Grado guardado: ' + ClassroomData.formatGrade(stage, level) : 'Grado borrado');
+      } else if (stage) {
+        showToast('⚠️ Grado solo en esta sesión (falta aplicar la migración SQL)');
+      }
     }
 
     function resetModeButtons() {
@@ -1894,6 +2059,15 @@
         expectedAnswer: expectedAnswer,
         unitHint: ''
       });
+
+      // Llevar el banco del docente a Supabase. Antes NADIE llamaba a
+      // saveEvaluation(), así que las evaluaciones redactadas solo existían en
+      // el localStorage de ese navegador: se perdían al cambiar de dispositivo
+      // y la tabla microeval_evaluations quedaba siempre vacía.
+      // Es "fire and forget" a propósito: si falla, la sesión sigue en local.
+      SupabaseClient.saveEvaluation(prompt, expectedAnswer, saved.title)
+        .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+
       wizardEval = saved;
       showSummary();
     }
@@ -1902,6 +2076,12 @@
       if (!wizardClassroomId || !wizardEval) return;
 
       const cls = ClassroomData.getClassroom(wizardClassroomId);
+      if (!cls) {
+        // Caso real: sesión restaurada de un salón que ya se borró.
+        showToast('⚠️ Ese salón ya no existe. Elegí otro.');
+        resetWizard();
+        return;
+      }
       const color = ClassroomData.getClassroomColor(wizardClassroomId);
 
       // Poblar tarjeta resumen
@@ -1914,7 +2094,7 @@
       if (summaryCard) summaryCard.style.borderColor = color + '55';
 
       const nameEl = document.getElementById('summary-classroom-name');
-      if (nameEl) { nameEl.textContent = cls ? cls.name : wizardClassroomId; nameEl.style.color = color; }
+      if (nameEl) { nameEl.textContent = cls.name; nameEl.style.color = color; }
 
       const promptEl = document.getElementById('summary-prompt');
       if (promptEl) promptEl.textContent = wizardEval.prompt;
@@ -1934,13 +2114,52 @@
       document.getElementById('step-new-form').style.display = 'none';
       document.getElementById('step-summary').style.display = 'block';
 
+      // ── ACTIVAR LA SESIÓN ──
+      // Confirmar la evaluación ES activar la sesión. No hay un paso aparte:
+      // el docente no tiene que apretar nada para que el escáner sepa qué
+      // está corrigiendo.
+      const session = generateAndActivateSession();
+      if (session) {
+        const grade = ClassroomData.getClassroomGrade(wizardClassroomId);
+        if (!grade) {
+          showToast('✅ Sesión lista. Sin grado cargado, la IA no evaluará el método.');
+        }
+      }
+
       // ── Generar fichas automáticamente ──
       renderAllPrintPages(wizardClassroomId, wizardEval);
+
+      // ── Repoblar lo ya escaneado ──
+      // Sin esto, al recargar la página la nómina aparecía entera como
+      // pendiente aunque los resultados ya estuvieran guardados en Supabase.
+      if (session && session.sessionRef) refreshEvaluatedFromResults(session.sessionRef);
     }
 
-    function resetWizard() {
-      wizardEval = null;
-      // Limpiar fichas al volver atrás
+    /**
+     * Lee los resultados ya guardados de una sesión y marca esos alumnos como
+     * escaneados en el escáner. No bloquea ni rompe nada si falla: es solo
+     * sincronización de la interfaz.
+     */
+    async function refreshEvaluatedFromResults(sessionRef) {
+      if (typeof Scanner === 'undefined' || !Scanner.setEvaluatedStudents) return;
+      if (!SupabaseClient.loadSessionResults) return;
+      try {
+        const rows = await SupabaseClient.loadSessionResults(sessionRef);
+        Scanner.setEvaluatedStudents(rows.map(r => r.student_code));
+        if (rows.length) {
+          console.log('[Sesión] ' + rows.length + ' resultado(s) ya guardados en esta sesión.');
+        }
+      } catch (e) {
+        console.warn('[Sesión] No se pudieron leer los resultados guardados:', e && e.message);
+      }
+    }
+
+    /**
+     * Oculta los pasos 2, 3 y 4, limpia las fichas y resetea los botones de
+     * modo. NO toca la sesión activa: ese es el punto, porque se usa también
+     * al arrancar la app, cuando la sesión guardada todavía hay que restaurar.
+     */
+    function hideWizardSteps() {
       const pagesContainer = document.getElementById('pages-container');
       if (pagesContainer) pagesContainer.innerHTML = '';
       document.getElementById('step-source').style.display = wizardClassroomId ? 'block' : 'none';
@@ -1948,6 +2167,65 @@
       document.getElementById('step-new-form').style.display = 'none';
       document.getElementById('step-summary').style.display = 'none';
       resetModeButtons();
+    }
+
+    /**
+     * Vuelve al paso 2 y descarta la sesión activa: si el docente cambia de
+     * salón o de evaluación, la sesión anterior ya no corresponde a lo que se
+     * ve en pantalla, y dejarla viva hacía que el escáner siguiera apuntando a
+     * una evaluación que la interfaz ya no mostraba.
+     */
+    function resetWizard() {
+      wizardEval = null;
+      ClassroomData.setActiveSession(null);
+      hideWizardSteps();
+    }
+
+    /**
+     * Reconstruye el asistente a partir de la sesión guardada, para que el
+     * docente pueda reimprimir las fichas o seguir escaneando después de una
+     * recarga del navegador.
+     *
+     * La evaluación se vuelve a registrar en el banco local reutilizando su id,
+     * porque el objeto de evaluación no se guarda completo dentro de la sesión
+     * y sin el id cambiaría el sessionRef y los resultados se fragmentarían.
+     *
+     * @param {object} session la sesión leída de localStorage
+     */
+    function restoreActiveSession(session) {
+      if (!session || !session.classroomId) return;
+
+      const cls = ClassroomData.getClassroom(session.classroomId);
+      if (!cls) {
+        // La sesión apunta a un salón que ya no existe (se borró en otro
+        // dispositivo, por ejemplo). Se descarta en vez de romper.
+        console.warn('[Sesión] Apunta a un salón inexistente, se descarta:', session.classroomId);
+        ClassroomData.setActiveSession(null);
+        return;
+      }
+
+      const evalObj = ClassroomData.saveCustomEvaluation({
+        id: session.evalId,
+        title: session.title || 'Evaluación del Día',
+        prompt: session.prompt || '',
+        expectedAnswer: session.expectedAnswer || '',
+        unitHint: session.unitHint || ''
+      });
+
+      wizardClassroomId = session.classroomId;
+      wizardEval = evalObj;
+
+      const sel = document.getElementById('builder-classroom');
+      if (sel) sel.value = session.classroomId;
+      renderGradeSelect(session.classroomId);
+
+      const badge = document.getElementById('nav-students-badge');
+      if (badge) badge.textContent = cls.students.length + ' Alumnos';
+
+      // Vuelve al paso 4 con las fichas regeneradas y la sesión reafirmada
+      // (el sessionRef es determinista, así que es exactamente el mismo).
+      showSummary();
+      console.log('[Sesión] Restaurada:', session.sessionRef || session.evalId);
     }
 
     function onBankSelectionChanged() {} // legacy — ya no se usa, queda vacío por compatibilidad
@@ -1961,6 +2239,12 @@
     const GRID_CELLS_HTML = new Array(A5_GRID_COLS * A5_GRID_ROWS).fill('<i></i>').join('');
 
     function createA5Card(student, classroom, evaluation) {
+      // En la ficha va el GRADO, no el nombre del salón: le sirve al alumno
+      // para reconocer su hoja y no expone el nombre del grupo. Si el salón
+      // todavía no tiene grado cargado, cae al nombre para no dejar el hueco
+      // vacío y que el docente note que falta completarlo.
+      const gradeText = ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel)
+        || classroom.name;
       return `
         <div class="card-a5">
           <div class="fiducial fiducial-tl" title="ArUco 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/></svg></div>
@@ -1972,7 +2256,7 @@
             <div class="student-block">
               <span class="student-label">Nombre:</span>
               <span class="student-name">${student.name.toUpperCase()}</span>
-              <span class="student-grade">(${classroom.name})</span>
+              <span class="student-grade">(${gradeText})</span>
             </div>
             <div class="qr-block">
               <span class="qr-code-text">${student.id}</span>
@@ -2005,38 +2289,56 @@
       const container = document.getElementById('pages-container');
       if (!container) return;
       const classroom = ClassroomData.getClassroom(classId);
+      if (!classroom || !classroom.students || classroom.students.length === 0) {
+        // Caso real: sesión restaurada después de que el salón se borró, o
+        // salón importado sin alumnos. Antes esto lanzaba una excepción por
+        // leer .students de undefined.
+        container.innerHTML = '';
+        console.warn('[Fichas] No se pudieron generar: el salón no existe o no tiene alumnos.', classId);
+        return;
+      }
       const students = classroom.students;
       container.innerHTML = '';
 
-      // Generar exactamente 5 hojas A4 (2 fichas por hoja = 10 alumnos)
+      // 2 fichas A5 por hoja A4. La cantidad de hojas la define el salón:
+      // 10 alumnos = 5 hojas.
+      const sheetCount = Math.ceil(students.length / 2);
+      const printBtn = document.getElementById('btn-print-sheets');
+      if (printBtn) {
+        printBtn.textContent = '🖨️ Imprimir ' + sheetCount +
+          (sheetCount === 1 ? ' hoja A4' : ' hojas A4');
+      }
+
       for (let i = 0; i < students.length; i += 2) {
         const sTop = students[i];
-        const sBot = students[i + 1] || students[i];
+        // Con número impar de alumnos la última hoja lleva UNA sola ficha, en
+        // vez de repetir la del compañero. Antes se duplicaba (students[i+1]
+        // || students[i]) y salían dos fichas con el mismo QR, así que el
+        // escáner podía registrar dos veces al mismo alumno.
+        const sBot = students[i + 1] || null;
 
         const sheetEl = document.createElement('div');
         sheetEl.className = 'sheet-a4';
-        sheetEl.innerHTML = `
+        sheetEl.innerHTML = sBot
+          ? `
           ${createA5Card(sTop, classroom, evaluation)}
           <div class="cut-line">
             <span>✂️ cortar por aquí ✂️</span>
           </div>
           ${createA5Card(sBot, classroom, evaluation)}
-        `;
+        `
+          : createA5Card(sTop, classroom, evaluation);
         container.appendChild(sheetEl);
 
-        // Generar QR ultra-grueso simplificado (23x23) para cada alumno
+        // Generar el QR (ALUM_01) de cada alumno que va en esta hoja.
+        // Con salón impar, sBot es null y solo se genera el de arriba.
         if (typeof QRCode !== 'undefined' && QRCode.toString) {
-          QRCode.toString(sTop.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
-            if (!err) {
-              const el = document.getElementById('qr-box-' + sTop.id);
+          [sTop, sBot].filter(Boolean).forEach(st => {
+            QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+              if (err) return;
+              const el = document.getElementById('qr-box-' + st.id);
               if (el) el.innerHTML = svg;
-            }
-          });
-          QRCode.toString(sBot.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
-            if (!err) {
-              const el = document.getElementById('qr-box-' + sBot.id);
-              if (el) el.innerHTML = svg;
-            }
+            });
           });
         }
       }
@@ -2077,30 +2379,69 @@
       });
     }
 
+    /**
+     * Activa (o reactiva) la sesión de escaneo desde el estado del wizard.
+     *
+     * Se llama AUTOMÁTICAMENTE cuando el docente confirma la evaluación
+     * (showSummary). No es una decisión suya: es el apunte interno que hace que
+     * el escáner sepa qué salón y qué evaluación está corrigiendo. Por eso ya
+     * no existe un botón "Activar Sesión" — era un subconjunto de "Ir al
+     * escáner", que también activaba antes de saltar de pestaña.
+     *
+     * @returns {object|null} la sesión activada, o null si faltan datos
+     */
     function generateAndActivateSession() {
       // Lee del estado del wizard (campos hidden sincronizados por showSummary)
-      const classId = wizardClassroomId || document.getElementById('builder-classroom').value || '3A';
+      const classId = wizardClassroomId || document.getElementById('builder-classroom').value || '';
       const prompt = (document.getElementById('input-eval-prompt').value || '').trim();
       const expectedAnswer = (document.getElementById('input-eval-expected').value || '').trim();
       const title = (document.getElementById('input-eval-title').value || '').trim() || 'Evaluación del Día';
 
-      if (!prompt || !expectedAnswer) {
-        showToast('⚠️ Completá el enunciado y la respuesta esperada primero.');
-        return;
+      if (!classId || !prompt || !expectedAnswer) {
+        showToast('⚠️ Completá el salón, el enunciado y la respuesta esperada primero.');
+        return null;
       }
 
-      // 1. Guardar en banco
-      const savedEval = ClassroomData.saveCustomEvaluation({ title, prompt, expectedAnswer, unitHint: '' });
+      // 1. Guardar en el banco local del docente. Se REUTILIZA el id de la
+      //    evaluación en curso cuando existe: si se generara uno nuevo cada
+      //    vez, el sessionRef (que se deriva del evalId) cambiaría y volver a
+      //    confirmar la misma evaluación partiría los resultados en dos.
+      const savedEval = ClassroomData.saveCustomEvaluation({
+        id: (wizardEval && wizardEval.id) || undefined,
+        title: title,
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        unitHint: ''
+      });
 
-      // 2. Guardar sesión activa persistente
-      const session = { classroomId: classId, evalId: savedEval.id, title, prompt, expectedAnswer, unitHint: '', timestamp: Date.now() };
+      // 2. Sesión activa. sessionRef es DETERMINISTA a partir del salón y de la
+      //    evaluación:
+      //      · volver a confirmar la misma evaluación CONTINÚA la misma sesión
+      //        en vez de fragmentar los resultados en dos;
+      //      · la misma evaluación en dos salones son dos sesiones distintas,
+      //        que es imprescindible porque los códigos de alumno se repiten
+      //        entre salones (ALUM_01 existe en todos).
+      //    La sincronización del banco con Supabase NO se hace acá: se hace en
+      //    confirmNewEval(), que es cuando el docente realmente redacta una
+      //    evaluación nueva. Hacerlo acá volvería a guardarla en cada
+      //    restauración de sesión e inflaría el contador de uso.
+      const session = {
+        sessionRef: classId + '::' + savedEval.id,
+        classroomId: classId,
+        evalId: savedEval.id,
+        title: title,
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        unitHint: '',
+        timestamp: Date.now()
+      };
       ClassroomData.setActiveSession(session);
 
-      // 3. Sincronizar el escáner (las fichas ya están renderizadas por showSummary)
+      // 4. Sincronizar el escáner (las fichas ya las renderizó showSummary)
       if (typeof Scanner !== 'undefined' && Scanner.setSession) Scanner.setSession(classId, savedEval.id);
       updateScannerSessionBar(session);
 
-      showToast('✅ ¡Sesión activada! Ya podés ir al escáner.');
+      return session;
     }
 
     function updateScannerSessionBar(session) {
@@ -2216,6 +2557,10 @@
         id: cls.id,
         name: cls.name,
         gradeCode: cls.grade_code,
+        // Si la migración de grade_stage todavía no se aplicó, estas dos
+        // propiedades llegan undefined y el salón queda "sin grado".
+        gradeStage: cls.grade_stage,
+        gradeLevel: cls.grade_level,
         color: cls.color || '#3b82f6',
         students: (cls.microeval_students || []).map(s => ({
           id: s.student_code,
@@ -2224,6 +2569,288 @@
         }))
       }));
       ClassroomData.setClassrooms(mapped);
+    }
+
+    /* ── CODIFICACIÓN DE TEXTO ────────────────────────────────────────
+       Un CSV en UTF-8 sin BOM se leía como Windows-1252, porque es lo que
+       SheetJS asume por defecto. Así, cada palabra con acento llegaba rota:
+       "café" terminaba guardado como "cafÃ©", porque los dos bytes del
+       acento se interpretaban como dos caracteres Latin-1.
+       La solución de raíz es decodificar el CSV nosotros con UTF-8, y dejar
+       fixMojibake() como red de seguridad para archivos que ya vengan mal. */
+
+    /**
+     * Decodifica un CSV respetando su codificación real.
+     * Intenta UTF-8 primero; si aparecen caracteres de reemplazo (U+FFFD),
+     * prueba Windows-1252, que es la otra codificación habitual en planillas.
+     * @param {ArrayBuffer} buffer
+     * @returns {string}
+     */
+    function decodeCsvBuffer(buffer) {
+      const bytes = new Uint8Array(buffer);
+
+      // Quitar el BOM UTF-8 si está, porque si no aparece en el primer nombre.
+      let start = 0;
+      if (bytes.length >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+        start = 3;
+      }
+      const cuerpo = bytes.subarray(start);
+
+      let texto = new TextDecoder('utf-8').decode(cuerpo);
+      if (texto.indexOf('\uFFFD') !== -1) {
+        try {
+          const alterno = new TextDecoder('windows-1252').decode(cuerpo);
+          // Solo se queda el alterno si de verdad mejora (menos reemplazos).
+          if (alterno.indexOf('\uFFFD') === -1) texto = alterno;
+        } catch (e) { /* el navegador no soporta windows-1252: se deja UTF-8 */ }
+      }
+      return texto;
+    }
+
+    /**
+     * Repara texto con mojibake (UTF-8 leído como Latin-1/Windows-1252):
+     * "cafÃ©" -> "café".
+     *
+     * Es conservador a propósito: solo actúa si el texto tiene las secuencias
+     * típicas (Ã, Â, Ð, Ñ) Y todos sus caracteres caben en un byte, Y el
+     * resultado de reinterpretarlos como UTF-8 es válido. Un texto bien
+     * codificado no se toca: por ejemplo "SÃO PAULO" queda igual, porque
+     * C3 4F no es UTF-8 válido y la decodificación estricta falla.
+     *
+     * @param {string} valor
+     * @returns {string} el texto corregido, o el original si no era mojibake
+     */
+    function fixMojibake(valor) {
+      if (!valor || typeof valor !== 'string') return valor;
+      if (!/[ÃÂÐÑ]/.test(valor)) return valor;
+
+      const bytes = new Uint8Array(valor.length);
+      for (let i = 0; i < valor.length; i++) {
+        const code = valor.charCodeAt(i);
+        if (code > 255) return valor;      // hay caracteres fuera de Latin-1
+        bytes[i] = code;
+      }
+      try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      } catch (e) {
+        return valor;                       // no era mojibake recuperable
+      }
+    }
+
+    /** Limpia y repara un nombre que viene de un archivo o del formulario. */
+    function cleanName(valor) {
+      return fixMojibake((valor == null ? '' : String(valor)).trim());
+    }
+
+    /* ── ALTA MANUAL DE SALÓN ────────────────────────────────────────── */
+
+    function toggleManualClassroomForm(forzar) {
+      const form = document.getElementById('manual-classroom-form');
+      if (!form) return;
+      const mostrar = (forzar === undefined) ? (form.style.display === 'none') : !!forzar;
+      form.style.display = mostrar ? 'block' : 'none';
+      if (mostrar) {
+        renderManualGradeSelect();
+        const nameInput = document.getElementById('manual-classroom-name');
+        if (nameInput && !nameInput.value) nameInput.focus();
+      }
+    }
+
+    /** Puebla el selector de grado del alta manual con el mismo catálogo. */
+    function renderManualGradeSelect() {
+      const sel = document.getElementById('manual-classroom-grade');
+      if (!sel || sel.dataset.lleno === '1') return;
+      ClassroomData.getGradeStages().forEach(stage => {
+        const group = document.createElement('optgroup');
+        group.label = stage.label;
+        stage.grades.forEach(level => {
+          const opt = document.createElement('option');
+          opt.value = stage.stage + ':' + level;
+          opt.textContent = level + '° de ' + stage.label.toLowerCase();
+          group.appendChild(opt);
+        });
+        sel.appendChild(group);
+      });
+      sel.dataset.lleno = '1';
+    }
+
+    /**
+     * Convierte el textarea en una nómina.
+     * Una línea por alumno. El nombre corto es opcional y va después de una
+     * coma, barra, punto y coma o tabulación: "Nombre completo, Nombre corto".
+     * La tabulación está incluida para que se pueda PEGAR directo desde Excel
+     * (que copia las columnas separadas por tab).
+     *
+     * El BOM UTF-8 al inicio se descarta, porque si no quedaría pegado al
+     * primer nombre (pasa al importar una plantilla descargada de acá).
+     *
+     * @param {string} texto
+     * @returns {Array<{fullName: string, shortName: string}>}
+     */
+    function parseStudentLines(texto) {
+      const limpio = (texto || '').replace(/^\uFEFF/, '');
+      return limpio.split('\n')
+        .map(l => l.trim())
+        // Se descarta una fila de encabezado, por si alguien pega la plantilla
+        // entera en el cuadro en vez de escribir solo los nombres.
+        .filter(l => l.length > 0 && !/^nombre\s+completo/i.test(l))
+        .map(linea => {
+          const partes = linea.split(/[|,;\t]/).map(p => p.trim()).filter(Boolean);
+          const fullName = cleanName(partes[0] || '');
+          const shortName = cleanName(partes[1] || partes[0] || '');
+          return { fullName: fullName, shortName: shortName || fullName };
+        })
+        .filter(s => s.fullName.length > 0);
+    }
+
+    /**
+     * Descarga una plantilla CSV vacía: solo los encabezados, sin un solo
+     * alumno.
+     *
+     * Se arma en el navegador a propósito. Antes la plantilla era un archivo
+     * del repositorio con 10 nombres de alumnos dentro, y eso no puede estar
+     * en un repositorio público.
+     *
+     * Lleva BOM UTF-8 porque Excel, sin él, abre el archivo como Latin-1 y
+     * rompe los acentos al guardarlo. Nuestro importador descarta el BOM, así
+     * que la plantilla se puede exportar, completar y volver a importar sin
+     * que se degrade.
+     */
+    function downloadEmptyRosterTemplate() {
+      const contenido = '\uFEFFNombre Completo,Nombre Corto\n';
+      try {
+        const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'plantilla_nomina.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('⬇️ Plantilla descargada. Completá una fila por alumno.');
+      } catch (e) {
+        console.error('[Plantilla] No se pudo generar la descarga:', e);
+        showToast('❌ No se pudo descargar la plantilla.');
+      }
+    }
+
+    function updateManualStudentCount() {
+      const ta = document.getElementById('manual-classroom-students');
+      const out = document.getElementById('manual-student-count');
+      if (!ta || !out) return;
+      const n = parseStudentLines(ta.value).length;
+      out.textContent = n + (n === 1 ? ' alumno' : ' alumnos');
+      out.style.color = n === 0 ? '#64748b' : '#38bdf8';
+    }
+
+    async function handleCreateClassroomManual() {
+      const nameEl = document.getElementById('manual-classroom-name');
+      const gradeEl = document.getElementById('manual-classroom-grade');
+      const taEl = document.getElementById('manual-classroom-students');
+
+      const name = cleanName(nameEl && nameEl.value);
+      const students = parseStudentLines(taEl && taEl.value);
+
+      if (!name) {
+        if (nameEl) { nameEl.style.borderColor = '#ef4444'; nameEl.focus(); }
+        showToast('⚠️ Poné un nombre para el salón.');
+        return;
+      }
+      if (students.length === 0) {
+        if (taEl) { taEl.style.borderColor = '#ef4444'; taEl.focus(); }
+        showToast('⚠️ Cargá al menos un alumno, uno por línea.');
+        return;
+      }
+
+      let stage = null, level = null;
+      if (gradeEl && gradeEl.value) {
+        const partes = gradeEl.value.split(':');
+        stage = partes[0];
+        level = parseInt(partes[1], 10) || null;
+      }
+
+      showToast('⏳ Creando el salón...');
+
+      const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
+      const res = await SupabaseClient.createClassroom(name, gradeCode, null, stage, level);
+      const newId = (res && res.id) || (res && res.data && res.data.id);
+
+      if (!newId) {
+        showToast('❌ No se pudo crear el salón. Revisá la consola.');
+        return;
+      }
+
+      const ok = await SupabaseClient.importStudents(newId, students);
+      if (!ok) {
+        showToast('❌ El salón se creó pero no se pudieron guardar los alumnos.');
+        return;
+      }
+
+      // Limpiar el formulario y recargar la lista, dejando el salón nuevo elegido
+      if (nameEl) nameEl.value = '';
+      if (taEl) taEl.value = '';
+      if (gradeEl) gradeEl.value = '';
+      updateManualStudentCount();
+      toggleManualClassroomForm(false);
+
+      const user = await SupabaseClient.getCurrentUser();
+      if (user) {
+        await loadAndRenderClassrooms(user, newId);
+      } else {
+        renderClassroomSelect();
+      }
+      showToast('✅ Salón creado con ' + students.length + ' alumnos');
+    }
+
+    /* ── BORRAR SALÓN ────────────────────────────────────────────────── */
+
+    async function handleDeleteClassroom() {
+      const sel = document.getElementById('builder-classroom');
+      const classroomId = sel ? sel.value : '';
+      if (!classroomId) {
+        showToast('⚠️ Elegí primero el salón que querés borrar.');
+        return;
+      }
+
+      const cls = ClassroomData.getClassroom(classroomId);
+      const nombre = cls ? cls.name : 'este salón';
+      const alumnos = (cls && cls.students) ? cls.students.length : 0;
+
+      // Aviso explícito: por CASCADE se van los alumnos Y los resultados.
+      const seguro = confirm(
+        '¿Borrar el salón "' + nombre + '"?\n\n' +
+        'Se eliminan también sus ' + alumnos + ' alumno(s) y TODOS los resultados ' +
+        'guardados de ese salón.\n\n' +
+        'No se puede deshacer.'
+      );
+      if (!seguro) return;
+
+      showToast('⏳ Borrando...');
+      const borrado = await SupabaseClient.deleteClassroom(classroomId);
+      if (!borrado) {
+        showToast('❌ No se pudo borrar el salón. Revisá la consola.');
+        return;
+      }
+
+      // Si era la sesión activa, se descarta: ya no existe ese salón.
+      const session = ClassroomData.getActiveSession();
+      if (session && session.classroomId === classroomId) {
+        ClassroomData.setActiveSession(null);
+      }
+
+      wizardClassroomId = null;
+      wizardEval = null;
+      hideWizardSteps();
+
+      const user = await SupabaseClient.getCurrentUser();
+      if (user) {
+        await loadAndRenderClassrooms(user);
+      } else {
+        renderClassroomSelect();
+      }
+      renderGradeSelect(null);
+      showToast('🗑️ Salón borrado');
     }
 
     /**
@@ -2239,31 +2866,44 @@
       if (statusEl) { statusEl.textContent = '⏳ Leyendo archivo...'; statusEl.style.color = '#94a3b8'; }
 
       try {
-        const data = await file.arrayBuffer();
-        const wb = XLSX.read(data, { type: 'array' });
+        // Los CSV se decodifican a mano en UTF-8. Si se deja que SheetJS lo
+        // haga, asume Windows-1252 y los acentos se rompen ("SofÃ a").
+        // Los .xlsx/.xls traen su propia codificación y se leen como binario.
+        const esCsv = /\.csv$/i.test(file.name);
+        let wb;
+        if (esCsv) {
+          const texto = decodeCsvBuffer(await file.arrayBuffer());
+          wb = XLSX.read(texto, { type: 'string' });
+        } else {
+          wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+        }
+
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
         // Detectar si la primera fila es encabezado
         let startIndex = 0;
         if (rows.length > 0) {
-          const firstCol = (rows[0][0] || '').toString().toLowerCase();
+          const firstCol = cleanName(rows[0][0]).toLowerCase();
           if (firstCol.includes('nombre') || firstCol.includes('alumno') || firstCol.includes('estudiante')) {
             startIndex = 1;
           }
         }
 
-        const dataRows = rows.slice(startIndex).filter(r => r[0] && r[0].toString().trim());
+        const dataRows = rows.slice(startIndex).filter(r => r[0] && String(r[0]).trim());
         if (dataRows.length === 0) {
           if (statusEl) { statusEl.textContent = '⚠️ No se encontraron alumnos en el archivo'; statusEl.style.color = '#f87171'; }
           input.value = '';
           return;
         }
 
-        const students = dataRows.map(r => ({
-          fullName: (r[0] || '').toString().trim(),
-          shortName: (r[1] || r[0] || '').toString().trim()
-        }));
+        // cleanName() repara el mojibake de archivos que ya vienen mal y de
+        // paso saca espacios sobrantes.
+        const students = dataRows.map(r => {
+          const fullName = cleanName(r[0]);
+          const shortName = cleanName(r[1]) || fullName;
+          return { fullName: fullName, shortName: shortName };
+        }).filter(s => s.fullName);
 
         let targetClassroomId = classroomId;
 
@@ -2274,15 +2914,15 @@
           else if (/3b/i.test(suggested)) suggested = '3° Primaria "B"';
           else suggested = suggested.charAt(0).toUpperCase() + suggested.slice(1);
 
-          const name = prompt('Nombre para este nuevo salón de clases:', suggested);
-          if (!name || !name.trim()) {
+          const name = cleanName(prompt('Nombre para este nuevo salón de clases:', suggested));
+          if (!name) {
             if (statusEl) { statusEl.textContent = '⚠️ Importación cancelada'; statusEl.style.color = '#f87171'; }
             input.value = '';
             return;
           }
 
           const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
-          const res = await SupabaseClient.createClassroom(name.trim(), gradeCode);
+          const res = await SupabaseClient.createClassroom(name, gradeCode);
           const newId = (res && res.id) || (res && res.data && res.data.id);
           if (!newId) {
             if (statusEl) { statusEl.textContent = '❌ Error al crear el salón'; statusEl.style.color = '#f87171'; }
@@ -2296,14 +2936,14 @@
           const wantUpdate = confirm(`¿Deseas actualizar la lista de alumnos de:\n"${selectedText}"?\n\n(Aceptar = Actualizar este salón / Cancelar = Crear un nuevo salón)`);
           if (!wantUpdate) {
             let suggested = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
-            const name = prompt('Nombre para el nuevo salón de clases:', suggested);
-            if (!name || !name.trim()) {
+            const name = cleanName(prompt('Nombre para el nuevo salón de clases:', suggested));
+            if (!name) {
               if (statusEl) { statusEl.textContent = '⚠️ Importación cancelada'; statusEl.style.color = '#f87171'; }
               input.value = '';
               return;
             }
             const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
-            const res = await SupabaseClient.createClassroom(name.trim(), gradeCode);
+            const res = await SupabaseClient.createClassroom(name, gradeCode);
             const newId = (res && res.id) || (res && res.data && res.data.id);
             if (!newId) {
               if (statusEl) { statusEl.textContent = '❌ Error al crear el salón'; statusEl.style.color = '#f87171'; }
@@ -2348,13 +2988,27 @@
           if (typeof ClassroomData !== 'undefined' && ClassroomData.setRecentEvaluations) {
             ClassroomData.setRecentEvaluations(recentEvals);
           }
-          // Siempre iniciar con sesión desactivada y wizard limpio
-          ClassroomData.setActiveSession(null);
+
+          // ── RESTAURAR LA SESIÓN ACTIVA ──────────────────────────────
+          // Antes acá se hacía setActiveSession(null) en CADA carga de página.
+          // Este callback se dispara siempre (INITIAL_SESSION y
+          // TOKEN_REFRESHED), así que el docente que imprimía las fichas a las
+          // 8:00 y volvía a escanear a las 8:40 —después de que el celular se
+          // bloqueó o el navegador recargó— se encontraba con el cartel "no hay
+          // sesión configurada" y tenía que rehacer el asistente completo.
+          // Ahora la sesión sobrevive la recarga y solo se borra al cerrar
+          // sesión o al pulsar "Cambiar salón o evaluación".
+          //
+          // El orden importa: hay que LEER la sesión antes de limpiar la
+          // interfaz, porque resetWizard() la borra a propósito.
+          const savedSession = ClassroomData.getActiveSession();
+
           wizardClassroomId = null;
           wizardEval = null;
-          const pages = document.getElementById('pages-container');
-          if (pages) pages.innerHTML = '';
-          resetWizard();
+          hideWizardSteps();
+          renderGradeSelect(null);
+
+          if (savedSession) restoreActiveSession(savedSession);
         } else {
           // Sin sesión → mostrar overlay de login
           showLoginOverlay();

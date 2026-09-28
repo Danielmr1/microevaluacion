@@ -1,0 +1,88 @@
+# ════════════════════════════════════════════════════════════════════════
+# MicroEval — Archivos que NO se suben al repositorio
+#
+# OJO: este repositorio se publica en GitHub Pages
+# (danielmr1.github.io/microevaluacion). Todo lo que quede acá es
+# accesible públicamente. Por eso: nada de datos de alumnos ni claves.
+# ════════════════════════════════════════════════════════════════════════
+
+# ── Dependencias ───────────────────────────────────────────────────────
+# Solo hacen falta para las herramientas de calibración, que no se suben.
+node_modules/
+
+# ── Credenciales y datos personales ────────────────────────────────────
+.env
+.env.*
+*.local
+secrets*.json
+*.key
+# Cualquier respaldo que pueda contener nombres de alumnos
+*respaldo*
+*backup*datos*
+*_alumnos.json
+
+# ── Nóminas de alumnos ─────────────────────────────────────────────────
+# El repositorio es PÚBLICO y las listas de alumnos no entran acá, ni
+# siquiera "de ejemplo": nadie que abra el repo puede distinguir una
+# nómina real de una inventada, y el hábito es lo que protege.
+# Las nóminas viven en Supabase, que tiene RLS por docente.
+*.csv
+*.xlsx
+*.xls
+excel/
+# Si algún día querés publicar una plantilla vacía (solo encabezados,
+# sin nombres), ponele un nombre explícito y descomentá esta línea:
+# !plantilla_vacia.csv
+
+# ── Archivos temporales ────────────────────────────────────────────────
+tmp_*
+*.tmp
+*.log
+
+# ── Versiones anteriores del desarrollo ────────────────────────────────
+# El historial ya lo guarda git. Además, estas copias tienen la ficha de
+# 137mm con marcadores de 14mm: una geometría DISTINTA a la actual, que
+# rompería el warp y las ROI si alguien las usara para imprimir.
+backup_v*/
+
+# ── Herramientas de calibración y capturas de prueba ───────────────────
+# Se usaron para ajustar el detector ArUco y el warp. No son la app.
+build_template.js
+take_screenshot.js
+screenshot_scanner.js
+warp_math.js
+test_*.js
+test_*.png
+*_preview.png
+scanner_captured_modal.png
+
+# ── Páginas duplicadas, reemplazadas por index.html ────────────────────
+# Tienen el diseño viejo de la ficha y ya están desincronizadas.
+scanner.html
+plantilla_a5.html
+
+# ── Copias sueltas de la librería de QR ────────────────────────────────
+# La librería está EMBEBIDA dentro de index.html (ver el <script> inline
+# con "var QRCode=..."). Estos dos archivos no se cargan desde ningún lado.
+qrcode.min.js
+qrcode.bundle.js
+
+# ── Entorno de desarrollo ──────────────────────────────────────────────
+# La aplicación no tiene build ni dependencias en tiempo de ejecución:
+# todo sale de un CDN o de los bundles locales. Si algún día querés
+# volver a usar las herramientas de calibración, borrá estas dos líneas.
+package.json
+package-lock.json
+
+# ── Sistema operativo y editores ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# ════════════════════════════════════════════════════════════════════════
+# NO agregar *.sql acá.
+# supabase/migrations/*.sql SÍ se versiona: es el registro de los cambios
+# que se aplicaron a la base de datos, y hace falta para reproducirla.
+# ════════════════════════════════════════════════════════════════════════

@@ -264,6 +264,77 @@
 
     const wrap = document.getElementById('manual-student-wrap');
     if (wrap) wrap.style.display = 'none';
+
+    // El docente acaba de identificar al alumno de esta captura: recién ahora
+    // se puede persistir el resultado con su identidad real.
+    persistCapture(s.id, s.name);
+  }
+
+  /**
+   * Reemplaza el conjunto de alumnos ya escaneados.
+   * Lo usa el portal al restaurar una sesión, para que la nómina y el contador
+   * reflejen los resultados que ya están guardados en Supabase en vez de
+   * aparecer todos como pendientes después de una recarga.
+   * @param {string[]} ids códigos de alumno, ej. ['ALUM_01','ALUM_03']
+   */
+  function setEvaluatedStudents(ids) {
+    evaluatedStudentIds.clear();
+    (ids || []).forEach(id => { if (id) evaluatedStudentIds.add(id); });
+    updateSessionCounter();
+    renderRosterPanel();
+    renderModalPending();
+  }
+
+  // --- PERSISTENCIA DEL RESULTADO EN SUPABASE ---
+  // Se guarda la captura AUNQUE todavía no exista corrección con IA: el
+  // veredicto se agrega después con un upsert sobre la MISMA fila (la clave es
+  // session_ref + student_code). Así, si la IA falla, no hay red o el docente
+  // cierra la app, la clase igual quedó registrada y se puede recompletar.
+  //
+  // No se guardan imágenes: solo el resultado. Las rutas (answer_image_path /
+  // grid_image_path) quedan en NULL; activarlas es subir los recortes a
+  // Supabase Storage y completar esos dos campos, sin cambiar el esquema.
+  //
+  // Nunca lanza ni bloquea el escaneo: si falla, avisa por consola.
+  function persistCapture(studentId, studentName) {
+    if (typeof SupabaseClient === 'undefined' || !SupabaseClient.saveResult) return;
+    if (typeof ClassroomData === 'undefined') return;
+
+    // Sin identidad no hay fila que guardar (QR ilegible y el docente todavía
+    // no eligió al alumno del desplegable).
+    if (!studentId || studentId === 'MANUAL') return;
+
+    const session = ClassroomData.getActiveSession();
+    if (!session || !session.sessionRef) {
+      console.warn('[Resultados] No hay sesión activa con sessionRef; no se guarda.');
+      return;
+    }
+
+    const cls = ClassroomData.getClassroom(currentClassroomId);
+    const activeEval = ClassroomData.getEvaluation(currentEvaluationId);
+
+    // classroom_id es una FK a microeval_classrooms: si el salón no es un UUID
+    // real (catálogo de demo '3A'/'3B'), mandarlo rompería el insert. Se manda
+    // null en ese caso y el resultado igual queda guardado.
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentClassroomId);
+
+    SupabaseClient.saveResult({
+      session_ref: session.sessionRef,
+      classroom_id: isUuid ? currentClassroomId : null,
+      student_code: studentId,
+      student_name: studentName,
+      grade_stage: cls ? cls.gradeStage : null,
+      grade_level: cls ? cls.gradeLevel : null,
+      evaluation_ref: currentEvaluationId,
+      evaluation_title: session.title || null,
+      prompt: session.prompt || (activeEval ? activeEval.prompt : null),
+      expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+      captured_at: new Date().toISOString()
+    }).then(row => {
+      if (row) console.log('[Resultados] Captura guardada:', studentId);
+    }).catch(e => {
+      console.warn('[Resultados] No se pudo guardar la captura:', e && e.message);
+    });
   }
 
   // Inicializar detector ArUco de forma segura
@@ -1151,6 +1222,10 @@
       studentId = 'MANUAL';
     }
 
+    // Persistir la captura ya mismo, sin esperar a la corrección con IA.
+    // No bloquea: la llamada sale en segundo plano y el modal se muestra igual.
+    persistCapture(studentId, studentName);
+
     // Presentar modal con la captura procesada
     setTimeout(() => {
       const imgEl = document.getElementById('captured-img');
@@ -1337,6 +1412,7 @@
     nextScan,
     closeModal,
     setSession,
+    setEvaluatedStudents,
     onClassroomChanged,
     onEvaluationChanged,
     assignManualStudent

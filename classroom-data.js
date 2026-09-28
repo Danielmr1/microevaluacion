@@ -23,48 +23,83 @@
     '#06b6d4', // cian     — 3° H (futuro)
   ];
 
-  // --- CATÁLOGO DE SALONES Y NÓMINAS ---
-  const CLASSROOMS = {
-    '3A': {
-      id: '3A',
-      name: '3° Primaria "A"',
-      grade: '3° de Primaria',
-      section: 'A',
-      color: '#3b82f6',
-      students: [
-        { id: 'ALUM_01', name: 'Mateo García Rodríguez', shortName: 'Mateo García' },
-        { id: 'ALUM_02', name: 'Sofía López Pérez', shortName: 'Sofía López' },
-        { id: 'ALUM_03', name: 'Lucas Mendoza Silva', shortName: 'Lucas Mendoza' },
-        { id: 'ALUM_04', name: 'Valentina Castro Vega', shortName: 'Valentina Castro' },
-        { id: 'ALUM_05', name: 'Thiago Paredes Ruiz', shortName: 'Thiago Paredes' },
-        { id: 'ALUM_06', name: 'Camila Soto Morales', shortName: 'Camila Soto' },
-        { id: 'ALUM_07', name: 'Joaquín Navarro Flores', shortName: 'Joaquín Navarro' },
-        { id: 'ALUM_08', name: 'Lucía Gómez Herrera', shortName: 'Lucía Gómez' },
-        { id: 'ALUM_09', name: 'Matías Rivas Espinoza', shortName: 'Matías Rivas' },
-        { id: 'ALUM_10', name: 'Emma Chávez Cabrera', shortName: 'Emma Chávez' }
-      ]
-    },
+  // ── CATÁLOGO DE GRADOS ────────────────────────────────────────────────
+  // El grado se guarda en DOS campos y no en uno solo:
+  //   grade_stage  → 'primaria' | 'secundaria'
+  //   grade_level  → el número (4, 5, 6, ...)
+  // Van separados a propósito: el número 5 por sí solo es ambiguo entre
+  // "5° de primaria" y "5° de secundaria", y una vez que hay datos con esa
+  // ambigüedad ya no se puede deshacer. Con la etapa explícita, habilitar
+  // secundaria más adelante es agregar números a `grades` y nada más.
+  //
+  // Hoy solo se usan 4°, 5° y 6° de primaria. `grades: []` significa
+  // "etapa todavía no habilitada": la etapa no aparece en el selector.
+  const GRADE_CATALOG = [
+    { stage: 'primaria',   label: 'Primaria',   grades: [4, 5, 6] },
+    { stage: 'secundaria', label: 'Secundaria', grades: [] }
+  ];
 
-    '3B': {
-      id: '3B',
-      name: '3° Primaria "B"',
-      grade: '3° de Primaria',
-      section: 'B',
-      color: '#22c55e',
-      students: [
-        { id: 'ALUM_01', name: 'Álvaro Guzmán Miranda', shortName: 'Álvaro Guzmán' },
-        { id: 'ALUM_02', name: 'Daniela Salazar Rojas', shortName: 'Daniela Salazar' },
-        { id: 'ALUM_03', name: 'Leonardo Campos Núñez', shortName: 'Leonardo Campos' },
-        { id: 'ALUM_04', name: 'Valeria Osorio Solís', shortName: 'Valeria Osorio' },
-        { id: 'ALUM_05', name: 'Emilio Cáceres Palma', shortName: 'Emilio Cáceres' },
-        { id: 'ALUM_06', name: 'Abril Bustamante Vidal', shortName: 'Abril Bustamante' },
-        { id: 'ALUM_07', name: 'Maximiliano Figueroa Rey', shortName: 'Maximiliano Figueroa' },
-        { id: 'ALUM_08', name: 'Elena Cornejo Arce', shortName: 'Elena Cornejo' },
-        { id: 'ALUM_09', name: 'Julián Montiel Valenzuela', shortName: 'Julián Montiel' },
-        { id: 'ALUM_10', name: 'Constanza Aguilar Meza', shortName: 'Constanza Aguilar' }
-      ]
-    }
-  };
+  // Etapa por defecto cuando el salón no tiene grado cargado.
+  const DEFAULT_GRADE_STAGE = 'primaria';
+
+  /**
+   * Texto del grado, listo para mostrar en pantalla, imprimir en la ficha o
+   * mandar como contexto al prompt de la IA.
+   * @param {string} stage 'primaria' | 'secundaria'
+   * @param {number} level número de grado
+   * @returns {string|null} ej. "4° de primaria", o null si no está definido
+   */
+  function formatGrade(stage, level) {
+    if (!stage || !level) return null;
+    const entry = GRADE_CATALOG.find(g => g.stage === stage);
+    if (!entry) return null;
+    return level + '° de ' + entry.label.toLowerCase();
+  }
+
+  /**
+   * Opciones de grado para poblar un <select>, en orden.
+   * Solo incluye etapas con grados habilitados.
+   * @returns {Array<{stage, level, label, value}>}
+   */
+  function getGradeOptions() {
+    const options = [];
+    GRADE_CATALOG.forEach(entry => {
+      entry.grades.forEach(level => {
+        options.push({
+          stage: entry.stage,
+          level: level,
+          label: level + '° ' + entry.label,
+          value: entry.stage + ':' + level
+        });
+      });
+    });
+    return options;
+  }
+
+  /** Separadores entre etapas, para armar <optgroup> en el selector. */
+  function getGradeStages() {
+    return GRADE_CATALOG
+      .filter(entry => entry.grades.length > 0)
+      .map(entry => ({ stage: entry.stage, label: entry.label, grades: entry.grades.slice() }));
+  }
+
+  // --- CATÁLOGO DE SALONES ---
+  // VACÍO A PROPÓSITO.
+  //
+  // Los salones y las nóminas viven en Supabase y llegan por setClassrooms()
+  // cuando el docente inicia sesión. Antes había acá dos salones de ejemplo
+  // con 20 nombres inventados, y se quitaron por dos razones:
+  //
+  //   1. Este repositorio se publica en GitHub Pages. Un listado de alumnos
+  //      —aunque sea ficticio— no puede estar en un repositorio público:
+  //      nadie que lo abra puede distinguir una nómina real de una inventada.
+  //   2. Era peso muerto. setClassrooms() borraba este catálogo apenas había
+  //      sesión, así que solo se veía detrás de la pantalla de login.
+  //
+  // Sin catálogo, antes del login no hay ningún salón, que es lo correcto:
+  // sin sesión no hay datos. getClassroom() devuelve null y todos los
+  // llamadores ya lo verifican.
+  const CLASSROOMS = {};
 
   // --- CATÁLOGO DE MICROEVALUACIONES (Problemas Matemáticos) ---
   const EVALUATIONS = {
@@ -124,8 +159,15 @@
     return Object.values(EVALUATIONS).map(e => ({ id: e.id, title: e.title, expectedAnswer: e.expectedAnswer, prompt: e.prompt }));
   }
 
+  /**
+   * Devuelve el salón o null si no existe.
+   * Antes caía al salón '3A' del catálogo de demo, lo que hacía que un id
+   * inexistente (por ejemplo una sesión restaurada de un salón ya borrado)
+   * devolviera silenciosamente datos de otro salón. Devolver null obliga a
+   * quien llama a decidir, y los llamadores ya lo verifican.
+   */
   function getClassroom(classroomId) {
-    return CLASSROOMS[classroomId] || CLASSROOMS['3A'];
+    return CLASSROOMS[classroomId] || null;
   }
 
   function getEvaluation(evalId) {
@@ -134,7 +176,18 @@
 
   function getStudent(classroomId, studentId) {
     const classroom = getClassroom(classroomId);
+    if (!classroom || !classroom.students) return null;
     return classroom.students.find(s => s.id === studentId) || null;
+  }
+
+  /**
+   * Grado del salón ya formateado, o null si no está definido.
+   * Es lo que se imprime en la ficha y lo que se manda al prompt de la IA.
+   */
+  function getClassroomGrade(classroomId) {
+    const cls = getClassroom(classroomId);
+    if (!cls) return null;
+    return formatGrade(cls.gradeStage, cls.gradeLevel);
   }
 
   /**
@@ -184,6 +237,24 @@
   }
 
   /**
+   * Fija el grado de un salón SOLO en el runtime (memoria).
+   * La persistencia en Supabase la hace SupabaseClient.updateClassroomGrade(),
+   * que se llama por separado: así el selector responde al instante aunque la
+   * red falle o la migración todavía no se haya aplicado.
+   * @param {string} classroomId
+   * @param {string|null} stage 'primaria' | 'secundaria' | null
+   * @param {number|null} level
+   * @returns {boolean} true si el salón existe y quedó actualizado
+   */
+  function setClassroomGrade(classroomId, stage, level) {
+    const cls = CLASSROOMS[classroomId];
+    if (!cls) return false;
+    cls.gradeStage = stage || null;
+    cls.gradeLevel = (stage && level) ? level : null;
+    return true;
+  }
+
+  /**
    * Guarda la sesión activa completa (Salón + Evaluación lista para escanear)
    */
   function setActiveSession(session) {
@@ -211,19 +282,27 @@
   const ClassroomData = {
     CLASSROOMS,
     EVALUATIONS,
+    GRADE_CATALOG,
+    DEFAULT_GRADE_STAGE,
+    formatGrade,
+    getGradeOptions,
+    getGradeStages,
     getClassroomList,
     getEvaluationList,
     getClassroom,
     getClassroomColor,
+    getClassroomGrade,
     getEvaluation,
     getStudent,
     saveCustomEvaluation,
+    setClassroomGrade,
     setActiveSession,
     getActiveSession,
 
     /**
      * Reemplaza el runtime de salones con datos frescos de Supabase.
-     * Recibe un array en el formato { id, name, gradeCode, color, students[] }.
+     * Recibe un array en el formato { id, name, gradeCode, color, students[] }
+     * más, si la migración ya se aplicó, { gradeStage, gradeLevel }.
      * Preserva la paleta de colores si el salón no tiene color propio.
      */
     setClassrooms(list) {
@@ -234,6 +313,10 @@
           id: cls.id,
           name: cls.name,
           gradeCode: cls.gradeCode || cls.id,
+          // Grado: se normaliza la etapa vacía a 'primaria' porque hasta que
+          // exista secundaria habilitada, "sin etapa" siempre significa primaria.
+          gradeStage: cls.gradeStage || (cls.gradeLevel ? DEFAULT_GRADE_STAGE : null),
+          gradeLevel: cls.gradeLevel || null,
           color: cls.color || CLASSROOM_COLOR_PALETTE[idx % CLASSROOM_COLOR_PALETTE.length],
           students: (cls.students || []).map((s, si) => ({
             id: s.id || `ALUM_${String(si + 1).padStart(2, '0')}`,
