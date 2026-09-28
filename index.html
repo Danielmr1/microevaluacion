@@ -1679,6 +1679,12 @@
         <span class="session-badge-active" id="scan-active-target" style="color: #22c55e;">—</span>
       </div>
       <button onclick="switchTab('create')" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:3px 8px; font-size:0.75rem; cursor:pointer;" title="Cambiar salón o problema">✏️ Modificar</button>
+      <!-- Diagnóstico: cuando algo falla en el celular no hay forma de mirar la
+           consola, así que la app vuelca todo lo que sabe como texto y el docente
+           lo pega donde lo necesite. Queda en la barra de sesión, que se oculta
+           en modo cámara para no estorbar. -->
+      <button id="btn-diagnostico" onclick="copiarDiagnostico()" title="Copiar un informe técnico de lo que está pasando"
+        style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:3px 8px; font-size:0.75rem; cursor:pointer;">🔍</button>
       <div class="session-counter" id="session-counter">
         — evaluados
       </div>
@@ -2452,6 +2458,136 @@
       }
 
       return { ok: true, motivo: 'listo', puedeGenerar: false, detalle: 'Tocá "Iniciar Cámara" para empezar.' };
+    }
+
+    /* ── DIAGNÓSTICO ─────────────────────────────────────────────────────
+       Cuando algo falla en el celular no hay forma de mirar la consola: el
+       docente no puede contarnos qué pasó y quedamos adivinando. Este botón
+       vuelca TODO lo que la app sabe, como texto plano, para pegarlo y poder
+       diagnosticar con datos.
+
+       Es de SOLO LECTURA: no cambia nada, no manda nada a ningún lado y no
+       incluye nombres de alumnos ni el contenido de las fotos. */
+
+    /** Arma el informe. Devuelve texto plano, a propósito. */
+    function construirDiagnostico() {
+      const L = [];
+      const sep = () => L.push('-----------------------------------------');
+      const fila = (k, v) => L.push(k + ': ' + (v === undefined || v === null || v === '' ? '—' : v));
+
+      L.push('=== DIAGNOSTICO MICROEVALUACION ===');
+      fila('Momento', new Date().toLocaleString());
+
+      sep();
+      L.push('PANTALLA');
+      fila('Ventana', window.innerWidth + 'x' + window.innerHeight);
+      fila('Pantalla', (screen && screen.width ? screen.width : '?') + 'x' + (screen && screen.height ? screen.height : '?'));
+      fila('Orientacion', (screen && screen.orientation && screen.orientation.type)
+        || (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'));
+      fila('Pantalla completa', document.fullscreenElement ? 'si' : 'no');
+      fila('Camara', document.body.classList.contains('camera-active') ? 'encendida' : 'apagada');
+      fila('Navegador', navigator.userAgent);
+
+      const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      const cls = session ? ClassroomData.getClassroom(session.classroomId) : null;
+      const ev = session ? ClassroomData.getEvaluation(session.evalId) : null;
+
+      sep();
+      L.push('SESION');
+      fila('sessionRef', session && session.sessionRef);
+      fila('Salon', cls ? (cls.name + ' (' + cls.id + ')') : (session ? 'BORRADO: ' + session.classroomId : 'sin sesion'));
+      fila('Alumnos', cls ? cls.students.length : '—');
+      fila('Grado del salon', cls ? ((cls.gradeStage || 'sin etapa') + ':' + (cls.gradeLevel || 'sin numero')) : '—');
+      fila('Evaluacion', ev ? (ev.title + ' (' + ev.id + ')') : (session ? 'BORRADA: ' + session.evalId : '—'));
+      fila('Grado de la evaluacion', ev ? ((ev.gradeStage || 'sin etapa') + ':' + (ev.gradeLevel || 'sin numero')) : '—');
+      fila('Respuesta esperada', session && session.expectedAnswer);
+      fila('Rubrica', ev ? (ev.rubric ? 'SI' : 'NO') : '—');
+      if (ev && ev.rubric) {
+        fila('  - respuesta canonica', ev.rubric.respuesta_canonica);
+        fila('  - procedimiento', ev.rubric.procedimiento_esperado);
+        fila('  - confianza del modelo', ev.rubric.confianza);
+        fila('  - formas aceptables', (ev.rubric.respuestas_aceptables || []).join(' | '));
+      }
+
+      sep();
+      L.push('PERMISO PARA ESCANEAR');
+      const estado = estadoParaEscanear();
+      fila('Resultado', estado.ok ? 'LISTO' : 'BLOQUEADO');
+      fila('Motivo', estado.motivo);
+      fila('Detalle', estado.detalle);
+
+      sep();
+      L.push('BANCO');
+      const g = gradoDelSalonSeleccionado();
+      fila('Salon elegido en el asistente', wizardClassroomId || '—');
+      fila('Grado del asistente', g.texto || '—');
+      const lista = ClassroomData.getEvaluationList();
+      fila('Preguntas en total', lista.length);
+      fila('Preguntas de ese grado', (g.stage && g.level)
+        ? lista.filter(e => e.gradeStage === g.stage && e.gradeLevel === g.level).length
+        : 0);
+      fila('Con rubrica / sin rubrica',
+        lista.filter(e => e.hasRubric).length + ' / ' + lista.filter(e => !e.hasRubric).length);
+
+      sep();
+      L.push('ULTIMA CAPTURA');
+      const dc = (typeof Scanner !== 'undefined' && Scanner.diagnostico) ? Scanner.diagnostico() : null;
+      if (!dc || !dc.ultimaCaptura) {
+        fila('Estado', 'todavia no se tomo ninguna foto');
+      } else {
+        const c = dc.ultimaCaptura;
+        fila('Momento', c.momento);
+        fila('Alumno resuelto', c.alumno);
+        fila('QR leido', c.qrTexto || 'NO SE LEYO');
+        fila('Intento de QR que funciono', c.intentoQr);
+        fila('Cobertura / Nitidez', c.cobertura + '% / ' + c.nitidez + '%');
+        fila('Brillo de la foto', c.brillo + '%');
+        fila('Tiempo de enfoque', c.enfoque + ' s');
+      }
+      if (dc && dc.errores && dc.errores.length) {
+        fila('Errores del escaner', dc.errores.length);
+        dc.errores.slice(-5).forEach(e => L.push('  · ' + e));
+      }
+
+      sep();
+      L.push('ULTIMA LLAMADA A LA IA');
+      const ia = (typeof SupabaseClient !== 'undefined' && SupabaseClient.diagnosticoIA)
+        ? SupabaseClient.diagnosticoIA() : null;
+      if (!ia) {
+        fila('Estado', 'todavia no se llamo');
+      } else {
+        fila('Momento', ia.cuando);
+        fila('Resultado', ia.ok ? 'OK' : 'ERROR');
+        fila('Funcion', ia.funcion);
+        fila('Modelo', ia.modelo);
+        fila('Duracion', ia.ms ? (ia.ms / 1000).toFixed(1) + ' s' : '—');
+        fila('Reintentos', ia.reintentos);
+        if (!ia.ok) fila('Error', ia.error);
+      }
+
+      sep();
+      L.push('FIN DEL DIAGNOSTICO');
+      return L.join('\n');
+    }
+
+    /** Copia el informe al portapapeles. Si el navegador no deja, lo muestra. */
+    async function copiarDiagnostico() {
+      let texto;
+      try {
+        texto = construirDiagnostico();
+      } catch (e) {
+        texto = 'No se pudo armar el diagnostico: ' + (e && e.message);
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(texto);
+          showToast('✅ Diagnóstico copiado. Pegalo donde lo necesites.');
+          return;
+        }
+      } catch (e) { /* el navegador lo bloqueó: se muestra para copiar a mano */ }
+
+      window.prompt('Copiá el diagnóstico:', texto);
     }
 
     /**

@@ -26,6 +26,30 @@
   let overlay = null;
   let ctx = null;
 
+  // --- DIAGNÓSTICO ---
+  // Rastro de lo último que pasó. En el celular no hay consola que mirar, así que
+  // sin esto, cuando algo falla en plena clase no queda ninguna forma de saber
+  // qué pasó: el botón de diagnóstico del portal lee de acá.
+  let ultimaCaptura = null;
+  const erroresRecientes = [];
+
+  /** Anota un problema con su hora, para el informe de diagnóstico. */
+  function anotarError(mensaje) {
+    erroresRecientes.push(new Date().toLocaleTimeString() + ' — ' + mensaje);
+    if (erroresRecientes.length > 20) erroresRecientes.shift();
+  }
+
+  /** Lo que sabe el escáner, para el informe de diagnóstico. */
+  function diagnostico() {
+    return {
+      ultimaCaptura: ultimaCaptura,
+      errores: erroresRecientes.slice(),
+      escaneando: isScanning,
+      camaraEncendida: document.body.classList.contains('camera-active'),
+      detectorNativoQR: !!nativeBarcodeDetector
+    };
+  }
+
   // Canvas de procesamiento en memoria
   const procCanvas = document.createElement('canvas');
   const procCtx = procCanvas.getContext('2d', { willReadFrequently: true });
@@ -385,6 +409,7 @@
 
   /** Avisa al docente: usa el toast del portal si está cargado, si no un alert. */
   function avisar(mensaje) {
+    anotarError(mensaje);
     if (typeof showToast === 'function') showToast(mensaje);
     else alert(mensaje);
   }
@@ -1192,6 +1217,11 @@
     let resolutionPreviewUrl = null;
     let answerPreviewUrl = null;
     let qrText = qrData;
+    // Qué intento de lectura del QR fue el que funcionó (0 = ninguno). Saber si
+    // lo leyó el detector nativo, jsQR sobre todo el lienzo o el recorte con
+    // contraste es la diferencia entre "el QR no se lee" y "el QR se lee pero
+    // solo por el camino de respaldo".
+    let qrIntento = qrData ? 1 : 0;
 
     try {
       if (sheetQuad) {
@@ -1224,7 +1254,7 @@
         if (nativeBarcodeDetector) {
           try {
             const barcodes = await nativeBarcodeDetector.detect(fullWarpCanvas);
-            if (barcodes && barcodes.length > 0) qrText = barcodes[0].rawValue;
+            if (barcodes && barcodes.length > 0) { qrText = barcodes[0].rawValue; qrIntento = 1; }
           } catch (e) {}
         }
 
@@ -1234,7 +1264,7 @@
             const wCtx = fullWarpCanvas.getContext('2d');
             const wData = wCtx.getImageData(0, 0, fullWarpCanvas.width, fullWarpCanvas.height);
             const qr = jsQR(wData.data, wData.width, wData.height, { inversionAttempts: 'dontInvert' });
-            if (qr) qrText = qr.data;
+            if (qr) { qrText = qr.data; qrIntento = 2; }
           } catch (e) {}
         }
 
@@ -1245,7 +1275,7 @@
             ROIProcessor.enhanceHandwritingContrast(qrRoi.canvas, { blackCutoff: 100, whiteCutoff: 160 });
             const qrDataImg = qrRoi.canvas.getContext('2d').getImageData(0, 0, qrRoi.canvas.width, qrRoi.canvas.height);
             const qrRetry = jsQR(qrDataImg.data, qrDataImg.width, qrDataImg.height, { inversionAttempts: 'attemptBoth' });
-            if (qrRetry) qrText = qrRetry.data;
+            if (qrRetry) { qrText = qrRetry.data; qrIntento = 3; }
           }
         }
       }
@@ -1424,6 +1454,22 @@
       // Poblar pendientes en el modal (quiénes faltan escanear)
       renderModalPending();
       playDing();
+
+      // Rastro para el diagnóstico: TODO lo que hizo falta para resolver esta
+      // captura, junto. Si algo sale mal, esto es lo único que queda.
+      ultimaCaptura = {
+        momento: new Date().toLocaleTimeString(),
+        alumno: studentId + (studentObj ? ' (' + studentObj.name + ')' : ''),
+        qrTexto: qrText || '',
+        intentoQr: qrIntento === 0 ? 'ninguno (no se leyo)' : ('intento ' + qrIntento + ' de 3'),
+        cobertura: coverage,
+        nitidez: sharpness,
+        brillo: brightnessPercent,
+        enfoque: focusDuration,
+        respuestaEsperada: expectedAns,
+        demasiadoOscura: imageTooDark,
+        yaEvaluado: alreadyEvaluated
+      };
     }, 150);
   }
 
@@ -1529,7 +1575,8 @@
     onClassroomChanged,
     onEvaluationChanged,
     assignManualStudent,
-    handleFile
+    handleFile,
+    diagnostico
   };
 
   // Bindings directos para eventos onclick / onchange en HTML

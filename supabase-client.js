@@ -12,6 +12,23 @@
   // Cliente de Supabase (inicializado cuando el SDK carga)
   let _client = null;
 
+  // ─────────────────────────────────────────────
+  // DIAGNÓSTICO
+  // ─────────────────────────────────────────────
+  // Rastro de la última llamada a la IA. En el celular no hay consola, así que
+  // el informe del botón de diagnóstico lee de acá: sin esto, cuando la función
+  // falla en plena clase solo queda un toast que desaparece.
+  let _ultimaLlamadaIA = null;
+
+  /** Lo que sabe el cliente sobre la última llamada a la IA. */
+  function diagnosticoIA() {
+    return _ultimaLlamadaIA;
+  }
+
+  function anotarLlamadaIA(datos) {
+    _ultimaLlamadaIA = Object.assign({ cuando: new Date().toLocaleTimeString() }, datos);
+  }
+
   function getClient() {
     if (!_client) {
       if (typeof supabase === 'undefined' || !supabase.createClient) {
@@ -292,15 +309,28 @@
           }
         } catch (e) { /* la respuesta no era JSON */ }
         console.error('[SupabaseClient] La función rubric falló:', detalle);
+        anotarLlamadaIA({ funcion: 'rubric', ok: false, error: detalle });
         return { ok: false, error: detalle };
       }
 
-      if (!data || !data.rubrica) return { ok: false, error: 'La función no devolvió una rúbrica.' };
+      if (!data || !data.rubrica) {
+        anotarLlamadaIA({ funcion: 'rubric', ok: false, error: 'La función no devolvió una rúbrica.' });
+        return { ok: false, error: 'La función no devolvió una rúbrica.' };
+      }
+      anotarLlamadaIA({
+        funcion: 'rubric',
+        ok: true,
+        modelo: data.modelo,
+        ms: data.ms,
+        reintentos: data.reintentos,
+        prompt_version: data.prompt_version
+      });
       return { ok: true, rubrica: data.rubrica, meta: data };
 
     } catch (e) {
       // Llegar acá casi siempre significa que la función no está desplegada.
       console.error('[SupabaseClient] No se pudo llamar a rubric:', e);
+      anotarLlamadaIA({ funcion: 'rubric', ok: false, error: 'No se pudo contactar la función "rubric".' });
       return {
         ok: false,
         error: 'No se pudo contactar la función "rubric". ¿Está desplegada en Supabase?'
@@ -589,6 +619,7 @@
     updateClassroomGrade,
     importStudents,
     generateRubric,
+    diagnosticoIA,
     saveEvaluation,
     loadRecentEvaluations,
     saveResult,
