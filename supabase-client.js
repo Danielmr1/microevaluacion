@@ -257,14 +257,74 @@
   }
 
   // ─────────────────────────────────────────────
+  // RÚBRICA DE CORRECCIÓN (Edge Function 'rubric')
+  // ─────────────────────────────────────────────
+
+  /**
+   * Pide la solución canónica y el criterio de corrección a partir del enunciado.
+   *
+   * Se llama UNA vez por evaluación, nunca una vez por alumno: así los 30
+   * veredictos de la misma ficha se juzgan con el mismo criterio y son
+   * comparables entre sí.
+   *
+   * La clave del proveedor vive en los secretos de Supabase, no acá. Esta
+   * función nunca devuelve un error lanzado: siempre { ok, error } para que el
+   * asistente no se rompa si la IA no está disponible.
+   *
+   * @param {object} payload { prompt, grado, metodoEnsenado? }
+   * @returns {Promise<{ok: boolean, rubrica?: object, meta?: object, error?: string}>}
+   */
+  async function generateRubric(payload) {
+    const client = getClient();
+    if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
+
+    try {
+      const { data, error } = await client.functions.invoke('rubric', { body: payload });
+
+      if (error) {
+        // functions.invoke() mete el mensaje real de la función en el cuerpo de
+        // la respuesta, pero en error.message solo deja un texto genérico.
+        let detalle = error.message || String(error);
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const cuerpo = await error.context.json();
+            if (cuerpo && (cuerpo.error || cuerpo.message)) detalle = cuerpo.error || cuerpo.message;
+          }
+        } catch (e) { /* la respuesta no era JSON */ }
+        console.error('[SupabaseClient] La función rubric falló:', detalle);
+        return { ok: false, error: detalle };
+      }
+
+      if (!data || !data.rubrica) return { ok: false, error: 'La función no devolvió una rúbrica.' };
+      return { ok: true, rubrica: data.rubrica, meta: data };
+
+    } catch (e) {
+      // Llegar acá casi siempre significa que la función no está desplegada.
+      console.error('[SupabaseClient] No se pudo llamar a rubric:', e);
+      return {
+        ok: false,
+        error: 'No se pudo contactar la función "rubric". ¿Está desplegada en Supabase?'
+      };
+    }
+  }
+
+  // ─────────────────────────────────────────────
   // BANCO DE EVALUACIONES (historial personal)
   // ─────────────────────────────────────────────
 
   /**
    * Guarda o actualiza una evaluación en el historial del docente.
    * Si ya existe una con el mismo prompt, incrementa el contador.
+   *
+   * @param {string} prompt enunciado
+   * @param {string} expectedAnswer respuesta esperada (la que confirmó el docente)
+   * @param {string} [title]
+   * @param {object} [rubric] rúbrica generada, si la hay. Se guarda como jsonb.
+   *        Va en una sola columna y no en seis porque la forma de una rúbrica
+   *        va a seguir cambiando y no conviene una migración cada vez.
+   * @param {string} [gradeText] grado del salón al momento de redactarla
    */
-  async function saveEvaluation(prompt, expectedAnswer, title) {
+  async function saveEvaluation(prompt, expectedAnswer, title, rubric, gradeText) {
     const client = getClient();
     if (!client) return null;
     const user = await getCurrentUser();
@@ -278,10 +338,17 @@
       .eq('prompt', prompt)
       .maybeSingle();
 
+    const campos = { expected_answer: expectedAnswer };
+    if (rubric) campos.rubric = rubric;
+    if (gradeText) campos.grade_text = gradeText;
+
     if (existing) {
       const { data } = await client
         .from('microeval_evaluations')
-        .update({ used_count: existing.used_count + 1, last_used_at: new Date().toISOString(), expected_answer: expectedAnswer })
+        .update(Object.assign({}, campos, {
+          used_count: existing.used_count + 1,
+          last_used_at: new Date().toISOString()
+        }))
         .eq('id', existing.id)
         .select()
         .single();
@@ -290,11 +357,35 @@
 
     const { data, error } = await client
       .from('microeval_evaluations')
-      .insert({ teacher_id: user.id, prompt, expected_answer: expectedAnswer, title: title || 'Evaluación' })
+      .insert(Object.assign({
+        teacher_id: user.id,
+        prompt: prompt,
+        title: title || 'Evaluación'
+      }, campos))
       .select()
       .single();
 
-    if (error) { console.error('[SupabaseClient] Error guardando evaluación:', error.message); return null; }
+    if (error) {
+      // Si la migración de la rúbrica todavía no se aplicó, el insert falla
+      // entero por las columnas nuevas. Se reintenta sin ellas: es preferible
+      // guardar la evaluación sin rúbrica a no guardarla.
+      if (error.code === '42703' || /rubric|grade_text/.test(error.message || '')) {
+        console.warn('[SupabaseClient] Faltan las columnas de rúbrica; se guarda la evaluación sin ella. ' +
+          'Corré supabase/migrations/20260928020000_rubrica.sql');
+        const reintento = await client
+          .from('microeval_evaluations')
+          .insert({ teacher_id: user.id, prompt: prompt, expected_answer: expectedAnswer, title: title || 'Evaluación' })
+          .select()
+          .single();
+        if (reintento.error) {
+          console.error('[SupabaseClient] Error guardando evaluación:', reintento.error.message);
+          return null;
+        }
+        return reintento.data;
+      }
+      console.error('[SupabaseClient] Error guardando evaluación:', error.message);
+      return null;
+    }
     return data;
   }
 
@@ -448,6 +539,7 @@
     deleteClassroom,
     updateClassroomGrade,
     importStudents,
+    generateRubric,
     saveEvaluation,
     loadRecentEvaluations,
     saveResult,

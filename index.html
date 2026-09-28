@@ -1550,7 +1550,32 @@
             <input type="text" id="input-eval-expected" class="form-control"
               placeholder="Ej: 85"
               style="font-size:1.2rem; font-weight:800; color:#22c55e; text-align:center; letter-spacing:0.05em;">
+            <!-- Aviso de discrepancia: si la respuesta que escribió el docente y
+                 la que calculó la IA no coinciden, se avisa acá. NUNCA se pisa
+                 lo que escribió el docente. -->
+            <div id="answer-mismatch" style="display:none; margin-top:6px; padding:8px 10px; border-radius:8px; background:rgba(245,158,11,0.10); border:1px solid #b45309; font-size:0.72rem; color:#fbbf24; line-height:1.5;"></div>
           </div>
+
+          <!-- ── RÚBRICA DE CORRECCIÓN ──
+               La IA propone la solución canónica y los criterios; el docente
+               decide. Es opcional: sin rúbrica la app funciona igual, solo que
+               la corrección es más pobre y no puede opinar sobre el método. -->
+          <div style="border-top:1px dashed #334155; padding-top:10px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button id="btn-rubric" onclick="handleGenerateRubric()"
+                style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #6d28d9; color:#a78bfa; border-radius:8px; padding:8px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;">
+                ✨ Generar rúbrica de corrección
+              </button>
+              <span id="rubric-status" style="font-size:0.7rem; color:#64748b;"></span>
+            </div>
+            <p id="rubric-intro" style="font-size:0.68rem; color:#334155; margin:6px 0 0; line-height:1.5;">
+              Recomendado: con la rúbrica, la IA juzga a todo el salón con el mismo criterio y puede decir <em>qué error</em> cometió el alumno, no solo si está bien.
+            </p>
+          </div>
+
+          <!-- Resultado: lo arma renderRubricPanel() -->
+          <div id="rubric-panel" style="display:none;"></div>
+
           <button onclick="confirmNewEval()"
             style="background:#3b82f6; border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.88rem; font-weight:700; cursor:pointer;">
             ✓ Confirmar evaluación
@@ -2130,6 +2155,9 @@
       if (mode === 'new') {
         document.getElementById('input-eval-prompt').value = '';
         document.getElementById('input-eval-expected').value = '';
+        // Una rúbrica pertenece a UN enunciado: si se cambia el enunciado, la
+        // rúbrica anterior ya no sirve y no debe quedar pegada.
+        resetRubrica();
         updatePromptCounter();
         document.getElementById('input-eval-prompt').focus();
       }
@@ -2225,6 +2253,243 @@
       showSummary();
     }
 
+    /* ── RÚBRICA DE CORRECCIÓN (IA) ──────────────────────────────────────
+       El docente escribe solo el enunciado; la IA propone la solución canónica
+       y los criterios de corrección; el docente decide.
+
+       Dos reglas que NO se negocian:
+         1. Si el docente ya escribió una respuesta esperada, la IA no la pisa.
+            Si no coinciden se avisa: uno de los dos está equivocado, y ese
+            contraste es la mejor red de seguridad que tiene el sistema.
+         2. La rúbrica se genera UNA vez por evaluación y se guarda con ella,
+            para que los 30 alumnos de la ficha se juzguen igual. */
+
+    let wizardRubric = null;      // rúbrica aceptada, lista para guardar
+    let wizardRubricMeta = null;  // de dónde salió, para trazabilidad
+
+    /** Escapa texto antes de meterlo en innerHTML. */
+    function escaparHtml(t) {
+      return String(t == null ? '' : t)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    /** Grado del salón que se está usando, como texto legible. */
+    function gradoParaRubrica() {
+      const id = wizardClassroomId
+        || (document.getElementById('builder-classroom') || {}).value;
+      return id ? (ClassroomData.getClassroomGrade(id) || '') : '';
+    }
+
+    /**
+     * Normaliza una respuesta para comparar: "85", "85 libros" y "85,00" son la
+     * misma respuesta. La unidad no cambia el valor.
+     */
+    function normalizarRespuesta(t) {
+      let s = String(t == null ? '' : t).trim().toLowerCase();
+      s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+      // Separador de miles cubriendo el número entero: "1.250" y "1,250" = 1250
+      const soloMiles = s.match(/^(-?\d{1,3}(?:[.,]\d{3})+)$/);
+      if (soloMiles) return String(parseFloat(soloMiles[1].replace(/[.,]/g, '')));
+
+      // Un único número: comparar el valor, ignorando la unidad y el formato
+      const nums = s.match(/-?\d+(?:[.,]\d+)?/g);
+      if (nums && nums.length === 1) return String(parseFloat(nums[0].replace(',', '.')));
+
+      // Sin número (o varios): comparar el texto limpio
+      return s.replace(/\s+/g, ' ').replace(/[.;]+$/, '');
+    }
+
+    /**
+     * Lleva la respuesta canónica al campo de respuesta esperada.
+     * Si el docente ya había escrito algo distinto, NO se sobrescribe: se avisa.
+     */
+    function aplicarRespuestaCanonica(r) {
+      const input = document.getElementById('input-eval-expected');
+      const aviso = document.getElementById('answer-mismatch');
+      if (!input || !r) return;
+
+      const canonica = String(r.respuesta_canonica || '').trim();
+      const escrita = String(input.value || '').trim();
+      if (!canonica) return;
+
+      if (!escrita) {
+        input.value = canonica;
+        input.style.borderColor = '';
+        if (aviso) {
+          aviso.style.display = 'block';
+          aviso.innerHTML = '🤖 <strong>Propuesta por la IA.</strong> Revisala: si la respuesta correcta fuera otra, cambiala acá.';
+        }
+        return;
+      }
+
+      if (normalizarRespuesta(escrita) === normalizarRespuesta(canonica)) {
+        if (aviso) aviso.style.display = 'none';
+        return;
+      }
+
+      // Discrepancia real: se deja lo que escribió el docente y se avisa fuerte.
+      if (aviso) {
+        aviso.style.display = 'block';
+        aviso.innerHTML = '⚠️ <strong>No coinciden.</strong> Vos pusiste <strong>' + escaparHtml(escrita) +
+          '</strong> y la IA calculó <strong>' + escaparHtml(canonica) +
+          '</strong>. Uno de los dos está equivocado: mirá la resolución de abajo antes de confirmar.';
+      }
+    }
+
+    /** Dibuja el panel de revisión de la rúbrica. */
+    function renderRubricPanel(r, meta) {
+      const panel = document.getElementById('rubric-panel');
+      if (!panel || !r) return;
+
+      const lista = (titulo, items, color) => {
+        if (!items || !items.length) return '';
+        return '<div style="margin-top:9px;">' +
+          '<div style="font-size:0.65rem; font-weight:800; color:' + color + '; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">' + titulo + '</div>' +
+          items.map(x => '<div style="font-size:0.76rem; color:#cbd5e1; line-height:1.5;">• ' + escaparHtml(x) + '</div>').join('') +
+          '</div>';
+      };
+
+      const pasos = (r.solucion_pasos || []).length
+        ? '<div style="margin-top:9px;">' +
+            '<div style="font-size:0.65rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Cómo se resuelve</div>' +
+            r.solucion_pasos.map((p, i) =>
+              '<div style="font-size:0.76rem; color:#cbd5e1; line-height:1.5;">' +
+              '<span style="color:#7c3aed; font-weight:800;">' + (i + 1) + '.</span> ' + escaparHtml(p) + '</div>').join('') +
+          '</div>'
+        : '';
+
+      const errores = (r.errores_previsibles || []).length
+        ? '<div style="margin-top:9px;">' +
+            '<div style="font-size:0.65rem; font-weight:800; color:#f87171; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Errores previsibles</div>' +
+            r.errores_previsibles.map(e =>
+              '<div style="font-size:0.76rem; color:#cbd5e1; line-height:1.5;">' +
+              '<span style="display:inline-block; background:#7f1d1d; color:#fca5a5; border-radius:4px; padding:0 5px; font-size:0.62rem; font-weight:800; margin-right:5px;">' +
+              escaparHtml(e.tipo) + '</span>' + escaparHtml(e.descripcion) + '</div>').join('') +
+          '</div>'
+        : '';
+
+      const supuestos = (r.supuestos || []).length
+        ? '<div style="margin-top:9px; padding:8px 10px; border-radius:8px; background:rgba(245,158,11,0.08); border:1px solid #92400e;">' +
+            '<div style="font-size:0.65rem; font-weight:800; color:#fbbf24; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">⚠️ Supuestos que tomó — revisalos</div>' +
+            r.supuestos.map(x => '<div style="font-size:0.74rem; color:#fcd34d; line-height:1.5;">• ' + escaparHtml(x) + '</div>').join('') +
+          '</div>'
+        : '';
+
+      const avisos = (r.avisos || []).length
+        ? '<div style="margin-top:9px; padding:8px 10px; border-radius:8px; background:rgba(239,68,68,0.10); border:1px solid #991b1b;">' +
+            '<div style="font-size:0.65rem; font-weight:800; color:#f87171; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Avisos sobre el enunciado</div>' +
+            r.avisos.map(x => '<div style="font-size:0.74rem; color:#fca5a5; line-height:1.5;">• ' + escaparHtml(x) + '</div>').join('') +
+          '</div>'
+        : '';
+
+      const conf = Math.round((r.confianza || 0) * 100);
+      const seg = meta && meta.ms ? ' · ' + (meta.ms / 1000).toFixed(1) + ' s' : '';
+      const modelo = meta && meta.modelo ? escaparHtml(meta.modelo) + seg : '';
+
+      panel.innerHTML =
+        '<div style="border:1.5px solid #4c1d95; border-radius:10px; background:#0f172a; padding:12px;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
+            '<span style="font-size:0.72rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em;">✨ Rúbrica de corrección</span>' +
+            '<button onclick="descartarRubrica()" style="background:transparent; border:none; color:#64748b; font-size:0.68rem; cursor:pointer; text-decoration:underline;">descartar</button>' +
+          '</div>' +
+
+          '<div style="display:flex; align-items:center; justify-content:space-between; background:#1e293b; border-radius:8px; padding:8px 12px; margin-top:9px;">' +
+            '<span style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase;">Respuesta canónica</span>' +
+            '<span style="font-size:1.3rem; font-weight:900; color:#22c55e;">' + escaparHtml(r.respuesta_canonica) + '</span>' +
+          '</div>' +
+          (r.unidad ? '<div style="font-size:0.68rem; color:#64748b; margin-top:4px;">Unidad: <strong style="color:#94a3b8;">' + escaparHtml(r.unidad) + '</strong></div>' : '') +
+
+          pasos +
+          (r.procedimiento_esperado
+            ? '<div style="margin-top:9px;"><div style="font-size:0.65rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:3px;">Procedimiento esperado</div>' +
+              '<div style="font-size:0.76rem; color:#cbd5e1; line-height:1.5;">' + escaparHtml(r.procedimiento_esperado) + '</div></div>'
+            : '') +
+          lista('También se acepta', r.variantes_aceptables, '#4ade80') +
+          lista('Formas válidas de escribirla', r.respuestas_aceptables, '#4ade80') +
+          supuestos +
+          errores +
+          avisos +
+
+          '<div style="margin-top:10px; padding-top:8px; border-top:1px solid #1e293b; font-size:0.64rem; color:#475569;">' +
+            'Confianza del modelo: <strong style="color:' + (conf >= 70 ? '#4ade80' : conf >= 40 ? '#fbbf24' : '#f87171') + ';">' + conf + '%</strong>' +
+            (modelo ? ' · ' + modelo : '') +
+          '</div>' +
+        '</div>';
+
+      panel.style.display = 'block';
+    }
+
+    /** Descarta la rúbrica y su aviso, sin tocar la respuesta esperada. */
+    function descartarRubrica() {
+      wizardRubric = null;
+      wizardRubricMeta = null;
+      const panel = document.getElementById('rubric-panel');
+      if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+      const aviso = document.getElementById('answer-mismatch');
+      if (aviso) aviso.style.display = 'none';
+      const statusEl = document.getElementById('rubric-status');
+      if (statusEl) { statusEl.textContent = ''; }
+    }
+
+    /** Limpia todo el estado de la rúbrica (al abrir el formulario o resetear). */
+    function resetRubrica() {
+      wizardRubric = null;
+      wizardRubricMeta = null;
+      const panel = document.getElementById('rubric-panel');
+      if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+      const aviso = document.getElementById('answer-mismatch');
+      if (aviso) aviso.style.display = 'none';
+      const statusEl = document.getElementById('rubric-status');
+      if (statusEl) { statusEl.textContent = ''; statusEl.style.color = '#64748b'; }
+      const btn = document.getElementById('btn-rubric');
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    }
+
+    /** Pide la rúbrica a la Edge Function. */
+    async function handleGenerateRubric() {
+      const ta = document.getElementById('input-eval-prompt');
+      const statusEl = document.getElementById('rubric-status');
+      const btn = document.getElementById('btn-rubric');
+      const prompt = ta ? ta.value.trim() : '';
+
+      if (!prompt) {
+        if (ta) { ta.style.borderColor = '#ef4444'; ta.focus(); }
+        showToast('⚠️ Escribí primero el enunciado del problema.');
+        return;
+      }
+
+      const grado = gradoParaRubrica();
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+      if (statusEl) { statusEl.textContent = '⏳ Pensando la solución y los criterios...'; statusEl.style.color = '#a78bfa'; }
+
+      const res = await SupabaseClient.generateRubric({ prompt: prompt, grado: grado });
+
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+
+      if (!res.ok) {
+        if (statusEl) { statusEl.textContent = '❌ ' + res.error; statusEl.style.color = '#f87171'; }
+        return;
+      }
+
+      wizardRubric = res.rubrica;
+      wizardRubricMeta = res.meta || null;
+
+      if (statusEl) {
+        statusEl.textContent = '✅ Rúbrica lista' +
+          (res.meta && res.meta.ms ? ' en ' + (res.meta.ms / 1000).toFixed(1) + ' s' : '') +
+          (grado ? '' : ' (sin grado: es menos precisa)');
+        statusEl.style.color = '#4ade80';
+      }
+
+      aplicarRespuestaCanonica(res.rubrica);
+      renderRubricPanel(res.rubrica, res.meta);
+    }
+
     function confirmNewEval() {
       const prompt = (document.getElementById('input-eval-prompt').value || '').trim();
       const expectedAnswer = (document.getElementById('input-eval-expected').value || '').trim();
@@ -2250,12 +2515,17 @@
         return;
       }
 
-      // Guardar como evaluación personalizada
+      // Guardar como evaluación personalizada.
+      // La rúbrica (si se generó) viaja con la evaluación: se genera una vez y
+      // las 30 correcciones de la ficha usan el mismo criterio.
+      const gradoTexto = gradoParaRubrica();
       const saved = ClassroomData.saveCustomEvaluation({
         title: 'Evaluación del Día',
         prompt: prompt,
         expectedAnswer: expectedAnswer,
-        unitHint: ''
+        unitHint: '',
+        rubric: wizardRubric || undefined,
+        gradeText: gradoTexto || undefined
       });
 
       // Llevar el banco del docente a Supabase. Antes NADIE llamaba a
@@ -2263,7 +2533,7 @@
       // el localStorage de ese navegador: se perdían al cambiar de dispositivo
       // y la tabla microeval_evaluations quedaba siempre vacía.
       // Es "fire and forget" a propósito: si falla, la sesión sigue en local.
-      SupabaseClient.saveEvaluation(prompt, expectedAnswer, saved.title)
+      SupabaseClient.saveEvaluation(prompt, expectedAnswer, saved.title, wizardRubric, gradoTexto)
         .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
 
       wizardEval = saved;
@@ -2375,6 +2645,7 @@
      */
     function resetWizard() {
       wizardEval = null;
+      resetRubrica();
       ClassroomData.setActiveSession(null);
       hideWizardSteps();
     }

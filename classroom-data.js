@@ -220,6 +220,13 @@
       unitHint: evalData.unitHint ? evalData.unitHint.trim() : ''
     };
 
+    // La rúbrica y el grado viajan CON la evaluación: se generan una sola vez y
+    // las 30 correcciones de esa ficha tienen que usar el mismo criterio.
+    // Van en localStorage además de en Supabase para que la sesión siga
+    // funcionando sin conexión.
+    if (evalData.rubric) newEval.rubric = evalData.rubric;
+    if (evalData.gradeText) newEval.gradeText = evalData.gradeText;
+
     EVALUATIONS[id] = newEval;
 
     if (typeof window !== 'undefined' && window.localStorage) {
