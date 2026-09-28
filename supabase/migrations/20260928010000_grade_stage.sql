@@ -24,23 +24,30 @@
 -- 1. ETAPA DEL GRADO
 -- ────────────────────────────────────────────────────────────────────────────
 alter table microeval_classrooms
-  add column if not exists grade_stage text not null default 'primaria';
+  add column if not exists grade_stage text;
 
 alter table microeval_classrooms
   drop constraint if exists microeval_classrooms_grade_stage_check;
 
 alter table microeval_classrooms
   add constraint microeval_classrooms_grade_stage_check
-  check (grade_stage in ('primaria', 'secundaria'));
+  check (grade_stage is null or grade_stage in ('primaria', 'secundaria'));
 
 comment on column microeval_classrooms.grade_stage is
-  'Etapa educativa: primaria | secundaria. Junto con grade_level forma el grado (primaria + 4 = "4° de primaria").';
+  'Etapa educativa: primaria | secundaria (o NULL si el salón no tiene grado). Junto con grade_level forma el grado: primaria + 4 = "4° de primaria".';
 
--- Los salones que ya existían quedan como primaria y SIN grado asignado:
--- el docente completa el número desde el selector de la app.
-update microeval_classrooms
-   set grade_stage = 'primaria'
- where grade_stage is null;
+-- La columna es NULLABLE a propósito, y NO lleva default.
+-- El selector de la app permite volver a "Sin especificar", y eso escribe
+-- NULL en grade_stage y en grade_level. Con un NOT NULL acá, ese borrado
+-- fallaría con una violación de restricción y el docente vería un error al
+-- intentar dejar el salón sin grado. Tampoco lleva default 'primaria': un
+-- salón sin grado debe quedar con AMBOS campos en NULL, no con una etapa
+-- puesta y un número vacío.
+--
+-- Los salones que ya existen quedan "sin grado" (los dos campos en NULL) y el
+-- docente elige el grado desde el selector. No se rellenan con 'primaria'
+-- porque, aunque hoy todo sea primaria, afirmarlo por defecto ensuciaría
+-- cualquier conteo por etapa más adelante.
 
 
 -- ────────────────────────────────────────────────────────────────────────────
