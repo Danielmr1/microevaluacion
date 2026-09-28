@@ -3481,11 +3481,29 @@
       // Mostrar overlay de login por defecto hasta verificar sesión
       showLoginOverlay();
 
+      // Usuario cuyo asistente ya está montado en pantalla.
+      //
+      // Por qué hace falta: onAuthStateChange NO se dispara solo al entrar o
+      // salir. También se dispara con cada refresco de token (TOKEN_REFRESHED) y
+      // con las revalidaciones que hace el cliente al volver el foco a la
+      // pestaña. Antes, CUALQUIERA de esos eventos limpiaba el asistente
+      // (wizardClassroomId = null + hideWizardSteps), así que al docente que
+      // estaba redactando se le borraba la rúbrica y volvía al paso 1 sin haber
+      // tocado nada, unos 20-30 segundos después de generarla.
+      // Ahora la interfaz se reconstruye una sola vez por usuario: si el que
+      // llega es el mismo que ya estaba, no se toca nada.
+      let usuarioMontadoEnPantalla = null;
+
       // Escuchar cambios de sesión (login / logout / restore desde cookie)
       SupabaseClient.onAuthStateChange(async (event, session) => {
         if (session && session.user) {
           const user = session.user;
           hideLoginOverlay(user);
+
+          // Mismo usuario que ya está en pantalla: no se toca el asistente.
+          if (usuarioMontadoEnPantalla === user.id) return;
+          usuarioMontadoEnPantalla = user.id;
+
           // Cargar salones del docente desde Supabase
           await loadAndRenderClassrooms(user);
           // También cargar banco de evaluaciones recientes
@@ -3515,7 +3533,10 @@
 
           if (savedSession) restoreActiveSession(savedSession);
         } else {
-          // Sin sesión → mostrar overlay de login
+          // Sin sesión → mostrar overlay de login.
+          // Se olvida el usuario montado: si vuelve a entrar (aunque sea el
+          // mismo), el asistente se reconstruye desde cero.
+          usuarioMontadoEnPantalla = null;
           showLoginOverlay();
         }
       });
