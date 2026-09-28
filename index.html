@@ -939,31 +939,11 @@
       flex: 1 1 0;
     }
 
-    /* Retícula HUD */
-    .hud-guide {
-      position: absolute;
-      top: 14%;
-      bottom: 22%;
-      left: 6%;
-      right: 6%;
-      border: 2px dashed rgba(255, 255, 255, 0.18);
-      border-radius: 16px;
-      pointer-events: none;
-      z-index: 6;
-      transition: all 0.25s ease;
-    }
-    .corner-bracket {
-      position: absolute;
-      width: 28px;
-      height: 28px;
-      border-color: #38bdf8;
-      border-style: solid;
-      pointer-events: none;
-    }
-    .c-tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-top-left-radius: 14px; }
-    .c-tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 14px; }
-    .c-bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 14px; }
-    .c-br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 14px; }
+    /* Acá estaban .hud-guide y .corner-bracket (el rectángulo fijo con las 4
+       esquinas celestes). Se eliminaron junto con su markup: su proporción
+       dependía del tamaño de pantalla y no de la ficha, así que inducía a
+       encuadrar mal, y duplicaba al cuadrilátero dinámico del canvas.
+       No volver a agregarlas. */
 
     /* Indicador de Estado Flotante */
     .status-badge {
@@ -1701,13 +1681,16 @@
         <span id="status-text"></span>
       </div>
 
-      <!-- Retícula HUD -->
-      <div class="hud-guide" id="hud-guide">
-        <div class="corner-bracket c-tl"></div>
-        <div class="corner-bracket c-tr"></div>
-        <div class="corner-bracket c-bl"></div>
-        <div class="corner-bracket c-br"></div>
-      </div>
+      <!-- Acá vivía una "retícula HUD": un rectángulo fijo con 4 esquinas
+           celestes. Se eliminó por dos motivos:
+             1. Su proporción dependía del tamaño de pantalla (88% del ancho por
+                64% del alto), no de la ficha, así que en un celular apaisado
+                quedaba muy alargada y empujaba a encuadrar mal.
+             2. Duplicaba al cuadrilátero dinámico que se dibuja sobre el video,
+                que sí tiene la proporción real porque sale de los marcadores
+                ArUco impresos.
+           El diseño original ya la había desactivado por lo mismo
+           (backup v2.5.0, "DESHABILITADO PARA MODO CUADRILÁTERO DINÁMICO"). -->
 
       <!-- Medidores de calidad + botón de cámara, en UNA sola fila.
            El botón vive acá, y no en un panel aparte, por dos razones:

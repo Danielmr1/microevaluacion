@@ -1150,11 +1150,12 @@
     resetHUD();
   }
 
+  // Deja el visor en estado neutro: sin chip de estado y sin los estilos de
+  // "fijado". La retícula HUD estática se eliminó del HTML, así que acá ya no
+  // hay nada que resetear de ella.
   function resetHUD() {
-    const hud = document.getElementById('hud-guide');
     const badge = document.getElementById('status-badge');
     const statusText = document.getElementById('status-text');
-    if (hud) hud.classList.remove('tracking', 'locked');
     if (badge) {
       badge.classList.remove('locked');
       badge.style.display = 'none';
