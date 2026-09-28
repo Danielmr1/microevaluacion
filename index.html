@@ -2669,6 +2669,24 @@
           '</div>'
         : '';
 
+      // Los criterios son lo que se puntúa: es la parte de la rúbrica que decide
+      // la nota, así que va arriba y con los puntos a la vista.
+      const criterios = (r.criterios || []).length
+        ? '<div style="margin-top:10px;">' +
+            '<div style="font-size:0.65rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">' +
+            'Cómo se puntúa — total ' + escaparHtml(r.puntaje_total) + ' puntos</div>' +
+            r.criterios.map(c =>
+              '<div style="display:flex; gap:8px; align-items:flex-start; padding:6px 0; border-bottom:1px solid #1e293b;">' +
+                '<span style="flex:0 0 auto; background:#0c4a6e; color:#7dd3fc; border-radius:6px; padding:2px 7px; font-size:0.7rem; font-weight:800; white-space:nowrap;">' +
+                escaparHtml(c.peso) + ' pt</span>' +
+                '<span style="flex:1; min-width:0;">' +
+                  '<div style="font-size:0.78rem; font-weight:700; color:#e2e8f0;">' + escaparHtml(c.nombre) + '</div>' +
+                  '<div style="font-size:0.72rem; color:#94a3b8; line-height:1.45;">' + escaparHtml(c.que_se_espera) + '</div>' +
+                '</span>' +
+              '</div>').join('') +
+          '</div>'
+        : '';
+
       const errores = (r.errores_previsibles || []).length
         ? '<div style="margin-top:9px;">' +
             '<div style="font-size:0.65rem; font-weight:800; color:#f87171; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Errores previsibles</div>' +
@@ -2710,6 +2728,7 @@
           '</div>' +
           (r.unidad ? '<div style="font-size:0.68rem; color:#64748b; margin-top:4px;">Unidad: <strong style="color:#94a3b8;">' + escaparHtml(r.unidad) + '</strong></div>' : '') +
 
+          criterios +
           pasos +
           (r.procedimiento_esperado
             ? '<div style="margin-top:9px;"><div style="font-size:0.65rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:3px;">Procedimiento esperado</div>' +
