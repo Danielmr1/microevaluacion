@@ -1936,47 +1936,25 @@
         const g7Banner = document.getElementById('g7-no-session-banner');
         if (g7Banner) g7Banner.style.display = sessionValid ? 'none' : 'flex';
 
-        // La línea del estado vacío depende de lo mismo, para no decir
-        // "tocá Iniciar Cámara" mientras el banner de arriba pide configurar
-        // la sesión.
-        updatePlaceholderHint(sessionValid);
+        // La línea del estado vacío sale del MISMO control que usa el botón de la
+        // cámara, así no pueden contradecirse.
+        updatePlaceholderHint();
       }
     }
 
     /**
      * Ajusta el texto del estado vacío del visor.
-     * @param {boolean} [haySession] si no se pasa, se calcula desde localStorage
+     * Delega en estadoParaEscanear() para que diga EXACTAMENTE lo mismo que va a
+     * hacer el botón de la cámara: si el visor dice "tocá Iniciar Cámara", el
+     * botón tiene que arrancar.
      */
-    function updatePlaceholderHint(haySession) {
+    function updatePlaceholderHint() {
       const hint = document.getElementById('placeholder-hint');
       if (!hint) return;
 
-      const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
-
-      if (haySession === undefined) {
-        haySession = !!(session && session.expectedAnswer && session.expectedAnswer.trim() !== '');
-      }
-
-      if (!haySession) {
-        hint.textContent = 'Primero configurá la sesión en la pestaña 1.';
-        return;
-      }
-
-      // Con la sesión lista, lo único que puede faltar es la rúbrica, y sin ella
-      // la IA no puede corregir. Se avisa acá, que es donde el docente mira
-      // antes de encender la cámara.
-      hint.textContent = rubricaDeLaSesion(session)
-        ? 'Tocá "Iniciar Cámara" para empezar.'
-        : '⚠️ A esta evaluación le falta la rúbrica: se genera al encender la cámara.';
-    }
-
-    /** Rúbrica guardada de una evaluación, o null si todavía no tiene. */
-    function rubricaDeLaSesion(session) {
-      const s = session || ((typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null);
-      if (!s) return null;
-      const evalId = s.evalId || (wizardEval && wizardEval.id);
-      if (!evalId || typeof ClassroomData === 'undefined') return null;
-      return ClassroomData.getEvaluationRubric(evalId);
+      const estado = estadoParaEscanear();
+      hint.textContent = estado.ok ? estado.detalle : ('⚠️ ' + estado.detalle);
+      hint.style.color = estado.ok ? '#64748b' : '#f59e0b';
     }
 
     // ── Estado interno del wizard ──
@@ -2381,30 +2359,99 @@
     }
 
     /**
-     * Grado del salón que se está usando, en sus tres formas: las dos columnas
-     * comparables (etapa y número) y el texto legible.
+     * Grado de un salón, en sus tres formas: las dos columnas comparables (etapa
+     * y número) y el texto legible.
      *
      * Las tres se guardan CON la evaluación, porque la rúbrica se genera usando
      * el grado como contexto: en 4° y en 5° el mismo problema puede tener
      * distinto criterio, así que hay que poder saber con cuál se generó.
      */
-    function gradoDelSalonSeleccionado() {
-      const id = wizardClassroomId
-        || (document.getElementById('builder-classroom') || {}).value;
-      if (!id || typeof ClassroomData === 'undefined') {
+    function gradoDelSalon(classroomId) {
+      if (!classroomId || typeof ClassroomData === 'undefined') {
         return { stage: null, level: null, texto: '' };
       }
-      const cls = ClassroomData.getClassroom(id);
+      const cls = ClassroomData.getClassroom(classroomId);
       return {
         stage: (cls && cls.gradeStage) || null,
         level: (cls && cls.gradeLevel) || null,
-        texto: ClassroomData.getClassroomGrade(id) || ''
+        texto: (cls && ClassroomData.getClassroomGrade(classroomId)) || ''
       };
     }
 
-    /** Grado del salón que se está usando, como texto legible. */
-    function gradoParaRubrica() {
-      return gradoDelSalonSeleccionado().texto;
+    /** Grado del salón que el docente tiene elegido en el asistente. */
+    function gradoDelSalonSeleccionado() {
+      const id = wizardClassroomId
+        || (document.getElementById('builder-classroom') || {}).value;
+      return gradoDelSalon(id);
+    }
+
+    /**
+     * Grado del salón de la SESIÓN activa.
+     *
+     * Ojo con esto: la rúbrica tiene que generarse con el grado del salón de la
+     * sesión, no con el que esté elegido en el asistente. Si el docente cambió de
+     * salón en la pestaña 1 y volvió al escáner, el asistente y la sesión pueden
+     * apuntar a salones distintos, y generar con el grado equivocado produciría
+     * una rúbrica que no corresponde a la clase que está corrigiendo.
+     */
+    function gradoDeLaSesion(session) {
+      const s = session || ((typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null);
+      const id = (s && s.classroomId) || wizardClassroomId;
+      return gradoDelSalon(id);
+    }
+
+    /** "primaria:4" — la clave con la que se compara un grado con otro. */
+    function claveDeGrado(g) {
+      return (g && g.stage && g.level) ? (g.stage + ':' + g.level) : null;
+    }
+
+    /**
+     * ÚNICO lugar donde se decide si se puede escanear.
+     *
+     * Está centralizado a propósito: antes el aviso del visor y el control del
+     * botón miraban cosas distintas y podían contradecirse (el visor decir
+     * "tocá Iniciar Cámara" y el botón negarse, o al revés).
+     *
+     * @returns {{ok: boolean, motivo: string, detalle: string, puedeGenerar: boolean}}
+     */
+    function estadoParaEscanear() {
+      const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+
+      if (!session || !session.prompt || !String(session.prompt).trim()) {
+        return { ok: false, motivo: 'sin-sesion', puedeGenerar: false,
+          detalle: 'Primero configurá la sesión en la pestaña 1.' };
+      }
+
+      const cls = ClassroomData.getClassroom(session.classroomId);
+      if (!cls) {
+        return { ok: false, motivo: 'sin-salon', puedeGenerar: false,
+          detalle: 'El salón de esta sesión ya no existe. Configurá la sesión de nuevo en la pestaña 1.' };
+      }
+
+      const ev = ClassroomData.getEvaluation(session.evalId);
+      if (!ev) {
+        return { ok: false, motivo: 'sin-evaluacion', puedeGenerar: false,
+          detalle: 'Esta sesión apunta a una evaluación que ya no está en el banco. Elegí otra en la pestaña 1.' };
+      }
+
+      // El grado del salón y el de la pregunta tienen que coincidir: la rúbrica
+      // se generó con el grado de la pregunta, así que corregir con otra
+      // combinación sería juzgar con el criterio de otro grado.
+      const gCls = claveDeGrado({ stage: cls.gradeStage, level: cls.gradeLevel });
+      const gEv = claveDeGrado({ stage: ev.gradeStage, level: ev.gradeLevel });
+      if (gCls && gEv && gCls !== gEv) {
+        return { ok: false, motivo: 'grado-distinto', puedeGenerar: false,
+          detalle: 'Esta pregunta es de ' + (ev.gradeText || gEv) + ' y el salón es de ' +
+                   (ClassroomData.getClassroomGrade(session.classroomId) || gCls) +
+                   '. Elegí una pregunta del grado del salón.' };
+      }
+
+      if (!ev.rubric) {
+        return { ok: false, motivo: 'sin-rubrica', puedeGenerar: true,
+          detalle: 'A esta evaluación le falta la rúbrica: se genera al encender la cámara.' };
+      }
+
+      return { ok: true, motivo: 'listo', puedeGenerar: false, detalle: 'Tocá "Iniciar Cámara" para empezar.' };
     }
 
     /**
@@ -2590,7 +2637,22 @@
         return;
       }
 
-      const grado = gradoParaRubrica();
+      // GUARDARRAÍL: sin grado no se genera la rúbrica. La rúbrica se construye
+      // TOMANDO el grado como contexto (qué procedimiento se considera válido),
+      // así que una rúbrica sin grado sale genérica y después juzga mal.
+      const g = gradoDelSalonSeleccionado();
+      if (!g.stage || !g.level) {
+        if (statusEl) {
+          statusEl.textContent = '⚠️ Este salón no tiene grado';
+          statusEl.style.color = '#f59e0b';
+        }
+        const gBlock = document.getElementById('grade-block');
+        if (gBlock && gBlock.scrollIntoView) gBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showToast('⚠️ Completá el grado del salón en el paso 1: la rúbrica se genera con ese grado.');
+        return;
+      }
+
+      const grado = g.texto;
       if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
       if (statusEl) { statusEl.textContent = '⏳ Pensando la solución y los criterios...'; statusEl.style.color = '#a78bfa'; }
 
@@ -2613,7 +2675,7 @@
       if (statusEl) {
         statusEl.textContent = '✅ Rúbrica lista' +
           (res.meta && res.meta.ms ? ' en ' + (res.meta.ms / 1000).toFixed(1) + ' s' : '') +
-          (grado ? '' : ' (sin grado: es menos precisa)');
+          ' para ' + grado;
         statusEl.style.color = '#4ade80';
       }
 
@@ -2645,7 +2707,16 @@
         return false;
       }
 
-      const g = gradoDelSalonSeleccionado();
+      // El grado sale del salón de la SESIÓN, no del que esté elegido en el
+      // asistente: si el docente cambió de salón en la pestaña 1 y volvió al
+      // escáner, generar con el grado del asistente produciría una rúbrica que no
+      // corresponde a la clase que está corrigiendo.
+      const g = gradoDeLaSesion(session);
+      if (!g.stage || !g.level) {
+        showToast('⚠️ El salón de esta sesión no tiene grado. Completalo en la pestaña 1 antes de corregir.');
+        return false;
+      }
+
       showToast('⏳ Generando la rúbrica...');
 
       const res = await SupabaseClient.generateRubric({ prompt: session.prompt, grado: g.texto });
@@ -2685,28 +2756,46 @@
     }
 
     /**
-     * Botón de la cámara. Antes llamaba directo a toggleCamera(); ahora exige la
-     * rúbrica antes de ENCENDER (apagar la cámara siempre se puede).
+     * Botón de la cámara.
+     *
+     * GUARDARRAÍL: antes de ENCENDER se consulta estadoParaEscanear(), que es el
+     * único lugar donde se decide si se puede escanear. Apagar la cámara siempre
+     * se puede.
+     *
+     * Qué cubre, en orden:
+     *   · sin sesión configurada → no arranca (el aviso ya está en pantalla);
+     *   · el salón de la sesión ya no existe → no arranca;
+     *   · la evaluación ya no está en el banco → no arranca;
+     *   · la pregunta es de otro grado que el salón → no arranca: la rúbrica se
+     *     generó con el grado de la PREGUNTA, así que corregir así juzgaría con el
+     *     criterio de otro grado;
+     *   · falta la rúbrica → ofrece generarla (solo si hay con qué).
      */
     async function intentarIniciarCamara() {
       const encendida = document.body.classList.contains('camera-active');
 
       if (!encendida) {
-        const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
-        const hayEvaluacion = !!(session && session.prompt && session.prompt.trim());
+        const estado = estadoParaEscanear();
 
-        // Solo interviene si HAY una evaluación a la que le falta la rúbrica.
-        // Si no hay sesión, de eso se ocupa el aviso de la pestaña 1.
-        if (hayEvaluacion && !rubricaDeLaSesion(session)) {
-          const quiere = window.confirm(
-            'Esta evaluación todavía no tiene rúbrica.\n\n' +
-            'La IA la necesita para corregir: sin ella no puede juzgar a todo el ' +
-            'salón con el mismo criterio ni decir qué error cometió el alumno.\n\n' +
-            '¿La genero ahora? Tarda unos segundos.'
-          );
-          if (!quiere) return;
-          const lista = await generarRubricaDeLaSesion();
-          if (!lista) return;
+        if (!estado.ok) {
+          if (estado.puedeGenerar) {
+            const quiere = window.confirm(
+              'Esta evaluación todavía no tiene rúbrica.\n\n' +
+              'La IA la necesita para corregir: sin ella no puede juzgar a todo el ' +
+              'salón con el mismo criterio ni decir qué error cometió el alumno.\n\n' +
+              '¿La genero ahora? Tarda unos segundos.'
+            );
+            if (!quiere) return;
+            const lista = await generarRubricaDeLaSesion();
+            if (!lista) return;
+          } else {
+            // Sin sesión configurada, con la evaluación borrada, o con una
+            // pregunta de otro grado: NO se enciende. Escanear así no guardaría
+            // nada (o guardaría contra una consigna que no es la de la clase), y
+            // el docente se enteraría recién al final.
+            showToast('⚠️ ' + estado.detalle);
+            return;
+          }
         }
       }
 
@@ -2738,7 +2827,19 @@
         return;
       }
 
-      /* ── TODA PREGUNTA ENTRA AL BANCO CON SU RÚBRICA ──
+      /* ── GUARDARRAÍL: SIN GRADO NO HAY PREGUNTA ──
+         Una pregunta del banco tiene que tener grado, porque su rúbrica se
+         generó tomando ese grado como contexto. Sin grado, la rúbrica sale
+         genérica y después la IA juzga con un criterio que no es el de la clase. */
+      const g0 = gradoDelSalonSeleccionado();
+      if (!g0.stage || !g0.level) {
+        const gBlock = document.getElementById('grade-block');
+        if (gBlock && gBlock.scrollIntoView) gBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showToast('⚠️ Este salón no tiene grado. Completalo en el paso 1: la rúbrica se genera con ese grado.');
+        return;
+      }
+
+      /* ── GUARDARRAÍL: TODA PREGUNTA ENTRA AL BANCO CON SU RÚBRICA ──
          Si falta, no se guarda: se señala el botón que la genera, que está justo
          arriba. Es lo que hace que el banco sea una lista de evaluaciones listas
          para corregir y no de preguntas a medio terminar. */
