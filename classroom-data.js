@@ -156,7 +156,27 @@
   }
 
   function getEvaluationList() {
-    return Object.values(EVALUATIONS).map(e => ({ id: e.id, title: e.title, expectedAnswer: e.expectedAnswer, prompt: e.prompt }));
+    return Object.values(EVALUATIONS).map(e => ({
+      id: e.id,
+      title: e.title,
+      expectedAnswer: e.expectedAnswer,
+      prompt: e.prompt,
+      // El grado y la rúbrica viajan con la evaluación: el banco solo muestra
+      // preguntas completas, y las que no lo están se marcan "sin rúbrica".
+      gradeStage: e.gradeStage || null,
+      gradeLevel: e.gradeLevel || null,
+      gradeText: e.gradeText || formatGrade(e.gradeStage, e.gradeLevel),
+      hasRubric: !!e.rubric
+    }));
+  }
+
+  /**
+   * Rúbrica guardada de una evaluación, o null si todavía no tiene.
+   * Es lo que exige la corrección con IA: sin rúbrica no se puede corregir.
+   */
+  function getEvaluationRubric(evalId) {
+    const ev = EVALUATIONS[evalId];
+    return (ev && ev.rubric) ? ev.rubric : null;
   }
 
   /**
@@ -225,6 +245,8 @@
     // Van en localStorage además de en Supabase para que la sesión siga
     // funcionando sin conexión.
     if (evalData.rubric) newEval.rubric = evalData.rubric;
+    if (evalData.gradeStage) newEval.gradeStage = evalData.gradeStage;
+    if (evalData.gradeLevel) newEval.gradeLevel = evalData.gradeLevel;
     if (evalData.gradeText) newEval.gradeText = evalData.gradeText;
 
     EVALUATIONS[id] = newEval;
@@ -300,6 +322,7 @@
     getClassroomColor,
     getClassroomGrade,
     getEvaluation,
+    getEvaluationRubric,
     getStudent,
     saveCustomEvaluation,
     setClassroomGrade,
@@ -337,17 +360,40 @@
     /**
      * Carga el historial de evaluaciones recientes del docente (desde Supabase)
      * al banco local, para que renderBankCards() las muestre.
-     * Recibe un array con { id, title, prompt, expected_answer }.
+     * Recibe filas de microeval_evaluations.
+     *
+     * IMPORTANTE: hay que copiar también `rubric` y el grado. Antes esto solo
+     * copiaba id, title, prompt y expected_answer, así que cada vez que la app
+     * recargaba el banco desde Supabase las rúbricas ya generadas desaparecían
+     * del banco local y había que volver a generarlas.
      */
     setRecentEvaluations(list) {
-      list.forEach(ev => {
+      (list || []).forEach(ev => {
+        if (!ev) return;
         const id = ev.id || `EVA_REC_${Date.now()}`;
+
+        // No pisar una evaluación local que ya tiene rúbrica con una fila que
+        // todavía no la tiene: la local está más completa.
+        const previa = EVALUATIONS[id];
+        const traeRubrica = !!ev.rubric;
+        if (previa && previa.rubric && !traeRubrica) {
+          EVALUATIONS[id] = Object.assign({}, previa, {
+            title: ev.title || previa.title,
+            expectedAnswer: ev.expected_answer || previa.expectedAnswer
+          });
+          return;
+        }
+
         EVALUATIONS[id] = {
           id,
           title: ev.title || 'Evaluación',
           prompt: ev.prompt,
           expectedAnswer: ev.expected_answer,
-          unitHint: ''
+          unitHint: '',
+          rubric: ev.rubric || (previa ? previa.rubric : null) || undefined,
+          gradeStage: ev.grade_stage || (previa ? previa.gradeStage : null) || null,
+          gradeLevel: ev.grade_level || (previa ? previa.gradeLevel : null) || null,
+          gradeText: ev.grade_text || (previa ? previa.gradeText : null) || null
         };
       });
     }

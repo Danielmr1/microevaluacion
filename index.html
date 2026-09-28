@@ -1601,6 +1601,9 @@
               <span style="font-size:0.72rem; color:#64748b; font-weight:700; text-transform:uppercase;">Respuesta esperada</span>
               <span id="summary-answer" style="font-size:1.5rem; font-weight:900; color:#22c55e;"></span>
             </div>
+            <!-- Estado de la rúbrica: sin ella la evaluación se puede imprimir,
+                 pero no corregir con IA. -->
+            <div id="summary-rubric" style="border-radius:8px; padding:7px 12px; font-size:0.72rem; font-weight:700;"></div>
           </div>
         </div>
 
@@ -1769,7 +1772,7 @@
             <div class="progress-bar-fill" id="bar-stability"></div>
           </div>
         </div>
-        <button class="btn-main" id="btn-start" onclick="toggleCamera()">
+        <button class="btn-main" id="btn-start" onclick="intentarIniciarCamara()">
           <span>▶ Iniciar Cámara</span>
         </button>
       </div>
@@ -1942,14 +1945,32 @@
       const hint = document.getElementById('placeholder-hint');
       if (!hint) return;
 
+      const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+
       if (haySession === undefined) {
-        const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
         haySession = !!(session && session.expectedAnswer && session.expectedAnswer.trim() !== '');
       }
 
-      hint.textContent = haySession
+      if (!haySession) {
+        hint.textContent = 'Primero configurá la sesión en la pestaña 1.';
+        return;
+      }
+
+      // Con la sesión lista, lo único que puede faltar es la rúbrica, y sin ella
+      // la IA no puede corregir. Se avisa acá, que es donde el docente mira
+      // antes de encender la cámara.
+      hint.textContent = rubricaDeLaSesion(session)
         ? 'Tocá "Iniciar Cámara" para empezar.'
-        : 'Primero configurá la sesión en la pestaña 1.';
+        : '⚠️ A esta evaluación le falta la rúbrica: se genera al encender la cámara.';
+    }
+
+    /** Rúbrica guardada de una evaluación, o null si todavía no tiene. */
+    function rubricaDeLaSesion(session) {
+      const s = session || ((typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null);
+      if (!s) return null;
+      const evalId = s.evalId || (wizardEval && wizardEval.id);
+      if (!evalId || typeof ClassroomData === 'undefined') return null;
+      return ClassroomData.getEvaluationRubric(evalId);
     }
 
     // ── Estado interno del wizard ──
@@ -2223,12 +2244,26 @@
         preview.style.cssText = 'font-size:0.72rem; color:#64748b; line-height:1.3;';
 
         const answer = document.createElement('span');
-        answer.textContent = `Resp: ${ev.expectedAnswer}`;
+        answer.textContent = `Resp: ${ev.expectedAnswer} · ${ev.gradeText || 'sin grado'}`;
         answer.style.cssText = `font-size:0.78rem; font-weight:800; color:${color};`;
 
         card.appendChild(title);
         card.appendChild(preview);
         card.appendChild(answer);
+
+        // Estado de la rúbrica: el banco solo debería tener preguntas completas,
+        // así que las que todavía no la tienen se marcan para que el docente
+        // sepa cuáles le faltan antes de intentar corregir con IA.
+        const estado = document.createElement('span');
+        if (ev.hasRubric) {
+          estado.textContent = '✅ Lista para corregir con IA';
+          estado.style.cssText = 'font-size:0.68rem; font-weight:700; color:#4ade80;';
+        } else {
+          estado.textContent = '⚠️ Falta la rúbrica — no sirve para corregir con IA';
+          estado.style.cssText = 'font-size:0.68rem; font-weight:700; color:#fbbf24;';
+          card.style.borderColor = '#92400e';
+        }
+        card.appendChild(estado);
 
         card.addEventListener('mouseenter', () => {
           card.style.borderColor = color;
@@ -2277,11 +2312,31 @@
         .replace(/'/g, '&#39;');
     }
 
-    /** Grado del salón que se está usando, como texto legible. */
-    function gradoParaRubrica() {
+    /**
+     * Grado del salón que se está usando, en sus tres formas: las dos columnas
+     * comparables (etapa y número) y el texto legible.
+     *
+     * Las tres se guardan CON la evaluación, porque la rúbrica se genera usando
+     * el grado como contexto: en 4° y en 5° el mismo problema puede tener
+     * distinto criterio, así que hay que poder saber con cuál se generó.
+     */
+    function gradoDelSalonSeleccionado() {
       const id = wizardClassroomId
         || (document.getElementById('builder-classroom') || {}).value;
-      return id ? (ClassroomData.getClassroomGrade(id) || '') : '';
+      if (!id || typeof ClassroomData === 'undefined') {
+        return { stage: null, level: null, texto: '' };
+      }
+      const cls = ClassroomData.getClassroom(id);
+      return {
+        stage: (cls && cls.gradeStage) || null,
+        level: (cls && cls.gradeLevel) || null,
+        texto: ClassroomData.getClassroomGrade(id) || ''
+      };
+    }
+
+    /** Grado del salón que se está usando, como texto legible. */
+    function gradoParaRubrica() {
+      return gradoDelSalonSeleccionado().texto;
     }
 
     /**
@@ -2490,6 +2545,93 @@
       renderRubricPanel(res.rubrica, res.meta);
     }
 
+    /* ── LA RÚBRICA ES REQUISITO PARA CORREGIR ───────────────────────────
+       Regla acordada: se puede redactar y guardar una evaluación sin rúbrica
+       (por si la IA falla justo en ese momento), pero NO se puede empezar a
+       escanear sin ella. Sin rúbrica la IA no puede juzgar a todo el salón con
+       el mismo criterio ni decir QUÉ error cometió el alumno, que es el sentido
+       de todo esto.
+       Por eso el control está al encender la cámara, no al guardar. */
+
+    /**
+     * Genera y guarda la rúbrica de la evaluación activa sin salir del escáner.
+     * @returns {Promise<boolean>} true si quedó lista
+     */
+    async function generarRubricaDeLaSesion() {
+      const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      if (!session || !session.prompt) {
+        showToast('⚠️ No hay una evaluación activa.');
+        return false;
+      }
+
+      const g = gradoDelSalonSeleccionado();
+      showToast('⏳ Generando la rúbrica...');
+
+      const res = await SupabaseClient.generateRubric({ prompt: session.prompt, grado: g.texto });
+      if (!res.ok) {
+        showToast('❌ ' + res.error);
+        return false;
+      }
+
+      // Se guarda sobre la MISMA evaluación, con su grado, para que quede lista
+      // para las próximas clases y no haya que generarla de nuevo.
+      const guardada = ClassroomData.saveCustomEvaluation({
+        id: session.evalId,
+        title: session.title || 'Evaluación',
+        prompt: session.prompt,
+        expectedAnswer: session.expectedAnswer || '',
+        rubric: res.rubrica,
+        gradeStage: g.stage || undefined,
+        gradeLevel: g.level || undefined,
+        gradeText: g.texto || undefined
+      });
+
+      wizardRubric = res.rubrica;
+      if (typeof renderBankCards === 'function') renderBankCards();
+
+      SupabaseClient.saveEvaluation({
+        prompt: session.prompt,
+        expectedAnswer: session.expectedAnswer || '',
+        title: guardada.title,
+        rubric: res.rubrica,
+        gradeStage: g.stage,
+        gradeLevel: g.level,
+        gradeText: g.texto
+      }).catch(e => console.warn('[Rúbrica] No se pudo guardar en Supabase:', e && e.message));
+
+      showToast('✅ Rúbrica lista. Podés revisarla en la pestaña 1.');
+      return true;
+    }
+
+    /**
+     * Botón de la cámara. Antes llamaba directo a toggleCamera(); ahora exige la
+     * rúbrica antes de ENCENDER (apagar la cámara siempre se puede).
+     */
+    async function intentarIniciarCamara() {
+      const encendida = document.body.classList.contains('camera-active');
+
+      if (!encendida) {
+        const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+        const hayEvaluacion = !!(session && session.prompt && session.prompt.trim());
+
+        // Solo interviene si HAY una evaluación a la que le falta la rúbrica.
+        // Si no hay sesión, de eso se ocupa el aviso de la pestaña 1.
+        if (hayEvaluacion && !rubricaDeLaSesion(session)) {
+          const quiere = window.confirm(
+            'Esta evaluación todavía no tiene rúbrica.\n\n' +
+            'La IA la necesita para corregir: sin ella no puede juzgar a todo el ' +
+            'salón con el mismo criterio ni decir qué error cometió el alumno.\n\n' +
+            '¿La genero ahora? Tarda unos segundos.'
+          );
+          if (!quiere) return;
+          const lista = await generarRubricaDeLaSesion();
+          if (!lista) return;
+        }
+      }
+
+      if (typeof Scanner !== 'undefined' && Scanner.toggleCamera) Scanner.toggleCamera();
+    }
+
     function confirmNewEval() {
       const prompt = (document.getElementById('input-eval-prompt').value || '').trim();
       const expectedAnswer = (document.getElementById('input-eval-expected').value || '').trim();
@@ -2516,16 +2658,19 @@
       }
 
       // Guardar como evaluación personalizada.
-      // La rúbrica (si se generó) viaja con la evaluación: se genera una vez y
-      // las 30 correcciones de la ficha usan el mismo criterio.
-      const gradoTexto = gradoParaRubrica();
+      // La rúbrica (si se generó) y el GRADO viajan con la evaluación: la
+      // rúbrica se genera una vez y las 30 correcciones de la ficha usan el
+      // mismo criterio. El grado queda guardado porque condiciona ese criterio.
+      const g = gradoDelSalonSeleccionado();
       const saved = ClassroomData.saveCustomEvaluation({
         title: 'Evaluación del Día',
         prompt: prompt,
         expectedAnswer: expectedAnswer,
         unitHint: '',
         rubric: wizardRubric || undefined,
-        gradeText: gradoTexto || undefined
+        gradeStage: g.stage || undefined,
+        gradeLevel: g.level || undefined,
+        gradeText: g.texto || undefined
       });
 
       // Llevar el banco del docente a Supabase. Antes NADIE llamaba a
@@ -2533,8 +2678,15 @@
       // el localStorage de ese navegador: se perdían al cambiar de dispositivo
       // y la tabla microeval_evaluations quedaba siempre vacía.
       // Es "fire and forget" a propósito: si falla, la sesión sigue en local.
-      SupabaseClient.saveEvaluation(prompt, expectedAnswer, saved.title, wizardRubric, gradoTexto)
-        .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+      SupabaseClient.saveEvaluation({
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        title: saved.title,
+        rubric: wizardRubric,
+        gradeStage: g.stage,
+        gradeLevel: g.level,
+        gradeText: g.texto
+      }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
 
       wizardEval = saved;
       showSummary();
@@ -2569,6 +2721,19 @@
 
       const answerEl = document.getElementById('summary-answer');
       if (answerEl) answerEl.textContent = wizardEval.expectedAnswer;
+
+      // Estado de la rúbrica: es lo que decide si esta evaluación se puede
+      // corregir con IA o todavía no.
+      const rubEl = document.getElementById('summary-rubric');
+      if (rubEl) {
+        const tiene = !!(wizardEval.rubric);
+        rubEl.textContent = tiene
+          ? '✅ Rúbrica lista — se puede corregir con IA'
+          : '⚠️ Sin rúbrica — hace falta para corregir con IA (se genera al encender la cámara)';
+        rubEl.style.color = tiene ? '#4ade80' : '#fbbf24';
+        rubEl.style.background = tiene ? 'rgba(74,222,128,0.10)' : 'rgba(245,158,11,0.10)';
+        rubEl.style.border = '1px solid ' + (tiene ? '#166534' : '#92400e');
+      }
 
       // Sincronizar campos hidden
       document.getElementById('input-eval-title').value = wizardEval.title || 'Evaluación del Día';

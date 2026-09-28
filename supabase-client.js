@@ -316,19 +316,33 @@
    * Guarda o actualiza una evaluación en el historial del docente.
    * Si ya existe una con el mismo prompt, incrementa el contador.
    *
-   * @param {string} prompt enunciado
-   * @param {string} expectedAnswer respuesta esperada (la que confirmó el docente)
-   * @param {string} [title]
-   * @param {object} [rubric] rúbrica generada, si la hay. Se guarda como jsonb.
-   *        Va en una sola columna y no en seis porque la forma de una rúbrica
-   *        va a seguir cambiando y no conviene una migración cada vez.
-   * @param {string} [gradeText] grado del salón al momento de redactarla
+   * Una evaluación del banco nace CON su rúbrica y CON su grado: la rúbrica se
+   * genera tomando el grado como contexto, así que el grado que se usó tiene que
+   * quedar guardado junto a ella. Si la IA falló, se guarda igual sin rúbrica y
+   * la app la reclama después — pero no podrá usarse para corregir hasta que
+   * esté.
+   *
+   * @param {object} datos
+   * @param {string} datos.prompt enunciado
+   * @param {string} datos.expectedAnswer respuesta confirmada por el docente
+   * @param {string} [datos.title]
+   * @param {object} [datos.rubric] rúbrica generada. Va en una sola columna jsonb
+   *        porque su forma todavía va a cambiar y no conviene migrar cada vez.
+   * @param {string} [datos.gradeStage] 'primaria' | 'secundaria'
+   * @param {number} [datos.gradeLevel] 4, 5, 6...
+   * @param {string} [datos.gradeText] el mismo grado como texto: "4° de primaria"
+   * @returns {Promise<object|null>}
    */
-  async function saveEvaluation(prompt, expectedAnswer, title, rubric, gradeText) {
+  async function saveEvaluation(datos) {
     const client = getClient();
     if (!client) return null;
     const user = await getCurrentUser();
     if (!user) return null;
+
+    const d = datos || {};
+    const prompt = d.prompt;
+    const expectedAnswer = d.expectedAnswer;
+    if (!prompt) { console.warn('[SupabaseClient] saveEvaluation sin enunciado.'); return null; }
 
     // Buscar si ya existe
     const { data: existing } = await client
@@ -339,8 +353,10 @@
       .maybeSingle();
 
     const campos = { expected_answer: expectedAnswer };
-    if (rubric) campos.rubric = rubric;
-    if (gradeText) campos.grade_text = gradeText;
+    if (d.rubric) campos.rubric = d.rubric;
+    if (d.gradeStage) campos.grade_stage = d.gradeStage;
+    if (d.gradeLevel) campos.grade_level = d.gradeLevel;
+    if (d.gradeText) campos.grade_text = d.gradeText;
 
     if (existing) {
       const { data } = await client
@@ -360,21 +376,21 @@
       .insert(Object.assign({
         teacher_id: user.id,
         prompt: prompt,
-        title: title || 'Evaluación'
+        title: d.title || 'Evaluación'
       }, campos))
       .select()
       .single();
 
     if (error) {
-      // Si la migración de la rúbrica todavía no se aplicó, el insert falla
-      // entero por las columnas nuevas. Se reintenta sin ellas: es preferible
-      // guardar la evaluación sin rúbrica a no guardarla.
-      if (error.code === '42703' || /rubric|grade_text/.test(error.message || '')) {
-        console.warn('[SupabaseClient] Faltan las columnas de rúbrica; se guarda la evaluación sin ella. ' +
-          'Corré supabase/migrations/20260928020000_rubrica.sql');
+      // Si las migraciones de rúbrica o de grado todavía no se aplicaron, el
+      // insert falla entero por las columnas nuevas. Se reintenta con lo mínimo:
+      // es preferible guardar la evaluación incompleta a no guardarla.
+      if (error.code === '42703' || /rubric|grade_text|grade_stage|grade_level/.test(error.message || '')) {
+        console.warn('[SupabaseClient] Faltan columnas nuevas; se guarda la evaluación sin rúbrica ni grado. ' +
+          'Corré las migraciones de supabase/migrations/.');
         const reintento = await client
           .from('microeval_evaluations')
-          .insert({ teacher_id: user.id, prompt: prompt, expected_answer: expectedAnswer, title: title || 'Evaluación' })
+          .insert({ teacher_id: user.id, prompt: prompt, expected_answer: expectedAnswer, title: d.title || 'Evaluación' })
           .select()
           .single();
         if (reintento.error) {
