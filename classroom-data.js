@@ -231,14 +231,45 @@
   /**
    * Registra o actualiza una evaluación personalizada redactada por el docente
    * y la añade al banco disponible.
+   *
+   * IMPORTANTE — por qué conserva lo que el llamador no manda:
+   * esta función REEMPLAZA la entrada entera del banco. Varios lugares del
+   * portal guardan acá una evaluación sin saber nada de rúbricas (al generar las
+   * fichas, al restaurar una sesión). Con el reemplazo seco, esos lugares
+   * borraban la rúbrica recién generada: el docente la creaba, imprimía las
+   * fichas, y al volver al banco la pregunta aparecía como "falta la rúbrica".
+   *
+   * Por eso la rúbrica y el grado se conservan de la versión anterior cuando el
+   * llamador no los pasa. La identidad de una evaluación es su ENUNCIADO (igual
+   * que en Supabase y en setRecentEvaluations), así que la versión anterior se
+   * busca por id y, si no aparece, por enunciado.
    */
   function saveCustomEvaluation(evalData) {
-    const id = evalData.id || ('EVA_DOC_' + Date.now().toString().slice(-4));
+    const promptLimpio = String(evalData.prompt || '').trim();
+
+    // La identidad de una evaluación es su ENUNCIADO, igual que en Supabase y en
+    // setRecentEvaluations. Si ya existe una con el mismo enunciado, se
+    // ACTUALIZA esa en vez de crear otra: dos llamadas sin id (o con un id
+    // distinto) dejaban la misma pregunta dos veces en el banco, una de ellas
+    // sin rúbrica.
+    const idPorEnunciado = promptLimpio
+      ? Object.keys(EVALUATIONS).find(k => EVALUATIONS[k] && EVALUATIONS[k].prompt === promptLimpio)
+      : null;
+
+    // Id único de verdad. Antes era 'EVA_DOC_' + los ÚLTIMOS 4 dígitos del
+    // reloj, que se repiten cada 10 segundos: dos preguntas creadas con esa
+    // diferencia recibían el MISMO id y la segunda PISABA a la primera, con su
+    // rúbrica y su grado incluidos.
+    const id = evalData.id || idPorEnunciado
+      || ('EVA_DOC_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+
+    const previa = EVALUATIONS[id] || null;
+
     const newEval = {
       id: id,
-      title: evalData.title || 'Evaluación del Día',
-      prompt: evalData.prompt.trim(),
-      expectedAnswer: String(evalData.expectedAnswer).trim(),
+      title: evalData.title || (previa && previa.title) || 'Evaluación del Día',
+      prompt: promptLimpio,
+      expectedAnswer: String(evalData.expectedAnswer || '').trim(),
       unitHint: evalData.unitHint ? evalData.unitHint.trim() : ''
     };
 
@@ -246,10 +277,15 @@
     // las 30 correcciones de esa ficha tienen que usar el mismo criterio.
     // Van en localStorage además de en Supabase para que la sesión siga
     // funcionando sin conexión.
-    if (evalData.rubric) newEval.rubric = evalData.rubric;
-    if (evalData.gradeStage) newEval.gradeStage = evalData.gradeStage;
-    if (evalData.gradeLevel) newEval.gradeLevel = evalData.gradeLevel;
-    if (evalData.gradeText) newEval.gradeText = evalData.gradeText;
+    const rubrica = evalData.rubric || (previa ? previa.rubric : null);
+    const gStage = evalData.gradeStage || (previa ? previa.gradeStage : null);
+    const gLevel = evalData.gradeLevel || (previa ? previa.gradeLevel : null);
+    const gText = evalData.gradeText || (previa ? previa.gradeText : null);
+
+    if (rubrica) newEval.rubric = rubrica;
+    if (gStage) newEval.gradeStage = gStage;
+    if (gLevel) newEval.gradeLevel = gLevel;
+    if (gText) newEval.gradeText = gText;
 
     EVALUATIONS[id] = newEval;
 
