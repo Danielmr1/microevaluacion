@@ -353,122 +353,191 @@
       gap: 20px;
     }
 
+    /* ── HOJA IMPRIMIBLE: 188 x 275 mm ──────────────────────────────
+       Se dimensiona para el PEOR CASO realista, no para el @page de 6mm.
+       Chrome y sus derivados usan 1cm de margen por defecto cuando el
+       diálogo está en "Predeterminado", y eso deja 190 x 277 mm imprimibles.
+       Con 188 x 275 mm la hoja entra tanto con 1cm como con 6mm de margen,
+       y como el alto (275mm) es menor que cualquier caja imprimible
+       razonable, el navegador NUNCA tiene motivo para partirla en dos
+       páginas: una hoja = una página, siempre.
+       Contenido: 2mm + ficha 134mm + corte 3mm + ficha 134mm + 2mm = 275mm.
+       No usar justify-content:space-between aquí: estiraba la hoja por
+       encima del área imprimible y partía cada hoja en dos páginas. */
     .sheet-a4 {
       background: white;
-      width: 210mm;
-      min-height: 297mm;
-      padding: 4mm 0;
-      margin: 0 auto;
+      width: 188mm;
+      height: 275mm;
+      padding: 2mm 0;
+      margin: 6mm auto;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
+      align-items: center;
       box-sizing: border-box;
+      overflow: hidden;
       page-break-after: always;
       break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
       position: relative;
     }
 
+    /* ── FICHA A5: 186 x 134 mm, RANURAS DE ALTO FIJO ───────────────
+       Todo el alto está repartido en tramos cerrados, así que la cuadrícula
+       y la franja de respuesta caen SIEMPRE en el mismo milímetro, sin
+       importar si el enunciado tiene 1, 2 o 3 líneas:
+         borde 1 + padding 3 ..................   4.000 mm
+         cabecera .............................  20.000 mm
+         separación ...........................   3.000 mm
+         ranura del enunciado .................  20.000 mm
+         separación ...........................   3.000 mm
+         cuadrícula (7 filas x 9.286mm) .......  65.000 mm
+         separación ...........................   3.000 mm
+         franja de respuesta ..................  12.000 mm
+         padding 3 + borde 1 ..................   4.000 mm
+         TOTAL ................................ 134.000 mm  */
     .card-a5 {
-      width: 200mm;
-      height: 140mm;
-      margin: 0 auto;
-      padding: 3mm 4mm;
+      width: 186mm;
+      height: 134mm;
+      flex: 0 0 134mm;
+      padding: 3mm;
+      border: 1mm solid #000000;
       box-sizing: border-box;
+      overflow: hidden;
       position: relative;
       background: #ffffff;
-      border: 3.5px solid #000000;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
     }
 
+    /* ── MARCADORES ARUCO: 10mm, a 5mm del borde de la ficha ────────
+       Antes iban a 2.2mm del borde de la ficha, que a su vez quedaba al
+       filo del papel: la impresora los recortaba y el warp salía deforme.
+       Ahora la ficha queda a 6-8mm del borde físico del papel y los
+       marcadores a 5mm de la ficha, así que ninguno queda a menos de 11mm
+       del borde del papel. La zona de contenido libre de marcadores es
+       x=15..171mm e y=15..119mm; la cabecera, la cuadrícula y la franja de
+       respuesta respetan ese límite.
+       OJO: los centros de marcador quedan a 10mm de cada borde de la ficha.
+       Si cambia el inset o el tamaño, hay que recalcular las ROI en
+       roi-processor.js (GEOMETRY / getExpansionMargins). */
     .fiducial {
       position: absolute;
-      width: 9.5mm;
-      height: 9.5mm;
+      width: 10mm;
+      height: 10mm;
       z-index: 10;
     }
     .fiducial svg { width: 100%; height: 100%; display: block; }
-    .fiducial-tl { top: 2.2mm; left: 2.2mm; }
-    .fiducial-tr { top: 2.2mm; right: 2.2mm; }
-    .fiducial-br { bottom: 2.2mm; right: 2.2mm; }
-    .fiducial-bl { bottom: 2.2mm; left: 2.2mm; }
+    .fiducial-tl { top: 5mm; left: 5mm; }
+    .fiducial-tr { top: 5mm; right: 5mm; }
+    .fiducial-br { bottom: 5mm; right: 5mm; }
+    .fiducial-bl { bottom: 5mm; left: 5mm; }
 
+    /* Línea de corte: 3mm exactos entre las dos fichas. */
     .cut-line {
-      width: 100%;
-      height: 1mm;
-      border-top: 1.5px dashed #94a3b8;
+      width: 186mm;
+      height: 3mm;
+      flex: 0 0 3mm;
       position: relative;
-      margin: 1mm 0;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
+    .cut-line::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 1.5px dashed #94a3b8;
+    }
+
     .cut-line span {
+      position: relative;
       background: white;
       padding: 0 10px;
       font-size: 8pt;
+      line-height: 1;
       color: #94a3b8;
     }
 
+    /* ── CABECERA: 20mm fijos ──
+       El padding horizontal de 11mm deja nombre y QR dentro de x=15..171mm,
+       la zona libre de marcadores (los ArUco ocupan las esquinas hasta 15mm).
+       El nombre largo se recorta con puntos suspensivos en vez de empujar
+       el QR o romper el alto de la cabecera. */
     .card-header {
+      height: 20mm;
+      flex: 0 0 20mm;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 4mm;
+      padding: 0 11mm 1.5mm 11mm;
       border-bottom: 2px solid #0f172a;
-      padding-bottom: 2mm;
-      margin-bottom: 2.5mm;
-      margin-left: 5mm;
-      margin-right: 5mm;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .student-block {
       display: flex;
       align-items: baseline;
-      gap: 10px;
-      margin-left: 2mm;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .student-label {
-      font-size: 13pt;
+      font-size: 12pt;
       color: #475569;
       font-weight: 600;
+      flex: 0 0 auto;
     }
 
     .student-name {
-      font-size: 15pt;
+      font-size: 14pt;
       color: #0f172a;
       font-weight: 800;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .student-grade {
-      font-size: 10.5pt;
+      font-size: 10pt;
       color: #64748b;
       font-weight: 600;
-      margin-left: 6px;
+      flex: 0 0 auto;
+      white-space: nowrap;
     }
 
     .qr-block {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-right: 2mm;
+      gap: 3mm;
+      flex: 0 0 auto;
     }
 
     .qr-code-text {
       font-family: monospace;
-      font-size: 7.5pt;
+      font-size: 7pt;
       font-weight: 700;
       color: #64748b;
       letter-spacing: 0.5px;
     }
 
+    /* QR de 16mm: en el warp nuevo son ~170px para 23 módulos
+       (~7.4 px/módulo), por encima del mínimo legible de jsQR. */
     .qr-box {
-      width: 22mm;
-      height: 22mm;
+      width: 16mm;
+      height: 16mm;
+      flex: 0 0 16mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -480,17 +549,30 @@
       display: block;
     }
 
+    /* ── RANURA DEL ENUNCIADO: 20mm FIJOS ──
+       Aloja 1, 2 o 3 líneas sin desplazar la cuadrícula ni la franja de
+       respuesta. El texto se centra verticalmente, así que un enunciado de
+       una sola línea no deja un hueco descolgado. El tope de 240 caracteres
+       del formulario más el auto-ajuste de fitProblemText() garantizan que
+       nunca desborde la ranura. */
     .problem-wide {
-      margin-bottom: 3.5mm;
-      padding: 3mm 5mm;
+      height: 20mm;
+      flex: 0 0 20mm;
+      margin: 3mm 0 0 0;
+      padding: 1.6mm 3mm;
       background: #f8fafc;
-      border-left: 4px solid #2563eb;
-      border-radius: 4px;
+      border-left: 1.2mm solid #2563eb;
+      border-radius: 1mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
     }
 
     .problem-text {
-      font-size: 12.5pt;
-      line-height: 1.5;
+      width: 100%;
+      font-size: 11pt;
+      line-height: 1.35;
       color: #1e293b;
     }
 
@@ -499,75 +581,96 @@
       font-weight: 800;
     }
 
+    /* ── CUADRÍCULA DE CÁLCULO: 156 x 65 mm FIJOS ──
+       Pasó de <table> a CSS grid: las alturas de fila de una tabla no son
+       deterministas al paginar y la cuadrícula se estiraba. Con grid,
+       7 filas de 9.286mm y 16 columnas de 9.75mm dan celdas casi cuadradas
+       (algo más anchas que altas, que es lo que conviene para escribir en
+       columnas) y una altura exacta.
+       Ocupa x=15..171mm e y=50..115mm de la ficha, dentro de la zona libre
+       de marcadores (ver ROI_CONFIG.RESOLUTION en roi-processor.js). */
     .grid-wrapper {
-      margin: 0 auto;
+      width: 156mm;
+      height: 65mm;
+      flex: 0 0 65mm;
+      margin: 3mm 0 0 0;
+      align-self: center;
+      overflow: hidden;
     }
 
-    .notebook-grid-full {
-      border-collapse: separate;
-      border-spacing: 0;
+    .notebook-grid {
+      width: 156mm;
+      height: 65mm;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      grid-template-rows: repeat(7, 1fr);
       border: 1px solid #d4d4d8;
       background: #ffffff;
     }
 
-    .notebook-grid-full td {
-      width: 10mm;
-      height: 9.8mm;
-      max-width: 10mm;
-      max-height: 9.8mm;
+    .notebook-grid > i {
       border-right: 1px solid #d4d4d8;
       border-bottom: 1px solid #d4d4d8;
-      text-align: center;
-      vertical-align: middle;
-      font-size: 14pt;
-      color: #0f172a;
-    }
-
-    .notebook-grid-full tr td:last-child {
-      border-right: none;
-    }
-
-    .notebook-grid-full tr:last-child td {
-      border-bottom: none;
-    }
-
-    .answer-strip {
-      width: 160mm;
-      margin: 3mm auto 0 auto;
-      height: 11.5mm;
-      border: 1.5px solid #0f172a;
-      background: #ffffff;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      gap: 10px;
       box-sizing: border-box;
     }
 
+    /* Sin bordes duplicados en el perímetro de la cuadrícula. */
+    .notebook-grid > i:nth-child(16n) { border-right: none; }
+    .notebook-grid > i:nth-child(n+97) { border-bottom: none; }
+
+    /* ── FRANJA DE RESPUESTA: 156 x 12 mm FIJAS ──
+       Ocupa x=15..171mm (libre de marcadores) e y=118..130mm de la ficha.
+       El ancho de ".answer-tag" es FIJO a propósito: si dependiera del ancho
+       del texto, la caja de respuesta se correría según la fuente y la ROI
+       dejaría de caer sobre ella. Con tag fijo + gap fijo, la caja cae
+       siempre en x=36.8..80.8mm  e  y=119.5..128.5mm, que es exactamente
+       lo que espera ROI_CONFIG.ANSWER_BOX. */
+    .answer-strip {
+      width: 156mm;
+      height: 12mm;
+      flex: 0 0 12mm;
+      margin: 3mm 0 0 0;
+      align-self: center;
+      border: 0.8mm solid #0f172a;
+      background: #ffffff;
+      border-radius: 1mm;
+      display: flex;
+      align-items: center;
+      padding: 0 4mm;
+      gap: 3mm;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
     .answer-tag {
-      font-size: 11.5pt;
+      flex: 0 0 14mm;
+      font-size: 11pt;
       font-weight: 800;
       color: #0f172a;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
     .answer-box-open {
+      flex: 0 0 44mm;
       width: 44mm;
-      height: 9.2mm;
-      border: 1.5px solid #0f172a;
+      height: 9mm;
+      border: 0.6mm solid #0f172a;
       background: #ffffff;
-      border-radius: 3px;
+      border-radius: 0.8mm;
+      box-sizing: border-box;
     }
 
     .answer-line {
-      flex: 1;
+      flex: 1 1 auto;
+      min-width: 0;
       height: 7mm;
       border-bottom: 1.5px dashed #64748b;
-      margin-left: 6px;
       display: flex;
       align-items: flex-end;
       padding-bottom: 1px;
+      overflow: hidden;
     }
 
     .answer-line-hint {
@@ -1062,7 +1165,8 @@
         padding: 0 !important;
         margin: 0 !important;
       }
-      header, .tab-bar, .teacher-panel, #view-scan, .controls-panel, .capture-modal, #dependency-error-banner, #toast-msg {
+      header, .tab-bar, .teacher-panel, #view-scan, .controls-panel, .capture-modal,
+      #dependency-error-banner, #toast-msg, #login-overlay, .btn-print-action {
         display: none !important;
       }
       #view-create {
@@ -1072,20 +1176,41 @@
       }
       #pages-container {
         display: block !important;
-        width: 100% !important;
+        width: 188mm !important;
         max-width: none !important;
+        margin: 0 auto !important;
       }
+      /* ── UNA HOJA = UNA PÁGINA ──
+         El alto explícito (275mm) más la ausencia de margin-bottom son lo que
+         elimina el desfase: antes eran 289mm de contenido + 8mm de margen
+         dentro de una caja de 285mm, así que el navegador partía cada hoja en
+         dos páginas (10 páginas para 5 hojas) y la ficha de abajo quedaba
+         cortada, con sus ArUco al filo del papel.
+         275mm entra incluso con el margen de 1cm que Chrome usa por defecto
+         en el diálogo de impresión (caja imprimible 190 x 277mm).
+         No volver a poner width:100% aquí: la ficha mide 186mm y con
+         width:100% quedaba más ancha que su propia hoja. */
       .sheet-a4 {
         box-shadow: none !important;
-        width: 100% !important;
-        min-height: auto !important;
+        width: 188mm !important;
+        height: 275mm !important;
+        min-height: 0 !important;
+        max-height: 275mm !important;
+        margin: 0 auto !important;
+        padding: 2mm 0 !important;
+        overflow: hidden !important;
         page-break-after: always !important;
         break-after: page !important;
-        margin: 0 0 8mm 0 !important;
-        padding: 3mm 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      /* Evita una página en blanco al final. */
+      .sheet-a4:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
       }
       .card-a5 {
-        border: 3.5px solid #000000 !important;
+        border: 1mm solid #000000 !important;
       }
     }
   </style>
@@ -1218,9 +1343,14 @@
         <div style="display:flex; flex-direction:column; gap:10px;">
           <div>
             <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado del problema</label>
-            <textarea id="input-eval-prompt" class="form-control" rows="3"
+            <textarea id="input-eval-prompt" class="form-control" rows="3" maxlength="240"
+              oninput="updatePromptCounter()"
               placeholder="Ej: En la biblioteca había 47 libros y llegaron 38 más. ¿Cuántos hay en total?"
               style="resize:vertical; font-size:0.9rem;"></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
+              <span id="prompt-hint" style="font-size:0.68rem; color:#64748b;">Escribí un enunciado corto: entran hasta 3 líneas en la ficha.</span>
+              <span id="prompt-counter" style="font-size:0.68rem; font-weight:700; color:#64748b; flex:0 0 auto;">0 / 240</span>
+            </div>
           </div>
           <div>
             <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px;">Respuesta esperada</label>
@@ -1637,7 +1767,41 @@
       if (mode === 'new') {
         document.getElementById('input-eval-prompt').value = '';
         document.getElementById('input-eval-expected').value = '';
+        updatePromptCounter();
         document.getElementById('input-eval-prompt').focus();
+      }
+    }
+
+    /* ── TOPE DE CARACTERES DEL ENUNCIADO ──
+       La ranura del enunciado en la ficha aloja 3 líneas a 11pt, que a lo
+       ancho de la ficha son ~89 caracteres por línea (~267 en total). El
+       tope de 240 deja margen para palabras largas y signos, de modo que
+       ningún enunciado válido pueda desbordar la ranura y correr la
+       cuadrícula o la franja de respuesta. */
+    const PROMPT_MAX_CHARS = 240;
+    const PROMPT_CHARS_PER_LINE = 89;
+
+    function updatePromptCounter() {
+      const ta = document.getElementById('input-eval-prompt');
+      const counter = document.getElementById('prompt-counter');
+      const hint = document.getElementById('prompt-hint');
+      if (!ta) return;
+
+      const len = ta.value.length;
+      const lines = Math.max(1, Math.ceil(len / PROMPT_CHARS_PER_LINE));
+
+      if (counter) {
+        counter.textContent = len + ' / ' + PROMPT_MAX_CHARS;
+        counter.style.color = len >= PROMPT_MAX_CHARS ? '#f59e0b' : '#64748b';
+      }
+      if (hint) {
+        if (lines > 3) {
+          hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acortá el enunciado.';
+          hint.style.color = '#ef4444';
+        } else {
+          hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' en la ficha · máximo 3';
+          hint.style.color = '#64748b';
+        }
       }
     }
 
@@ -1714,6 +1878,14 @@
         showToast('⚠️ Indicá la respuesta esperada.');
         return;
       }
+      if (prompt.length > PROMPT_MAX_CHARS) {
+        const ta = document.getElementById('input-eval-prompt');
+        ta.style.borderColor = '#ef4444';
+        ta.focus();
+        showToast('⚠️ El enunciado tiene ' + prompt.length + ' caracteres. El máximo es ' +
+                  PROMPT_MAX_CHARS + ' para que entre en la ficha sin correr la cuadrícula.');
+        return;
+      }
 
       // Guardar como evaluación personalizada
       const saved = ClassroomData.saveCustomEvaluation({
@@ -1755,6 +1927,7 @@
       document.getElementById('input-eval-prompt').value = wizardEval.prompt;
       document.getElementById('input-eval-expected').value = wizardEval.expectedAnswer;
       document.getElementById('input-eval-unit').value = '';
+      updatePromptCounter();
 
       // Mostrar paso 4
       document.getElementById('step-bank-list').style.display = 'none';
@@ -1778,6 +1951,14 @@
     }
 
     function onBankSelectionChanged() {} // legacy — ya no se usa, queda vacío por compatibilidad
+
+    /* ── GEOMETRÍA DE LA CUADRÍCULA DE CÁLCULO ──
+       16 columnas x 7 filas. DEBE coincidir con .notebook-grid del CSS y con
+       ROI_CONFIG.RESOLUTION en roi-processor.js. Si se cambia el número de
+       filas o columnas, hay que recalcular esa ROI. */
+    const A5_GRID_COLS = 16;
+    const A5_GRID_ROWS = 7;
+    const GRID_CELLS_HTML = new Array(A5_GRID_COLS * A5_GRID_ROWS).fill('<i></i>').join('');
 
     function createA5Card(student, classroom, evaluation) {
       return `
@@ -1806,13 +1987,7 @@
           </div>
 
           <div class="grid-wrapper">
-            <table class="notebook-grid-full">
-              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            </table>
+            <div class="notebook-grid">${GRID_CELLS_HTML}</div>
           </div>
 
           <div class="answer-strip">
@@ -1865,6 +2040,41 @@
           });
         }
       }
+
+      // Ajustar el tamaño de fuente del enunciado a su ranura fija
+      fitProblemText();
+    }
+
+    /* ── AUTO-AJUSTE DEL ENUNCIADO A LA RANURA DE 20mm ──
+       La ficha debe verse idéntica con 1, 2 o 3 líneas. La ranura tiene alto
+       fijo, así que si un texto excepcionalmente largo no cabe, se reduce el
+       tamaño de fuente dentro de un rango seguro (11pt -> 8.5pt) antes que
+       permitir que el enunciado se desborde. Con el tope de 240 caracteres
+       del formulario, 3 líneas a 11pt ya caben: esto es la red de seguridad
+       para enunciados que llegan del banco de evaluaciones sin pasar por el
+       tope. */
+    function fitProblemText() {
+      const slots = document.querySelectorAll('.problem-text');
+      slots.forEach(el => {
+        const slot = el.parentElement;          // .problem-wide (alto fijo 20mm)
+        if (!slot) return;
+        // clientHeight es la caja de padding: hay que descontar el padding
+        // vertical para quedarnos con el alto REALMENTE disponible para el
+        // texto. Si no, el ajuste dejaría pasar texto que overflow:hidden
+        // recortaría igual.
+        const cs = window.getComputedStyle(slot);
+        const available = slot.clientHeight
+          - (parseFloat(cs.paddingTop) || 0)
+          - (parseFloat(cs.paddingBottom) || 0);
+
+        let size = 11;
+        el.style.fontSize = size + 'pt';
+        // scrollHeight del texto >= alto disponible significa que desborda.
+        while (el.scrollHeight > available && size > 8.5) {
+          size -= 0.5;
+          el.style.fontSize = size + 'pt';
+        }
+      });
     }
 
     function generateAndActivateSession() {

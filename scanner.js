@@ -7,7 +7,7 @@
  * - Cuadrilátero elástico de guía interactiva
  * - Verificación de nitidez (55%), paralelismo y cobertura (45%)
  * - Auto-disparo inteligente con retroalimentación audiovisual y háptica
- * - Corrección de perspectiva a resolución fija (1400 x 953 px)
+ * - Corrección de perspectiva a resolución fija (2000 x 1441 px = 10.75 px/mm)
  * - Integración con ROIProcessor para extracción de resolución y contraste de grafito
  * - 6 Guardrails de seguridad para ejecución estable en aula
  */
@@ -595,8 +595,22 @@
     return Math.abs(area) / 2;
   }
 
-  // --- EXPANSIÓN VECTORIAL (2% EXTERIOR) PARA ENGLOBAR LA FICHA ENTERA ---
-  function getExpandedSheetQuad(quad, marginX = 0.020, marginY = 0.025) {
+  // --- EXPANSIÓN VECTORIAL HASTA EL BORDE DE LA FICHA ---
+  // Los márgenes NO se hardcodean: salen de ROIProcessor.getExpansionMargins(),
+  // que los deriva del tamaño de la ficha (188 x 138 mm) y del inset (5 mm) y
+  // tamaño (10 mm) de los marcadores impresos. Expandir el cuadrilátero de
+  // CENTROS de marcador en esta proporción hace que el lienzo rectificado
+  // corresponda exactamente al borde de la ficha, que es lo que asumen las
+  // coordenadas de ROIProcessor.CONFIG.
+  function getExpandedSheetQuad(quad, marginX, marginY) {
+    if (marginX === undefined || marginY === undefined) {
+      const gm = (typeof ROIProcessor !== 'undefined' && ROIProcessor.getExpansionMargins)
+        ? ROIProcessor.getExpansionMargins()
+        : { marginX: 0.0595238095, marginY: 0.0847457627 };
+      marginX = gm.marginX;
+      marginY = gm.marginY;
+    }
+
     const vTopX = quad.pTR.x - quad.pTL.x;
     const vTopY = quad.pTR.y - quad.pTL.y;
     const vBotX = quad.pBR.x - quad.pBL.x;
@@ -999,8 +1013,12 @@
 
     try {
       if (sheetQuad) {
-        // Perspective Warp a resolución estándar (1400 x 953 px)
-        fullWarpCanvas = renderPerspectiveWarp(video, sheetQuad, 1400, 953);
+        // Perspective Warp al tamaño estándar del lienzo, tomado de
+        // ROIProcessor para que el warp y las ROIs no puedan desincronizarse.
+        // 2000 x 1441 px = 10.75 px/mm sobre la ficha de 186 x 134 mm.
+        const warpW = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_WIDTH) || 2000;
+        const warpH = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_HEIGHT) || 1441;
+        fullWarpCanvas = renderPerspectiveWarp(video, sheetQuad, warpW, warpH);
       } else if (directDataUrl) {
         // Modo fallback con imagen precargada
         const img = new Image();
