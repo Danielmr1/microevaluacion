@@ -1428,22 +1428,29 @@
           </button>
         </div>
 
-        <!-- ── ALTA MANUAL DE SALÓN ──
-             Sirve para cargar una nómina chica sin pasar por Excel, y para
-             reemplazar un salón cuyo archivo vino mal codificado. -->
+        <!-- ── ALTA DE SALÓN ──
+             Es el ÚNICO lugar donde se crea un salón: tanto el alta manual como
+             la importación de un archivo pasan por acá. Así el grado se elige
+             SIEMPRE al crear, y ningún salón nace sin grado pidiendo completarlo
+             después. -->
         <div id="manual-classroom-form" style="display:none; margin-top:12px; padding:14px; border:1.5px solid #334155; border-radius:10px; background:#0f172a;">
-          <div style="font-weight:800; color:#e2e8f0; font-size:0.85rem; margin-bottom:10px;">➕ Nuevo salón a mano</div>
+          <div id="manual-form-title" style="font-weight:800; color:#e2e8f0; font-size:0.85rem; margin-bottom:10px;">➕ Nuevo salón</div>
 
           <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Nombre del salón</label>
           <input type="text" id="manual-classroom-name" class="form-control" maxlength="60"
             placeholder='Ej: 4° Primaria "A"'
             style="font-size:0.92rem; font-weight:700; padding:9px 12px; margin-bottom:10px;">
 
-          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Grado</label>
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">
+            Grado <span style="color:#f59e0b;">*</span>
+          </label>
           <select id="manual-classroom-grade" class="form-control"
-            style="font-size:0.92rem; font-weight:700; padding:9px 12px; margin-bottom:10px;">
-            <option value="">Sin especificar</option>
+            style="font-size:0.92rem; font-weight:700; padding:9px 12px;">
+            <option value="">— Elegí el grado —</option>
           </select>
+          <p style="font-size:0.68rem; color:#334155; margin:5px 0 10px;">
+            Obligatorio: define qué procedimiento de resolución se considera correcto.
+          </p>
 
           <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">
             Alumnos — uno por línea
@@ -1472,21 +1479,30 @@
         </div>
 
         <!-- ── GRADO DEL SALÓN ──
-             Vive en el salón y no en la evaluación: un salón es de 4° o de 5°
-             y no cambia. Se guarda una sola vez y todas las evaluaciones de ese
-             salón lo heredan. Es el contexto que la IA necesita para decidir si
-             un método de resolución es válido en ese grado. -->
-        <div style="margin-top:14px;">
+             El grado se elige al CREAR el salón, en el formulario de arriba.
+             Acá abajo solo se muestra el que ya tiene, para que no sea un paso
+             más del flujo. El selector aparece únicamente en dos casos:
+               · al salón le falta el grado (creado antes de este cambio);
+               · el docente toca "cambiar" porque se equivocó al crearlo. -->
+        <div id="grade-block" style="display:none; margin-top:14px;">
           <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
             Grado del salón
           </label>
+
+          <div id="grade-readonly" style="display:none; align-items:center; gap:10px;">
+            <span id="grade-value" style="font-size:0.95rem; font-weight:800; color:#4ade80;"></span>
+            <button onclick="showGradeEditor()"
+              style="background:transparent; border:none; color:#38bdf8; font-size:0.7rem; font-weight:700; cursor:pointer; padding:0; text-decoration:underline;">
+              cambiar
+            </button>
+          </div>
+
           <select id="builder-grade" class="form-control" onchange="onGradeChanged(this.value)"
-            style="font-size:0.92rem; font-weight:700; padding:9px 12px;">
-            <option value="">— Elegí primero un salón —</option>
+            style="display:none; font-size:0.92rem; font-weight:700; padding:9px 12px;">
+            <option value="">Sin especificar</option>
           </select>
-          <p id="grade-hint" style="font-size:0.68rem; color:#334155; margin:6px 0 0;">
-            Define qué procedimiento de resolución se considera correcto y con qué lenguaje la IA le devuelve el resultado al alumno.
-          </p>
+
+          <p id="grade-hint" style="font-size:0.68rem; color:#334155; margin:6px 0 0;"></p>
         </div>
       </div>
 
@@ -1969,24 +1985,23 @@
     }
 
     /* ── GRADO DEL SALÓN ──────────────────────────────────────────────
-       El <select> se arma desde ClassroomData.getGradeStages(), así que
+       El grado se elige al CREAR el salón (formulario de alta, que es el único
+       camino de creación). Acá abajo solo se MUESTRA, para que no sea un paso
+       más del flujo. El selector se despliega solo si al salón le falta el
+       grado (salones creados antes de este cambio) o si el docente pide
+       cambiarlo con el botón.
+
+       Las opciones se arman desde ClassroomData.getGradeStages(), así que
        habilitar secundaria más adelante es agregar números al catálogo de
        classroom-data.js. Acá no se toca nada.
        Hoy el catálogo habilita 4°, 5° y 6° de primaria. */
 
-    function renderGradeSelect(classroomId) {
+    /** Arma las opciones del selector de grado una sola vez. */
+    function llenarSelectorDeGrado() {
       const sel = document.getElementById('builder-grade');
-      if (!sel) return;
+      if (!sel || sel.dataset.lleno === '1') return;
 
-      if (!classroomId) {
-        sel.innerHTML = '<option value="">— Elegí primero un salón —</option>';
-        sel.disabled = true;
-        return;
-      }
-
-      sel.disabled = false;
       sel.innerHTML = '<option value="">Sin especificar</option>';
-
       ClassroomData.getGradeStages().forEach(stage => {
         const group = document.createElement('optgroup');
         group.label = stage.label;
@@ -1998,26 +2013,62 @@
         });
         sel.appendChild(group);
       });
-
-      // Reflejar el grado ya guardado del salón
-      const cls = ClassroomData.getClassroom(classroomId);
-      sel.value = (cls && cls.gradeStage && cls.gradeLevel)
-        ? cls.gradeStage + ':' + cls.gradeLevel
-        : '';
-
-      updateGradeHint(classroomId);
+      sel.dataset.lleno = '1';
     }
 
-    function updateGradeHint(classroomId) {
+    /**
+     * Muestra el grado del salón elegido: como texto si ya lo tiene, o con el
+     * selector desplegado si le falta (para poder completarlo).
+     */
+    function renderGradeSelect(classroomId) {
+      const sel = document.getElementById('builder-grade');
+      const block = document.getElementById('grade-block');
+      const readonly = document.getElementById('grade-readonly');
+      const readValue = document.getElementById('grade-value');
       const hint = document.getElementById('grade-hint');
-      if (!hint) return;
+      if (!sel || !block) return;
+
+      if (!classroomId) { block.style.display = 'none'; return; }
+
+      llenarSelectorDeGrado();
+      const cls = ClassroomData.getClassroom(classroomId);
       const grade = ClassroomData.getClassroomGrade(classroomId);
-      if (grade) {
-        hint.textContent = '✅ La IA va a evaluar como ' + grade + '.';
-        hint.style.color = '#4ade80';
-      } else {
-        hint.textContent = '⚠️ Sin grado, la IA evalúa solo si el resultado es correcto y no opina sobre el método.';
-        hint.style.color = '#f59e0b';
+      block.style.display = 'block';
+
+      if (!grade) {
+        // Salón sin grado: se pide completarlo acá mismo.
+        sel.style.display = 'block';
+        sel.disabled = false;
+        sel.value = '';
+        if (readonly) readonly.style.display = 'none';
+        if (hint) {
+          hint.textContent = '⚠️ A este salón le falta el grado. Completalo: define qué procedimiento de resolución se considera correcto.';
+          hint.style.color = '#f59e0b';
+        }
+        return;
+      }
+
+      // Con grado: solo se muestra.
+      sel.value = cls.gradeStage + ':' + cls.gradeLevel;
+      sel.style.display = 'none';
+      if (readonly) readonly.style.display = 'flex';
+      if (readValue) readValue.textContent = grade;
+      if (hint) {
+        hint.textContent = 'Se eligió al crear el salón.';
+        hint.style.color = '#334155';
+      }
+    }
+
+    /** Despliega el selector para corregir el grado de un salón que ya lo tiene. */
+    function showGradeEditor() {
+      const sel = document.getElementById('builder-grade');
+      const readonly = document.getElementById('grade-readonly');
+      const hint = document.getElementById('grade-hint');
+      if (sel) { sel.style.display = 'block'; sel.disabled = false; }
+      if (readonly) readonly.style.display = 'none';
+      if (hint) {
+        hint.textContent = 'Cambiá el grado si te equivocaste al crear el salón.';
+        hint.style.color = '#334155';
       }
     }
 
@@ -2038,7 +2089,9 @@
       }
 
       ClassroomData.setClassroomGrade(classroomId, stage, level);
-      updateGradeHint(classroomId);
+      // Al guardar se vuelve a la vista de solo lectura, con el grado nuevo a
+      // la vista: así el selector no queda desplegado después de elegir.
+      renderGradeSelect(classroomId);
 
       const saved = await SupabaseClient.updateClassroomGrade(classroomId, stage, level);
       if (saved) {
@@ -2789,16 +2842,62 @@
 
     /* ── ALTA MANUAL DE SALÓN ────────────────────────────────────────── */
 
-    function toggleManualClassroomForm(forzar) {
+    /**
+     * Abre o cierra el formulario de alta de salón.
+     * @param {boolean} [forzar] true abre, false cierra, sin valor alterna
+     * @param {string} [titulo] título a mostrar; sirve para distinguir el alta
+     *        a mano de una nómina que viene de un archivo importado
+     */
+    function toggleManualClassroomForm(forzar, titulo) {
       const form = document.getElementById('manual-classroom-form');
       if (!form) return;
       const mostrar = (forzar === undefined) ? (form.style.display === 'none') : !!forzar;
       form.style.display = mostrar ? 'block' : 'none';
       if (mostrar) {
+        const t = document.getElementById('manual-form-title');
+        if (t) t.textContent = titulo || '➕ Nuevo salón';
         renderManualGradeSelect();
+        // Limpiar los bordes rojos de una validación anterior
+        ['manual-classroom-name', 'manual-classroom-grade', 'manual-classroom-students'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.borderColor = '';
+        });
         const nameInput = document.getElementById('manual-classroom-name');
         if (nameInput && !nameInput.value) nameInput.focus();
       }
+    }
+
+    /**
+     * Abre el formulario de alta con el nombre y la nómina ya cargados.
+     *
+     * Lo usa la importación: en vez de crear el salón a ciegas con un prompt(),
+     * el docente ve qué se leyó del archivo, elige el GRADO y confirma. De este
+     * modo todo salón nace con grado, sin un paso posterior para completarlo.
+     */
+    function prefillManualClassroomForm(nombre, students) {
+      const nameEl = document.getElementById('manual-classroom-name');
+      if (nameEl) nameEl.value = nombre || '';
+
+      const ta = document.getElementById('manual-classroom-students');
+      if (ta) {
+        ta.value = (students || []).map(s =>
+          (s.shortName && s.shortName !== s.fullName)
+            ? s.fullName + ', ' + s.shortName
+            : s.fullName
+        ).join('\n');
+      }
+
+      updateManualStudentCount();
+      toggleManualClassroomForm(true, '📋 Salón importado — revisá la nómina y elegí el grado');
+
+      const form = document.getElementById('manual-classroom-form');
+      if (form && form.scrollIntoView) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /** Nombre de salón sugerido a partir del nombre del archivo. */
+    function nombreSugeridoDeArchivo(nombreArchivo) {
+      const base = (nombreArchivo || '').replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ').trim();
+      return base ? base.charAt(0).toUpperCase() + base.slice(1) : '';
     }
 
     /** Puebla el selector de grado del alta manual con el mismo catálogo. */
@@ -2913,6 +3012,15 @@
         const partes = gradeEl.value.split(':');
         stage = partes[0];
         level = parseInt(partes[1], 10) || null;
+      }
+
+      // El grado es OBLIGATORIO al crear: es el contexto con el que la IA
+      // decide qué procedimiento de resolución es válido. Si se dejara vacío,
+      // habría que completarlo después, que es justo lo que se quiere evitar.
+      if (!stage || !level) {
+        if (gradeEl) { gradeEl.style.borderColor = '#ef4444'; gradeEl.focus(); }
+        showToast('⚠️ Elegí el grado del salón: define qué procedimiento se considera correcto.');
+        return;
       }
 
       showToast('⏳ Creando el salón...');
@@ -3052,51 +3160,32 @@
 
         let targetClassroomId = classroomId;
 
-        // Si no hay salón seleccionado: crear un nuevo salón automáticamente con nombre sugerido
-        if (!targetClassroomId) {
-          let suggested = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
-          if (/3a/i.test(suggested)) suggested = '3° Primaria "A"';
-          else if (/3b/i.test(suggested)) suggested = '3° Primaria "B"';
-          else suggested = suggested.charAt(0).toUpperCase() + suggested.slice(1);
-
-          const name = cleanName(prompt('Nombre para este nuevo salón de clases:', suggested));
-          if (!name) {
-            if (statusEl) { statusEl.textContent = '⚠️ Importación cancelada'; statusEl.style.color = '#f87171'; }
-            input.value = '';
-            return;
-          }
-
-          const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
-          const res = await SupabaseClient.createClassroom(name, gradeCode);
-          const newId = (res && res.id) || (res && res.data && res.data.id);
-          if (!newId) {
-            if (statusEl) { statusEl.textContent = '❌ Error al crear el salón'; statusEl.style.color = '#f87171'; }
-            input.value = '';
-            return;
-          }
-          targetClassroomId = newId;
-        } else {
-          // Si ya había un salón seleccionado, confirmar si desea sobreescribir o crear uno nuevo
+        // Si ya había un salón elegido, preguntar si se actualiza ese o se crea
+        // uno nuevo. Ya no se pide nada por prompt(): la creación siempre pasa
+        // por el formulario de alta.
+        if (targetClassroomId) {
           const selectedText = sel.options[sel.selectedIndex]?.textContent || 'este salón';
-          const wantUpdate = confirm(`¿Deseas actualizar la lista de alumnos de:\n"${selectedText}"?\n\n(Aceptar = Actualizar este salón / Cancelar = Crear un nuevo salón)`);
-          if (!wantUpdate) {
-            let suggested = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
-            const name = cleanName(prompt('Nombre para el nuevo salón de clases:', suggested));
-            if (!name) {
-              if (statusEl) { statusEl.textContent = '⚠️ Importación cancelada'; statusEl.style.color = '#f87171'; }
-              input.value = '';
-              return;
-            }
-            const gradeCode = name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'S1';
-            const res = await SupabaseClient.createClassroom(name, gradeCode);
-            const newId = (res && res.id) || (res && res.data && res.data.id);
-            if (!newId) {
-              if (statusEl) { statusEl.textContent = '❌ Error al crear el salón'; statusEl.style.color = '#f87171'; }
-              input.value = '';
-              return;
-            }
-            targetClassroomId = newId;
+          const wantUpdate = confirm(
+            `¿Actualizar la lista de alumnos de:\n"${selectedText}"?\n\n` +
+            `(Aceptar = actualizar ese salón / Cancelar = crear un salón nuevo)`
+          );
+          if (!wantUpdate) targetClassroomId = null;
+        }
+
+        // Sin salón destino: se abre el formulario de alta con el nombre y la
+        // nómina YA cargados, para que el docente revise qué se leyó del
+        // archivo, elija el GRADO y confirme.
+        //
+        // Esto es lo que garantiza que ningún salón nazca sin grado: la
+        // importación ya no crea salones por su cuenta, solo prepara el alta.
+        if (!targetClassroomId) {
+          if (statusEl) {
+            statusEl.textContent = `📋 ${students.length} alumnos leídos — elegí el grado y confirmá`;
+            statusEl.style.color = '#38bdf8';
           }
+          prefillManualClassroomForm(nombreSugeridoDeArchivo(file.name), students);
+          input.value = '';
+          return;
         }
 
         const importRes = await SupabaseClient.importStudents(targetClassroomId, students);
