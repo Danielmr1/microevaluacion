@@ -398,6 +398,61 @@
     }
   }
 
+  const ROI_OMR_CONFIG = {
+    MC2: {
+      Q1_BUBBLES: mmToPx(14, 37, 158, 12),
+      Q1_GRID: mmToPx(14, 49, 158, 21),
+      Q2_BUBBLES: mmToPx(14, 87, 158, 12),
+      Q2_GRID: mmToPx(14, 99, 158, 21)
+    },
+    MC1: {
+      Q1_BUBBLES: mmToPx(14, 46, 158, 13),
+      Q1_GRID: mmToPx(14, 60, 158, 53)
+    }
+  };
+
+  /**
+   * Extrae los recortes visuales individuales de cada pregunta para el modal:
+   * Cuadrícula de cálculo (con realce de grafito) y franja de alternativas marcadas.
+   * @param {HTMLCanvasElement} sheetCanvas
+   * @param {number} questionCount 1 o 2 preguntas
+   * @returns {Array<{ qIndex: number, bubblesCanvas: HTMLCanvasElement|null, gridCanvas: HTMLCanvasElement|null }>}
+   */
+  function extractOMRCrops(sheetCanvas, questionCount = 1) {
+    if (!isValidCanvas(sheetCanvas)) return [];
+    const is2Q = questionCount === 2;
+    const cfg = is2Q ? ROI_OMR_CONFIG.MC2 : ROI_OMR_CONFIG.MC1;
+    const list = [];
+
+    // Pregunta 1
+    const b1 = extractROI(sheetCanvas, cfg.Q1_BUBBLES);
+    const g1 = extractROI(sheetCanvas, cfg.Q1_GRID);
+    if (g1.success && g1.canvas) {
+      enhanceHandwritingContrast(g1.canvas, { blackCutoff: 110, whiteCutoff: 175 });
+    }
+    list.push({
+      qIndex: 1,
+      bubblesCanvas: b1.success ? b1.canvas : null,
+      gridCanvas: g1.success ? g1.canvas : null
+    });
+
+    // Pregunta 2 si corresponde
+    if (is2Q) {
+      const b2 = extractROI(sheetCanvas, cfg.Q2_BUBBLES);
+      const g2 = extractROI(sheetCanvas, cfg.Q2_GRID);
+      if (g2.success && g2.canvas) {
+        enhanceHandwritingContrast(g2.canvas, { blackCutoff: 110, whiteCutoff: 175 });
+      }
+      list.push({
+        qIndex: 2,
+        bubblesCanvas: b2.success ? b2.canvas : null,
+        gridCanvas: g2.success ? g2.canvas : null
+      });
+    }
+
+    return list;
+  }
+
   // Exportar el módulo al objeto global (navegador o node)
   const ROIProcessor = {
     SHEET_WIDTH,
@@ -409,6 +464,7 @@
     mmToPx,
     AI_CONTRAST_OPTIONS,
     CONFIG: ROI_CONFIG,
+    OMR_CONFIG: ROI_OMR_CONFIG,
     isValidCanvas,
     clampROI,
     extractROI,
@@ -417,7 +473,8 @@
     // Métodos OMR
     measureBubbleDarkness,
     evaluateAlternativeRow,
-    evaluateOMRSheet
+    evaluateOMRSheet,
+    extractOMRCrops
   };
 
   global.ROIProcessor = ROIProcessor;

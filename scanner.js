@@ -1243,6 +1243,7 @@
     // solo por el camino de respaldo".
     let qrIntento = qrData ? 1 : 0;
     let omrResults = null;
+    let omrCrops = null;
 
     // Sincronizar SIEMPRE con la sesión activa de ClassroomData (Single Source of Truth)
     const activeSession = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
@@ -1333,6 +1334,9 @@
             qCount = 2;
           }
           omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qCount);
+          if (ROIProcessor.extractOMRCrops) {
+            omrCrops = ROIProcessor.extractOMRCrops(fullWarpCanvas, qCount);
+          }
           console.log('[Scanner] OMR Results detectados:', omrResults);
           resolutionPreviewUrl = fullWarpCanvas.toDataURL('image/jpeg', 0.90);
         } else {
@@ -1425,8 +1429,14 @@
     // Presentar modal con la captura procesada
     setTimeout(() => {
       try {
+        // En OMR, ocultamos la columna de la hoja completa para dar espacio a los recortes individuales por pregunta
+        const colLeft = document.querySelector('.modal-col-left');
+        if (colLeft) {
+          colLeft.style.display = isOMR ? 'none' : 'flex';
+        }
+
         const imgEl = document.getElementById('captured-img');
-        if (imgEl && resolutionPreviewUrl) imgEl.src = resolutionPreviewUrl;
+        if (imgEl && resolutionPreviewUrl && !isOMR) imgEl.src = resolutionPreviewUrl;
 
         // Advertencia de duplicado: banner naranja + nombre en color distinto
         const dupBanner = document.getElementById('res-duplicate-warning');
@@ -1475,8 +1485,19 @@
             let allCorrect = true;
             const evaluatedResults = [];
 
+            const safeEscape = (str) => String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
             omrResults.forEach((qRes, idx) => {
               const qObj = questionsList[idx] || null;
+              let qPrompt = qObj ? (qObj.prompt || '') : '';
+              if (!qPrompt && activeEval && activeEval.prompt) {
+                const parts = activeEval.prompt.split(/\s*\|\s*|\s*2\.\s*/);
+                if (idx === 0 && parts[0]) qPrompt = parts[0].replace(/^1\.\s*/, '').trim();
+                else if (idx === 1 && parts[1]) qPrompt = parts[1].trim();
+                else qPrompt = activeEval.prompt;
+              }
+              if (!qPrompt) qPrompt = `Pregunta ${qRes.qIndex}`;
+
               let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
               if (!expectedKey) {
                 if (idx === 0) {
@@ -1506,27 +1527,71 @@
 
               let markedLabel = qRes.marked;
               let markedColor = '#f8fafc';
+              let badgeText = isCorrect ? '✅ CORRECTA' : '❌ INCORRECTA';
+              let badgeBg = isCorrect ? '#22c55e20' : '#ef444420';
+              let badgeColor = isCorrect ? '#22c55e' : '#ef4444';
+              let cardBorder = isCorrect ? '#22c55e' : '#ef4444';
+
               if (qRes.marked === 'BLANK') {
-                markedLabel = '⚠️ En blanco (no marcada)';
+                markedLabel = '⚠️ No marcó';
                 markedColor = '#fbbf24';
+                badgeText = '⚠️ NO MARCÓ';
+                badgeBg = '#f59e0b20';
+                badgeColor = '#f59e0b';
+                cardBorder = '#f59e0b';
               } else if (qRes.marked === 'MULTIPLE') {
                 markedLabel = '⚠️ Doble marca';
                 markedColor = '#f87171';
+                badgeText = '⚠️ DOBLE MARCA';
+                badgeBg = '#ef444420';
+                badgeColor = '#ef4444';
+                cardBorder = '#ef4444';
               }
 
+              // Recortes visuales de la pregunta (cuadrícula y alternativas)
+              const crop = omrCrops && omrCrops[idx];
+              const gridImgUrl = (crop && crop.gridCanvas) ? crop.gridCanvas.toDataURL('image/jpeg', 0.90) : '';
+              const bubblesImgUrl = (crop && crop.bubblesCanvas) ? crop.bubblesCanvas.toDataURL('image/jpeg', 0.90) : '';
+
               const item = document.createElement('div');
-              item.style.background = '#1e293b';
-              item.style.borderRadius = '8px';
-              item.style.padding = '8px 12px';
-              item.style.border = isCorrect ? '1.5px solid #22c55e' : (qRes.marked === 'BLANK' ? '1.5px solid #f59e0b' : '1.5px solid #ef4444');
+              item.style.background = '#0f172a';
+              item.style.borderRadius = '10px';
+              item.style.padding = '10px 12px';
+              item.style.border = `1.5px solid ${cardBorder}`;
+              item.style.marginBottom = '8px';
               item.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-weight:700; color:#e2e8f0; font-size:0.85rem;">Pregunta ${qRes.qIndex}</span>
-                  <span style="font-weight:800; font-size:0.82rem; padding:2px 8px; border-radius:5px; background:${isCorrect ? '#22c55e20' : '#ef444420'}; color:${isCorrect ? '#22c55e' : '#ef4444'};">
-                    ${isCorrect ? '✅ CORRECTA' : (qRes.marked === 'BLANK' ? '⚠️ SIN RESPUESTA' : '❌ INCORRECTA')}
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">
+                  <div style="font-weight:700; color:#f8fafc; font-size:0.85rem; line-height:1.35;">
+                    <span style="color:#60a5fa; font-weight:800; margin-right:4px;">${qRes.qIndex}.</span> ${safeEscape(qPrompt)}
+                  </div>
+                  <span style="font-weight:800; font-size:0.75rem; padding:2px 8px; border-radius:5px; background:${badgeBg}; color:${badgeColor}; white-space:nowrap;">
+                    ${badgeText}
                   </span>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; color:#94a3b8;">
+
+                ${gridImgUrl ? `
+                <div style="margin-bottom:6px;">
+                  <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
+                    📝 Cuadrícula de cálculo:
+                  </div>
+                  <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:85px; overflow:hidden; border:1px solid #475569;">
+                    <img src="${gridImgUrl}" alt="Cálculo Pregunta ${qRes.qIndex}" style="max-height:80px; width:auto; max-width:100%; object-fit:contain;">
+                  </div>
+                </div>
+                ` : ''}
+
+                ${bubblesImgUrl ? `
+                <div style="margin-bottom:6px;">
+                  <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
+                    🔘 Alternativas en la ficha:
+                  </div>
+                  <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:48px; overflow:hidden; border:1px solid #475569;">
+                    <img src="${bubblesImgUrl}" alt="Alternativas Pregunta ${qRes.qIndex}" style="max-height:44px; width:auto; max-width:100%; object-fit:contain;">
+                  </div>
+                </div>
+                ` : ''}
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid #334155; font-size:0.82rem; color:#94a3b8;">
                   <span>Marcó: <strong style="color:${markedColor}; font-size:1.15rem; margin-left:4px;">${markedLabel}</strong></span>
                   <span>Clave esperada: <strong style="color:#22c55e; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
                 </div>
