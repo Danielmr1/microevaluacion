@@ -287,8 +287,8 @@
     { key: 'D', xMm: 138 }
   ];
 
-  // Radio de medición interno para no tomar los bordes impresos del círculo (2.4 mm)
-  const OMR_BUBBLE_HALF_SIZE_MM = 2.4;
+  // Radio de medición interno para no tomar los bordes impresos del círculo (2.1 mm)
+  const OMR_BUBBLE_HALF_SIZE_MM = 2.1;
 
   /**
    * Mide la densidad de grafito/tinta en una burbuja de alternativa
@@ -298,9 +298,9 @@
    * @returns {number} Densidad de píxeles oscuros de 0.0 a 1.0
    */
   function measureBubbleDarkness(sheetCanvas, cxMm, cyMm) {
-    // Para ser tolerante a variaciones de impresión, corte y encuadre (+-3mm vertical),
+    // Para ser tolerante a variaciones de impresión, corte y encuadre (+-2mm vertical),
     // probamos el centro y offsets de barrido vertical
-    const offsets = [0, -1.5, 1.5, -3, 3];
+    const offsets = [0, -1.0, 1.0, -2.0, 2.0];
     let maxDark = 0;
     const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
 
@@ -360,8 +360,9 @@
       }
     });
 
-    // Umbral calibrado para detectar marcas de lápiz/bolígrafo con seguridad
-    const MIN_DARKNESS_THRESHOLD = 0.18;
+    // Umbral calibrado: una burbuja en blanco con la letra impresa mide entre 0.20 y 0.27.
+    // Una marca real de lápiz o lapicero supera 0.45. El umbral 0.38 descarta marcas falsas.
+    const MIN_DARKNESS_THRESHOLD = 0.38;
 
     if (maxDensity < MIN_DARKNESS_THRESHOLD) {
       return { marked: 'BLANK', confidence: Math.round((1 - maxDensity) * 100), densities };
@@ -384,14 +385,14 @@
   function evaluateOMRSheet(sheetCanvas, questionCount = 1) {
     if (!isValidCanvas(sheetCanvas)) return [];
     if (questionCount === 2) {
-      const q1Result = evaluateAlternativeRow(sheetCanvas, 41.5);
-      const q2Result = evaluateAlternativeRow(sheetCanvas, 96.5);
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 47.5);
+      const q2Result = evaluateAlternativeRow(sheetCanvas, 99.5);
       return [
         Object.assign({ qIndex: 1 }, q1Result),
         Object.assign({ qIndex: 2 }, q2Result)
       ];
     } else {
-      const q1Result = evaluateAlternativeRow(sheetCanvas, 54.5);
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 50.5);
       return [
         Object.assign({ qIndex: 1 }, q1Result)
       ];
@@ -400,14 +401,14 @@
 
   const ROI_OMR_CONFIG = {
     MC2: {
-      Q1_BUBBLES: mmToPx(14, 37, 158, 12),
-      Q1_GRID: mmToPx(14, 49, 158, 21),
-      Q2_BUBBLES: mmToPx(14, 87, 158, 12),
-      Q2_GRID: mmToPx(14, 99, 158, 21)
+      Q1_BUBBLES: mmToPx(15.0, 42.5, 156.0, 10.0),
+      Q1_GRID: mmToPx(16.0, 53.0, 154.0, 20.0),
+      Q2_BUBBLES: mmToPx(15.0, 94.5, 156.0, 10.0),
+      Q2_GRID: mmToPx(16.0, 105.0, 154.0, 20.0)
     },
     MC1: {
-      Q1_BUBBLES: mmToPx(14, 46, 158, 13),
-      Q1_GRID: mmToPx(14, 60, 158, 53)
+      Q1_BUBBLES: mmToPx(15.0, 45.0, 156.0, 10.5),
+      Q1_GRID: mmToPx(16.0, 57.0, 154.0, 68.0)
     }
   };
 
