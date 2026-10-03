@@ -122,6 +122,104 @@
   const STORAGE_KEY_BANK = 'microeval_teacher_bank_v2';
   const STORAGE_KEY_BANK_VIEJO = 'microeval_teacher_bank_v1';
   const STORAGE_KEY_SESSION = 'microeval_active_session_v1';
+  const STORAGE_KEY_SYNC_QUEUE = 'microeval_pending_sync_v1';
+
+  function queueForSync(item) {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE);
+      const queue = raw ? JSON.parse(raw) : [];
+      if (!queue.some(q => q.prompt === item.prompt)) {
+        queue.push(item);
+        window.localStorage.setItem(STORAGE_KEY_SYNC_QUEUE, JSON.stringify(queue));
+      }
+    } catch (e) {}
+  }
+
+  function flushSyncQueue() {
+    if (typeof window === 'undefined' || !window.SupabaseClient || typeof window.SupabaseClient.saveEvaluation !== 'function') return;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE);
+      if (!raw) return;
+      const queue = JSON.parse(raw);
+      if (!Array.isArray(queue) || queue.length === 0) return;
+
+      const remaining = [];
+      const promises = queue.map(item => {
+        return window.SupabaseClient.saveEvaluation(item)
+          .catch(err => {
+            console.warn('[Guardrail Sync] Reintento fallido para:', item.prompt, err && err.message);
+            remaining.push(item);
+          });
+      });
+
+      Promise.allSettled(promises).then(() => {
+        if (remaining.length > 0) {
+          window.localStorage.setItem(STORAGE_KEY_SYNC_QUEUE, JSON.stringify(remaining));
+        } else {
+          window.localStorage.removeItem(STORAGE_KEY_SYNC_QUEUE);
+          console.log('[Guardrail Sync] Todas las preguntas pendientes se sincronizaron con Supabase.');
+        }
+      });
+    } catch (e) {}
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', () => {
+      flushSyncQueue();
+    });
+  }
+
+  function syncToCloudGuardrail(evalObj) {
+    if (!evalObj || !evalObj.prompt) return;
+
+    const payload = {
+      prompt: evalObj.prompt,
+      expectedAnswer: evalObj.expectedAnswer || '',
+      title: evalObj.title || 'Evaluación',
+      rubric: evalObj.rubric || null,
+      gradeStage: evalObj.gradeStage || null,
+      gradeLevel: evalObj.gradeLevel || null,
+      gradeText: evalObj.gradeText || null,
+      type: evalObj.type || (evalObj.questions && evalObj.questions.length > 0 ? 'mc' : 'free'),
+      questionCount: evalObj.questionCount || (evalObj.questions ? evalObj.questions.length : 1),
+      questions: evalObj.questions || null
+    };
+
+    if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveEvaluation === 'function') {
+      window.SupabaseClient.saveEvaluation(payload).catch(err => {
+        console.warn('[Guardrail] Error al sincronizar con Supabase, encolando:', err && err.message);
+        queueForSync(payload);
+      });
+    } else {
+      queueForSync(payload);
+    }
+
+    // Si es una evaluación compuesta de opción múltiple (2 preguntas),
+    // también sincronizar cada pregunta individual al banco de la nube
+    if (payload.type === 'mc' && Array.isArray(payload.questions) && payload.questions.length > 1) {
+      payload.questions.forEach((q, idx) => {
+        if (!q || !q.prompt) return;
+        const qPrompt = String(q.prompt).trim();
+        const singlePayload = {
+          prompt: qPrompt,
+          expectedAnswer: `Clave: ${q.correct || 'A'}`,
+          title: `Pregunta de alternativa`,
+          gradeStage: payload.gradeStage,
+          gradeLevel: payload.gradeLevel,
+          gradeText: payload.gradeText,
+          type: 'mc',
+          questionCount: 1,
+          questions: [q]
+        };
+        if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveEvaluation === 'function') {
+          window.SupabaseClient.saveEvaluation(singlePayload).catch(() => queueForSync(singlePayload));
+        } else {
+          queueForSync(singlePayload);
+        }
+      });
+    }
+  }
 
   function loadSavedBank() {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -304,7 +402,8 @@
    * que en Supabase y en setRecentEvaluations), así que la versión anterior se
    * busca por id y, si no aparece, por enunciado.
    */
-  function saveCustomEvaluation(evalData) {
+  function saveCustomEvaluation(evalData, options) {
+    const opts = options || {};
     const promptLimpio = String(evalData.prompt || '').trim();
 
     // La identidad de una evaluación es su ENUNCIADO, igual que en Supabase y en
@@ -363,6 +462,13 @@
       } catch (e) {
         console.warn('[ClassroomData] Error al guardar en localStorage:', e);
       }
+    }
+
+    // GUARDRAIL NUBE (Supabase):
+    // Toda evaluación que ingresa al banco se sincroniza de inmediato con Supabase
+    // (a menos que se indique skipCloudSync, como al restaurar desde caché).
+    if (!opts.skipCloudSync) {
+      syncToCloudGuardrail(newEval);
     }
 
     return newEval;
@@ -432,6 +538,7 @@
     setClassroomGrade,
     setActiveSession,
     getActiveSession,
+    flushSyncQueue,
 
     /**
      * Reemplaza el runtime de salones con datos frescos de Supabase.

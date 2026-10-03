@@ -4087,7 +4087,7 @@
         type: isOMR ? 'mc' : 'free',
         questionCount: session.questionCount || 1,
         questions: session.questions || []
-      });
+      }, { skipCloudSync: true });
 
       wizardClassroomId = session.classroomId;
       wizardEval = evalObj;
@@ -5014,6 +5014,9 @@
           const recentEvals = await SupabaseClient.loadRecentEvaluations();
           if (typeof ClassroomData !== 'undefined' && ClassroomData.setRecentEvaluations) {
             ClassroomData.setRecentEvaluations(recentEvals);
+          }
+          if (typeof ClassroomData !== 'undefined' && ClassroomData.flushSyncQueue) {
+            ClassroomData.flushSyncQueue();
           }
 
           // ── RESTAURAR LA SESIÓN ACTIVA ──────────────────────────────
