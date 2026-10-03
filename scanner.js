@@ -1299,14 +1299,23 @@
         activeEval = activeSession;
       }
 
-      const isOMR = (activeEval && (activeEval.type === 'mc' || activeEval.questionCount || (activeEval.questions && activeEval.questions.length > 0)))
-                 || (activeSession && (activeSession.type === 'mc' || activeSession.questionCount || (activeSession.questions && activeSession.questions.length > 0)));
+      // Por defecto consideramos OMR (opción múltiple) salvo que sea explícitamente formato manuscrito ('free' o 'open')
+      const isExplicitFree = (activeEval && (activeEval.type === 'free' || activeEval.type === 'open' || activeEval.type === 'handwriting'))
+                          || (activeSession && (activeSession.type === 'free' || activeSession.type === 'open' || activeSession.type === 'handwriting'));
+      const isOMR = !isExplicitFree;
 
       if (fullWarpCanvas && typeof ROIProcessor !== 'undefined') {
         if (isOMR && ROIProcessor.evaluateOMRSheet) {
-          const qCount = (activeEval && (activeEval.questionCount || (activeEval.questions ? activeEval.questions.length : 1)))
-                      || (activeSession && (activeSession.questionCount || (activeSession.questions ? activeSession.questions.length : 1)))
-                      || 1;
+          let qCount = 1;
+          if (activeEval && (activeEval.questionCount === 2 || (activeEval.questions && activeEval.questions.length === 2))) {
+            qCount = 2;
+          } else if (activeSession && (activeSession.questionCount === 2 || (activeSession.questions && activeSession.questions.length === 2))) {
+            qCount = 2;
+          } else if (activeEval && activeEval.prompt && activeEval.prompt.includes('1.') && activeEval.prompt.includes('2.')) {
+            qCount = 2;
+          } else if (activeSession && activeSession.prompt && activeSession.prompt.includes('1.') && activeSession.prompt.includes('2.')) {
+            qCount = 2;
+          }
           omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qCount);
           console.log('[Scanner] OMR Results detectados:', omrResults);
           resolutionPreviewUrl = fullWarpCanvas.toDataURL('image/jpeg', 0.90);
@@ -1452,7 +1461,20 @@
 
           omrResults.forEach((qRes, idx) => {
             const qObj = questionsList[idx] || null;
-            let expectedKey = qObj ? qObj.correct : (expectedAns || 'A');
+            let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
+            if (!expectedKey) {
+              if (idx === 0) {
+                const m1 = String(expectedAns).match(/(?:P1[:\s]+)?([A-D])/i);
+                if (m1) expectedKey = m1[1].toUpperCase();
+              } else if (idx === 1) {
+                const m2 = String(expectedAns).match(/P2[:\s]+([A-D])/i);
+                if (m2) expectedKey = m2[1].toUpperCase();
+              }
+            }
+            if (!expectedKey) {
+              const mDef = String(expectedAns).match(/[A-D]/i);
+              expectedKey = mDef ? mDef[0].toUpperCase() : 'A';
+            }
             const m = String(expectedKey).match(/[A-D]/i);
             if (m) expectedKey = m[0].toUpperCase();
 

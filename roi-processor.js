@@ -298,9 +298,9 @@
    * @returns {number} Densidad de píxeles oscuros de 0.0 a 1.0
    */
   function measureBubbleDarkness(sheetCanvas, cxMm, cyMm) {
-    // Para ser tolerante a variaciones de impresión y encuadre (+-1.5mm vertical),
-    // probamos el centro y offsets leves
-    const offsets = [0, -1.5, 1.5];
+    // Para ser tolerante a variaciones de impresión, corte y encuadre (+-3mm vertical),
+    // probamos el centro y offsets de barrido vertical
+    const offsets = [0, -1.5, 1.5, -3, 3];
     let maxDark = 0;
     const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
 
@@ -384,14 +384,14 @@
   function evaluateOMRSheet(sheetCanvas, questionCount = 1) {
     if (!isValidCanvas(sheetCanvas)) return [];
     if (questionCount === 2) {
-      const q1Result = evaluateAlternativeRow(sheetCanvas, 39);
-      const q2Result = evaluateAlternativeRow(sheetCanvas, 92);
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 41.5);
+      const q2Result = evaluateAlternativeRow(sheetCanvas, 96.5);
       return [
         Object.assign({ qIndex: 1 }, q1Result),
         Object.assign({ qIndex: 2 }, q2Result)
       ];
     } else {
-      const q1Result = evaluateAlternativeRow(sheetCanvas, 48);
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 54.5);
       return [
         Object.assign({ qIndex: 1 }, q1Result)
       ];
