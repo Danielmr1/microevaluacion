@@ -5,7 +5,7 @@
  * Funcionalidad:
  * - Ciclo de tracking de visión en tiempo real (Marcadores ArUco 0, 1, 2, 3)
  * - Cuadrilátero elástico de guía interactiva
- * - Verificación de nitidez (55%), paralelismo y cobertura (45%)
+ * - Verificación de nitidez (40%), paralelismo y cobertura (45%)
  * - Auto-disparo inteligente con retroalimentación audiovisual y háptica
  * - Corrección de perspectiva a resolución fija (2000 x 1441 px = 10.75 px/mm)
  * - Integración con ROIProcessor para extracción de resolución y contraste de grafito
@@ -58,7 +58,7 @@
   let stableFrameCount = 0;
   const REQUIRED_STABLE_FRAMES = 3;   // ~150-200ms de quietud absoluta
   const COVERAGE_THRESHOLD = 45;       // Cobertura mínima de pantalla
-  const SHARPNESS_THRESHOLD = 55;      // Umbral calibrado de nitidez (55%)
+  const SHARPNESS_THRESHOLD = 40;      // Umbral calibrado de nitidez (40%)
   const CAPTURE_COOLDOWN_MS = 2500;    // Guardrail anti-duplicados (2.5 seg)
 
   let lastCaptureTime = 0;
@@ -1140,7 +1140,7 @@
     statusDot.style.background = '';
     statusDot.style.boxShadow = '';
 
-    // REGLA 4: Nitidez (>= 55%) y 3 cuadros consecutivos de quietud
+    // REGLA 4: Nitidez (>= 40%) y 3 cuadros consecutivos de quietud
     if (sharpness < SHARPNESS_THRESHOLD) {
       stableFrameCount = Math.max(0, stableFrameCount - 1);
       updateStabilityUI(Math.round((stableFrameCount / REQUIRED_STABLE_FRAMES) * 100));
@@ -1548,7 +1548,7 @@
     const bar = document.getElementById('bar-sharpness');
     if (bar) {
       bar.style.width = Math.min(100, Math.round((val / SHARPNESS_THRESHOLD) * 100)) + '%';
-      bar.style.background = val >= SHARPNESS_THRESHOLD ? '#22c55e' : (val >= 35 ? '#f59e0b' : '#ef4444');
+      bar.style.background = val >= SHARPNESS_THRESHOLD ? '#22c55e' : (val >= 25 ? '#f59e0b' : '#ef4444');
     }
   }
 
