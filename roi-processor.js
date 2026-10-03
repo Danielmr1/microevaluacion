@@ -291,13 +291,55 @@
   const OMR_BUBBLE_HALF_SIZE_MM = 2.1;
 
   /**
-   * Mide la densidad de grafito/tinta en una burbuja de alternativa
+   * Muestrea el brillo promedio del fondo del papel en la fila de alternativas,
+   * leyendo zonas libres de texto y burbujas (entre opciones y a los lados).
+   * Esto permite que la detección funcione igual de bien con luz tenue, sombras o en pantalla.
+   * @param {HTMLCanvasElement} sheetCanvas
+   * @param {number} yCenterMm
+   * @returns {number} Luminancia promedio del papel (0 a 255)
+   */
+  function samplePaperLuminance(sheetCanvas, yCenterMm) {
+    if (!isValidCanvas(sheetCanvas)) return 220;
+    const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
+    // Zonas de fondo puro en la fila OMR: entre A y B (42mm), entre B y C (80mm), entre C y D (119mm), y derecha de D (152mm)
+    const bgXSpots = [42, 80, 119, 152];
+    const sampleHalfSizeMm = 1.5;
+    let totalLum = 0;
+    let count = 0;
+
+    for (let i = 0; i < bgXSpots.length; i++) {
+      const xMm = bgXSpots[i];
+      const rx = Math.round((xMm - sampleHalfSizeMm) * PX_PER_MM_X);
+      const ry = Math.round((yCenterMm - sampleHalfSizeMm) * PX_PER_MM_Y);
+      const rw = Math.round(sampleHalfSizeMm * 2 * PX_PER_MM_X);
+      const rh = Math.round(sampleHalfSizeMm * 2 * PX_PER_MM_Y);
+
+      const clamped = clampROI({ x: rx, y: ry, width: rw, height: rh }, sheetCanvas.width, sheetCanvas.height);
+      if (clamped.width <= 0 || clamped.height <= 0) continue;
+
+      const imgData = ctx.getImageData(clamped.x, clamped.y, clamped.width, clamped.height);
+      const d = imgData.data;
+      let spotSum = 0;
+      const spotPixels = clamped.width * clamped.height;
+      for (let j = 0; j < d.length; j += 4) {
+        spotSum += (d[j] * 77 + d[j + 1] * 150 + d[j + 2] * 29) >> 8;
+      }
+      totalLum += (spotSum / spotPixels);
+      count++;
+    }
+
+    return count > 0 ? (totalLum / count) : 220;
+  }
+
+  /**
+   * Mide la densidad de grafito/tinta en una burbuja de alternativa de forma adaptativa
    * @param {HTMLCanvasElement} sheetCanvas Lienzo rectificado (2000x1441 px)
    * @param {number} cxMm Coordenada X del centro en mm
    * @param {number} cyMm Coordenada Y del centro en mm
+   * @param {number} darkCutoff Umbral de luminancia por debajo del cual un píxel es considerado oscuro
    * @returns {number} Densidad de píxeles oscuros de 0.0 a 1.0
    */
-  function measureBubbleDarkness(sheetCanvas, cxMm, cyMm) {
+  function measureBubbleDarkness(sheetCanvas, cxMm, cyMm, darkCutoff = 165) {
     // Para ser tolerante a variaciones de impresión, corte y encuadre (+-2mm vertical),
     // probamos el centro y offsets de barrido vertical
     const offsets = [0, -1.0, 1.0, -2.0, 2.0];
@@ -321,7 +363,7 @@
 
       for (let j = 0; j < d.length; j += 4) {
         const lum = (d[j] * 77 + d[j + 1] * 150 + d[j + 2] * 29) >> 8;
-        if (lum < 165) {
+        if (lum < darkCutoff) {
           darkPixels++;
         }
       }
@@ -334,18 +376,24 @@
   }
 
   /**
-   * Evalúa las 4 alternativas de una fila (A, B, C, D)
+   * Evalúa las 4 alternativas de una fila (A, B, C, D) con umbral adaptativo
    * @param {HTMLCanvasElement} sheetCanvas
    * @param {number} yCenterMm Coordenada Y central de la fila en mm
    * @returns {{ marked: string, confidence: number, densities: Object }}
    */
   function evaluateAlternativeRow(sheetCanvas, yCenterMm) {
+    // 1. Muestreo adaptativo del fondo real del papel en esta toma
+    const paperLum = samplePaperLuminance(sheetCanvas, yCenterMm);
+    // Un píxel se considera marca si es al menos 28% más oscuro que el fondo del papel
+    // (Mínimo de seguridad 40 para evitar ruido en fotos ultra oscuras)
+    const darkCutoff = Math.max(40, Math.round(paperLum * 0.72));
+
     const densities = {};
     let maxDensity = -1;
     let bestKey = null;
 
     OMR_BUBBLES_X_MM.forEach(b => {
-      const dens = measureBubbleDarkness(sheetCanvas, b.xMm, yCenterMm);
+      const dens = measureBubbleDarkness(sheetCanvas, b.xMm, yCenterMm, darkCutoff);
       densities[b.key] = Math.round(dens * 100);
       if (dens > maxDensity) {
         maxDensity = dens;
@@ -360,8 +408,8 @@
       }
     });
 
-    // Umbral calibrado: una burbuja en blanco con la letra impresa mide entre 0.20 y 0.27.
-    // Una marca real de lápiz o lapicero supera 0.45. El umbral 0.38 descarta marcas falsas.
+    // Umbral calibrado: la letra impresa A/B/C/D ocupa el 20-28% del área interna.
+    // Un alumno rellenando con lápiz/bolígrafo cubre del 50% al 90%.
     const MIN_DARKNESS_THRESHOLD = 0.38;
 
     if (maxDensity < MIN_DARKNESS_THRESHOLD) {
@@ -415,6 +463,7 @@
   /**
    * Extrae los recortes visuales individuales de cada pregunta para el modal:
    * Cuadrícula de cálculo (con realce de grafito) y franja de alternativas marcadas.
+   * Realce adaptativo según el brillo real de la toma.
    * @param {HTMLCanvasElement} sheetCanvas
    * @param {number} questionCount 1 o 2 preguntas
    * @returns {Array<{ qIndex: number, bubblesCanvas: HTMLCanvasElement|null, gridCanvas: HTMLCanvasElement|null }>}
@@ -425,11 +474,19 @@
     const cfg = is2Q ? ROI_OMR_CONFIG.MC2 : ROI_OMR_CONFIG.MC1;
     const list = [];
 
+    // Brillo base del papel para Pregunta 1
+    const pLum1 = samplePaperLuminance(sheetCanvas, is2Q ? 47.5 : 50.5);
+    const whiteCutoff1 = Math.max(90, Math.min(235, Math.round(pLum1 * 0.98)));
+    const blackCutoff1 = Math.max(25, Math.round(pLum1 * 0.40));
+
     // Pregunta 1
     const b1 = extractROI(sheetCanvas, cfg.Q1_BUBBLES);
     const g1 = extractROI(sheetCanvas, cfg.Q1_GRID);
+    if (b1.success && b1.canvas) {
+      enhanceHandwritingContrast(b1.canvas, { blackCutoff: blackCutoff1, whiteCutoff: whiteCutoff1 });
+    }
     if (g1.success && g1.canvas) {
-      enhanceHandwritingContrast(g1.canvas, { blackCutoff: 110, whiteCutoff: 175 });
+      enhanceHandwritingContrast(g1.canvas, { blackCutoff: blackCutoff1, whiteCutoff: whiteCutoff1 });
     }
     list.push({
       qIndex: 1,
@@ -439,10 +496,17 @@
 
     // Pregunta 2 si corresponde
     if (is2Q) {
+      const pLum2 = samplePaperLuminance(sheetCanvas, 99.5);
+      const whiteCutoff2 = Math.max(90, Math.min(235, Math.round(pLum2 * 0.98)));
+      const blackCutoff2 = Math.max(25, Math.round(pLum2 * 0.40));
+
       const b2 = extractROI(sheetCanvas, cfg.Q2_BUBBLES);
       const g2 = extractROI(sheetCanvas, cfg.Q2_GRID);
+      if (b2.success && b2.canvas) {
+        enhanceHandwritingContrast(b2.canvas, { blackCutoff: blackCutoff2, whiteCutoff: whiteCutoff2 });
+      }
       if (g2.success && g2.canvas) {
-        enhanceHandwritingContrast(g2.canvas, { blackCutoff: 110, whiteCutoff: 175 });
+        enhanceHandwritingContrast(g2.canvas, { blackCutoff: blackCutoff2, whiteCutoff: whiteCutoff2 });
       }
       list.push({
         qIndex: 2,
