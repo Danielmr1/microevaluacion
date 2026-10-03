@@ -296,11 +296,20 @@
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
 
     try {
-      let res = await client.functions.invoke('super-worker', { body: payload });
-      if (res.error && (String(res.error.message || '').includes('Failed to send') || String(res.error.message || '').includes('not found') || res.error.status === 404)) {
-        const alt = await client.functions.invoke('rubric', { body: payload });
-        if (!alt.error) res = alt;
-      }
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado (45 s). La IA de Gemini no respondió a tiempo.')), 45000)
+      );
+
+      const invokePromise = (async () => {
+        let res = await client.functions.invoke('super-worker', { body: payload });
+        if (res.error && (String(res.error.message || '').includes('Failed to send') || String(res.error.message || '').includes('not found') || res.error.status === 404)) {
+          const alt = await client.functions.invoke('rubric', { body: payload });
+          if (!alt.error) res = alt;
+        }
+        return res;
+      })();
+
+      const res = await Promise.race([invokePromise, timeoutPromise]);
       const { data, error } = res;
 
       if (error) {
@@ -319,8 +328,8 @@
       }
 
       if (!data || !data.rubrica) {
-        anotarLlamadaIA({ funcion: 'rubric', ok: false, error: 'La función no devolvió una rúbrica.' });
-        return { ok: false, error: 'La función no devolvió una rúbrica.' };
+        anotarLlamadaIA({ funcion: 'rubric', ok: false, error: 'La función no devolvió una rúbrica estructurada.' });
+        return { ok: false, error: 'La función no devolvió una rúbrica estructurada.' };
       }
       anotarLlamadaIA({
         funcion: 'rubric',
@@ -333,12 +342,12 @@
       return { ok: true, rubrica: data.rubrica, meta: data };
 
     } catch (e) {
-      // Llegar acá casi siempre significa que la función no está desplegada.
-      console.error('[SupabaseClient] No se pudo llamar a rubric:', e);
-      anotarLlamadaIA({ funcion: 'rubric', ok: false, error: 'No se pudo contactar la función "rubric".' });
+      console.error('[SupabaseClient] Error en llamada a rubric:', e);
+      const msg = e && e.message ? e.message : 'No se pudo contactar la función "rubric". ¿Está desplegada en Supabase?';
+      anotarLlamadaIA({ funcion: 'rubric', ok: false, error: msg });
       return {
         ok: false,
-        error: 'No se pudo contactar la función "rubric". ¿Está desplegada en Supabase?'
+        error: msg
       };
     }
   }
