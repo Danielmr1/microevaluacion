@@ -296,7 +296,12 @@
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
 
     try {
-      const { data, error } = await client.functions.invoke('rubric', { body: payload });
+      let res = await client.functions.invoke('rubric', { body: payload });
+      if (res.error && (String(res.error.message || '').includes('Failed to send') || String(res.error.message || '').includes('not found') || res.error.status === 404)) {
+        const alt = await client.functions.invoke('super-worker', { body: payload });
+        if (!alt.error) res = alt;
+      }
+      const { data, error } = res;
 
       if (error) {
         // functions.invoke() mete el mensaje real de la función en el cuerpo de

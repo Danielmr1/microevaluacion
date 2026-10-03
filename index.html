@@ -1414,7 +1414,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Microevaluación A5 <span class="version-tag">v2.9.0</span></h1>
+        <h1>Microevaluación A5 <span class="version-tag">v2.9.1</span></h1>
         <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
@@ -2972,7 +2972,17 @@
                    '. Elegí una pregunta del grado del salón.' };
       }
 
-      if (!ev.rubric) {
+      // ── MODO OPCIÓN MÚLTIPLE (OMR) vs RESPUESTA LIBRE (IA) ──
+      // Las evaluaciones de Opción Múltiple (1P o 2P con burbujas OMR) NO requieren rúbrica por IA.
+      // Su corrección es directa y determinística leyendo las burbujas contra la clave de respuestas.
+      const isOMR = (ev && ev.type === 'mc') ||
+                    (session && session.type === 'mc') ||
+                    (ev && ev.questionCount) ||
+                    (session && session.questionCount) ||
+                    (ev && Array.isArray(ev.questions) && ev.questions.length > 0) ||
+                    (session && Array.isArray(session.questions) && session.questions.length > 0);
+
+      if (!isOMR && !ev.rubric) {
         return { ok: false, motivo: 'sin-rubrica', puedeGenerar: true,
           detalle: 'A esta evaluación le falta la rúbrica: se genera al encender la cámara.' };
       }
@@ -3380,6 +3390,12 @@
       if (!session || !session.prompt) {
         showToast('⚠️ No hay una evaluación activa.');
         return false;
+      }
+
+      const isOMR = (session.type === 'mc') || (session.questionCount) ||
+                    (Array.isArray(session.questions) && session.questions.length > 0);
+      if (isOMR) {
+        return true;
       }
 
       // El grado sale del salón de la SESIÓN, no del que esté elegido en el
