@@ -432,7 +432,10 @@
           rubric: ev.rubric || (previa ? previa.rubric : null) || undefined,
           gradeStage: ev.grade_stage || (previa ? previa.gradeStage : null) || null,
           gradeLevel: ev.grade_level || (previa ? previa.gradeLevel : null) || null,
-          gradeText: ev.grade_text || (previa ? previa.gradeText : null) || null
+          gradeText: ev.grade_text || (previa ? previa.gradeText : null) || null,
+          type: ev.type || (previa ? previa.type : null) || undefined,
+          questionCount: ev.question_count || ev.questionCount || (previa ? previa.questionCount : null) || undefined,
+          questions: ev.questions || (previa ? previa.questions : null) || undefined
         };
       });
     }
