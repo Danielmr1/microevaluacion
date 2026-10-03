@@ -1403,7 +1403,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Microevaluación A5 <span class="version-tag">v3.0.6</span></h1>
+        <h1>Microevaluación A5 <span class="version-tag">v3.0.7</span></h1>
         <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
@@ -1654,46 +1654,86 @@
         </div>
       </div>
 
-      <!-- ── PASO 4b: Formulario Nueva (Opción Múltiple 1 Pregunta) ── -->
-      <div id="step-new-form-mc1" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
-        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">4 · Redactá la evaluación de alternativas (1 Pregunta)</label>
+      <!-- ── PASO 4b: Formulario Unificado de Creación de Preguntas ── -->
+      <div id="step-new-form" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
+        <div style="margin-bottom:12px;">
+          <label id="new-form-title" style="display:block; font-size:0.75rem; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.04em;">
+            4 · Redactá la nueva pregunta para el banco
+          </label>
+          <span id="new-form-subtitle" style="font-size:0.72rem; color:#94a3b8; display:block; margin-top:2px;">
+            Toda pregunta se guarda con sus 4 alternativas y análisis pedagógico con IA para pertenecer al banco de este grado.
+          </span>
+        </div>
 
-        <!-- Bloque Pregunta 1 -->
+        <!-- Bloque Enunciado y Alternativas -->
         <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:14px; margin-bottom:14px;">
-          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:700;">Enunciado del problema</label>
-          <textarea id="input-mc1-prompt" class="form-control" rows="2" maxlength="180"
-            placeholder="Ej: En la biblioteca había 47 libros y llegaron 38 más. ¿Cuántos hay en total?"
-            style="resize:vertical; font-size:0.88rem; margin-bottom:10px;"></textarea>
+          <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:700;">Enunciado del problema</label>
+          <textarea id="input-eval-prompt" class="form-control" rows="3" maxlength="240"
+            oninput="updatePromptCounter()"
+            placeholder="Ej: La panadería de don Pepe horneó 94 panes en la mañana y vendió 56 al mediodía. ¿Cuántos panes le quedan por vender?"
+            style="resize:vertical; font-size:0.88rem; margin-bottom:4px;"></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span id="prompt-counter" style="font-size:0.68rem; color:#64748b; font-weight:700;">0 / 240</span>
+            <span id="prompt-hint" style="font-size:0.68rem; color:#64748b;">≈ 1 línea en la ficha · máximo 3</span>
+          </div>
 
-          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:6px;">Alternativas (marcá el círculo verde de la <strong>clave correcta</strong>):</label>
+          <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:6px; font-weight:700;">
+            Alternativas (marcá el círculo verde de la <strong>clave correcta</strong>):
+          </label>
           <div style="display:flex; flex-direction:column; gap:6px;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="mc1-correct" id="mc1-rad-a" value="A" checked style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="mc1-rad-a" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">A)</label>
-              <input type="text" id="input-mc1-opt-a" class="form-control" placeholder="Ej: 75" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="eval-unified-correct" id="unified-rad-a" value="A" checked onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="unified-rad-a" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">A)</label>
+              <input type="text" id="input-opt-a" class="form-control" placeholder="Ej: 48" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="mc1-correct" id="mc1-rad-b" value="B" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="mc1-rad-b" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">B)</label>
-              <input type="text" id="input-mc1-opt-b" class="form-control" placeholder="Ej: 85 (correcta)" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="eval-unified-correct" id="unified-rad-b" value="B" onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="unified-rad-b" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">B)</label>
+              <input type="text" id="input-opt-b" class="form-control" placeholder="Ej: 38 (correcta)" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="mc1-correct" id="mc1-rad-c" value="C" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="mc1-rad-c" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">C)</label>
-              <input type="text" id="input-mc1-opt-c" class="form-control" placeholder="Ej: 82" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="eval-unified-correct" id="unified-rad-c" value="C" onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="unified-rad-c" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">C)</label>
+              <input type="text" id="input-opt-c" class="form-control" placeholder="Ej: 32" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="mc1-correct" id="mc1-rad-d" value="D" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="mc1-rad-d" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">D)</label>
-              <input type="text" id="input-mc1-opt-d" class="form-control" placeholder="Ej: 95" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="eval-unified-correct" id="unified-rad-d" value="D" onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="unified-rad-d" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">D)</label>
+              <input type="text" id="input-opt-d" class="form-control" placeholder="Ej: 42" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
           </div>
         </div>
 
-        <button type="button" onclick="confirmNewEvalMC1()"
+        <!-- Bloque Análisis Pedagógico / Rúbrica con IA (Gemini) -->
+        <div style="background:#0f172a; border:1px solid #4338ca; border-radius:10px; padding:14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+            <span style="font-size:0.75rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em;">
+              ✨ Análisis Pedagógico con IA (Gemini)
+            </span>
+            <span id="rubric-status" style="font-size:0.72rem; font-weight:700; color:#64748b;"></span>
+          </div>
+          <span style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:10px; line-height:1.4;">
+            Gemini deduce la solución canónica, procedimiento esperado, criterios y errores comunes para este grado.
+          </span>
+          <button type="button" id="btn-rubric" onclick="handleGenerateRubric()"
+            style="width:100%; background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color:#fff; border:none; border-radius:8px; padding:10px; font-size:0.85rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(124, 58, 237, 0.35);">
+            ✨ Generar Rúbrica y Análisis con IA
+          </button>
+          <div id="rubric-panel" style="display:none; margin-top:12px;"></div>
+          <div id="answer-mismatch" style="display:none; margin-top:10px; padding:8px 12px; background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:8px; font-size:0.75rem; color:#fca5a5;"></div>
+        </div>
+
+        <button type="button" id="btn-confirm-unified" onclick="confirmUnifiedEvaluation()"
           style="width:100%; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:12px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #2563eb40;">
           ✓ Confirmar y Generar Fichas
         </button>
+
+        <!-- Dummy divs para compatibilidad -->
+        <div id="step-new-form-mc1" style="display:none;"></div>
+        <div id="step-new-form-free" style="display:none;"></div>
+        <input type="hidden" id="input-eval-title">
+        <input type="hidden" id="input-eval-expected">
+        <input type="hidden" id="input-eval-unit">
       </div>
 
       <!-- ── PASO 4c: Builder para Opción Múltiple (2 Preguntas) ── -->
@@ -1833,90 +1873,10 @@
         </button>
       </div>
 
-      <!-- ── PASO 4c: Formulario Nueva (Escritura Manual Libre) ── -->
-      <div id="step-new-form-free" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
-        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">4 · Redactá la evaluación de respuesta libre</label>
-
-        <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:14px; margin-bottom:14px;">
-          <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:700;">Enunciado del problema (1 sola pregunta)</label>
-          <textarea id="input-free-prompt" class="form-control" rows="3" maxlength="240"
-            oninput="updatePromptCounterFree()"
-            placeholder="Ej: La panadería de don Pepe horneó 94 panes en la mañana y vendió 56 al mediodía. ¿Cuántos panes le quedan para la tarde?"
-            style="resize:vertical; font-size:0.88rem; margin-bottom:4px;"></textarea>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span id="prompt-counter-free" style="font-size:0.68rem; color:#64748b; font-weight:700;">0 / 240</span>
-            <span id="prompt-hint-free" style="font-size:0.68rem; color:#64748b;">≈ 1 línea en la ficha · máximo 3</span>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div>
-              <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:700;">Respuesta final esperada</label>
-              <input type="text" id="input-free-expected" class="form-control" maxlength="30"
-                placeholder="Ej: 38" style="padding:8px 12px; font-size:0.9rem; font-weight:700;">
-            </div>
-            <div>
-              <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:700;">Unidad o pista (opcional)</label>
-              <input type="text" id="input-free-unit" class="form-control" maxlength="20"
-                placeholder="Ej: panes" style="padding:8px 12px; font-size:0.9rem;">
-            </div>
-          </div>
-        </div>
-
-        <button type="button" onclick="confirmNewEvalFree()"
-          style="width:100%; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:12px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #2563eb40;">
-          ✓ Confirmar y Generar Fichas
-        </button>
-      </div>
-
-      <!-- ── PASO 5: Tarjeta Resumen + Acciones ── -->
-      <div id="step-summary" style="display:none; padding:16px 20px;">
-
-        <!-- Tarjeta de sesión -->
-        <div id="summary-card" style="border-radius:12px; border:2px solid #1e293b; overflow:hidden; margin-bottom:14px;">
-          <div id="summary-card-header" style="padding:10px 14px; display:flex; align-items:center; gap:8px;">
-            <span style="font-size:1.1rem;">🏫</span>
-            <span id="summary-classroom-name" style="font-weight:800; font-size:0.95rem;"></span>
-            <span id="summary-eval-type-badge" style="margin-left:auto; font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:6px;"></span>
-          </div>
-          <div style="background:#0f172a; padding:12px 14px; display:flex; flex-direction:column; gap:8px;">
-            <div>
-              <div style="font-size:0.65rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:3px;">Enunciado</div>
-              <div id="summary-prompt" style="font-size:0.85rem; color:#e2e8f0; line-height:1.45;"></div>
-            </div>
-            <div style="display:flex; align-items:center; justify-content:space-between; background:#1e293b; border-radius:8px; padding:8px 12px;">
-              <span style="font-size:0.72rem; color:#64748b; font-weight:700; text-transform:uppercase;">Respuesta esperada</span>
-              <span id="summary-answer" style="font-size:1.5rem; font-weight:900; color:#22c55e;"></span>
-            </div>
-            <!-- Estado de la rúbrica: sin ella la evaluación se puede imprimir,
-                 pero no corregir con IA. -->
-            <div id="summary-rubric" style="border-radius:8px; padding:7px 12px; font-size:0.72rem; font-weight:700;"></div>
-          </div>
-        </div>
-
-        <!-- Botones de acción.
-             Son DOS momentos físicos distintos y por eso van separados:
-             imprimir pasa antes de la clase y escanear después de que los
-             alumnos resuelven. La sesión ya quedó activa al confirmar la
-             evaluación (showSummary), así que no hace falta un botón para eso. -->
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn-print-action" id="btn-print-sheets" onclick="window.print()">
-            🖨️ Imprimir fichas
-          </button>
-          <button class="btn-goto-scan" onclick="goToScannerWithSession()">
-            📷 Ir al escáner ➔
-          </button>
-        </div>
-
         <!-- Enlace para volver a cambiar -->
         <button onclick="resetWizard()" style="margin-top:10px; width:100%; background:transparent; border:none; color:#475569; font-size:0.75rem; cursor:pointer; padding:6px;">
           ↩ Cambiar salón o evaluación
         </button>
-
-        <!-- Campos ocultos para compatibilidad con generateAndActivateSession -->
-        <input type="hidden" id="input-eval-title">
-        <input type="hidden" id="input-eval-prompt">
-        <input type="hidden" id="input-eval-expected">
-        <input type="hidden" id="input-eval-unit">
       </div>
 
     </div>
@@ -2095,7 +2055,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.0.6</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.0.7</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -2293,12 +2253,14 @@
 
       const stepSrc = document.getElementById('step-source');
       const stepBank = document.getElementById('step-bank-list');
+      const fNew = document.getElementById('step-new-form');
       const fMC1 = document.getElementById('step-new-form-mc1');
       const fMC2 = document.getElementById('step-mc2-builder');
       const fFree = document.getElementById('step-new-form-free');
       const stepSumm = document.getElementById('step-summary');
 
       if (stepBank) stepBank.style.display = 'none';
+      if (fNew) fNew.style.display = 'none';
       if (fMC1) fMC1.style.display = 'none';
       if (fFree) fFree.style.display = 'none';
       if (stepSumm) stepSumm.style.display = 'none';
@@ -2362,6 +2324,8 @@
       if (stepSrc) stepSrc.style.display = 'none';
       const stepBank = document.getElementById('step-bank-list');
       if (stepBank) stepBank.style.display = 'none';
+      const fNew = document.getElementById('step-new-form');
+      if (fNew) fNew.style.display = 'none';
       const fMC1 = document.getElementById('step-new-form-mc1');
       if (fMC1) fMC1.style.display = 'none';
       const fMC2 = document.getElementById('step-mc2-builder');
@@ -2507,6 +2471,38 @@
       });
     }
 
+    function syncUnifiedAnswer() {
+      const rad = document.querySelector('input[name="eval-unified-correct"]:checked');
+      const val = rad ? rad.value : 'A';
+      const optA = document.getElementById('input-opt-a')?.value || '';
+      const optB = document.getElementById('input-opt-b')?.value || '';
+      const optC = document.getElementById('input-opt-c')?.value || '';
+      const optD = document.getElementById('input-opt-d')?.value || '';
+      const map = { A: optA, B: optB, C: optC, D: optD };
+      const selectedText = (map[val] || '').trim();
+
+      const elExpected = document.getElementById('input-eval-expected');
+      if (elExpected) {
+        elExpected.value = wizardEvalType === 'mc1' ? `Clave: ${val}` : selectedText;
+      }
+    }
+
+    function updateNewFormHeader() {
+      const title = document.getElementById('new-form-title');
+      const subtitle = document.getElementById('new-form-subtitle');
+      const isMC = wizardEvalType === 'mc1';
+      if (title) {
+        title.textContent = isMC
+          ? '4 · Redactá la evaluación (Modo: Opción Múltiple 1P)'
+          : '4 · Redactá la evaluación (Modo: Respuesta Libre)';
+      }
+      if (subtitle) {
+        subtitle.textContent = isMC
+          ? 'La ficha se imprimirá con burbujas (A, B, C, D) y cuadrícula de borrador. Se guardará con alternativas y rúbrica en el banco.'
+          : 'La ficha se imprimirá con cuadrícula amplia y franja manuscrita (Rpta: _______). Se guardará con alternativas y rúbrica en el banco.';
+      }
+    }
+
     function selectMode(mode) {
       resetModeButtons();
       const activeBtn = document.getElementById(mode === 'bank' ? 'btn-mode-bank' : 'btn-mode-new');
@@ -2517,15 +2513,16 @@
         activeBtn.style.color = color;
       }
 
-      const isMC1 = wizardEvalType === 'mc1';
       const stepBank = document.getElementById('step-bank-list');
       if (stepBank) stepBank.style.display = mode === 'bank' ? 'block' : 'none';
+      const fNew = document.getElementById('step-new-form');
+      if (fNew) fNew.style.display = mode === 'new' ? 'block' : 'none';
       const fMC1 = document.getElementById('step-new-form-mc1');
-      if (fMC1) fMC1.style.display = (mode === 'new' && isMC1) ? 'block' : 'none';
+      if (fMC1) fMC1.style.display = 'none';
       const fMC2 = document.getElementById('step-mc2-builder');
       if (fMC2) fMC2.style.display = 'none';
       const fFree = document.getElementById('step-new-form-free');
-      if (fFree) fFree.style.display = (mode === 'new' && !isMC1) ? 'block' : 'none';
+      if (fFree) fFree.style.display = 'none';
       const stepSumm = document.getElementById('step-summary');
       if (stepSumm) stepSumm.style.display = 'none';
 
@@ -2535,14 +2532,12 @@
           const sel = document.getElementById('builder-classroom');
           if (sel && sel.value) wizardClassroomId = sel.value;
         }
-        if (isMC1) {
-          const mc1Prompt = document.getElementById('input-mc1-prompt');
-          if (mc1Prompt) mc1Prompt.focus();
-        } else {
-          const freePrompt = document.getElementById('input-free-prompt');
-          if (freePrompt) freePrompt.focus();
-        }
+        updateNewFormHeader();
+        const evalPrompt = document.getElementById('input-eval-prompt');
+        if (evalPrompt) evalPrompt.focus();
         resetRubrica();
+        updatePromptCounter();
+        syncUnifiedAnswer();
       }
     }
 
@@ -2845,7 +2840,8 @@
     }
 
     function selectEvaluation(evalObj) {
-      const isOMR = evalObj.type === 'mc' || evalObj.questionCount || (evalObj.questions && evalObj.questions.length > 0);
+      // REGLA 2: Aislamiento total. Solo si es explícitamente 'mc' se activa OMR
+      const isOMR = evalObj && evalObj.type === 'mc';
       const qCount = evalObj.questionCount || (evalObj.questions ? evalObj.questions.length : 1);
       wizardEvalType = isOMR ? (qCount === 2 ? 'mc2' : 'mc1') : 'free';
       wizardEval = evalObj;
@@ -3143,33 +3139,47 @@
     function aplicarRespuestaCanonica(r) {
       const input = document.getElementById('input-eval-expected');
       const aviso = document.getElementById('answer-mismatch');
-      if (!input || !r) return;
+      if (!r) return;
 
       const canonica = String(r.respuesta_canonica || '').trim();
-      const escrita = String(input.value || '').trim();
       if (!canonica) return;
 
-      if (!escrita) {
-        input.value = canonica;
-        input.style.borderColor = '';
+      // Intentar vincular la respuesta canónica con las alternativas A, B, C, D
+      const optA = document.getElementById('input-opt-a')?.value || '';
+      const optB = document.getElementById('input-opt-b')?.value || '';
+      const optC = document.getElementById('input-opt-c')?.value || '';
+      const optD = document.getElementById('input-opt-d')?.value || '';
+      const map = { A: optA, B: optB, C: optC, D: optD };
+
+      let matchKey = null;
+      for (const [k, v] of Object.entries(map)) {
+        if (v && normalizarRespuesta(v) === normalizarRespuesta(canonica)) {
+          matchKey = k;
+          break;
+        }
+      }
+
+      if (matchKey) {
+        const rad = document.getElementById(`unified-rad-${matchKey.toLowerCase()}`);
+        if (rad) rad.checked = true;
+        syncUnifiedAnswer();
         if (aviso) {
           aviso.style.display = 'block';
-          aviso.innerHTML = '🤖 <strong>Propuesta por la IA.</strong> Revisala: si la respuesta correcta fuera otra, cambiala acá.';
+          aviso.style.background = 'rgba(34, 197, 94, 0.12)';
+          aviso.style.borderColor = '#22c55e';
+          aviso.style.color = '#86efac';
+          aviso.innerHTML = `✅ <strong>IA alineada:</strong> La respuesta canónica (<strong>${escaparHtml(canonica)}</strong>) coincide con la alternativa <strong>${matchKey}</strong>.`;
         }
         return;
       }
 
-      if (normalizarRespuesta(escrita) === normalizarRespuesta(canonica)) {
-        if (aviso) aviso.style.display = 'none';
-        return;
-      }
-
-      // Discrepancia real: se deja lo que escribió el docente y se avisa fuerte.
+      syncUnifiedAnswer();
       if (aviso) {
         aviso.style.display = 'block';
-        aviso.innerHTML = '⚠️ <strong>No coinciden.</strong> Vos pusiste <strong>' + escaparHtml(escrita) +
-          '</strong> y la IA calculó <strong>' + escaparHtml(canonica) +
-          '</strong>. Uno de los dos está equivocado: mirá la resolución de abajo antes de confirmar.';
+        aviso.style.background = 'rgba(245, 158, 11, 0.12)';
+        aviso.style.borderColor = '#f59e0b';
+        aviso.style.color = '#fde68a';
+        aviso.innerHTML = `💡 <strong>Respuesta canónica calculada por la IA:</strong> ${escaparHtml(canonica)}.<br>Asegurate de que una de tus alternativas (A, B, C o D) tenga este resultado y márcala con el círculo verde.`;
       }
     }
 
@@ -3489,7 +3499,7 @@
       if (typeof Scanner !== 'undefined' && Scanner.toggleCamera) Scanner.toggleCamera();
     }
 
-    function confirmNewEvalMC1() {
+    async function confirmUnifiedEvaluation() {
       try {
         if (!wizardClassroomId) {
           const sel = document.getElementById('builder-classroom');
@@ -3503,61 +3513,109 @@
           return;
         }
 
-        const prompt = (document.getElementById('input-mc1-prompt')?.value || '').trim();
+        const promptInput = document.getElementById('input-eval-prompt');
+        const prompt = (promptInput?.value || '').trim();
         if (!prompt) {
-          document.getElementById('input-mc1-prompt')?.focus();
+          promptInput?.focus();
           showToast('⚠️ Escribí el enunciado de la pregunta.');
           return;
         }
-        const optA = (document.getElementById('input-mc1-opt-a')?.value || '').trim();
-        const optB = (document.getElementById('input-mc1-opt-b')?.value || '').trim();
-        const optC = (document.getElementById('input-mc1-opt-c')?.value || '').trim();
-        const optD = (document.getElementById('input-mc1-opt-d')?.value || '').trim();
+
+        const optA = (document.getElementById('input-opt-a')?.value || '').trim();
+        const optB = (document.getElementById('input-opt-b')?.value || '').trim();
+        const optC = (document.getElementById('input-opt-c')?.value || '').trim();
+        const optD = (document.getElementById('input-opt-d')?.value || '').trim();
+
         if (!optA || !optB || !optC || !optD) {
           showToast('⚠️ Completá las 4 alternativas (A, B, C, D).');
           return;
         }
-        const rad = document.querySelector('input[name="mc1-correct"]:checked');
-        const correct = rad ? rad.value : 'A';
 
-        const q = {
-          prompt: prompt,
-          options: { A: optA, B: optB, C: optC, D: optD },
-          correct: correct
-        };
+        const rad = document.querySelector('input[name="eval-unified-correct"]:checked');
+        const correctKey = (rad ? rad.value : 'A').toUpperCase();
+        const optionsMap = { A: optA, B: optB, C: optC, D: optD };
+        const correctText = optionsMap[correctKey] || '';
 
         const g = gradoDelSalonSeleccionado();
-        const saved = ClassroomData.saveCustomEvaluation({
-          title: 'Evaluación (1 Pregunta)',
-          type: 'mc',
+        if (!g.stage || !g.level) {
+          showToast('⚠️ Completá el grado del salón en el paso 1.');
+          return;
+        }
+
+        // Si aún no se generó la rúbrica con Gemini, intentar generarla
+        if (!wizardRubric) {
+          const btn = document.getElementById('btn-confirm-unified');
+          if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+          showToast('⏳ Generando rúbrica y análisis pedagógico con IA...');
+          const res = await SupabaseClient.generateRubric({ prompt: prompt, grado: g.texto || '4° de primaria' });
+          if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+          if (res && res.ok && res.rubrica) {
+            wizardRubric = res.rubrica;
+            wizardRubricMeta = res.meta || null;
+            wizardRubricPrompt = prompt;
+            renderRubricPanel(res.rubrica, res.meta);
+          } else {
+            console.warn('[Rúbrica] No se pudo generar automáticamente:', res && res.error);
+          }
+        }
+
+        const isMC = wizardEvalType === 'mc1';
+        const evalType = isMC ? 'mc' : 'free';
+
+        const qSingle = {
+          prompt: prompt,
+          options: optionsMap,
+          correct: correctKey,
+          gradeStage: g.stage || null,
+          gradeLevel: g.level || null,
+          gradeText: g.texto || null,
+          title: isMC ? 'Evaluación (1 Pregunta)' : 'Evaluación de Respuesta Libre'
+        };
+
+        const evalObj = {
+          title: isMC ? 'Evaluación (1 Pregunta)' : 'Evaluación de Respuesta Libre',
+          type: evalType,
           questionCount: 1,
           prompt: prompt,
-          expectedAnswer: `Clave: ${correct}`,
-          questions: [q],
+          expectedAnswer: isMC ? `Clave: ${correctKey}` : correctText,
+          options: optionsMap,
+          correct: correctKey,
+          rubric: wizardRubric || null,
+          questions: [qSingle],
           gradeStage: g.stage || null,
           gradeLevel: g.level || null,
           gradeText: g.texto || null
-        });
+        };
+
+        const saved = ClassroomData.saveCustomEvaluation(evalObj);
 
         // Guardar en Supabase (fire and forget)
         if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
           SupabaseClient.saveEvaluation({
             prompt: prompt,
-            expectedAnswer: `Clave: ${correct}`,
+            expectedAnswer: evalObj.expectedAnswer,
             title: saved.title,
+            rubric: evalObj.rubric,
             gradeStage: g.stage,
             gradeLevel: g.level,
-            gradeText: g.texto
+            gradeText: g.texto,
+            type: evalType,
+            questionCount: 1,
+            questions: [qSingle]
           }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
         }
 
-        wizardEvalType = 'mc1';
+        wizardEvalType = isMC ? 'mc1' : 'free';
         wizardEval = saved;
         showSummary();
       } catch (err) {
-        console.error('[confirmNewEvalMC1 Error]', err);
+        console.error('[confirmUnifiedEvaluation Error]', err);
         showToast('⚠️ Error al confirmar: ' + err.message);
       }
+    }
+
+    function confirmNewEvalMC1() {
+      return confirmUnifiedEvaluation();
     }
 
     // ── GESTIÓN DE EVALUACIÓN DE 2 PREGUNTAS (MC2) ──
@@ -3833,72 +3891,11 @@
     }
 
     function confirmNewEvalFree() {
-      try {
-        if (!wizardClassroomId) {
-          const sel = document.getElementById('builder-classroom');
-          if (sel && sel.value) {
-            wizardClassroomId = sel.value;
-            onClassroomSelectChanged(sel.value);
-          }
-        }
-        if (!wizardClassroomId) {
-          showToast('⚠️ Primero elegí un salón de clases en el Paso 1.');
-          return;
-        }
-
-        const prompt = (document.getElementById('input-free-prompt')?.value || '').trim();
-        if (!prompt) {
-          document.getElementById('input-free-prompt')?.focus();
-          showToast('⚠️ Escribí el enunciado de la pregunta.');
-          return;
-        }
-
-        const expected = (document.getElementById('input-free-expected')?.value || '').trim();
-        if (!expected) {
-          document.getElementById('input-free-expected')?.focus();
-          showToast('⚠️ Escribí la respuesta final esperada.');
-          return;
-        }
-
-        const unit = (document.getElementById('input-free-unit')?.value || '').trim();
-
-        const g = gradoDelSalonSeleccionado();
-        const saved = ClassroomData.saveCustomEvaluation({
-          title: 'Evaluación de Respuesta Libre',
-          type: 'free',
-          questionCount: 1,
-          prompt: prompt,
-          expectedAnswer: expected,
-          unitHint: unit,
-          gradeStage: g.stage || null,
-          gradeLevel: g.level || null,
-          gradeText: g.texto || null
-        });
-
-        // Guardar en Supabase
-        if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
-          SupabaseClient.saveEvaluation({
-            prompt: prompt,
-            expectedAnswer: expected,
-            title: saved.title,
-            gradeStage: g.stage,
-            gradeLevel: g.level,
-            gradeText: g.texto
-          }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
-        }
-
-        wizardEvalType = 'free';
-        wizardEval = saved;
-        showSummary();
-      } catch (err) {
-        console.error('[confirmNewEvalFree Error]', err);
-        showToast('⚠️ Error al confirmar: ' + err.message);
-      }
+      return confirmUnifiedEvaluation();
     }
 
     function confirmNewEval() {
-      if (wizardEvalType === 'mc') confirmNewEvalMC();
-      else confirmNewEvalFree();
+      return confirmUnifiedEvaluation();
     }
 
     function showSummary() {
@@ -3933,8 +3930,8 @@
         const nameEl = document.getElementById('summary-classroom-name');
         if (nameEl) { nameEl.textContent = cls.name; nameEl.style.color = color; }
 
-        // Eval type badge
-        const isOMR = wizardEval.type === 'mc' || wizardEval.questionCount || (wizardEval.questions && wizardEval.questions.length > 0);
+        // Eval type badge - REGLA 2: Aislamiento estricto de alternativas
+        const isOMR = wizardEval && wizardEval.type === 'mc';
         const badgeEl = document.getElementById('summary-eval-type-badge');
         if (badgeEl) {
           if (isOMR) {
@@ -3990,6 +3987,8 @@
         // Mostrar paso 5 y ocultar los anteriores
         const bankListEl = document.getElementById('step-bank-list');
         if (bankListEl) bankListEl.style.display = 'none';
+        const fNew = document.getElementById('step-new-form');
+        if (fNew) fNew.style.display = 'none';
         const fMC1 = document.getElementById('step-new-form-mc1');
         if (fMC1) fMC1.style.display = 'none';
         const fMC2 = document.getElementById('step-mc2-builder');
@@ -4050,6 +4049,8 @@
       if (stepSource) stepSource.style.display = 'none';
       const stepBank = document.getElementById('step-bank-list');
       if (stepBank) stepBank.style.display = 'none';
+      const fNew = document.getElementById('step-new-form');
+      if (fNew) fNew.style.display = 'none';
       const fMC1 = document.getElementById('step-new-form-mc1');
       if (fMC1) fMC1.style.display = 'none';
       const fMC2 = document.getElementById('step-mc2-builder');
@@ -4415,7 +4416,7 @@
         prompt: prompt,
         expectedAnswer: expectedAnswer,
         unitHint: '',
-        type: savedEval.type || 'mc',
+        type: (savedEval.type === 'mc') ? 'mc' : 'free',
         questionCount: savedEval.questionCount || 1,
         questions: savedEval.questions || [],
         timestamp: Date.now()
