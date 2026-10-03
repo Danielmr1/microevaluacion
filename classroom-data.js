@@ -181,9 +181,9 @@
       gradeStage: evalObj.gradeStage || null,
       gradeLevel: evalObj.gradeLevel || null,
       gradeText: evalObj.gradeText || null,
-      type: evalObj.type || (evalObj.questions && evalObj.questions.length > 0 ? 'mc' : 'free'),
-      questionCount: evalObj.questionCount || (evalObj.questions ? evalObj.questions.length : 1),
-      questions: evalObj.questions || null
+      type: evalObj.type === 'mc' ? 'mc' : 'free',
+      questionCount: evalObj.type === 'mc' ? (evalObj.questionCount || (evalObj.questions ? evalObj.questions.length : 1)) : 1,
+      questions: evalObj.type === 'mc' ? (evalObj.questions || null) : null
     };
 
     if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveEvaluation === 'function') {
@@ -276,45 +276,59 @@
     Object.values(EVALUATIONS).forEach(ev => {
       if (stage && ev.gradeStage && ev.gradeStage !== stage) return;
       if (level && ev.gradeLevel && Number(ev.gradeLevel) !== Number(level)) return;
-      const isOMR = ev.type === 'mc' || ev.questionCount || (ev.questions && ev.questions.length > 0);
-      if (!isOMR) return;
+
+      // REGLA 2: Aislamiento estricto. SOLO preguntas marcadas explícitamente como 'mc'
+      if (ev.type !== 'mc') return;
 
       if (Array.isArray(ev.questions) && ev.questions.length > 0) {
         ev.questions.forEach((q, idx) => {
           const prompt = String(q.prompt || '').trim();
           if (!prompt || seen.has(prompt)) return;
+          const hasOptions = q.options && (q.options.A || q.options.B || q.options.C || q.options.D);
+          if (!hasOptions) return;
           seen.add(prompt);
           list.push({
             id: ev.id + '_q' + idx,
             prompt: prompt,
-            options: q.options || { A: '', B: '', C: '', D: '' },
-            correct: q.correct || 'A',
+            options: {
+              A: q.options?.A || '',
+              B: q.options?.B || '',
+              C: q.options?.C || '',
+              D: q.options?.D || ''
+            },
+            correct: (q.correct || 'A').toUpperCase(),
             gradeStage: ev.gradeStage || stage,
             gradeLevel: ev.gradeLevel || level,
             gradeText: ev.gradeText || formatGrade(stage, level),
             title: ev.title || 'Pregunta de alternativa'
           });
         });
-      } else if (ev.prompt) {
-        const prompt = String(ev.prompt).trim();
-        if (!seen.has(prompt)) {
-          seen.add(prompt);
-          let correct = 'A';
-          if (ev.expectedAnswer) {
-            const m = ev.expectedAnswer.match(/[A-D]/i);
-            if (m) correct = m[0].toUpperCase();
-          }
-          list.push({
-            id: ev.id,
-            prompt: prompt,
-            options: { A: '', B: '', C: '', D: '' },
-            correct: correct,
-            gradeStage: ev.gradeStage || stage,
-            gradeLevel: ev.gradeLevel || level,
-            gradeText: ev.gradeText || formatGrade(stage, level),
-            title: ev.title || 'Pregunta de alternativa'
-          });
+      } else if (ev.options && (ev.options.A || ev.options.B || ev.options.C || ev.options.D)) {
+        const prompt = String(ev.prompt || '').trim();
+        if (!prompt || seen.has(prompt)) return;
+        seen.add(prompt);
+        let correct = 'A';
+        if (ev.correct) {
+          correct = String(ev.correct).toUpperCase();
+        } else if (ev.expectedAnswer) {
+          const m = ev.expectedAnswer.match(/[A-D]/i);
+          if (m) correct = m[0].toUpperCase();
         }
+        list.push({
+          id: ev.id,
+          prompt: prompt,
+          options: {
+            A: ev.options.A || '',
+            B: ev.options.B || '',
+            C: ev.options.C || '',
+            D: ev.options.D || ''
+          },
+          correct: correct,
+          gradeStage: ev.gradeStage || stage,
+          gradeLevel: ev.gradeLevel || level,
+          gradeText: ev.gradeText || formatGrade(stage, level),
+          title: ev.title || 'Pregunta de alternativa'
+        });
       }
     });
     return list;
