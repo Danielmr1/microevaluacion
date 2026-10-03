@@ -499,6 +499,12 @@
           questions: ev.questions || (previa ? previa.questions : null) || undefined
         };
       });
+
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(EVALUATIONS));
+        } catch (e) {}
+      }
     }
   };
 

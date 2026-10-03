@@ -387,6 +387,9 @@
     if (d.gradeStage) campos.grade_stage = d.gradeStage;
     if (d.gradeLevel) campos.grade_level = d.gradeLevel;
     if (d.gradeText) campos.grade_text = d.gradeText;
+    if (d.type) campos.type = d.type;
+    if (d.questionCount) campos.question_count = d.questionCount;
+    if (d.questions) campos.questions = d.questions;
 
     if (existing) {
       const { data, error } = await client
@@ -402,15 +405,17 @@
       if (!error) return data;
 
       // Mismo criterio que en el alta: si el problema son las columnas que
-      // todavía no existen, se guarda lo mínimo pero CONSERVANDO la rúbrica.
+      // todavía no existen, se guarda lo mínimo pero CONSERVANDO la rúbrica y preguntas.
       if (esColumnaFaltante(error)) {
         console.warn('[SupabaseClient] Faltan columnas nuevas en microeval_evaluations; se guarda con lo que haya. ' +
           'Corré las migraciones de supabase/migrations/.');
-        const conservaRubrica = { expected_answer: expectedAnswer };
-        if (campos.rubric) conservaRubrica.rubric = campos.rubric;
+        const conserva = { expected_answer: expectedAnswer };
+        if (campos.rubric) conserva.rubric = campos.rubric;
+        if (campos.type) conserva.type = campos.type;
+        if (campos.questions) conserva.questions = campos.questions;
         const reintento = await client
           .from('microeval_evaluations')
-          .update(Object.assign({}, conservaRubrica, {
+          .update(Object.assign({}, conserva, {
             used_count: existing.used_count + 1,
             last_used_at: new Date().toISOString()
           }))
@@ -426,18 +431,14 @@
       return null;
     }
 
-    /* Alta de una evaluación nueva.
-       Si alguna migración no se aplicó, el insert falla entero por las columnas
-       que no existen. Se prueba de mayor a menor, PERO nunca se sacrifica la
-       rúbrica antes que el grado: la rúbrica es lo que hace que la pregunta sirva
-       para corregir, y perderla en silencio (guardándola sin ella en la base)
-       hacía que el banco mostrara la misma pregunta dos veces, una de ellas como
-       "falta la rúbrica". */
+    /* Alta de una evaluación nueva. */
     const intentos = [
       Object.assign({ teacher_id: user.id, prompt: prompt, title: d.title || 'Evaluación' }, campos),
-      // Sin las columnas de grado, conservando la rúbrica
+      // Sin las columnas de grado, conservando tipo, alternativas y rúbrica
       Object.assign({ teacher_id: user.id, prompt: prompt, title: d.title || 'Evaluación', expected_answer: expectedAnswer },
         campos.rubric ? { rubric: campos.rubric } : {},
+        campos.type ? { type: campos.type } : {},
+        campos.questions ? { questions: campos.questions } : {},
         campos.grade_text ? { grade_text: campos.grade_text } : {}),
       // Último recurso: lo mínimo
       { teacher_id: user.id, prompt: prompt, expected_answer: expectedAnswer, title: d.title || 'Evaluación' }
@@ -465,11 +466,11 @@
   function esColumnaFaltante(error) {
     if (!error) return false;
     if (error.code === '42703' || error.code === 'PGRST204') return true;
-    return /column .* does not exist|rubric|grade_text|grade_stage|grade_level/i.test(error.message || '');
+    return /column .* does not exist|rubric|grade_text|grade_stage|grade_level|type|questions|question_count/i.test(error.message || '');
   }
 
   /**
-   * Carga las últimas 8 evaluaciones del docente (más usadas primero).
+   * Carga hasta 50 evaluaciones del docente desde la nube para el banco.
    */
   async function loadRecentEvaluations() {
     const client = getClient();
@@ -479,7 +480,7 @@
       .from('microeval_evaluations')
       .select('*')
       .order('last_used_at', { ascending: false })
-      .limit(8);
+      .limit(50);
 
     if (error) { console.error('[SupabaseClient] Error cargando evaluaciones:', error.message); return []; }
     return data || [];
