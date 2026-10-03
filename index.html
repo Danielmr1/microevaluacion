@@ -1414,7 +1414,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Microevaluación A5 <span class="version-tag">v2.7.0</span></h1>
+        <h1>Microevaluación A5 <span class="version-tag">v2.7.1</span></h1>
         <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
@@ -1761,6 +1761,8 @@
 
         <!-- Campos ocultos para compatibilidad con generateAndActivateSession -->
         <input type="hidden" id="input-eval-title">
+        <input type="hidden" id="input-eval-prompt">
+        <input type="hidden" id="input-eval-expected">
         <input type="hidden" id="input-eval-unit">
       </div>
 
@@ -1940,7 +1942,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v2.7.0</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v2.7.1</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -2297,13 +2299,18 @@
 
       if (mode === 'bank') renderBankCards();
       if (mode === 'new') {
-        document.getElementById('input-eval-prompt').value = '';
-        document.getElementById('input-eval-expected').value = '';
-        // Una rúbrica pertenece a UN enunciado: si se cambia el enunciado, la
-        // rúbrica anterior ya no sirve y no debe quedar pegada.
+        if (!wizardClassroomId) {
+          const sel = document.getElementById('builder-classroom');
+          if (sel && sel.value) wizardClassroomId = sel.value;
+        }
+        const evP = document.getElementById('input-eval-prompt');
+        if (evP) evP.value = '';
+        const evE = document.getElementById('input-eval-expected');
+        if (evE) evE.value = '';
         resetRubrica();
         updatePromptCounter();
-        document.getElementById('input-eval-prompt').focus();
+        const q1Prompt = document.getElementById('input-q1-prompt');
+        if (q1Prompt) q1Prompt.focus();
       }
     }
 
@@ -3114,154 +3121,185 @@
     }
 
     function confirmNewEval() {
-      const q1Prompt = (document.getElementById('input-q1-prompt').value || '').trim();
-      if (!q1Prompt) {
-        document.getElementById('input-q1-prompt').focus();
-        showToast('⚠️ Escribí el enunciado de la Pregunta 1.');
-        return;
-      }
-      const q1OptA = (document.getElementById('input-q1-opt-a').value || '').trim();
-      const q1OptB = (document.getElementById('input-q1-opt-b').value || '').trim();
-      const q1OptC = (document.getElementById('input-q1-opt-c').value || '').trim();
-      const q1OptD = (document.getElementById('input-q1-opt-d').value || '').trim();
-      if (!q1OptA || !q1OptB || !q1OptC || !q1OptD) {
-        showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 1.');
-        return;
-      }
-      const q1CorrectRad = document.querySelector('input[name="q1-correct"]:checked');
-      const q1Correct = q1CorrectRad ? q1CorrectRad.value : 'A';
-
-      let q2Prompt = '', q2OptA = '', q2OptB = '', q2OptC = '', q2OptD = '', q2Correct = 'A';
-      if (currentQuestionCount === 2) {
-        q2Prompt = (document.getElementById('input-q2-prompt').value || '').trim();
-        if (!q2Prompt) {
-          document.getElementById('input-q2-prompt').focus();
-          showToast('⚠️ Escribí el enunciado de la Pregunta 2.');
+      try {
+        if (!wizardClassroomId) {
+          const sel = document.getElementById('builder-classroom');
+          if (sel && sel.value) {
+            wizardClassroomId = sel.value;
+            onClassroomSelectChanged(sel.value);
+          }
+        }
+        if (!wizardClassroomId) {
+          showToast('⚠️ Primero elegí un salón de clases en el Paso 1.');
           return;
         }
-        q2OptA = (document.getElementById('input-q2-opt-a').value || '').trim();
-        q2OptB = (document.getElementById('input-q2-opt-b').value || '').trim();
-        q2OptC = (document.getElementById('input-q2-opt-c').value || '').trim();
-        q2OptD = (document.getElementById('input-q2-opt-d').value || '').trim();
-        if (!q2OptA || !q2OptB || !q2OptC || !q2OptD) {
-          showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 2.');
+
+        const q1Prompt = (document.getElementById('input-q1-prompt')?.value || '').trim();
+        if (!q1Prompt) {
+          document.getElementById('input-q1-prompt')?.focus();
+          showToast('⚠️ Escribí el enunciado de la Pregunta 1.');
           return;
         }
-        const q2CorrectRad = document.querySelector('input[name="q2-correct"]:checked');
-        q2Correct = q2CorrectRad ? q2CorrectRad.value : 'A';
-      }
-
-      const questions = [
-        {
-          prompt: q1Prompt,
-          options: { A: q1OptA, B: q1OptB, C: q1OptC, D: q1OptD },
-          correct: q1Correct
+        const q1OptA = (document.getElementById('input-q1-opt-a')?.value || '').trim();
+        const q1OptB = (document.getElementById('input-q1-opt-b')?.value || '').trim();
+        const q1OptC = (document.getElementById('input-q1-opt-c')?.value || '').trim();
+        const q1OptD = (document.getElementById('input-q1-opt-d')?.value || '').trim();
+        if (!q1OptA || !q1OptB || !q1OptC || !q1OptD) {
+          showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 1.');
+          return;
         }
-      ];
-      if (currentQuestionCount === 2) {
-        questions.push({
-          prompt: q2Prompt,
-          options: { A: q2OptA, B: q2OptB, C: q2OptC, D: q2OptD },
-          correct: q2Correct
+        const q1CorrectRad = document.querySelector('input[name="q1-correct"]:checked');
+        const q1Correct = q1CorrectRad ? q1CorrectRad.value : 'A';
+
+        let q2Prompt = '', q2OptA = '', q2OptB = '', q2OptC = '', q2OptD = '', q2Correct = 'A';
+        if (currentQuestionCount === 2) {
+          q2Prompt = (document.getElementById('input-q2-prompt')?.value || '').trim();
+          if (!q2Prompt) {
+            document.getElementById('input-q2-prompt')?.focus();
+            showToast('⚠️ Escribí el enunciado de la Pregunta 2.');
+            return;
+          }
+          q2OptA = (document.getElementById('input-q2-opt-a')?.value || '').trim();
+          q2OptB = (document.getElementById('input-q2-opt-b')?.value || '').trim();
+          q2OptC = (document.getElementById('input-q2-opt-c')?.value || '').trim();
+          q2OptD = (document.getElementById('input-q2-opt-d')?.value || '').trim();
+          if (!q2OptA || !q2OptB || !q2OptC || !q2OptD) {
+            showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 2.');
+            return;
+          }
+          const q2CorrectRad = document.querySelector('input[name="q2-correct"]:checked');
+          q2Correct = q2CorrectRad ? q2CorrectRad.value : 'A';
+        }
+
+        const questions = [
+          {
+            prompt: q1Prompt,
+            options: { A: q1OptA, B: q1OptB, C: q1OptC, D: q1OptD },
+            correct: q1Correct
+          }
+        ];
+        if (currentQuestionCount === 2) {
+          questions.push({
+            prompt: q2Prompt,
+            options: { A: q2OptA, B: q2OptB, C: q2OptC, D: q2OptD },
+            correct: q2Correct
+          });
+        }
+
+        const evalPrompt = currentQuestionCount === 1 ? q1Prompt : `1. ${q1Prompt}  |  2. ${q2Prompt}`;
+        const evalExpected = currentQuestionCount === 1 ? `Clave: ${q1Correct}` : `P1: ${q1Correct} | P2: ${q2Correct}`;
+
+        const saved = ClassroomData.saveCustomEvaluation({
+          title: currentQuestionCount === 1 ? 'Evaluación (1 Pregunta)' : 'Evaluación (2 Preguntas)',
+          type: 'mc',
+          questionCount: currentQuestionCount,
+          prompt: evalPrompt,
+          expectedAnswer: evalExpected,
+          questions: questions
         });
+
+        // Guardar también en Supabase (fire and forget)
+        if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+          SupabaseClient.saveEvaluation(evalPrompt, evalExpected, saved.title)
+            .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+        }
+
+        wizardEval = saved;
+        showSummary();
+      } catch (err) {
+        console.error('[confirmNewEval Error]', err);
+        showToast('⚠️ Error al confirmar: ' + err.message);
       }
-
-      const evalPrompt = currentQuestionCount === 1 ? q1Prompt : `1. ${q1Prompt}  |  2. ${q2Prompt}`;
-      const evalExpected = currentQuestionCount === 1 ? `Clave: ${q1Correct}` : `P1: ${q1Correct} | P2: ${q2Correct}`;
-
-      const saved = ClassroomData.saveCustomEvaluation({
-        title: currentQuestionCount === 1 ? 'Evaluación (1 Pregunta)' : 'Evaluación (2 Preguntas)',
-        type: 'mc',
-        questionCount: currentQuestionCount,
-        prompt: evalPrompt,
-        expectedAnswer: evalExpected,
-        questions: questions
-      });
-
-      // Guardar también en Supabase (fire and forget)
-      if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
-        SupabaseClient.saveEvaluation(evalPrompt, evalExpected, saved.title)
-          .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
-      }
-
-      wizardEval = saved;
-      showSummary();
     }
 
     function showSummary() {
-      if (!wizardClassroomId || !wizardEval) return;
-
-      const cls = ClassroomData.getClassroom(wizardClassroomId);
-      if (!cls) {
-        // Caso real: sesión restaurada de un salón que ya se borró.
-        showToast('⚠️ Ese salón ya no existe. Elegí otro.');
-        resetWizard();
-        return;
-      }
-      const color = ClassroomData.getClassroomColor(wizardClassroomId);
-
-      // Poblar tarjeta resumen
-      const header = document.getElementById('summary-card-header');
-      if (header) {
-        header.style.background = color + '22';
-        header.style.borderBottom = `1px solid ${color}33`;
-      }
-      const summaryCard = document.getElementById('summary-card');
-      if (summaryCard) summaryCard.style.borderColor = color + '55';
-
-      const nameEl = document.getElementById('summary-classroom-name');
-      if (nameEl) { nameEl.textContent = cls.name; nameEl.style.color = color; }
-
-      const promptEl = document.getElementById('summary-prompt');
-      if (promptEl) promptEl.textContent = wizardEval.prompt;
-
-      const answerEl = document.getElementById('summary-answer');
-      if (answerEl) answerEl.textContent = wizardEval.expectedAnswer;
-
-      // Estado de la rúbrica: es lo que decide si esta evaluación se puede
-      // corregir con IA o todavía no.
-      const rubEl = document.getElementById('summary-rubric');
-      if (rubEl) {
-        const tiene = !!(wizardEval.rubric);
-        rubEl.textContent = tiene
-          ? '✅ Rúbrica lista — se puede corregir con IA'
-          : '⚠️ Sin rúbrica — hace falta para corregir con IA (se genera al encender la cámara)';
-        rubEl.style.color = tiene ? '#4ade80' : '#fbbf24';
-        rubEl.style.background = tiene ? 'rgba(74,222,128,0.10)' : 'rgba(245,158,11,0.10)';
-        rubEl.style.border = '1px solid ' + (tiene ? '#166534' : '#92400e');
-      }
-
-      // Sincronizar campos hidden
-      document.getElementById('input-eval-title').value = wizardEval.title || 'Evaluación del Día';
-      document.getElementById('input-eval-prompt').value = wizardEval.prompt;
-      document.getElementById('input-eval-expected').value = wizardEval.expectedAnswer;
-      document.getElementById('input-eval-unit').value = '';
-      updatePromptCounter();
-
-      // Mostrar paso 4
-      document.getElementById('step-bank-list').style.display = 'none';
-      document.getElementById('step-new-form').style.display = 'none';
-      document.getElementById('step-summary').style.display = 'block';
-
-      // ── ACTIVAR LA SESIÓN ──
-      // Confirmar la evaluación ES activar la sesión. No hay un paso aparte:
-      // el docente no tiene que apretar nada para que el escáner sepa qué
-      // está corrigiendo.
-      const session = generateAndActivateSession();
-      if (session) {
-        const grade = ClassroomData.getClassroomGrade(wizardClassroomId);
-        if (!grade) {
-          showToast('✅ Sesión lista. Sin grado cargado, la IA no evaluará el método.');
+      try {
+        if (!wizardClassroomId) {
+          const sel = document.getElementById('builder-classroom');
+          if (sel && sel.value) wizardClassroomId = sel.value;
         }
+        if (!wizardClassroomId || !wizardEval) {
+          console.warn('[showSummary] Falta salón o evaluación:', { wizardClassroomId, wizardEval });
+          showToast('⚠️ Por favor seleccioná un salón primero.');
+          return;
+        }
+
+        const cls = ClassroomData.getClassroom(wizardClassroomId);
+        if (!cls) {
+          showToast('⚠️ Ese salón ya no existe. Elegí otro.');
+          resetWizard();
+          return;
+        }
+        const color = ClassroomData.getClassroomColor(wizardClassroomId);
+
+        // Poblar tarjeta resumen
+        const header = document.getElementById('summary-card-header');
+        if (header) {
+          header.style.background = color + '22';
+          header.style.borderBottom = `1px solid ${color}33`;
+        }
+        const summaryCard = document.getElementById('summary-card');
+        if (summaryCard) summaryCard.style.borderColor = color + '55';
+
+        const nameEl = document.getElementById('summary-classroom-name');
+        if (nameEl) { nameEl.textContent = cls.name; nameEl.style.color = color; }
+
+        const promptEl = document.getElementById('summary-prompt');
+        if (promptEl) promptEl.textContent = wizardEval.prompt;
+
+        const answerEl = document.getElementById('summary-answer');
+        if (answerEl) answerEl.textContent = wizardEval.expectedAnswer;
+
+        // Estado de la rúbrica: es lo que decide si esta evaluación se puede
+        // corregir con IA o todavía no.
+        const rubEl = document.getElementById('summary-rubric');
+        if (rubEl) {
+          const tiene = !!(wizardEval.rubric);
+          rubEl.textContent = tiene
+            ? '✅ Rúbrica lista — se puede corregir con IA'
+            : '⚠️ Sin rúbrica — se califica por clave de alternativas (A, B, C, D)';
+          rubEl.style.color = tiene ? '#4ade80' : '#38bdf8';
+          rubEl.style.background = tiene ? 'rgba(74,222,128,0.10)' : 'rgba(56,189,248,0.10)';
+          rubEl.style.border = '1px solid ' + (tiene ? '#166534' : '#0369a1');
+        }
+
+        // Sincronizar campos hidden de forma segura
+        const elTitle = document.getElementById('input-eval-title');
+        if (elTitle) elTitle.value = wizardEval.title || 'Evaluación del Día';
+        const elPrompt = document.getElementById('input-eval-prompt');
+        if (elPrompt) elPrompt.value = wizardEval.prompt;
+        const elExpected = document.getElementById('input-eval-expected');
+        if (elExpected) elExpected.value = wizardEval.expectedAnswer;
+        const elUnit = document.getElementById('input-eval-unit');
+        if (elUnit) elUnit.value = '';
+        updatePromptCounter();
+
+        // Mostrar paso 4 y ocultar los anteriores
+        const bankListEl = document.getElementById('step-bank-list');
+        if (bankListEl) bankListEl.style.display = 'none';
+        const newFormEl = document.getElementById('step-new-form');
+        if (newFormEl) newFormEl.style.display = 'none';
+        const summaryEl = document.getElementById('step-summary');
+        if (summaryEl) summaryEl.style.display = 'block';
+
+        // ── ACTIVAR LA SESIÓN ──
+        const session = generateAndActivateSession();
+        if (session) {
+          const grade = ClassroomData.getClassroomGrade(wizardClassroomId);
+          if (!grade) {
+            showToast('✅ Sesión lista. Sin grado cargado, la IA no evaluará el método.');
+          }
+        }
+
+        // ── Generar fichas automáticamente ──
+        renderAllPrintPages(wizardClassroomId, wizardEval);
+
+        // ── Repoblar lo ya escaneado ──
+        if (session && session.sessionRef) refreshEvaluatedFromResults(session.sessionRef);
+      } catch (err) {
+        console.error('[showSummary Error]', err);
+        showToast('⚠️ Error al generar resumen: ' + err.message);
       }
-
-      // ── Generar fichas automáticamente ──
-      renderAllPrintPages(wizardClassroomId, wizardEval);
-
-      // ── Repoblar lo ya escaneado ──
-      // Sin esto, al recargar la página la nómina aparecía entera como
-      // pendiente aunque los resultados ya estuvieran guardados en Supabase.
-      if (session && session.sessionRef) refreshEvaluatedFromResults(session.sessionRef);
     }
 
     /**
