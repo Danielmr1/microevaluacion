@@ -3718,7 +3718,7 @@
                   ${escaparHtml(errorMsg)}
                 </div>
                 <div style="font-size:0.8rem; color:#94a3b8;">
-                  ¿Deseas reintentar el análisis pedagógico o prefieres confirmar la pregunta y guardarla sin análisis por ahora?
+                  Por regla del sistema, ninguna pregunta puede guardarse sin su análisis pedagógico. Podés reintentar con la IA o revisar el enunciado.
                 </div>`,
               buttons: [
                 {
@@ -3727,12 +3727,15 @@
                   onClick: () => confirmUnifiedEvaluation()
                 },
                 {
-                  label: '➡️ Guardar sin análisis',
-                  style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#2563eb; color:#fff;',
-                  onClick: () => saveAndProceedUnified(prompt, optionsMap, correctKey, g, null)
+                  label: '✏️ Revisar enunciado',
+                  style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #3b82f6; background:#3b82f620; color:#60a5fa;',
+                  onClick: () => {
+                    const ta = document.getElementById('input-eval-prompt');
+                    if (ta) ta.focus();
+                  }
                 },
                 {
-                  label: 'Cancelar',
+                  label: 'Cerrar',
                   style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #475569; background:#1e293b; color:#94a3b8;'
                 }
               ]
@@ -3827,6 +3830,10 @@
     }
 
     function saveAndProceedUnified(prompt, optionsMap, correctKey, g, rubric) {
+      if (!rubric) {
+        showToast('⚠️ GUARDARRAÍL: Toda pregunta debe tener su análisis pedagógico con IA.');
+        return;
+      }
       const isMC = wizardEvalType === 'mc1';
       const evalType = isMC ? 'mc' : 'free';
       const correctText = optionsMap[correctKey] || '';
@@ -4112,7 +4119,7 @@
                   ${escaparHtml(errorMsg)}
                 </div>
                 <div style="font-size:0.8rem; color:#94a3b8;">
-                  ¿Deseas reintentar el análisis o continuar guardando sin análisis pedagógico?
+                  Por regla del sistema, ninguna pregunta puede guardarse sin su análisis pedagógico. Podés reintentar con la IA o revisar la Pregunta 1.
                 </div>`,
               buttons: [
                 {
@@ -4121,15 +4128,15 @@
                   onClick: () => confirmMC2()
                 },
                 {
-                  label: '➡️ Continuar sin análisis',
-                  style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#2563eb; color:#fff;',
+                  label: '✏️ Revisar Pregunta 1',
+                  style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #3b82f6; background:#3b82f620; color:#60a5fa;',
                   onClick: () => {
-                    q1.rubric = null;
-                    proceedMC2AfterP1(q1, q2, g);
+                    const el = document.getElementById('mc2-q1-prompt');
+                    if (el) el.focus();
                   }
                 },
                 {
-                  label: 'Cancelar',
+                  label: 'Cerrar',
                   style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #475569; background:#1e293b; color:#94a3b8;'
                 }
               ]
@@ -4241,7 +4248,7 @@
                 ${escaparHtml(errorMsg)}
               </div>
               <div style="font-size:0.8rem; color:#94a3b8;">
-                ¿Deseas reintentar el análisis o continuar guardando sin análisis pedagógico?
+                Por regla del sistema, ninguna pregunta puede guardarse sin su análisis pedagógico. Podés reintentar con la IA o revisar la Pregunta 2.
               </div>`,
             buttons: [
               {
@@ -4250,15 +4257,15 @@
                 onClick: () => proceedMC2AfterP1(q1, q2, g)
               },
               {
-                label: '➡️ Continuar sin análisis',
-                style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#2563eb; color:#fff;',
+                label: '✏️ Revisar Pregunta 2',
+                style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #3b82f6; background:#3b82f620; color:#60a5fa;',
                 onClick: () => {
-                  q2.rubric = null;
-                  finalizeMC2(q1, q2, g);
+                  const el = document.getElementById('mc2-q2-prompt');
+                  if (el) el.focus();
                 }
               },
               {
-                label: 'Cancelar',
+                label: 'Cerrar',
                 style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #475569; background:#1e293b; color:#94a3b8;'
               }
             ]
@@ -4347,6 +4354,14 @@
     }
 
     function finalizeMC2(q1, q2, g) {
+      if (q1.isNew && !q1.rubric) {
+        showToast('⚠️ GUARDARRAÍL: La Pregunta 1 debe tener su análisis pedagógico con IA.');
+        return;
+      }
+      if (q2.isNew && !q2.rubric) {
+        showToast('⚠️ GUARDARRAÍL: La Pregunta 2 debe tener su análisis pedagógico con IA.');
+        return;
+      }
       // Guardar P1 en el banco si era nueva
       if (q1.isNew) {
         ClassroomData.saveCustomEvaluation({
