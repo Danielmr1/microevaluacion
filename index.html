@@ -679,6 +679,96 @@
       font-style: italic;
     }
 
+    /* ── FORMATO OPCIÓN MÚLTIPLE (OMR) ── */
+    .omr-row {
+      width: 156mm;
+      height: 10mm;
+      flex: 0 0 10mm;
+      margin: 2.5mm 0 0 0;
+      align-self: center;
+      display: grid;
+      grid-template-columns: repeat(4, 39mm);
+      box-sizing: border-box;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 1.5mm;
+      align-items: center;
+      padding: 0 1mm;
+    }
+    .omr-option {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      width: 37mm;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .omr-bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 6mm;
+      height: 6mm;
+      flex: 0 0 6mm;
+      margin-left: 2mm;
+      border-radius: 50%;
+      border: 1.8px solid #0f172a;
+      font-weight: 800;
+      font-size: 8pt;
+      color: #0f172a;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+    .omr-text {
+      font-size: 8pt;
+      font-weight: 600;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Modo 2 Preguntas */
+    .card-a5.mc-2q {
+      padding: 2.5mm 3mm;
+    }
+    .card-a5.mc-2q .card-header {
+      height: 16mm;
+      flex: 0 0 16mm;
+    }
+    .mc-q-block {
+      display: flex;
+      flex-direction: column;
+      flex: 0 0 auto;
+    }
+    .mc-problem-2q {
+      height: 13mm !important;
+      flex: 0 0 13mm !important;
+      margin: 1.5mm 0 0 0 !important;
+      padding: 1mm 3mm !important;
+    }
+    .mc-problem-2q .problem-text {
+      font-size: 8.5pt !important;
+      line-height: 1.25 !important;
+    }
+    .mc-grid-2q {
+      width: 156mm;
+      height: 24mm !important;
+      flex: 0 0 24mm !important;
+      margin: 1.5mm 0 0 0 !important;
+      align-self: center;
+    }
+    .mc-grid-2q .notebook-grid {
+      height: 24mm !important;
+      grid-template-rows: repeat(3, 1fr) !important;
+    }
+    .mc-divider {
+      width: 156mm;
+      height: 1px;
+      background: #cbd5e1;
+      margin: 1.5mm auto 1mm auto;
+    }
+
     /* ========================================================= */
     /* VISTA 2: ESCÁNER DE AULA (CÁMARA MÓVIL)                   */
     /* ========================================================= */
@@ -1535,58 +1625,95 @@
         </div>
       </div>
 
-      <!-- ── PASO 3b: Formulario Nueva ── -->
+      <!-- ── PASO 3b: Formulario Nueva (Opción Múltiple OMR) ── -->
       <div id="step-new-form" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
-        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">3 · Redactá la evaluación nueva</label>
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">3 · Redactá la evaluación de alternativas</label>
 
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <div>
-            <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado del problema</label>
-            <textarea id="input-eval-prompt" class="form-control" rows="3" maxlength="240"
-              oninput="updatePromptCounter()"
-              placeholder="Ej: En la biblioteca había 47 libros y llegaron 38 más. ¿Cuántos hay en total?"
-              style="resize:vertical; font-size:0.9rem;"></textarea>
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
-              <span id="prompt-hint" style="font-size:0.68rem; color:#64748b;">Escribí un enunciado corto: entran hasta 3 líneas en la ficha.</span>
-              <span id="prompt-counter" style="font-size:0.68rem; font-weight:700; color:#64748b; flex:0 0 auto;">0 / 240</span>
-            </div>
+        <!-- Selector de cantidad de preguntas -->
+        <div style="margin-bottom:14px;">
+          <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:6px; font-weight:600;">¿Cuántas preguntas tendrá la ficha?</label>
+          <div style="display:flex; gap:10px;">
+            <button type="button" id="btn-count-1q" onclick="setQuestionCount(1)"
+              style="flex:1; padding:9px 12px; border-radius:8px; border:2px solid #3b82f6; background:#3b82f620; color:#60a5fa; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+              🔘 1 Pregunta
+            </button>
+            <button type="button" id="btn-count-2q" onclick="setQuestionCount(2)"
+              style="flex:1; padding:9px 12px; border-radius:8px; border:2px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+              🔘 2 Preguntas
+            </button>
           </div>
-          <div>
-            <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:4px;">Respuesta esperada</label>
-            <input type="text" id="input-eval-expected" class="form-control"
-              placeholder="Ej: 85"
-              style="font-size:1.2rem; font-weight:800; color:#22c55e; text-align:center; letter-spacing:0.05em;">
-            <!-- Aviso de discrepancia: si la respuesta que escribió el docente y
-                 la que calculó la IA no coinciden, se avisa acá. NUNCA se pisa
-                 lo que escribió el docente. -->
-            <div id="answer-mismatch" style="display:none; margin-top:6px; padding:8px 10px; border-radius:8px; background:rgba(245,158,11,0.10); border:1px solid #b45309; font-size:0.72rem; color:#fbbf24; line-height:1.5;"></div>
-          </div>
-
-          <!-- ── RÚBRICA DE CORRECCIÓN ──
-               La IA propone la solución canónica y los criterios; el docente
-               decide. Es opcional: sin rúbrica la app funciona igual, solo que
-               la corrección es más pobre y no puede opinar sobre el método. -->
-          <div style="border-top:1px dashed #334155; padding-top:10px;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <button id="btn-rubric" onclick="handleGenerateRubric()"
-                style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #6d28d9; color:#a78bfa; border-radius:8px; padding:8px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;">
-                ✨ Generar rúbrica de corrección
-              </button>
-              <span id="rubric-status" style="font-size:0.7rem; color:#64748b;"></span>
-            </div>
-            <p id="rubric-intro" style="font-size:0.68rem; color:#334155; margin:6px 0 0; line-height:1.5;">
-              Recomendado: con la rúbrica, la IA juzga a todo el salón con el mismo criterio y puede decir <em>qué error</em> cometió el alumno, no solo si está bien.
-            </p>
-          </div>
-
-          <!-- Resultado: lo arma renderRubricPanel() -->
-          <div id="rubric-panel" style="display:none;"></div>
-
-          <button onclick="confirmNewEval()"
-            style="background:#3b82f6; border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.88rem; font-weight:700; cursor:pointer;">
-            ✓ Confirmar evaluación
-          </button>
         </div>
+
+        <!-- ── BLOQUE PREGUNTA 1 ── -->
+        <div id="block-q1" style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:14px; margin-bottom:14px;">
+          <span style="font-size:0.78rem; font-weight:800; color:#60a5fa; text-transform:uppercase; display:block; margin-bottom:6px;">Pregunta 1</span>
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado del problema</label>
+          <textarea id="input-q1-prompt" class="form-control" rows="2" maxlength="180"
+            placeholder="Ej: En la biblioteca había 47 libros y llegaron 38 más. ¿Cuántos hay en total?"
+            style="resize:vertical; font-size:0.88rem; margin-bottom:10px;"></textarea>
+
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:6px;">Alternativas (marcá el círculo verde de la <strong>clave correcta</strong>):</label>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q1-correct" id="q1-rad-a" value="A" checked style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q1-rad-a" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">A)</label>
+              <input type="text" id="input-q1-opt-a" class="form-control" placeholder="Ej: 75" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q1-correct" id="q1-rad-b" value="B" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q1-rad-b" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">B)</label>
+              <input type="text" id="input-q1-opt-b" class="form-control" placeholder="Ej: 85 (correcta)" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q1-correct" id="q1-rad-c" value="C" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q1-rad-c" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">C)</label>
+              <input type="text" id="input-q1-opt-c" class="form-control" placeholder="Ej: 82" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q1-correct" id="q1-rad-d" value="D" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q1-rad-d" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">D)</label>
+              <input type="text" id="input-q1-opt-d" class="form-control" placeholder="Ej: 95" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── BLOQUE PREGUNTA 2 (Visible solo si son 2 preguntas) ── -->
+        <div id="block-q2" style="display:none; background:#0f172a; border:1px solid #334155; border-radius:10px; padding:14px; margin-bottom:14px;">
+          <span style="font-size:0.78rem; font-weight:800; color:#a78bfa; text-transform:uppercase; display:block; margin-bottom:6px;">Pregunta 2</span>
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado del problema</label>
+          <textarea id="input-q2-prompt" class="form-control" rows="2" maxlength="180"
+            placeholder="Ej: Si una caja tiene 6 paquetes y cada paquete tiene 4 galletas, ¿cuántas galletas hay en total?"
+            style="resize:vertical; font-size:0.88rem; margin-bottom:10px;"></textarea>
+
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:6px;">Alternativas (marcá el círculo verde de la <strong>clave correcta</strong>):</label>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q2-correct" id="q2-rad-a" value="A" checked style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q2-rad-a" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">A)</label>
+              <input type="text" id="input-q2-opt-a" class="form-control" placeholder="Ej: 20" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q2-correct" id="q2-rad-b" value="B" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q2-rad-b" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">B)</label>
+              <input type="text" id="input-q2-opt-b" class="form-control" placeholder="Ej: 24 (correcta)" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q2-correct" id="q2-rad-c" value="C" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q2-rad-c" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">C)</label>
+              <input type="text" id="input-q2-opt-c" class="form-control" placeholder="Ej: 28" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="q2-correct" id="q2-rad-d" value="D" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="q2-rad-d" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">D)</label>
+              <input type="text" id="input-q2-opt-d" class="form-control" placeholder="Ej: 18" style="padding:6px 10px; font-size:0.85rem;">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="confirmNewEval()"
+          style="width:100%; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:12px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #2563eb40;">
+          ✓ Confirmar y Generar Fichas
+        </button>
       </div>
 
       <!-- ── PASO 4: Tarjeta Resumen + Acciones ── -->
@@ -1842,12 +1969,18 @@
 
         <!-- Caja de Respuesta Zoom y Cotejo Inmediato -->
         <div class="answer-comparison-box" style="background:#0f172a; border-radius:10px; padding:10px 12px; border:1px solid #334155; display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; font-weight:700;">
-            <span>CAJA DE RESPUESTA EN FICHA</span>
-            <span style="color:#94a3b8;">ESPERADO: <strong id="res-expected-val" style="color:#22c55e; font-size:0.95rem;">—</strong></span>
-          </div>
-          <div style="background:#ffffff; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; min-height:48px; max-height:64px; overflow:hidden; border:1.5px solid #cbd5e1;">
-            <img id="captured-answer-img" src="" alt="Respuesta escrita por el alumno" style="max-height:56px; width:auto; max-width:100%; object-fit:contain; filter:contrast(1.15);">
+          <!-- Bloque dinámico de alternativas OMR -->
+          <div id="omr-result-container" style="display:none; flex-direction:column; gap:8px;"></div>
+
+          <!-- Bloque tradicional para escritura manuscrita -->
+          <div id="handwriting-result-container">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; font-weight:700;">
+              <span>CAJA DE RESPUESTA EN FICHA</span>
+              <span style="color:#94a3b8;">ESPERADO: <strong id="res-expected-val" style="color:#22c55e; font-size:0.95rem;">—</strong></span>
+            </div>
+            <div style="background:#ffffff; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; min-height:48px; max-height:64px; overflow:hidden; border:1.5px solid #cbd5e1; margin-top:4px;">
+              <img id="captured-answer-img" src="" alt="Respuesta escrita por el alumno" style="max-height:56px; width:auto; max-width:100%; object-fit:contain; filter:contrast(1.15);">
+            </div>
           </div>
         </div>
 
@@ -2957,98 +3090,99 @@
       if (typeof Scanner !== 'undefined' && Scanner.toggleCamera) Scanner.toggleCamera();
     }
 
+    let currentQuestionCount = 1;
+
+    function setQuestionCount(count) {
+      currentQuestionCount = count;
+      const btn1 = document.getElementById('btn-count-1q');
+      const btn2 = document.getElementById('btn-count-2q');
+      const blockQ2 = document.getElementById('block-q2');
+
+      if (btn1) {
+        btn1.style.borderColor = count === 1 ? '#3b82f6' : '#334155';
+        btn1.style.background = count === 1 ? '#3b82f620' : '#1e293b';
+        btn1.style.color = count === 1 ? '#60a5fa' : '#94a3b8';
+      }
+      if (btn2) {
+        btn2.style.borderColor = count === 2 ? '#3b82f6' : '#334155';
+        btn2.style.background = count === 2 ? '#3b82f620' : '#1e293b';
+        btn2.style.color = count === 2 ? '#60a5fa' : '#94a3b8';
+      }
+      if (blockQ2) {
+        blockQ2.style.display = count === 2 ? 'block' : 'none';
+      }
+    }
+
     function confirmNewEval() {
-      const prompt = (document.getElementById('input-eval-prompt').value || '').trim();
-      const expectedAnswer = (document.getElementById('input-eval-expected').value || '').trim();
+      const q1Prompt = (document.getElementById('input-q1-prompt').value || '').trim();
+      if (!q1Prompt) {
+        document.getElementById('input-q1-prompt').focus();
+        showToast('⚠️ Escribí el enunciado de la Pregunta 1.');
+        return;
+      }
+      const q1OptA = (document.getElementById('input-q1-opt-a').value || '').trim();
+      const q1OptB = (document.getElementById('input-q1-opt-b').value || '').trim();
+      const q1OptC = (document.getElementById('input-q1-opt-c').value || '').trim();
+      const q1OptD = (document.getElementById('input-q1-opt-d').value || '').trim();
+      if (!q1OptA || !q1OptB || !q1OptC || !q1OptD) {
+        showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 1.');
+        return;
+      }
+      const q1CorrectRad = document.querySelector('input[name="q1-correct"]:checked');
+      const q1Correct = q1CorrectRad ? q1CorrectRad.value : 'A';
 
-      if (!prompt) {
-        document.getElementById('input-eval-prompt').style.borderColor = '#ef4444';
-        document.getElementById('input-eval-prompt').focus();
-        showToast('⚠️ Escribí el enunciado del problema.');
-        return;
-      }
-      if (!expectedAnswer) {
-        document.getElementById('input-eval-expected').style.borderColor = '#ef4444';
-        document.getElementById('input-eval-expected').focus();
-        showToast('⚠️ Indicá la respuesta esperada.');
-        return;
-      }
-      if (prompt.length > PROMPT_MAX_CHARS) {
-        const ta = document.getElementById('input-eval-prompt');
-        ta.style.borderColor = '#ef4444';
-        ta.focus();
-        showToast('⚠️ El enunciado tiene ' + prompt.length + ' caracteres. El máximo es ' +
-                  PROMPT_MAX_CHARS + ' para que entre en la ficha sin correr la cuadrícula.');
-        return;
-      }
-
-      /* ── GUARDARRAÍL: SIN GRADO NO HAY PREGUNTA ──
-         Una pregunta del banco tiene que tener grado, porque su rúbrica se
-         generó tomando ese grado como contexto. Sin grado, la rúbrica sale
-         genérica y después la IA juzga con un criterio que no es el de la clase. */
-      const g0 = gradoDelSalonSeleccionado();
-      if (!g0.stage || !g0.level) {
-        const gBlock = document.getElementById('grade-block');
-        if (gBlock && gBlock.scrollIntoView) gBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        showToast('⚠️ Este salón no tiene grado. Completalo en el paso 1: la rúbrica se genera con ese grado.');
-        return;
-      }
-
-      /* ── GUARDARRAÍL: TODA PREGUNTA ENTRA AL BANCO CON SU RÚBRICA ──
-         Si falta, no se guarda: se señala el botón que la genera, que está justo
-         arriba. Es lo que hace que el banco sea una lista de evaluaciones listas
-         para corregir y no de preguntas a medio terminar. */
-      const btnRub = document.getElementById('btn-rubric');
-      if (!wizardRubric) {
-        if (btnRub) {
-          btnRub.style.borderColor = '#ef4444';
-          if (btnRub.scrollIntoView) btnRub.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          btnRub.focus();
+      let q2Prompt = '', q2OptA = '', q2OptB = '', q2OptC = '', q2OptD = '', q2Correct = 'A';
+      if (currentQuestionCount === 2) {
+        q2Prompt = (document.getElementById('input-q2-prompt').value || '').trim();
+        if (!q2Prompt) {
+          document.getElementById('input-q2-prompt').focus();
+          showToast('⚠️ Escribí el enunciado de la Pregunta 2.');
+          return;
         }
-        showToast('⚠️ Falta la rúbrica: generála con el botón "✨ Generar rúbrica" y volvé a confirmar.');
-        return;
+        q2OptA = (document.getElementById('input-q2-opt-a').value || '').trim();
+        q2OptB = (document.getElementById('input-q2-opt-b').value || '').trim();
+        q2OptC = (document.getElementById('input-q2-opt-c').value || '').trim();
+        q2OptD = (document.getElementById('input-q2-opt-d').value || '').trim();
+        if (!q2OptA || !q2OptB || !q2OptC || !q2OptD) {
+          showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 2.');
+          return;
+        }
+        const q2CorrectRad = document.querySelector('input[name="q2-correct"]:checked');
+        q2Correct = q2CorrectRad ? q2CorrectRad.value : 'A';
       }
 
-      // Si el enunciado cambió después de generarla, la rúbrica quedó vieja y
-      // corregir con ella sería un error silencioso en los 30 alumnos.
-      if (wizardRubricPrompt && wizardRubricPrompt !== prompt) {
-        descartarRubrica();
-        const ta = document.getElementById('input-eval-prompt');
-        if (ta) ta.style.borderColor = '#f59e0b';
-        showToast('⚠️ Cambiaste el enunciado: la rúbrica ya no corresponde. Generala de nuevo.');
-        return;
+      const questions = [
+        {
+          prompt: q1Prompt,
+          options: { A: q1OptA, B: q1OptB, C: q1OptC, D: q1OptD },
+          correct: q1Correct
+        }
+      ];
+      if (currentQuestionCount === 2) {
+        questions.push({
+          prompt: q2Prompt,
+          options: { A: q2OptA, B: q2OptB, C: q2OptC, D: q2OptD },
+          correct: q2Correct
+        });
       }
 
-      // Guardar como evaluación personalizada.
-      // La rúbrica y el GRADO viajan con la evaluación: la rúbrica se genera una
-      // vez y las 30 correcciones de la ficha usan el mismo criterio. El grado
-      // queda guardado porque condiciona ese criterio.
-      const g = gradoDelSalonSeleccionado();
+      const evalPrompt = currentQuestionCount === 1 ? q1Prompt : `1. ${q1Prompt}  |  2. ${q2Prompt}`;
+      const evalExpected = currentQuestionCount === 1 ? `Clave: ${q1Correct}` : `P1: ${q1Correct} | P2: ${q2Correct}`;
+
       const saved = ClassroomData.saveCustomEvaluation({
-        title: 'Evaluación del Día',
-        prompt: prompt,
-        expectedAnswer: expectedAnswer,
-        unitHint: '',
-        rubric: wizardRubric || undefined,
-        gradeStage: g.stage || undefined,
-        gradeLevel: g.level || undefined,
-        gradeText: g.texto || undefined
+        title: currentQuestionCount === 1 ? 'Evaluación (1 Pregunta)' : 'Evaluación (2 Preguntas)',
+        type: 'mc',
+        questionCount: currentQuestionCount,
+        prompt: evalPrompt,
+        expectedAnswer: evalExpected,
+        questions: questions
       });
 
-      // Llevar el banco del docente a Supabase. Antes NADIE llamaba a
-      // saveEvaluation(), así que las evaluaciones redactadas solo existían en
-      // el localStorage de ese navegador: se perdían al cambiar de dispositivo
-      // y la tabla microeval_evaluations quedaba siempre vacía.
-      // Es "fire and forget" a propósito: si falla, la sesión sigue en local.
-      SupabaseClient.saveEvaluation({
-        prompt: prompt,
-        expectedAnswer: expectedAnswer,
-        title: saved.title,
-        rubric: wizardRubric,
-        gradeStage: g.stage,
-        gradeLevel: g.level,
-        gradeText: g.texto
-      }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+      // Guardar también en Supabase (fire and forget)
+      if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+        SupabaseClient.saveEvaluation(evalPrompt, evalExpected, saved.title)
+          .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+      }
 
       wizardEval = saved;
       showSummary();
@@ -3235,19 +3369,119 @@
     const GRID_CELLS_HTML = new Array(A5_GRID_COLS * A5_GRID_ROWS).fill('<i></i>').join('');
 
     function createA5Card(student, classroom, evaluation) {
-      // En la ficha va el GRADO, no el nombre del salón: le sirve al alumno
-      // para reconocer su hoja y no expone el nombre del grupo. Si el salón
-      // todavía no tiene grado cargado, cae al nombre para no dejar el hueco
-      // vacío y que el docente note que falta completarlo.
       const gradeText = ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel)
         || classroom.name;
+
+      const fiducialsHTML = `
+        <div class="fiducial fiducial-tl" title="ArUco 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/></svg></div>
+        <div class="fiducial fiducial-tr" title="ArUco 1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+        <div class="fiducial fiducial-br" title="ArUco 2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+        <div class="fiducial fiducial-bl" title="ArUco 3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/></svg></div>
+      `;
+
+      const isOMR = evaluation.type === 'mc' || evaluation.questionCount || (evaluation.questions && evaluation.questions.length > 0);
+      const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
+
+      // CASO 1: Opción Múltiple - 1 Pregunta
+      if (isOMR && qCount === 1) {
+        const q1 = (evaluation.questions && evaluation.questions[0]) || {
+          prompt: evaluation.prompt,
+          options: evaluation.options || { A: '', B: '', C: '', D: '' }
+        };
+        return `
+          <div class="card-a5 mc-card mc-1q">
+            ${fiducialsHTML}
+            <div class="card-header">
+              <div class="student-block">
+                <span class="student-label">Nombre:</span>
+                <span class="student-name">${student.name.toUpperCase()}</span>
+                <span class="student-grade">(${gradeText})</span>
+              </div>
+              <div class="qr-block">
+                <span class="qr-code-text">${student.id}</span>
+                <div class="qr-box" id="qr-box-${student.id}"></div>
+              </div>
+            </div>
+
+            <div class="problem-wide mc-problem">
+              <div class="problem-text">${q1.prompt}</div>
+            </div>
+
+            <div class="omr-row omr-row-1">
+              <div class="omr-option"><span class="omr-bubble">A</span> <span class="omr-text">${q1.options.A || ''}</span></div>
+              <div class="omr-option"><span class="omr-bubble">B</span> <span class="omr-text">${q1.options.B || ''}</span></div>
+              <div class="omr-option"><span class="omr-bubble">C</span> <span class="omr-text">${q1.options.C || ''}</span></div>
+              <div class="omr-option"><span class="omr-bubble">D</span> <span class="omr-text">${q1.options.D || ''}</span></div>
+            </div>
+
+            <div class="grid-wrapper mc-grid-1q">
+              <div class="notebook-grid">${GRID_CELLS_HTML}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      // CASO 2: Opción Múltiple - 2 Preguntas
+      if (isOMR && qCount === 2) {
+        const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '', options: {} };
+        const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '', options: {} };
+        const GRID_CELLS_2Q = new Array(16 * 3).fill('<i></i>').join('');
+        return `
+          <div class="card-a5 mc-card mc-2q">
+            ${fiducialsHTML}
+            <div class="card-header">
+              <div class="student-block">
+                <span class="student-label">Nombre:</span>
+                <span class="student-name">${student.name.toUpperCase()}</span>
+                <span class="student-grade">(${gradeText})</span>
+              </div>
+              <div class="qr-block">
+                <span class="qr-code-text">${student.id}</span>
+                <div class="qr-box" id="qr-box-${student.id}"></div>
+              </div>
+            </div>
+
+            <!-- Pregunta 1 -->
+            <div class="mc-q-block">
+              <div class="problem-wide mc-problem-2q">
+                <div class="problem-text"><strong>1.</strong> ${q1.prompt}</div>
+              </div>
+              <div class="omr-row omr-row-2q-1">
+                <div class="omr-option"><span class="omr-bubble">A</span> <span class="omr-text">${q1.options.A || ''}</span></div>
+                <div class="omr-option"><span class="omr-bubble">B</span> <span class="omr-text">${q1.options.B || ''}</span></div>
+                <div class="omr-option"><span class="omr-bubble">C</span> <span class="omr-text">${q1.options.C || ''}</span></div>
+                <div class="omr-option"><span class="omr-bubble">D</span> <span class="omr-text">${q1.options.D || ''}</span></div>
+              </div>
+              <div class="grid-wrapper mc-grid-2q">
+                <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+              </div>
+            </div>
+
+            <div class="mc-divider"></div>
+
+            <!-- Pregunta 2 -->
+            <div class="mc-q-block">
+              <div class="problem-wide mc-problem-2q">
+                <div class="problem-text"><strong>2.</strong> ${q2.prompt}</div>
+              </div>
+              <div class="omr-row omr-row-2q-2">
+                <div class="omr-option"><span class="omr-bubble">A</span> <span class="omr-text">${q2.options.A || ''}</span></div>
+                <div class="omr-option"><span class="omr-bubble">B</span> <span class="omr-text">${q2.options.B || ''}</span></div>
+                <div class="omr-option"><span class="omr-bubble">C</span> <span class="omr-text">${q2.options.C || ''}</span></div>
+                <div class="omr-option"><span class="omr-bubble">D</span> <span class="omr-text">${q2.options.D || ''}</span></div>
+              </div>
+              <div class="grid-wrapper mc-grid-2q">
+                <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // CASO 3: Escritura manual tradicional (Fallback)
       return `
         <div class="card-a5">
-          <div class="fiducial fiducial-tl" title="ArUco 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/></svg></div>
-          <div class="fiducial fiducial-tr" title="ArUco 1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
-          <div class="fiducial fiducial-br" title="ArUco 2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
-          <div class="fiducial fiducial-bl" title="ArUco 3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/></svg></div>
-
+          ${fiducialsHTML}
           <div class="card-header">
             <div class="student-block">
               <span class="student-label">Nombre:</span>
@@ -3399,28 +3633,19 @@
       }
 
       // 1. Guardar en el banco local del docente. Se REUTILIZA el id de la
-      //    evaluación en curso cuando existe: si se generara uno nuevo cada
-      //    vez, el sessionRef (que se deriva del evalId) cambiaría y volver a
-      //    confirmar la misma evaluación partiría los resultados en dos.
+      //    evaluación en curso cuando existe
       const savedEval = ClassroomData.saveCustomEvaluation({
         id: (wizardEval && wizardEval.id) || undefined,
         title: title,
         prompt: prompt,
         expectedAnswer: expectedAnswer,
-        unitHint: ''
+        unitHint: '',
+        type: (wizardEval && wizardEval.type) || undefined,
+        questionCount: (wizardEval && wizardEval.questionCount) || undefined,
+        questions: (wizardEval && wizardEval.questions) || undefined
       });
 
-      // 2. Sesión activa. sessionRef es DETERMINISTA a partir del salón y de la
-      //    evaluación:
-      //      · volver a confirmar la misma evaluación CONTINÚA la misma sesión
-      //        en vez de fragmentar los resultados en dos;
-      //      · la misma evaluación en dos salones son dos sesiones distintas,
-      //        que es imprescindible porque los códigos de alumno se repiten
-      //        entre salones (ALUM_01 existe en todos).
-      //    La sincronización del banco con Supabase NO se hace acá: se hace en
-      //    confirmNewEval(), que es cuando el docente realmente redacta una
-      //    evaluación nueva. Hacerlo acá volvería a guardarla en cada
-      //    restauración de sesión e inflaría el contador de uso.
+      // 2. Sesión activa
       const session = {
         sessionRef: classId + '::' + savedEval.id,
         classroomId: classId,
@@ -3429,6 +3654,9 @@
         prompt: prompt,
         expectedAnswer: expectedAnswer,
         unitHint: '',
+        type: savedEval.type || 'mc',
+        questionCount: savedEval.questionCount || 1,
+        questions: savedEval.questions || [],
         timestamp: Date.now()
       };
       ClassroomData.setActiveSession(session);

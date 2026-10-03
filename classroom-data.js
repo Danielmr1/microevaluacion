@@ -287,6 +287,11 @@
     if (gLevel) newEval.gradeLevel = gLevel;
     if (gText) newEval.gradeText = gText;
 
+    // Propiedades de formato Opción Múltiple (OMR)
+    if (evalData.type) newEval.type = evalData.type;
+    if (evalData.questionCount) newEval.questionCount = evalData.questionCount;
+    if (evalData.questions) newEval.questions = evalData.questions;
+
     EVALUATIONS[id] = newEval;
 
     if (typeof window !== 'undefined' && window.localStorage) {

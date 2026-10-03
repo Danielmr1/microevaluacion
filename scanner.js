@@ -1280,14 +1280,24 @@
         }
       }
 
-      // GUARDRAIL 3 & 5: EXTRACCIÓN DE ROI DE RESOLUCIÓN + CONTRASTE DE GRAFITO
+      // GUARDRAIL 3 & 5: EXTRACCIÓN DE ROI DE RESOLUCIÓN + CONTRASTE DE GRAFITO / EVALUACIÓN OMR
+      let omrResults = null;
+      const activeEval = typeof ClassroomData !== 'undefined' ? ClassroomData.getEvaluation(currentEvaluationId) : null;
+      const isOMR = activeEval && (activeEval.type === 'mc' || activeEval.questionCount || (activeEval.questions && activeEval.questions.length > 0));
+
       if (fullWarpCanvas && typeof ROIProcessor !== 'undefined') {
-        const procResult = ROIProcessor.processCapturedSheet(fullWarpCanvas);
-        if (procResult.success && procResult.resolutionCanvas) {
-          resolutionPreviewUrl = procResult.resolutionCanvas.toDataURL('image/jpeg', 0.92);
-        }
-        if (procResult.success && procResult.answerCanvas) {
-          answerPreviewUrl = procResult.answerCanvas.toDataURL('image/jpeg', 0.92);
+        if (isOMR && ROIProcessor.evaluateOMRSheet) {
+          const qCount = activeEval.questionCount || (activeEval.questions ? activeEval.questions.length : 1);
+          omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qCount);
+          resolutionPreviewUrl = fullWarpCanvas.toDataURL('image/jpeg', 0.90);
+        } else {
+          const procResult = ROIProcessor.processCapturedSheet(fullWarpCanvas);
+          if (procResult.success && procResult.resolutionCanvas) {
+            resolutionPreviewUrl = procResult.resolutionCanvas.toDataURL('image/jpeg', 0.92);
+          }
+          if (procResult.success && procResult.answerCanvas) {
+            answerPreviewUrl = procResult.answerCanvas.toDataURL('image/jpeg', 0.92);
+          }
         }
       }
 
@@ -1348,7 +1358,6 @@
       studentObj = ClassroomData.getStudent(currentClassroomId, studentId);
     }
 
-    const activeEval = typeof ClassroomData !== 'undefined' ? ClassroomData.getEvaluation(currentEvaluationId) : null;
     const expectedAns = activeEval ? activeEval.expectedAnswer : '85';
 
     let studentName = '';
@@ -1406,19 +1415,68 @@
       const testEl = document.getElementById('res-test-id');
       if (testEl) testEl.textContent = 'Resultado Esperado: ' + expectedAns;
 
-      // Vista previa de la caja de respuesta recortada y cotejo con el resultado esperado
-      const ansImgEl = document.getElementById('captured-answer-img');
-      if (ansImgEl) {
-        if (answerPreviewUrl) {
-          ansImgEl.src = answerPreviewUrl;
-          ansImgEl.style.display = 'block';
-        } else {
-          ansImgEl.style.display = 'none';
-        }
-      }
+      // Renderizar resultado OMR o imagen de escritura tradicional
+      const omrContainer = document.getElementById('omr-result-container');
+      const hwContainer = document.getElementById('handwriting-result-container');
 
-      const expValEl = document.getElementById('res-expected-val');
-      if (expValEl) expValEl.textContent = expectedAns;
+      if (isOMR && omrResults && omrResults.length > 0) {
+        if (omrContainer) {
+          omrContainer.style.display = 'flex';
+          omrContainer.innerHTML = '';
+
+          omrResults.forEach((qRes, idx) => {
+            const qObj = (activeEval.questions && activeEval.questions[idx]) || null;
+            const expectedKey = qObj ? qObj.correct : (activeEval.expectedAnswer || 'A');
+            const isCorrect = qRes.marked === expectedKey;
+
+            let markedLabel = qRes.marked;
+            let markedColor = '#f8fafc';
+            if (qRes.marked === 'BLANK') {
+              markedLabel = '⚠️ En blanco';
+              markedColor = '#fbbf24';
+            } else if (qRes.marked === 'MULTIPLE') {
+              markedLabel = '⚠️ Doble marca';
+              markedColor = '#f87171';
+            }
+
+            const item = document.createElement('div');
+            item.style.background = '#1e293b';
+            item.style.borderRadius = '8px';
+            item.style.padding = '8px 12px';
+            item.style.border = isCorrect ? '1.5px solid #22c55e' : '1.5px solid #ef4444';
+            item.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; color:#e2e8f0; font-size:0.85rem;">Pregunta ${qRes.qIndex}</span>
+                <span style="font-weight:800; font-size:0.82rem; padding:2px 8px; border-radius:5px; background:${isCorrect ? '#22c55e20' : '#ef444420'}; color:${isCorrect ? '#22c55e' : '#ef4444'};">
+                  ${isCorrect ? '✅ CORRECTA' : '❌ INCORRECTA'}
+                </span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; color:#94a3b8;">
+                <span>Marcó: <strong style="color:${markedColor}; font-size:1.15rem; margin-left:4px;">${markedLabel}</strong></span>
+                <span>Clave esperada: <strong style="color:#22c55e; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
+              </div>
+            `;
+            omrContainer.appendChild(item);
+          });
+        }
+        if (hwContainer) hwContainer.style.display = 'none';
+      } else {
+        if (omrContainer) omrContainer.style.display = 'none';
+        if (hwContainer) hwContainer.style.display = 'block';
+
+        const ansImgEl = document.getElementById('captured-answer-img');
+        if (ansImgEl) {
+          if (answerPreviewUrl) {
+            ansImgEl.src = answerPreviewUrl;
+            ansImgEl.style.display = 'block';
+          } else {
+            ansImgEl.style.display = 'none';
+          }
+        }
+
+        const expValEl = document.getElementById('res-expected-val');
+        if (expValEl) expValEl.textContent = expectedAns;
+      }
 
       const evalPromptEl = document.getElementById('res-eval-prompt');
       if (evalPromptEl && activeEval) {

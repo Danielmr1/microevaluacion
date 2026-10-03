@@ -275,6 +275,119 @@
     };
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // MOTOR DE RECONOCIMIENTO ÓPTICO DE MARCAS (OMR - OPTICAL MARK RECOGNITION)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Coordenadas horizontales fijas de los centros de las 4 burbujas (A, B, C, D) en mm
+  const OMR_BUBBLES_X_MM = [
+    { key: 'A', xMm: 21 },
+    { key: 'B', xMm: 60 },
+    { key: 'C', xMm: 99 },
+    { key: 'D', xMm: 138 }
+  ];
+
+  // Radio de medición interno para no tomar los bordes impresos del círculo (2.4 mm)
+  const OMR_BUBBLE_HALF_SIZE_MM = 2.4;
+
+  /**
+   * Mide la densidad de grafito/tinta en una burbuja de alternativa
+   * @param {HTMLCanvasElement} sheetCanvas Lienzo rectificado (2000x1441 px)
+   * @param {number} cxMm Coordenada X del centro en mm
+   * @param {number} cyMm Coordenada Y del centro en mm
+   * @returns {number} Densidad de píxeles oscuros de 0.0 a 1.0
+   */
+  function measureBubbleDarkness(sheetCanvas, cxMm, cyMm) {
+    const rx = Math.round((cxMm - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_X);
+    const ry = Math.round((cyMm - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_Y);
+    const rw = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_X);
+    const rh = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_Y);
+
+    const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
+    const clamped = clampROI({ x: rx, y: ry, width: rw, height: rh }, sheetCanvas.width, sheetCanvas.height);
+    const imgData = ctx.getImageData(clamped.x, clamped.y, clamped.width, clamped.height);
+    const d = imgData.data;
+
+    let darkPixels = 0;
+    const totalPixels = clamped.width * clamped.height;
+    if (totalPixels === 0) return 0;
+
+    for (let i = 0; i < d.length; i += 4) {
+      const lum = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8;
+      // Píxeles con marca de lápiz o tinta (más oscuros que el papel blanco)
+      if (lum < 165) {
+        darkPixels++;
+      }
+    }
+
+    return darkPixels / totalPixels;
+  }
+
+  /**
+   * Evalúa las 4 alternativas de una fila (A, B, C, D)
+   * @param {HTMLCanvasElement} sheetCanvas
+   * @param {number} yCenterMm Coordenada Y central de la fila en mm
+   * @returns {{ marked: string, confidence: number, densities: Object }}
+   */
+  function evaluateAlternativeRow(sheetCanvas, yCenterMm) {
+    const densities = {};
+    let maxDensity = -1;
+    let bestKey = null;
+
+    OMR_BUBBLES_X_MM.forEach(b => {
+      const dens = measureBubbleDarkness(sheetCanvas, b.xMm, yCenterMm);
+      densities[b.key] = Math.round(dens * 100);
+      if (dens > maxDensity) {
+        maxDensity = dens;
+        bestKey = b.key;
+      }
+    });
+
+    let secondDensity = -1;
+    OMR_BUBBLES_X_MM.forEach(b => {
+      if (b.key !== bestKey && (densities[b.key] / 100) > secondDensity) {
+        secondDensity = densities[b.key] / 100;
+      }
+    });
+
+    // Umbral mínimo para considerar que el alumno pintó o marcó la burbuja
+    const MIN_DARKNESS_THRESHOLD = 0.22;
+
+    if (maxDensity < MIN_DARKNESS_THRESHOLD) {
+      return { marked: 'BLANK', confidence: Math.round((1 - maxDensity) * 100), densities };
+    }
+
+    // Si marcó dos opciones con densidad similar
+    if (secondDensity >= MIN_DARKNESS_THRESHOLD && secondDensity >= maxDensity * 0.75) {
+      return { marked: 'MULTIPLE', confidence: 50, densities };
+    }
+
+    return { marked: bestKey, confidence: Math.round(maxDensity * 100), densities };
+  }
+
+  /**
+   * Evalúa la ficha completa en modo alternativas (1 o 2 preguntas)
+   * @param {HTMLCanvasElement} sheetCanvas
+   * @param {number} questionCount 1 o 2 preguntas
+   * @returns {Array<{ qIndex: number, marked: string, confidence: number, densities: Object }>}
+   */
+  function evaluateOMRSheet(sheetCanvas, questionCount = 1) {
+    if (!isValidCanvas(sheetCanvas)) return [];
+    if (questionCount === 2) {
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 39);
+      const q2Result = evaluateAlternativeRow(sheetCanvas, 92);
+      return [
+        Object.assign({ qIndex: 1 }, q1Result),
+        Object.assign({ qIndex: 2 }, q2Result)
+      ];
+    } else {
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 48);
+      return [
+        Object.assign({ qIndex: 1 }, q1Result)
+      ];
+    }
+  }
+
   // Exportar el módulo al objeto global (navegador o node)
   const ROIProcessor = {
     SHEET_WIDTH,
@@ -290,7 +403,11 @@
     clampROI,
     extractROI,
     enhanceHandwritingContrast,
-    processCapturedSheet
+    processCapturedSheet,
+    // Métodos OMR
+    measureBubbleDarkness,
+    evaluateAlternativeRow,
+    evaluateOMRSheet
   };
 
   global.ROIProcessor = ROIProcessor;
