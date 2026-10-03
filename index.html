@@ -3753,7 +3753,7 @@
       `;
     }
 
-    function confirmMC2() {
+    async function confirmMC2() {
       try {
         if (!wizardClassroomId) {
           const sel = document.getElementById('builder-classroom');
@@ -3793,6 +3793,11 @@
           const correct = rad ? rad.value : 'A';
           q1 = { prompt: prompt1, options: { A: optA, B: optB, C: optC, D: optD }, correct: correct };
 
+          // Generar rúbrica con Gemini para Pregunta 1
+          showToast('⏳ Generando rúbrica y análisis pedagógico con IA para la Pregunta 1...');
+          const res1 = await SupabaseClient.generateRubric({ prompt: prompt1, grado: g.texto || '4° de primaria' });
+          if (res1 && res1.ok && res1.rubrica) q1.rubric = res1.rubrica;
+
           // Guardar P1 en el banco
           ClassroomData.saveCustomEvaluation({
             title: 'Pregunta de alternativa',
@@ -3800,6 +3805,7 @@
             questionCount: 1,
             prompt: prompt1,
             expectedAnswer: `Clave: ${correct}`,
+            rubric: q1.rubric || null,
             questions: [q1],
             gradeStage: g.stage || null,
             gradeLevel: g.level || null,
@@ -3835,6 +3841,11 @@
           const correct = rad ? rad.value : 'A';
           q2 = { prompt: prompt2, options: { A: optA, B: optB, C: optC, D: optD }, correct: correct };
 
+          // Generar rúbrica con Gemini para Pregunta 2
+          showToast('⏳ Generando rúbrica y análisis pedagógico con IA para la Pregunta 2...');
+          const res2 = await SupabaseClient.generateRubric({ prompt: prompt2, grado: g.texto || '4° de primaria' });
+          if (res2 && res2.ok && res2.rubrica) q2.rubric = res2.rubrica;
+
           // Guardar P2 en el banco
           ClassroomData.saveCustomEvaluation({
             title: 'Pregunta de alternativa',
@@ -3842,6 +3853,7 @@
             questionCount: 1,
             prompt: prompt2,
             expectedAnswer: `Clave: ${correct}`,
+            rubric: q2.rubric || null,
             questions: [q2],
             gradeStage: g.stage || null,
             gradeLevel: g.level || null,
@@ -3877,7 +3889,10 @@
             title: saved.title,
             gradeStage: g.stage,
             gradeLevel: g.level,
-            gradeText: g.texto
+            gradeText: g.texto,
+            type: 'mc',
+            questionCount: 2,
+            questions: [q1, q2]
           }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
         }
 
