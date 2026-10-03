@@ -302,8 +302,8 @@
     if (wrap) wrap.style.display = 'none';
 
     // El docente acaba de identificar al alumno de esta captura: recién ahora
-    // se puede persistir el resultado con su identidad real.
-    persistCapture(s.id, s.name);
+    // se puede persistir el resultado con su identidad real y su corrección OMR.
+    persistCapture(s.id, s.name, lastOMRInfo);
   }
 
   /**
@@ -424,28 +424,42 @@
   // grid_image_path) quedan en NULL; activarlas es subir los recortes a
   // Supabase Storage y completar esos dos campos, sin cambiar el esquema.
   //
-  // Nunca lanza ni bloquea el escaneo: si falla, avisa por consola.
-  function persistCapture(studentId, studentName) {
+  let lastOMRInfo = null;
+
+  function persistCapture(studentId, studentName, omrInfo = null) {
     if (typeof SupabaseClient === 'undefined' || !SupabaseClient.saveResult) return;
     if (typeof ClassroomData === 'undefined') return;
 
-    // Sin identidad no hay fila que guardar (QR ilegible y el docente todavía
-    // no eligió al alumno del desplegable).
     if (!studentId || studentId === 'MANUAL') return;
 
-    const session = ClassroomData.getActiveSession();
+    let session = ClassroomData.getActiveSession();
     if (!session || !session.sessionRef) {
-      console.warn('[Resultados] No hay sesión activa con sessionRef; no se guarda.');
-      return;
+      const classId = currentClassroomId || '3A';
+      const evalId = currentEvaluationId || 'EVA_01';
+      session = {
+        sessionRef: `${classId}::${evalId}`,
+        classroomId: classId,
+        evalId: evalId,
+        title: 'Evaluación del Día'
+      };
     }
 
     const cls = ClassroomData.getClassroom(currentClassroomId);
-    const activeEval = ClassroomData.getEvaluation(currentEvaluationId);
-
-    // classroom_id es una FK a microeval_classrooms: si el salón no es un UUID
-    // real (catálogo de demo '3A'/'3B'), mandarlo rompería el insert. Se manda
-    // null en ese caso y el resultado igual queda guardado.
+    const activeEval = ClassroomData.getEvaluation(currentEvaluationId) || session;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentClassroomId);
+
+    let answerRead = null;
+    let isMatch = null;
+    let verdict = null;
+    let aiRaw = null;
+
+    const info = omrInfo || lastOMRInfo;
+    if (info && info.results && info.results.length > 0) {
+      answerRead = info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(' | ');
+      isMatch = info.allCorrect;
+      verdict = info.allCorrect ? 'CORRECTA' : 'INCORRECTA';
+      aiRaw = { omrResults: info.results };
+    }
 
     SupabaseClient.saveResult({
       session_ref: session.sessionRef,
@@ -458,9 +472,14 @@
       evaluation_title: session.title || null,
       prompt: session.prompt || (activeEval ? activeEval.prompt : null),
       expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+      ai_answer_read: answerRead,
+      ai_expected_match: isMatch,
+      deterministic_match: isMatch,
+      teacher_verdict: verdict,
+      ai_raw: aiRaw,
       captured_at: new Date().toISOString()
     }).then(row => {
-      if (row) console.log('[Resultados] Captura guardada:', studentId);
+      if (row) console.log('[Resultados] Captura guardada en Supabase:', studentId, verdict);
     }).catch(e => {
       console.warn('[Resultados] No se pudo guardar la captura:', e && e.message);
     });
@@ -1406,10 +1425,6 @@
       studentId = 'MANUAL';
     }
 
-    // Persistir la captura ya mismo, sin esperar a la corrección con IA.
-    // No bloquea: la llamada sale en segundo plano y el modal se muestra igual.
-    persistCapture(studentId, studentName);
-
     // Presentar modal con la captura procesada
     setTimeout(() => {
       const imgEl = document.getElementById('captured-img');
@@ -1459,6 +1474,9 @@
                              || (activeSession && activeSession.questions)
                              || [];
 
+          let allCorrect = true;
+          const evaluatedResults = [];
+
           omrResults.forEach((qRes, idx) => {
             const qObj = questionsList[idx] || null;
             let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
@@ -1479,6 +1497,14 @@
             if (m) expectedKey = m[0].toUpperCase();
 
             const isCorrect = qRes.marked === expectedKey;
+            if (!isCorrect) allCorrect = false;
+
+            evaluatedResults.push({
+              qIndex: qRes.qIndex,
+              marked: qRes.marked,
+              expected: expectedKey,
+              correct: isCorrect
+            });
 
             let markedLabel = qRes.marked;
             let markedColor = '#f8fafc';
@@ -1509,9 +1535,14 @@
             `;
             omrContainer.appendChild(item);
           });
+
+          lastOMRInfo = { allCorrect: allCorrect, results: evaluatedResults };
+          persistCapture(studentId, studentName, lastOMRInfo);
         }
         if (hwContainer) hwContainer.style.display = 'none';
       } else {
+        lastOMRInfo = null;
+        persistCapture(studentId, studentName, null);
         if (omrContainer) omrContainer.style.display = 'none';
         if (hwContainer) hwContainer.style.display = 'block';
 
@@ -1571,7 +1602,7 @@
         alumno: studentId + (studentObj ? ' (' + studentObj.name + ')' : ''),
         qrTexto: qrText || '',
         intentoQr: qrIntento === 0 ? 'ninguno (no se leyo)' : ('intento ' + qrIntento + ' de 3'),
-        cobertura: coverage,
+        cobertura: typeof coverage !== 'undefined' ? coverage : 0,
         nitidez: sharpness,
         brillo: brightnessPercent,
         enfoque: focusDuration,
