@@ -298,29 +298,39 @@
    * @returns {number} Densidad de píxeles oscuros de 0.0 a 1.0
    */
   function measureBubbleDarkness(sheetCanvas, cxMm, cyMm) {
-    const rx = Math.round((cxMm - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_X);
-    const ry = Math.round((cyMm - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_Y);
-    const rw = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_X);
-    const rh = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_Y);
-
+    // Para ser tolerante a variaciones de impresión y encuadre (+-1.5mm vertical),
+    // probamos el centro y offsets leves
+    const offsets = [0, -1.5, 1.5];
+    let maxDark = 0;
     const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
-    const clamped = clampROI({ x: rx, y: ry, width: rw, height: rh }, sheetCanvas.width, sheetCanvas.height);
-    const imgData = ctx.getImageData(clamped.x, clamped.y, clamped.width, clamped.height);
-    const d = imgData.data;
 
-    let darkPixels = 0;
-    const totalPixels = clamped.width * clamped.height;
-    if (totalPixels === 0) return 0;
+    for (let i = 0; i < offsets.length; i++) {
+      const dy = offsets[i];
+      const rx = Math.round((cxMm - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_X);
+      const ry = Math.round((cyMm + dy - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_Y);
+      const rw = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_X);
+      const rh = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_Y);
 
-    for (let i = 0; i < d.length; i += 4) {
-      const lum = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8;
-      // Píxeles con marca de lápiz o tinta (más oscuros que el papel blanco)
-      if (lum < 165) {
-        darkPixels++;
+      const clamped = clampROI({ x: rx, y: ry, width: rw, height: rh }, sheetCanvas.width, sheetCanvas.height);
+      const imgData = ctx.getImageData(clamped.x, clamped.y, clamped.width, clamped.height);
+      const d = imgData.data;
+
+      let darkPixels = 0;
+      const totalPixels = clamped.width * clamped.height;
+      if (totalPixels === 0) continue;
+
+      for (let j = 0; j < d.length; j += 4) {
+        const lum = (d[j] * 77 + d[j + 1] * 150 + d[j + 2] * 29) >> 8;
+        if (lum < 165) {
+          darkPixels++;
+        }
       }
+
+      const dens = darkPixels / totalPixels;
+      if (dens > maxDark) maxDark = dens;
     }
 
-    return darkPixels / totalPixels;
+    return maxDark;
   }
 
   /**
@@ -350,8 +360,8 @@
       }
     });
 
-    // Umbral mínimo para considerar que el alumno pintó o marcó la burbuja
-    const MIN_DARKNESS_THRESHOLD = 0.22;
+    // Umbral calibrado para detectar marcas de lápiz/bolígrafo con seguridad
+    const MIN_DARKNESS_THRESHOLD = 0.18;
 
     if (maxDensity < MIN_DARKNESS_THRESHOLD) {
       return { marked: 'BLANK', confidence: Math.round((1 - maxDensity) * 100), densities };

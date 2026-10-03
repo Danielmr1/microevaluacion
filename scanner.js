@@ -1283,13 +1283,32 @@
 
       // GUARDRAIL 3 & 5: EXTRACCIÓN DE ROI DE RESOLUCIÓN + CONTRASTE DE GRAFITO / EVALUACIÓN OMR
       let omrResults = null;
-      const activeEval = typeof ClassroomData !== 'undefined' ? ClassroomData.getEvaluation(currentEvaluationId) : null;
-      const isOMR = activeEval && (activeEval.type === 'mc' || activeEval.questionCount || (activeEval.questions && activeEval.questions.length > 0));
+
+      // Sincronizar SIEMPRE con la sesión activa de ClassroomData (Single Source of Truth)
+      const activeSession = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      if (activeSession) {
+        if (activeSession.classroomId) currentClassroomId = activeSession.classroomId;
+        if (activeSession.evalId) currentEvaluationId = activeSession.evalId;
+      }
+
+      let activeEval = (typeof ClassroomData !== 'undefined' && currentEvaluationId)
+        ? ClassroomData.getEvaluation(currentEvaluationId)
+        : null;
+
+      if (!activeEval && activeSession) {
+        activeEval = activeSession;
+      }
+
+      const isOMR = (activeEval && (activeEval.type === 'mc' || activeEval.questionCount || (activeEval.questions && activeEval.questions.length > 0)))
+                 || (activeSession && (activeSession.type === 'mc' || activeSession.questionCount || (activeSession.questions && activeSession.questions.length > 0)));
 
       if (fullWarpCanvas && typeof ROIProcessor !== 'undefined') {
         if (isOMR && ROIProcessor.evaluateOMRSheet) {
-          const qCount = activeEval.questionCount || (activeEval.questions ? activeEval.questions.length : 1);
+          const qCount = (activeEval && (activeEval.questionCount || (activeEval.questions ? activeEval.questions.length : 1)))
+                      || (activeSession && (activeSession.questionCount || (activeSession.questions ? activeSession.questions.length : 1)))
+                      || 1;
           omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qCount);
+          console.log('[Scanner] OMR Results detectados:', omrResults);
           resolutionPreviewUrl = fullWarpCanvas.toDataURL('image/jpeg', 0.90);
         } else {
           const procResult = ROIProcessor.processCapturedSheet(fullWarpCanvas);
@@ -1359,7 +1378,9 @@
       studentObj = ClassroomData.getStudent(currentClassroomId, studentId);
     }
 
-    const expectedAns = activeEval ? activeEval.expectedAnswer : '85';
+    const expectedAns = (activeSession && activeSession.expectedAnswer)
+                     || (activeEval && activeEval.expectedAnswer)
+                     || 'A';
 
     let studentName = '';
     let alreadyEvaluated = false;
@@ -1425,15 +1446,22 @@
           omrContainer.style.display = 'flex';
           omrContainer.innerHTML = '';
 
+          const questionsList = (activeEval && activeEval.questions)
+                             || (activeSession && activeSession.questions)
+                             || [];
+
           omrResults.forEach((qRes, idx) => {
-            const qObj = (activeEval.questions && activeEval.questions[idx]) || null;
-            const expectedKey = qObj ? qObj.correct : (activeEval.expectedAnswer || 'A');
+            const qObj = questionsList[idx] || null;
+            let expectedKey = qObj ? qObj.correct : (expectedAns || 'A');
+            const m = String(expectedKey).match(/[A-D]/i);
+            if (m) expectedKey = m[0].toUpperCase();
+
             const isCorrect = qRes.marked === expectedKey;
 
             let markedLabel = qRes.marked;
             let markedColor = '#f8fafc';
             if (qRes.marked === 'BLANK') {
-              markedLabel = '⚠️ En blanco';
+              markedLabel = '⚠️ En blanco (no marcada)';
               markedColor = '#fbbf24';
             } else if (qRes.marked === 'MULTIPLE') {
               markedLabel = '⚠️ Doble marca';
@@ -1444,12 +1472,12 @@
             item.style.background = '#1e293b';
             item.style.borderRadius = '8px';
             item.style.padding = '8px 12px';
-            item.style.border = isCorrect ? '1.5px solid #22c55e' : '1.5px solid #ef4444';
+            item.style.border = isCorrect ? '1.5px solid #22c55e' : (qRes.marked === 'BLANK' ? '1.5px solid #f59e0b' : '1.5px solid #ef4444');
             item.innerHTML = `
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:700; color:#e2e8f0; font-size:0.85rem;">Pregunta ${qRes.qIndex}</span>
                 <span style="font-weight:800; font-size:0.82rem; padding:2px 8px; border-radius:5px; background:${isCorrect ? '#22c55e20' : '#ef444420'}; color:${isCorrect ? '#22c55e' : '#ef4444'};">
-                  ${isCorrect ? '✅ CORRECTA' : '❌ INCORRECTA'}
+                  ${isCorrect ? '✅ CORRECTA' : (qRes.marked === 'BLANK' ? '⚠️ SIN RESPUESTA' : '❌ INCORRECTA')}
                 </span>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; color:#94a3b8;">
