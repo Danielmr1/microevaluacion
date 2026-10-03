@@ -166,6 +166,63 @@
   }
 
   /**
+   * Devuelve las preguntas individuales de opción múltiple disponibles para un grado.
+   * Extrae preguntas de evaluaciones de 1 y 2 preguntas, deduplicando por enunciado.
+   * @param {string|null} stage 'primaria' | 'secundaria'
+   * @param {number|null} level 4, 5, 6...
+   * @returns {Array<{id: string, prompt: string, options: object, correct: string, gradeStage: string, gradeLevel: number, gradeText: string, title: string}>}
+   */
+  function getIndividualMCQuestions(stage, level) {
+    const list = [];
+    const seen = new Set();
+    Object.values(EVALUATIONS).forEach(ev => {
+      if (stage && ev.gradeStage && ev.gradeStage !== stage) return;
+      if (level && ev.gradeLevel && Number(ev.gradeLevel) !== Number(level)) return;
+      const isOMR = ev.type === 'mc' || ev.questionCount || (ev.questions && ev.questions.length > 0);
+      if (!isOMR) return;
+
+      if (Array.isArray(ev.questions) && ev.questions.length > 0) {
+        ev.questions.forEach((q, idx) => {
+          const prompt = String(q.prompt || '').trim();
+          if (!prompt || seen.has(prompt)) return;
+          seen.add(prompt);
+          list.push({
+            id: ev.id + '_q' + idx,
+            prompt: prompt,
+            options: q.options || { A: '', B: '', C: '', D: '' },
+            correct: q.correct || 'A',
+            gradeStage: ev.gradeStage || stage,
+            gradeLevel: ev.gradeLevel || level,
+            gradeText: ev.gradeText || formatGrade(stage, level),
+            title: ev.title || 'Pregunta de alternativa'
+          });
+        });
+      } else if (ev.prompt) {
+        const prompt = String(ev.prompt).trim();
+        if (!seen.has(prompt)) {
+          seen.add(prompt);
+          let correct = 'A';
+          if (ev.expectedAnswer) {
+            const m = ev.expectedAnswer.match(/[A-D]/i);
+            if (m) correct = m[0].toUpperCase();
+          }
+          list.push({
+            id: ev.id,
+            prompt: prompt,
+            options: { A: '', B: '', C: '', D: '' },
+            correct: correct,
+            gradeStage: ev.gradeStage || stage,
+            gradeLevel: ev.gradeLevel || level,
+            gradeText: ev.gradeText || formatGrade(stage, level),
+            title: ev.title || 'Pregunta de alternativa'
+          });
+        }
+      }
+    });
+    return list;
+  }
+
+  /**
    * Rúbrica guardada de una evaluación, o null si todavía no tiene.
    * Es lo que exige la corrección con IA: sin rúbrica no se puede corregir.
    */
@@ -364,6 +421,7 @@
     getGradeStages,
     getClassroomList,
     getEvaluationList,
+    getIndividualMCQuestions,
     getClassroom,
     getClassroomColor,
     getClassroomGrade,

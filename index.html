@@ -1414,7 +1414,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Microevaluación A5 <span class="version-tag">v2.8.0</span></h1>
+        <h1>Microevaluación A5 <span class="version-tag">v2.9.0</span></h1>
         <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
@@ -1599,16 +1599,28 @@
       <!-- ── PASO 2: Tipo de Evaluación ── -->
       <div id="step-eval-type" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
         <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">2 · ¿Qué tipo de evaluación harás hoy?</label>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
-          <button id="btn-type-mc" type="button" onclick="selectEvalType('mc')"
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+          <button id="btn-type-mc1" type="button" onclick="selectEvalType('mc1')"
             style="padding:14px; border-radius:12px; border:2px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer; text-align:left; transition:all 0.2s; display:flex; flex-direction:column; gap:6px;">
             <div style="display:flex; align-items:center; gap:8px;">
               <span style="font-size:1.3rem;">🔘</span>
-              <span style="font-weight:800; font-size:0.95rem; color:#f8fafc;">Opción Múltiple</span>
+              <span style="font-weight:800; font-size:0.92rem; color:#f8fafc;">Opción Múltiple (1P)</span>
             </div>
-            <span style="font-size:0.74rem; color:#94a3b8; line-height:1.4;">
-              1 o 2 preguntas con alternativas <strong>(A, B, C, D)</strong>.<br>
-              Marca en burbujas y corrección visual instantánea.
+            <span style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
+              <strong>1 pregunta</strong> con alternativas (A, B, C, D).<br>
+              Burbujas OMR en la mitad derecha.
+            </span>
+          </button>
+
+          <button id="btn-type-mc2" type="button" onclick="selectEvalType('mc2')"
+            style="padding:14px; border-radius:12px; border:2px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer; text-align:left; transition:all 0.2s; display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:1.3rem;">🔘</span>
+              <span style="font-weight:800; font-size:0.92rem; color:#f8fafc;">Opción Múltiple (2P)</span>
+            </div>
+            <span style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
+              <strong>2 preguntas</strong> independientes.<br>
+              Mezclá preguntas del banco o redactá nuevas.
             </span>
           </button>
 
@@ -1616,17 +1628,17 @@
             style="padding:14px; border-radius:12px; border:2px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer; text-align:left; transition:all 0.2s; display:flex; flex-direction:column; gap:6px;">
             <div style="display:flex; align-items:center; gap:8px;">
               <span style="font-size:1.3rem;">✍️</span>
-              <span style="font-weight:800; font-size:0.95rem; color:#f8fafc;">Respuesta Libre</span>
+              <span style="font-weight:800; font-size:0.92rem; color:#f8fafc;">Respuesta Libre</span>
             </div>
-            <span style="font-size:0.74rem; color:#94a3b8; line-height:1.4;">
+            <span style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
               <strong>1 sola pregunta</strong> de desarrollo abierto.<br>
-              Espacio de cálculo y corrección de método con IA.
+              Espacio de cálculo y corrección con IA.
             </span>
           </button>
         </div>
       </div>
 
-      <!-- ── PASO 3: Botones Banco / Nueva ── -->
+      <!-- ── PASO 3: Botones Banco / Nueva (para 1 Pregunta) ── -->
       <div id="step-source" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
         <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">3 · ¿De dónde tomás la evaluación?</label>
         <div style="display:flex; gap:10px;">
@@ -1653,92 +1665,180 @@
         </div>
       </div>
 
-      <!-- ── PASO 4b: Formulario Nueva (Opción Múltiple OMR) ── -->
-      <div id="step-new-form-mc" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
-        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">4 · Redactá la evaluación de alternativas</label>
+      <!-- ── PASO 4b: Formulario Nueva (Opción Múltiple 1 Pregunta) ── -->
+      <div id="step-new-form-mc1" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
+        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">4 · Redactá la evaluación de alternativas (1 Pregunta)</label>
 
-        <!-- Selector de cantidad de preguntas -->
-        <div style="margin-bottom:14px;">
-          <label style="font-size:0.75rem; color:#94a3b8; display:block; margin-bottom:6px; font-weight:600;">¿Cuántas preguntas tendrá la ficha?</label>
-          <div style="display:flex; gap:10px;">
-            <button type="button" id="btn-count-1q" onclick="setQuestionCount(1)"
-              style="flex:1; padding:9px 12px; border-radius:8px; border:2px solid #3b82f6; background:#3b82f620; color:#60a5fa; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
-              🔘 1 Pregunta
-            </button>
-            <button type="button" id="btn-count-2q" onclick="setQuestionCount(2)"
-              style="flex:1; padding:9px 12px; border-radius:8px; border:2px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
-              🔘 2 Preguntas
-            </button>
-          </div>
-        </div>
-
-        <!-- ── BLOQUE PREGUNTA 1 ── -->
-        <div id="block-q1" style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:14px; margin-bottom:14px;">
-          <span style="font-size:0.78rem; font-weight:800; color:#60a5fa; text-transform:uppercase; display:block; margin-bottom:6px;">Pregunta 1</span>
-          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado del problema</label>
-          <textarea id="input-q1-prompt" class="form-control" rows="2" maxlength="180"
+        <!-- Bloque Pregunta 1 -->
+        <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:14px; margin-bottom:14px;">
+          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px; font-weight:700;">Enunciado del problema</label>
+          <textarea id="input-mc1-prompt" class="form-control" rows="2" maxlength="180"
             placeholder="Ej: En la biblioteca había 47 libros y llegaron 38 más. ¿Cuántos hay en total?"
             style="resize:vertical; font-size:0.88rem; margin-bottom:10px;"></textarea>
 
           <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:6px;">Alternativas (marcá el círculo verde de la <strong>clave correcta</strong>):</label>
           <div style="display:flex; flex-direction:column; gap:6px;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q1-correct" id="q1-rad-a" value="A" checked style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q1-rad-a" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">A)</label>
-              <input type="text" id="input-q1-opt-a" class="form-control" placeholder="Ej: 75" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="mc1-correct" id="mc1-rad-a" value="A" checked style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="mc1-rad-a" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">A)</label>
+              <input type="text" id="input-mc1-opt-a" class="form-control" placeholder="Ej: 75" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q1-correct" id="q1-rad-b" value="B" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q1-rad-b" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">B)</label>
-              <input type="text" id="input-q1-opt-b" class="form-control" placeholder="Ej: 85 (correcta)" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="mc1-correct" id="mc1-rad-b" value="B" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="mc1-rad-b" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">B)</label>
+              <input type="text" id="input-mc1-opt-b" class="form-control" placeholder="Ej: 85 (correcta)" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q1-correct" id="q1-rad-c" value="C" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q1-rad-c" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">C)</label>
-              <input type="text" id="input-q1-opt-c" class="form-control" placeholder="Ej: 82" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="mc1-correct" id="mc1-rad-c" value="C" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="mc1-rad-c" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">C)</label>
+              <input type="text" id="input-mc1-opt-c" class="form-control" placeholder="Ej: 82" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q1-correct" id="q1-rad-d" value="D" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q1-rad-d" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">D)</label>
-              <input type="text" id="input-q1-opt-d" class="form-control" placeholder="Ej: 95" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="radio" name="mc1-correct" id="mc1-rad-d" value="D" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
+              <label for="mc1-rad-d" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">D)</label>
+              <input type="text" id="input-mc1-opt-d" class="form-control" placeholder="Ej: 95" style="padding:6px 10px; font-size:0.85rem;">
             </div>
           </div>
         </div>
 
-        <!-- ── BLOQUE PREGUNTA 2 (Visible solo si son 2 preguntas) ── -->
-        <div id="block-q2" style="display:none; background:#0f172a; border:1px solid #334155; border-radius:10px; padding:14px; margin-bottom:14px;">
-          <span style="font-size:0.78rem; font-weight:800; color:#a78bfa; text-transform:uppercase; display:block; margin-bottom:6px;">Pregunta 2</span>
-          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado del problema</label>
-          <textarea id="input-q2-prompt" class="form-control" rows="2" maxlength="180"
-            placeholder="Ej: Si una caja tiene 6 paquetes y cada paquete tiene 4 galletas, ¿cuántas galletas hay en total?"
-            style="resize:vertical; font-size:0.88rem; margin-bottom:10px;"></textarea>
+        <button type="button" onclick="confirmNewEvalMC1()"
+          style="width:100%; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:12px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #2563eb40;">
+          ✓ Confirmar y Generar Fichas
+        </button>
+      </div>
 
-          <label style="font-size:0.72rem; color:#94a3b8; display:block; margin-bottom:6px;">Alternativas (marcá el círculo verde de la <strong>clave correcta</strong>):</label>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q2-correct" id="q2-rad-a" value="A" checked style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q2-rad-a" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">A)</label>
-              <input type="text" id="input-q2-opt-a" class="form-control" placeholder="Ej: 20" style="padding:6px 10px; font-size:0.85rem;">
+      <!-- ── PASO 4c: Builder para Opción Múltiple (2 Preguntas) ── -->
+      <div id="step-mc2-builder" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:0.75rem; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.04em;">
+            4 · Armá tu evaluación de 2 Preguntas
+          </label>
+          <span style="font-size:0.72rem; color:#94a3b8; display:block; margin-top:2px;">
+            Elegí independientemente para cada pregunta si la tomás del banco o la redactás nueva.
+          </span>
+        </div>
+
+        <!-- ── BLOQUE PREGUNTA 1 ── -->
+        <div style="background:#0f172a; border:1.5px solid #334155; border-radius:12px; padding:14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:0.82rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.05em;">
+              📌 Pregunta 1
+            </span>
+            <div style="display:flex; gap:6px;">
+              <button type="button" id="btn-mc2-p1-bank" onclick="mc2SetP1Mode('bank')"
+                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #3b82f6; background:#3b82f620; color:#60a5fa; cursor:pointer;">
+                📚 Cargar del banco
+              </button>
+              <button type="button" id="btn-mc2-p1-new" onclick="mc2SetP1Mode('new')"
+                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer;">
+                ✏️ Redactar nueva
+              </button>
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q2-correct" id="q2-rad-b" value="B" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q2-rad-b" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">B)</label>
-              <input type="text" id="input-q2-opt-b" class="form-control" placeholder="Ej: 24 (correcta)" style="padding:6px 10px; font-size:0.85rem;">
+          </div>
+
+          <!-- Modo Banco P1 -->
+          <div id="mc2-p1-bank-wrap">
+            <select id="mc2-p1-select" class="form-control" onchange="mc2OnBankSelect(1, this.value)"
+              style="padding:8px 10px; font-size:0.85rem; margin-bottom:8px;"></select>
+            <div id="mc2-p1-bank-empty" style="display:none; font-size:0.72rem; color:#f59e0b; margin-bottom:8px;">
+              ⚠️ Todavía no hay preguntas de alternativas guardadas para este grado. Podés redactarla con "✏️ Redactar nueva".
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q2-correct" id="q2-rad-c" value="C" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q2-rad-c" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">C)</label>
-              <input type="text" id="input-q2-opt-c" class="form-control" placeholder="Ej: 28" style="padding:6px 10px; font-size:0.85rem;">
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <input type="radio" name="q2-correct" id="q2-rad-d" value="D" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
-              <label for="q2-rad-d" style="font-weight:800; color:#f1f5f9; width:20px; cursor:pointer;">D)</label>
-              <input type="text" id="input-q2-opt-d" class="form-control" placeholder="Ej: 18" style="padding:6px 10px; font-size:0.85rem;">
+            <div id="mc2-p1-preview" style="display:none; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; font-size:0.8rem;"></div>
+          </div>
+
+          <!-- Modo Nueva P1 -->
+          <div id="mc2-p1-new-wrap" style="display:none;">
+            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado</label>
+            <textarea id="mc2-q1-prompt" class="form-control" rows="2" maxlength="180"
+              placeholder="Ej: En un almacén hay 4 cajas de 6 botellas..."
+              style="resize:vertical; font-size:0.85rem; margin-bottom:8px;"></textarea>
+            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Alternativas y clave correcta:</label>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-a" value="A" checked style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q1-rad-a" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">A)</label>
+                <input type="text" id="mc2-q1-opt-a" class="form-control" placeholder="Alternativa A" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-b" value="B" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q1-rad-b" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">B)</label>
+                <input type="text" id="mc2-q1-opt-b" class="form-control" placeholder="Alternativa B" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-c" value="C" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q1-rad-c" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">C)</label>
+                <input type="text" id="mc2-q1-opt-c" class="form-control" placeholder="Alternativa C" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-d" value="D" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q1-rad-d" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">D)</label>
+                <input type="text" id="mc2-q1-opt-d" class="form-control" placeholder="Alternativa D" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
             </div>
           </div>
         </div>
 
-        <button type="button" onclick="confirmNewEvalMC()"
+        <!-- ── BLOQUE PREGUNTA 2 ── -->
+        <div style="background:#0f172a; border:1.5px solid #334155; border-radius:12px; padding:14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:0.82rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.05em;">
+              📌 Pregunta 2
+            </span>
+            <div style="display:flex; gap:6px;">
+              <button type="button" id="btn-mc2-p2-bank" onclick="mc2SetP2Mode('bank')"
+                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer;">
+                📚 Cargar del banco
+              </button>
+              <button type="button" id="btn-mc2-p2-new" onclick="mc2SetP2Mode('new')"
+                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #3b82f6; background:#3b82f620; color:#60a5fa; cursor:pointer;">
+                ✏️ Redactar nueva
+              </button>
+            </div>
+          </div>
+
+          <!-- Modo Banco P2 -->
+          <div id="mc2-p2-bank-wrap" style="display:none;">
+            <select id="mc2-p2-select" class="form-control" onchange="mc2OnBankSelect(2, this.value)"
+              style="padding:8px 10px; font-size:0.85rem; margin-bottom:8px;"></select>
+            <div id="mc2-p2-bank-empty" style="display:none; font-size:0.72rem; color:#f59e0b; margin-bottom:8px;">
+              ⚠️ Todavía no hay preguntas de alternativas guardadas para este grado. Podés redactarla con "✏️ Redactar nueva".
+            </div>
+            <div id="mc2-p2-preview" style="display:none; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; font-size:0.8rem;"></div>
+          </div>
+
+          <!-- Modo Nueva P2 -->
+          <div id="mc2-p2-new-wrap">
+            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado</label>
+            <textarea id="mc2-q2-prompt" class="form-control" rows="2" maxlength="180"
+              placeholder="Ej: ¿Cuánto es 48 dividido entre 6?..."
+              style="resize:vertical; font-size:0.85rem; margin-bottom:8px;"></textarea>
+            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Alternativas y clave correcta:</label>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-a" value="A" checked style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q2-rad-a" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">A)</label>
+                <input type="text" id="mc2-q2-opt-a" class="form-control" placeholder="Alternativa A" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-b" value="B" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q2-rad-b" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">B)</label>
+                <input type="text" id="mc2-q2-opt-b" class="form-control" placeholder="Alternativa B" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-c" value="C" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q2-rad-c" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">C)</label>
+                <input type="text" id="mc2-q2-opt-c" class="form-control" placeholder="Alternativa C" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-d" value="D" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
+                <label for="mc2-q2-rad-d" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">D)</label>
+                <input type="text" id="mc2-q2-opt-d" class="form-control" placeholder="Alternativa D" style="padding:5px 8px; font-size:0.82rem;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="confirmMC2()"
           style="width:100%; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:12px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #2563eb40;">
           ✓ Confirmar y Generar Fichas
         </button>
@@ -2164,11 +2264,11 @@
 
     // ── Estado interno del wizard ──
     let wizardClassroomId = null;
-    let wizardEvalType = null; // 'mc' (Opción Múltiple) o 'free' (Respuesta Libre)
+    let wizardEvalType = null; // 'mc1' | 'mc2' | 'free'
     let wizardEval = null;     // { id, title, prompt, expectedAnswer, type, ... }
 
     function resetTypeButtons() {
-      ['btn-type-mc', 'btn-type-free'].forEach(id => {
+      ['btn-type-mc1', 'btn-type-mc2', 'btn-type-free'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
           btn.style.borderColor = '#334155';
@@ -2187,25 +2287,35 @@
       if (pages) pages.innerHTML = '';
 
       resetTypeButtons();
-      const activeBtn = document.getElementById(type === 'mc' ? 'btn-type-mc' : 'btn-type-free');
+      const activeBtnId = type === 'mc1' ? 'btn-type-mc1' : (type === 'mc2' ? 'btn-type-mc2' : 'btn-type-free');
+      const activeBtn = document.getElementById(activeBtnId);
       if (activeBtn) {
         const color = wizardClassroomId ? ClassroomData.getClassroomColor(wizardClassroomId) : '#3b82f6';
         activeBtn.style.borderColor = color;
         activeBtn.style.background = color + '22';
       }
 
-      // Mostrar paso 3 (fuente: banco o nueva)
       const stepSrc = document.getElementById('step-source');
-      if (stepSrc) stepSrc.style.display = 'block';
       const stepBank = document.getElementById('step-bank-list');
-      if (stepBank) stepBank.style.display = 'none';
-      const fMC = document.getElementById('step-new-form-mc');
-      if (fMC) fMC.style.display = 'none';
+      const fMC1 = document.getElementById('step-new-form-mc1');
+      const fMC2 = document.getElementById('step-mc2-builder');
       const fFree = document.getElementById('step-new-form-free');
-      if (fFree) fFree.style.display = 'none';
       const stepSumm = document.getElementById('step-summary');
+
+      if (stepBank) stepBank.style.display = 'none';
+      if (fMC1) fMC1.style.display = 'none';
+      if (fFree) fFree.style.display = 'none';
       if (stepSumm) stepSumm.style.display = 'none';
-      resetModeButtons();
+
+      if (type === 'mc2') {
+        if (stepSrc) stepSrc.style.display = 'none';
+        if (fMC2) fMC2.style.display = 'block';
+        mc2Init();
+      } else {
+        if (fMC2) fMC2.style.display = 'none';
+        if (stepSrc) stepSrc.style.display = 'block';
+        resetModeButtons();
+      }
     }
 
     function renderClassroomSelect() {
@@ -2256,8 +2366,10 @@
       if (stepSrc) stepSrc.style.display = 'none';
       const stepBank = document.getElementById('step-bank-list');
       if (stepBank) stepBank.style.display = 'none';
-      const fMC = document.getElementById('step-new-form-mc');
-      if (fMC) fMC.style.display = 'none';
+      const fMC1 = document.getElementById('step-new-form-mc1');
+      if (fMC1) fMC1.style.display = 'none';
+      const fMC2 = document.getElementById('step-mc2-builder');
+      if (fMC2) fMC2.style.display = 'none';
       const fFree = document.getElementById('step-new-form-free');
       if (fFree) fFree.style.display = 'none';
       const stepSumm = document.getElementById('step-summary');
@@ -2409,13 +2521,15 @@
         activeBtn.style.color = color;
       }
 
-      const isMC = wizardEvalType === 'mc';
+      const isMC1 = wizardEvalType === 'mc1';
       const stepBank = document.getElementById('step-bank-list');
       if (stepBank) stepBank.style.display = mode === 'bank' ? 'block' : 'none';
-      const fMC = document.getElementById('step-new-form-mc');
-      if (fMC) fMC.style.display = (mode === 'new' && isMC) ? 'block' : 'none';
+      const fMC1 = document.getElementById('step-new-form-mc1');
+      if (fMC1) fMC1.style.display = (mode === 'new' && isMC1) ? 'block' : 'none';
+      const fMC2 = document.getElementById('step-mc2-builder');
+      if (fMC2) fMC2.style.display = 'none';
       const fFree = document.getElementById('step-new-form-free');
-      if (fFree) fFree.style.display = (mode === 'new' && !isMC) ? 'block' : 'none';
+      if (fFree) fFree.style.display = (mode === 'new' && !isMC1) ? 'block' : 'none';
       const stepSumm = document.getElementById('step-summary');
       if (stepSumm) stepSumm.style.display = 'none';
 
@@ -2425,9 +2539,9 @@
           const sel = document.getElementById('builder-classroom');
           if (sel && sel.value) wizardClassroomId = sel.value;
         }
-        if (isMC) {
-          const q1Prompt = document.getElementById('input-q1-prompt');
-          if (q1Prompt) q1Prompt.focus();
+        if (isMC1) {
+          const mc1Prompt = document.getElementById('input-mc1-prompt');
+          if (mc1Prompt) mc1Prompt.focus();
         } else {
           const freePrompt = document.getElementById('input-free-prompt');
           if (freePrompt) freePrompt.focus();
@@ -2495,7 +2609,7 @@
 
     /**
      * Preguntas del banco que corresponden al grado del salón elegido y a la
-     * modalidad seleccionada (Opción Múltiple o Escritura Libre).
+     * modalidad de respuesta libre.
      *
      * @returns {{lista: Array, grado: object}}
      */
@@ -2507,15 +2621,10 @@
       if (!g.stage || !g.level) return { lista: [], grado: g };
 
       const lista = ClassroomData.getEvaluationList().filter(ev => {
-        const gradeMatch = ev.gradeStage === g.stage && ev.gradeLevel === g.level;
+        const gradeMatch = ev.gradeStage === g.stage && Number(ev.gradeLevel) === Number(g.level);
         if (!gradeMatch) return false;
         const isOMR = ev.type === 'mc' || ev.questionCount || (ev.questions && ev.questions.length > 0);
-        if (wizardEvalType === 'mc') {
-          return isOMR;
-        } else if (wizardEvalType === 'free') {
-          return !isOMR;
-        }
-        return true;
+        return !isOMR;
       });
       return { lista: lista, grado: g };
     }
@@ -2525,7 +2634,9 @@
       if (!container) return;
       container.innerHTML = '';
 
-      const { lista: evals, grado } = evaluacionesDelGradoActual();
+      const g = (typeof gradoDelSalonSeleccionado === 'function')
+        ? gradoDelSalonSeleccionado()
+        : { stage: null, level: null, texto: '' };
       const color = wizardClassroomId ? ClassroomData.getClassroomColor(wizardClassroomId) : '#3b82f6';
 
       const titulo = document.getElementById('bank-title');
@@ -2533,12 +2644,125 @@
       const vacioTitulo = document.getElementById('bank-empty-title');
       const vacioAyuda = document.getElementById('bank-empty-hint');
 
-      const tipoTexto = wizardEvalType === 'mc' ? 'alternativas (OMR)' : 'respuesta libre';
+      if (wizardEvalType === 'mc1') {
+        if (titulo) {
+          titulo.textContent = g.texto
+            ? `4 · Seleccioná una pregunta de alternativas de ${g.texto}`
+            : '4 · Seleccioná una pregunta de alternativas';
+        }
+
+        const mcQuestions = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
+          ? ClassroomData.getIndividualMCQuestions(g.stage, g.level)
+          : [];
+
+        if (mcQuestions.length === 0) {
+          container.style.display = 'none';
+          if (vacio) vacio.style.display = 'block';
+          if (vacioTitulo) {
+            vacioTitulo.textContent = g.texto
+              ? `Todavía no hay preguntas de alternativas para ${g.texto}`
+              : 'Este salón no tiene grado';
+          }
+          if (vacioAyuda) {
+            vacioAyuda.textContent = g.texto
+              ? `Creá tu primera pregunta de alternativas con "✏️ Crear nueva".`
+              : 'Completá el grado del salón en el paso 1 para poder usar el banco.';
+          }
+          return;
+        }
+
+        container.style.display = 'flex';
+        if (vacio) vacio.style.display = 'none';
+
+        mcQuestions.forEach(q => {
+          const card = document.createElement('button');
+          card.style.cssText = [
+            'display:flex', 'flex-direction:column', 'align-items:flex-start',
+            'gap:6px', 'width:100%', 'padding:12px 14px',
+            'background:#1e293b', 'border:1.5px solid #334155',
+            'border-radius:10px', 'cursor:pointer', 'text-align:left',
+            'transition:all 0.15s'
+          ].join(';');
+
+          const headerRow = document.createElement('div');
+          headerRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; width:100%; gap:8px;';
+
+          const title = document.createElement('span');
+          title.textContent = q.title || 'Pregunta de alternativa';
+          title.style.cssText = 'font-size:0.88rem; font-weight:800; color:#f1f5f9;';
+
+          const badge = document.createElement('span');
+          badge.textContent = '🔘 Alternativa (1P)';
+          badge.style.cssText = 'background:#1e3a8a; color:#93c5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;';
+          headerRow.appendChild(title);
+          headerRow.appendChild(badge);
+
+          const preview = document.createElement('span');
+          preview.textContent = q.prompt;
+          preview.style.cssText = 'font-size:0.75rem; color:#94a3b8; line-height:1.35;';
+
+          const optsRow = document.createElement('div');
+          optsRow.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.72rem; color:#cbd5e1; width:100%;';
+          optsRow.innerHTML = `
+            <div>A) ${escaparHtml(q.options?.A || '—')}</div>
+            <div>B) ${escaparHtml(q.options?.B || '—')}</div>
+            <div>C) ${escaparHtml(q.options?.C || '—')}</div>
+            <div>D) ${escaparHtml(q.options?.D || '—')}</div>
+          `;
+
+          const answer = document.createElement('span');
+          answer.textContent = `Clave correcta: ${q.correct}`;
+          answer.style.cssText = 'font-size:0.8rem; font-weight:800; color:#22c55e;';
+
+          const estado = document.createElement('span');
+          estado.textContent = '⚡ Corrección automática por burbujas (A, B, C, D)';
+          estado.style.cssText = 'font-size:0.68rem; font-weight:700; color:#38bdf8;';
+
+          card.appendChild(headerRow);
+          card.appendChild(preview);
+          card.appendChild(optsRow);
+          card.appendChild(answer);
+          card.appendChild(estado);
+
+          card.addEventListener('mouseenter', () => {
+            card.style.borderColor = color;
+            card.style.background = color + '14';
+          });
+          card.addEventListener('mouseleave', () => {
+            card.style.borderColor = '#334155';
+            card.style.background = '#1e293b';
+          });
+
+          card.addEventListener('click', () => {
+            const evalObj = {
+              title: 'Evaluación (1 Pregunta)',
+              type: 'mc',
+              questionCount: 1,
+              prompt: q.prompt,
+              expectedAnswer: `Clave: ${q.correct}`,
+              questions: [q],
+              gradeStage: g.stage,
+              gradeLevel: g.level,
+              gradeText: g.texto
+            };
+            const saved = ClassroomData.saveCustomEvaluation(evalObj);
+            wizardEval = saved;
+            wizardEvalType = 'mc1';
+            showSummary();
+          });
+
+          container.appendChild(card);
+        });
+        return;
+      }
+
+      // Modo Respuesta Libre
+      const { lista: evals, grado } = evaluacionesDelGradoActual();
 
       if (titulo) {
         titulo.textContent = grado.texto
-          ? `4 · Seleccioná una evaluación de ${tipoTexto} de ${grado.texto}`
-          : `4 · Seleccioná una evaluación de ${tipoTexto}`;
+          ? `4 · Seleccioná una evaluación de respuesta libre de ${grado.texto}`
+          : '4 · Seleccioná una evaluación de respuesta libre';
       }
 
       if (evals.length === 0) {
@@ -2546,12 +2770,12 @@
         if (vacio) vacio.style.display = 'block';
         if (vacioTitulo) {
           vacioTitulo.textContent = grado.texto
-            ? `Todavía no hay evaluaciones de ${tipoTexto} para ${grado.texto}`
+            ? `Todavía no hay evaluaciones de respuesta libre para ${grado.texto}`
             : 'Este salón no tiene grado';
         }
         if (vacioAyuda) {
           vacioAyuda.textContent = grado.texto
-            ? `El banco solo muestra las preguntas de ${tipoTexto} para ${grado.texto}. Creá la primera con "✏️ Crear nueva".`
+            ? 'Creá tu primera evaluación de respuesta libre con "✏️ Crear nueva".'
             : 'Completá el grado del salón en el paso 1 para poder usar el banco.';
         }
         return;
@@ -2561,7 +2785,6 @@
       if (vacio) vacio.style.display = 'none';
 
       evals.forEach(ev => {
-        const isOMR = ev.type === 'mc' || ev.questionCount || (ev.questions && ev.questions.length > 0);
         const card = document.createElement('button');
         card.style.cssText = [
           'display:flex', 'flex-direction:column', 'align-items:flex-start',
@@ -2579,14 +2802,8 @@
         title.style.cssText = 'font-size:0.88rem; font-weight:800; color:#f1f5f9;';
 
         const badge = document.createElement('span');
-        if (isOMR) {
-          const qCount = ev.questionCount || (ev.questions ? ev.questions.length : 1);
-          badge.textContent = `🔘 Alternativas (${qCount} ${qCount === 1 ? 'Pregunta' : 'Preguntas'})`;
-          badge.style.cssText = 'background:#1e3a8a; color:#93c5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;';
-        } else {
-          badge.textContent = '✍️ Respuesta Libre';
-          badge.style.cssText = 'background:#064e3b; color:#6ee7b7; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;';
-        }
+        badge.textContent = '✍️ Respuesta Libre';
+        badge.style.cssText = 'background:#064e3b; color:#6ee7b7; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;';
         headerRow.appendChild(title);
         headerRow.appendChild(badge);
 
@@ -2595,7 +2812,7 @@
         preview.style.cssText = 'font-size:0.75rem; color:#94a3b8; line-height:1.35;';
 
         const answer = document.createElement('span');
-        answer.textContent = `Clave / Resp: ${ev.expectedAnswer}`;
+        answer.textContent = `Resp esperada: ${ev.expectedAnswer}`;
         answer.style.cssText = `font-size:0.8rem; font-weight:800; color:${color};`;
 
         card.appendChild(headerRow);
@@ -2603,10 +2820,7 @@
         card.appendChild(answer);
 
         const estado = document.createElement('span');
-        if (isOMR) {
-          estado.textContent = '⚡ Corrección automática por burbujas (A, B, C, D)';
-          estado.style.cssText = 'font-size:0.68rem; font-weight:700; color:#38bdf8;';
-        } else if (ev.hasRubric || ev.rubric) {
+        if (ev.hasRubric || ev.rubric) {
           estado.textContent = '✅ Lista para corregir con IA';
           estado.style.cssText = 'font-size:0.68rem; font-weight:700; color:#4ade80;';
         } else {
@@ -2636,7 +2850,8 @@
 
     function selectEvaluation(evalObj) {
       const isOMR = evalObj.type === 'mc' || evalObj.questionCount || (evalObj.questions && evalObj.questions.length > 0);
-      wizardEvalType = isOMR ? 'mc' : 'free';
+      const qCount = evalObj.questionCount || (evalObj.questions ? evalObj.questions.length : 1);
+      wizardEvalType = isOMR ? (qCount === 2 ? 'mc2' : 'mc1') : 'free';
       wizardEval = evalObj;
       showSummary();
     }
@@ -3262,30 +3477,7 @@
       if (typeof Scanner !== 'undefined' && Scanner.toggleCamera) Scanner.toggleCamera();
     }
 
-    let currentQuestionCount = 1;
-
-    function setQuestionCount(count) {
-      currentQuestionCount = count;
-      const btn1 = document.getElementById('btn-count-1q');
-      const btn2 = document.getElementById('btn-count-2q');
-      const blockQ2 = document.getElementById('block-q2');
-
-      if (btn1) {
-        btn1.style.borderColor = count === 1 ? '#3b82f6' : '#334155';
-        btn1.style.background = count === 1 ? '#3b82f620' : '#1e293b';
-        btn1.style.color = count === 1 ? '#60a5fa' : '#94a3b8';
-      }
-      if (btn2) {
-        btn2.style.borderColor = count === 2 ? '#3b82f6' : '#334155';
-        btn2.style.background = count === 2 ? '#3b82f620' : '#1e293b';
-        btn2.style.color = count === 2 ? '#60a5fa' : '#94a3b8';
-      }
-      if (blockQ2) {
-        blockQ2.style.display = count === 2 ? 'block' : 'none';
-      }
-    }
-
-    function confirmNewEvalMC() {
+    function confirmNewEvalMC1() {
       try {
         if (!wizardClassroomId) {
           const sel = document.getElementById('builder-classroom');
@@ -3299,75 +3491,315 @@
           return;
         }
 
-        const q1Prompt = (document.getElementById('input-q1-prompt')?.value || '').trim();
-        if (!q1Prompt) {
-          document.getElementById('input-q1-prompt')?.focus();
-          showToast('⚠️ Escribí el enunciado de la Pregunta 1.');
+        const prompt = (document.getElementById('input-mc1-prompt')?.value || '').trim();
+        if (!prompt) {
+          document.getElementById('input-mc1-prompt')?.focus();
+          showToast('⚠️ Escribí el enunciado de la pregunta.');
           return;
         }
-        const q1OptA = (document.getElementById('input-q1-opt-a')?.value || '').trim();
-        const q1OptB = (document.getElementById('input-q1-opt-b')?.value || '').trim();
-        const q1OptC = (document.getElementById('input-q1-opt-c')?.value || '').trim();
-        const q1OptD = (document.getElementById('input-q1-opt-d')?.value || '').trim();
-        if (!q1OptA || !q1OptB || !q1OptC || !q1OptD) {
-          showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 1.');
+        const optA = (document.getElementById('input-mc1-opt-a')?.value || '').trim();
+        const optB = (document.getElementById('input-mc1-opt-b')?.value || '').trim();
+        const optC = (document.getElementById('input-mc1-opt-c')?.value || '').trim();
+        const optD = (document.getElementById('input-mc1-opt-d')?.value || '').trim();
+        if (!optA || !optB || !optC || !optD) {
+          showToast('⚠️ Completá las 4 alternativas (A, B, C, D).');
           return;
         }
-        const q1CorrectRad = document.querySelector('input[name="q1-correct"]:checked');
-        const q1Correct = q1CorrectRad ? q1CorrectRad.value : 'A';
+        const rad = document.querySelector('input[name="mc1-correct"]:checked');
+        const correct = rad ? rad.value : 'A';
 
-        let q2Prompt = '', q2OptA = '', q2OptB = '', q2OptC = '', q2OptD = '', q2Correct = 'A';
-        if (currentQuestionCount === 2) {
-          q2Prompt = (document.getElementById('input-q2-prompt')?.value || '').trim();
-          if (!q2Prompt) {
-            document.getElementById('input-q2-prompt')?.focus();
-            showToast('⚠️ Escribí el enunciado de la Pregunta 2.');
-            return;
-          }
-          q2OptA = (document.getElementById('input-q2-opt-a')?.value || '').trim();
-          q2OptB = (document.getElementById('input-q2-opt-b')?.value || '').trim();
-          q2OptC = (document.getElementById('input-q2-opt-c')?.value || '').trim();
-          q2OptD = (document.getElementById('input-q2-opt-d')?.value || '').trim();
-          if (!q2OptA || !q2OptB || !q2OptC || !q2OptD) {
-            showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 2.');
-            return;
-          }
-          const q2CorrectRad = document.querySelector('input[name="q2-correct"]:checked');
-          q2Correct = q2CorrectRad ? q2CorrectRad.value : 'A';
-        }
-
-        const questions = [
-          {
-            prompt: q1Prompt,
-            options: { A: q1OptA, B: q1OptB, C: q1OptC, D: q1OptD },
-            correct: q1Correct
-          }
-        ];
-        if (currentQuestionCount === 2) {
-          questions.push({
-            prompt: q2Prompt,
-            options: { A: q2OptA, B: q2OptB, C: q2OptC, D: q2OptD },
-            correct: q2Correct
-          });
-        }
-
-        const evalPrompt = currentQuestionCount === 1 ? q1Prompt : `1. ${q1Prompt}  |  2. ${q2Prompt}`;
-        const evalExpected = currentQuestionCount === 1 ? `Clave: ${q1Correct}` : `P1: ${q1Correct} | P2: ${q2Correct}`;
+        const q = {
+          prompt: prompt,
+          options: { A: optA, B: optB, C: optC, D: optD },
+          correct: correct
+        };
 
         const g = gradoDelSalonSeleccionado();
         const saved = ClassroomData.saveCustomEvaluation({
-          title: currentQuestionCount === 1 ? 'Evaluación (1 Pregunta)' : 'Evaluación (2 Preguntas)',
+          title: 'Evaluación (1 Pregunta)',
           type: 'mc',
-          questionCount: currentQuestionCount,
-          prompt: evalPrompt,
-          expectedAnswer: evalExpected,
-          questions: questions,
+          questionCount: 1,
+          prompt: prompt,
+          expectedAnswer: `Clave: ${correct}`,
+          questions: [q],
           gradeStage: g.stage || null,
           gradeLevel: g.level || null,
           gradeText: g.texto || null
         });
 
-        // Guardar también en Supabase (fire and forget)
+        // Guardar en Supabase (fire and forget)
+        if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+          SupabaseClient.saveEvaluation({
+            prompt: prompt,
+            expectedAnswer: `Clave: ${correct}`,
+            title: saved.title,
+            gradeStage: g.stage,
+            gradeLevel: g.level,
+            gradeText: g.texto
+          }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+        }
+
+        wizardEvalType = 'mc1';
+        wizardEval = saved;
+        showSummary();
+      } catch (err) {
+        console.error('[confirmNewEvalMC1 Error]', err);
+        showToast('⚠️ Error al confirmar: ' + err.message);
+      }
+    }
+
+    // ── GESTIÓN DE EVALUACIÓN DE 2 PREGUNTAS (MC2) ──
+    let mc2State = {
+      p1Mode: 'bank',
+      p2Mode: 'new',
+      questions: []
+    };
+
+    function mc2Init() {
+      if (!wizardClassroomId) {
+        const sel = document.getElementById('builder-classroom');
+        if (sel && sel.value) wizardClassroomId = sel.value;
+      }
+      const g = gradoDelSalonSeleccionado();
+      mc2State.questions = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
+        ? ClassroomData.getIndividualMCQuestions(g.stage, g.level)
+        : [];
+
+      const empty1 = document.getElementById('mc2-p1-bank-empty');
+      const empty2 = document.getElementById('mc2-p2-bank-empty');
+
+      if (mc2State.questions.length === 0) {
+        mc2SetP1Mode('new');
+        mc2SetP2Mode('new');
+        if (empty1) empty1.style.display = 'block';
+        if (empty2) empty2.style.display = 'block';
+      } else if (mc2State.questions.length === 1) {
+        if (empty1) empty1.style.display = 'none';
+        if (empty2) empty2.style.display = 'none';
+        mc2SetP1Mode('bank');
+        mc2SetP2Mode('new');
+      } else {
+        if (empty1) empty1.style.display = 'none';
+        if (empty2) empty2.style.display = 'none';
+        mc2SetP1Mode('bank');
+        mc2SetP2Mode('bank');
+      }
+
+      mc2PopulateSelects();
+    }
+
+    function mc2PopulateSelects() {
+      const s1 = document.getElementById('mc2-p1-select');
+      const s2 = document.getElementById('mc2-p2-select');
+      if (!s1 || !s2) return;
+
+      const buildOptions = (selectedIdx) => {
+        let html = '<option value="">— Elegí una pregunta del banco —</option>';
+        mc2State.questions.forEach((q, idx) => {
+          const short = q.prompt.length > 55 ? (q.prompt.slice(0, 52) + '…') : q.prompt;
+          const isSel = idx === selectedIdx ? ' selected' : '';
+          html += `<option value="${idx}"${isSel}>[Clave: ${q.correct}] ${escaparHtml(short)}</option>`;
+        });
+        return html;
+      };
+
+      const sel1Idx = mc2State.questions.length > 0 ? 0 : -1;
+      const sel2Idx = mc2State.questions.length > 1 ? 1 : (mc2State.questions.length > 0 ? 0 : -1);
+
+      s1.innerHTML = buildOptions(sel1Idx);
+      s2.innerHTML = buildOptions(sel2Idx);
+
+      if (sel1Idx >= 0) mc2OnBankSelect(1, String(sel1Idx));
+      if (sel2Idx >= 0 && mc2State.questions.length > 1) mc2OnBankSelect(2, String(sel2Idx));
+    }
+
+    function mc2SetP1Mode(mode) {
+      mc2State.p1Mode = mode;
+      const btnBank = document.getElementById('btn-mc2-p1-bank');
+      const btnNew = document.getElementById('btn-mc2-p1-new');
+      const wrapBank = document.getElementById('mc2-p1-bank-wrap');
+      const wrapNew = document.getElementById('mc2-p1-new-wrap');
+      if (btnBank) {
+        btnBank.style.borderColor = mode === 'bank' ? '#3b82f6' : '#334155';
+        btnBank.style.background = mode === 'bank' ? '#3b82f620' : '#1e293b';
+        btnBank.style.color = mode === 'bank' ? '#60a5fa' : '#94a3b8';
+      }
+      if (btnNew) {
+        btnNew.style.borderColor = mode === 'new' ? '#3b82f6' : '#334155';
+        btnNew.style.background = mode === 'new' ? '#3b82f620' : '#1e293b';
+        btnNew.style.color = mode === 'new' ? '#60a5fa' : '#94a3b8';
+      }
+      if (wrapBank) wrapBank.style.display = mode === 'bank' ? 'block' : 'none';
+      if (wrapNew) wrapNew.style.display = mode === 'new' ? 'block' : 'none';
+    }
+
+    function mc2SetP2Mode(mode) {
+      mc2State.p2Mode = mode;
+      const btnBank = document.getElementById('btn-mc2-p2-bank');
+      const btnNew = document.getElementById('btn-mc2-p2-new');
+      const wrapBank = document.getElementById('mc2-p2-bank-wrap');
+      const wrapNew = document.getElementById('mc2-p2-new-wrap');
+      if (btnBank) {
+        btnBank.style.borderColor = mode === 'bank' ? '#3b82f6' : '#334155';
+        btnBank.style.background = mode === 'bank' ? '#3b82f620' : '#1e293b';
+        btnBank.style.color = mode === 'bank' ? '#60a5fa' : '#94a3b8';
+      }
+      if (btnNew) {
+        btnNew.style.borderColor = mode === 'new' ? '#3b82f6' : '#334155';
+        btnNew.style.background = mode === 'new' ? '#3b82f620' : '#1e293b';
+        btnNew.style.color = mode === 'new' ? '#60a5fa' : '#94a3b8';
+      }
+      if (wrapBank) wrapBank.style.display = mode === 'bank' ? 'block' : 'none';
+      if (wrapNew) wrapNew.style.display = mode === 'new' ? 'block' : 'none';
+    }
+
+    function mc2OnBankSelect(pNum, val) {
+      const previewEl = document.getElementById(`mc2-p${pNum}-preview`);
+      if (!previewEl) return;
+      if (val === '' || isNaN(Number(val))) {
+        previewEl.style.display = 'none';
+        previewEl.innerHTML = '';
+        return;
+      }
+      const q = mc2State.questions[Number(val)];
+      if (!q) {
+        previewEl.style.display = 'none';
+        return;
+      }
+
+      previewEl.style.display = 'block';
+      previewEl.innerHTML = `
+        <div style="font-weight:700; color:#f1f5f9; margin-bottom:6px; line-height:1.4;">${escaparHtml(q.prompt)}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.75rem; color:#94a3b8; margin-bottom:6px;">
+          <div><strong>A)</strong> ${escaparHtml(q.options?.A || '—')}</div>
+          <div><strong>B)</strong> ${escaparHtml(q.options?.B || '—')}</div>
+          <div><strong>C)</strong> ${escaparHtml(q.options?.C || '—')}</div>
+          <div><strong>D)</strong> ${escaparHtml(q.options?.D || '—')}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:0.7rem; color:#64748b; font-weight:700;">CLAVE CORRECTA:</span>
+          <span style="background:#166534; color:#4ade80; font-weight:900; font-size:0.78rem; padding:1px 8px; border-radius:4px;">${q.correct}</span>
+        </div>
+      `;
+    }
+
+    function confirmMC2() {
+      try {
+        if (!wizardClassroomId) {
+          const sel = document.getElementById('builder-classroom');
+          if (sel && sel.value) wizardClassroomId = sel.value;
+        }
+        if (!wizardClassroomId) {
+          showToast('⚠️ Primero elegí un salón de clases en el Paso 1.');
+          return;
+        }
+        const g = gradoDelSalonSeleccionado();
+
+        // ── Validar Pregunta 1 ──
+        let q1 = null;
+        if (mc2State.p1Mode === 'bank') {
+          const val1 = document.getElementById('mc2-p1-select')?.value;
+          if (val1 === '' || isNaN(Number(val1))) {
+            showToast('⚠️ Seleccioná la Pregunta 1 del banco o cambiala a "Redactar nueva".');
+            return;
+          }
+          q1 = mc2State.questions[Number(val1)];
+        } else {
+          const prompt1 = (document.getElementById('mc2-q1-prompt')?.value || '').trim();
+          if (!prompt1) {
+            document.getElementById('mc2-q1-prompt')?.focus();
+            showToast('⚠️ Escribí el enunciado de la Pregunta 1.');
+            return;
+          }
+          const optA = (document.getElementById('mc2-q1-opt-a')?.value || '').trim();
+          const optB = (document.getElementById('mc2-q1-opt-b')?.value || '').trim();
+          const optC = (document.getElementById('mc2-q1-opt-c')?.value || '').trim();
+          const optD = (document.getElementById('mc2-q1-opt-d')?.value || '').trim();
+          if (!optA || !optB || !optC || !optD) {
+            showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 1.');
+            return;
+          }
+          const rad = document.querySelector('input[name="mc2-q1-correct"]:checked');
+          const correct = rad ? rad.value : 'A';
+          q1 = { prompt: prompt1, options: { A: optA, B: optB, C: optC, D: optD }, correct: correct };
+
+          // Guardar P1 en el banco
+          ClassroomData.saveCustomEvaluation({
+            title: 'Pregunta de alternativa',
+            type: 'mc',
+            questionCount: 1,
+            prompt: prompt1,
+            expectedAnswer: `Clave: ${correct}`,
+            questions: [q1],
+            gradeStage: g.stage || null,
+            gradeLevel: g.level || null,
+            gradeText: g.texto || null
+          });
+        }
+
+        // ── Validar Pregunta 2 ──
+        let q2 = null;
+        if (mc2State.p2Mode === 'bank') {
+          const val2 = document.getElementById('mc2-p2-select')?.value;
+          if (val2 === '' || isNaN(Number(val2))) {
+            showToast('⚠️ Seleccioná la Pregunta 2 del banco o cambiala a "Redactar nueva".');
+            return;
+          }
+          q2 = mc2State.questions[Number(val2)];
+        } else {
+          const prompt2 = (document.getElementById('mc2-q2-prompt')?.value || '').trim();
+          if (!prompt2) {
+            document.getElementById('mc2-q2-prompt')?.focus();
+            showToast('⚠️ Escribí el enunciado de la Pregunta 2.');
+            return;
+          }
+          const optA = (document.getElementById('mc2-q2-opt-a')?.value || '').trim();
+          const optB = (document.getElementById('mc2-q2-opt-b')?.value || '').trim();
+          const optC = (document.getElementById('mc2-q2-opt-c')?.value || '').trim();
+          const optD = (document.getElementById('mc2-q2-opt-d')?.value || '').trim();
+          if (!optA || !optB || !optC || !optD) {
+            showToast('⚠️ Completá las 4 alternativas (A, B, C, D) de la Pregunta 2.');
+            return;
+          }
+          const rad = document.querySelector('input[name="mc2-q2-correct"]:checked');
+          const correct = rad ? rad.value : 'A';
+          q2 = { prompt: prompt2, options: { A: optA, B: optB, C: optC, D: optD }, correct: correct };
+
+          // Guardar P2 en el banco
+          ClassroomData.saveCustomEvaluation({
+            title: 'Pregunta de alternativa',
+            type: 'mc',
+            questionCount: 1,
+            prompt: prompt2,
+            expectedAnswer: `Clave: ${correct}`,
+            questions: [q2],
+            gradeStage: g.stage || null,
+            gradeLevel: g.level || null,
+            gradeText: g.texto || null
+          });
+        }
+
+        if (q1.prompt === q2.prompt) {
+          showToast('⚠️ La Pregunta 1 y la Pregunta 2 no pueden ser idénticas.');
+          return;
+        }
+
+        const evalPrompt = `1. ${q1.prompt}  |  2. ${q2.prompt}`;
+        const evalExpected = `P1: ${q1.correct} | P2: ${q2.correct}`;
+
+        const saved = ClassroomData.saveCustomEvaluation({
+          title: 'Evaluación (2 Preguntas)',
+          type: 'mc',
+          questionCount: 2,
+          prompt: evalPrompt,
+          expectedAnswer: evalExpected,
+          questions: [q1, q2],
+          gradeStage: g.stage || null,
+          gradeLevel: g.level || null,
+          gradeText: g.texto || null
+        });
+
+        // Guardar en Supabase (fire and forget)
         if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
           SupabaseClient.saveEvaluation({
             prompt: evalPrompt,
@@ -3379,11 +3811,11 @@
           }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
         }
 
-        wizardEvalType = 'mc';
+        wizardEvalType = 'mc2';
         wizardEval = saved;
         showSummary();
       } catch (err) {
-        console.error('[confirmNewEvalMC Error]', err);
+        console.error('[confirmMC2 Error]', err);
         showToast('⚠️ Error al confirmar: ' + err.message);
       }
     }
@@ -3546,8 +3978,10 @@
         // Mostrar paso 5 y ocultar los anteriores
         const bankListEl = document.getElementById('step-bank-list');
         if (bankListEl) bankListEl.style.display = 'none';
-        const fMC = document.getElementById('step-new-form-mc');
-        if (fMC) fMC.style.display = 'none';
+        const fMC1 = document.getElementById('step-new-form-mc1');
+        if (fMC1) fMC1.style.display = 'none';
+        const fMC2 = document.getElementById('step-mc2-builder');
+        if (fMC2) fMC2.style.display = 'none';
         const fFree = document.getElementById('step-new-form-free');
         if (fFree) fFree.style.display = 'none';
         const summaryEl = document.getElementById('step-summary');
@@ -3604,8 +4038,10 @@
       if (stepSource) stepSource.style.display = 'none';
       const stepBank = document.getElementById('step-bank-list');
       if (stepBank) stepBank.style.display = 'none';
-      const fMC = document.getElementById('step-new-form-mc');
-      if (fMC) fMC.style.display = 'none';
+      const fMC1 = document.getElementById('step-new-form-mc1');
+      if (fMC1) fMC1.style.display = 'none';
+      const fMC2 = document.getElementById('step-mc2-builder');
+      if (fMC2) fMC2.style.display = 'none';
       const fFree = document.getElementById('step-new-form-free');
       if (fFree) fFree.style.display = 'none';
       const stepSummary = document.getElementById('step-summary');
@@ -3639,7 +4075,8 @@
       }
 
       const isOMR = session.type === 'mc' || session.questionCount || (session.questions && session.questions.length > 0);
-      wizardEvalType = isOMR ? 'mc' : 'free';
+      const qCount = session.questionCount || (session.questions ? session.questions.length : 1);
+      wizardEvalType = isOMR ? (qCount === 2 ? 'mc2' : 'mc1') : 'free';
 
       const evalObj = ClassroomData.saveCustomEvaluation({
         id: session.evalId,
