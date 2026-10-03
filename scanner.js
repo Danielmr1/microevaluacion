@@ -1242,6 +1242,25 @@
     // contraste es la diferencia entre "el QR no se lee" y "el QR se lee pero
     // solo por el camino de respaldo".
     let qrIntento = qrData ? 1 : 0;
+    let omrResults = null;
+
+    // Sincronizar SIEMPRE con la sesión activa de ClassroomData (Single Source of Truth)
+    const activeSession = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+    if (activeSession) {
+      if (activeSession.classroomId) currentClassroomId = activeSession.classroomId;
+      if (activeSession.evalId) currentEvaluationId = activeSession.evalId;
+    }
+
+    let activeEval = (typeof ClassroomData !== 'undefined' && currentEvaluationId)
+      ? ClassroomData.getEvaluation(currentEvaluationId)
+      : null;
+
+    if (!activeEval && activeSession) {
+      activeEval = activeSession;
+    }
+
+    // Solo es OMR si la evaluación es explícitamente de alternativas ('mc')
+    const isOMR = (activeEval && activeEval.type === 'mc') || (activeSession && activeSession.type === 'mc');
 
     try {
       if (sheetQuad) {
@@ -1301,28 +1320,6 @@
       }
 
       // GUARDRAIL 3 & 5: EXTRACCIÓN DE ROI DE RESOLUCIÓN + CONTRASTE DE GRAFITO / EVALUACIÓN OMR
-      let omrResults = null;
-
-      // Sincronizar SIEMPRE con la sesión activa de ClassroomData (Single Source of Truth)
-      const activeSession = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
-      if (activeSession) {
-        if (activeSession.classroomId) currentClassroomId = activeSession.classroomId;
-        if (activeSession.evalId) currentEvaluationId = activeSession.evalId;
-      }
-
-      let activeEval = (typeof ClassroomData !== 'undefined' && currentEvaluationId)
-        ? ClassroomData.getEvaluation(currentEvaluationId)
-        : null;
-
-      if (!activeEval && activeSession) {
-        activeEval = activeSession;
-      }
-
-      // Por defecto consideramos OMR (opción múltiple) salvo que sea explícitamente formato manuscrito ('free' o 'open')
-      const isExplicitFree = (activeEval && (activeEval.type === 'free' || activeEval.type === 'open' || activeEval.type === 'handwriting'))
-                          || (activeSession && (activeSession.type === 'free' || activeSession.type === 'open' || activeSession.type === 'handwriting'));
-      const isOMR = !isExplicitFree;
-
       if (fullWarpCanvas && typeof ROIProcessor !== 'undefined') {
         if (isOMR && ROIProcessor.evaluateOMRSheet) {
           let qCount = 1;
@@ -1427,189 +1424,191 @@
 
     // Presentar modal con la captura procesada
     setTimeout(() => {
-      const imgEl = document.getElementById('captured-img');
-      if (imgEl && resolutionPreviewUrl) imgEl.src = resolutionPreviewUrl;
+      try {
+        const imgEl = document.getElementById('captured-img');
+        if (imgEl && resolutionPreviewUrl) imgEl.src = resolutionPreviewUrl;
 
-      // Advertencia de duplicado: banner naranja + nombre en color distinto
-      const dupBanner = document.getElementById('res-duplicate-warning');
-      if (dupBanner) dupBanner.style.display = alreadyEvaluated ? 'flex' : 'none';
+        // Advertencia de duplicado: banner naranja + nombre en color distinto
+        const dupBanner = document.getElementById('res-duplicate-warning');
+        if (dupBanner) dupBanner.style.display = alreadyEvaluated ? 'flex' : 'none';
 
-      const nameEl = document.getElementById('res-student-name');
-      if (nameEl) {
-        nameEl.textContent = studentName.toUpperCase();
-        nameEl.style.color = alreadyEvaluated ? '#f97316' : (qrSuccess ? '#f8fafc' : '#f59e0b');
-      }
+        const nameEl = document.getElementById('res-student-name');
+        if (nameEl) {
+          nameEl.textContent = studentName.toUpperCase();
+          nameEl.style.color = alreadyEvaluated ? '#f97316' : (qrSuccess ? '#f8fafc' : '#f59e0b');
+        }
 
-      const idEl = document.getElementById('res-student-id');
-      if (idEl) idEl.textContent = 'ID: ' + studentId;
+        const idEl = document.getElementById('res-student-id');
+        if (idEl) idEl.textContent = 'ID: ' + studentId;
 
-      // Mostrar salón activo en el modal con su color identificador
-      const classroomEl = document.getElementById('res-classroom-name');
-      if (classroomEl) {
-        const clsObj = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
-        const clsColor = typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor
-          ? ClassroomData.getClassroomColor(currentClassroomId)
-          : '#60a5fa';
-        classroomEl.textContent = clsObj ? clsObj.name : currentClassroomId;
-        classroomEl.style.color = clsColor;
-        classroomEl.style.background = clsColor + '18';
-        classroomEl.style.border = `1px solid ${clsColor}40`;
-        classroomEl.style.borderRadius = '5px';
-        classroomEl.style.padding = '1px 6px';
-      }
+        // Mostrar salón activo en el modal con su color identificador
+        const classroomEl = document.getElementById('res-classroom-name');
+        if (classroomEl) {
+          const clsObj = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(currentClassroomId) : null;
+          const clsColor = typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor
+            ? ClassroomData.getClassroomColor(currentClassroomId)
+            : '#60a5fa';
+          classroomEl.textContent = clsObj ? clsObj.name : currentClassroomId;
+          classroomEl.style.color = clsColor;
+          classroomEl.style.background = clsColor + '18';
+          classroomEl.style.border = `1px solid ${clsColor}40`;
+          classroomEl.style.borderRadius = '5px';
+          classroomEl.style.padding = '1px 6px';
+        }
 
-      const testEl = document.getElementById('res-test-id');
-      if (testEl) testEl.textContent = 'Resultado Esperado: ' + expectedAns;
+        const testEl = document.getElementById('res-test-id');
+        if (testEl) testEl.textContent = 'Resultado Esperado: ' + expectedAns;
 
-      // Renderizar resultado OMR o imagen de escritura tradicional
-      const omrContainer = document.getElementById('omr-result-container');
-      const hwContainer = document.getElementById('handwriting-result-container');
+        // Renderizar resultado OMR o imagen de escritura tradicional
+        const omrContainer = document.getElementById('omr-result-container');
+        const hwContainer = document.getElementById('handwriting-result-container');
 
-      if (isOMR && omrResults && omrResults.length > 0) {
-        if (omrContainer) {
-          omrContainer.style.display = 'flex';
-          omrContainer.innerHTML = '';
+        if (isOMR && omrResults && omrResults.length > 0) {
+          if (omrContainer) {
+            omrContainer.style.display = 'flex';
+            omrContainer.innerHTML = '';
 
-          const questionsList = (activeEval && activeEval.questions)
-                             || (activeSession && activeSession.questions)
-                             || [];
+            const questionsList = (activeEval && activeEval.questions)
+                               || (activeSession && activeSession.questions)
+                               || [];
 
-          let allCorrect = true;
-          const evaluatedResults = [];
+            let allCorrect = true;
+            const evaluatedResults = [];
 
-          omrResults.forEach((qRes, idx) => {
-            const qObj = questionsList[idx] || null;
-            let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
-            if (!expectedKey) {
-              if (idx === 0) {
-                const m1 = String(expectedAns).match(/(?:P1[:\s]+)?([A-D])/i);
-                if (m1) expectedKey = m1[1].toUpperCase();
-              } else if (idx === 1) {
-                const m2 = String(expectedAns).match(/P2[:\s]+([A-D])/i);
-                if (m2) expectedKey = m2[1].toUpperCase();
+            omrResults.forEach((qRes, idx) => {
+              const qObj = questionsList[idx] || null;
+              let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
+              if (!expectedKey) {
+                if (idx === 0) {
+                  const m1 = String(expectedAns).match(/(?:P1[:\s]+)?([A-D])/i);
+                  if (m1) expectedKey = m1[1].toUpperCase();
+                } else if (idx === 1) {
+                  const m2 = String(expectedAns).match(/P2[:\s]+([A-D])/i);
+                  if (m2) expectedKey = m2[1].toUpperCase();
+                }
               }
-            }
-            if (!expectedKey) {
-              const mDef = String(expectedAns).match(/[A-D]/i);
-              expectedKey = mDef ? mDef[0].toUpperCase() : 'A';
-            }
-            const m = String(expectedKey).match(/[A-D]/i);
-            if (m) expectedKey = m[0].toUpperCase();
+              if (!expectedKey) {
+                const mDef = String(expectedAns).match(/[A-D]/i);
+                expectedKey = mDef ? mDef[0].toUpperCase() : 'A';
+              }
+              const m = String(expectedKey).match(/[A-D]/i);
+              if (m) expectedKey = m[0].toUpperCase();
 
-            const isCorrect = qRes.marked === expectedKey;
-            if (!isCorrect) allCorrect = false;
+              const isCorrect = qRes.marked === expectedKey;
+              if (!isCorrect) allCorrect = false;
 
-            evaluatedResults.push({
-              qIndex: qRes.qIndex,
-              marked: qRes.marked,
-              expected: expectedKey,
-              correct: isCorrect
+              evaluatedResults.push({
+                qIndex: qRes.qIndex,
+                marked: qRes.marked,
+                expected: expectedKey,
+                correct: isCorrect
+              });
+
+              let markedLabel = qRes.marked;
+              let markedColor = '#f8fafc';
+              if (qRes.marked === 'BLANK') {
+                markedLabel = '⚠️ En blanco (no marcada)';
+                markedColor = '#fbbf24';
+              } else if (qRes.marked === 'MULTIPLE') {
+                markedLabel = '⚠️ Doble marca';
+                markedColor = '#f87171';
+              }
+
+              const item = document.createElement('div');
+              item.style.background = '#1e293b';
+              item.style.borderRadius = '8px';
+              item.style.padding = '8px 12px';
+              item.style.border = isCorrect ? '1.5px solid #22c55e' : (qRes.marked === 'BLANK' ? '1.5px solid #f59e0b' : '1.5px solid #ef4444');
+              item.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-weight:700; color:#e2e8f0; font-size:0.85rem;">Pregunta ${qRes.qIndex}</span>
+                  <span style="font-weight:800; font-size:0.82rem; padding:2px 8px; border-radius:5px; background:${isCorrect ? '#22c55e20' : '#ef444420'}; color:${isCorrect ? '#22c55e' : '#ef4444'};">
+                    ${isCorrect ? '✅ CORRECTA' : (qRes.marked === 'BLANK' ? '⚠️ SIN RESPUESTA' : '❌ INCORRECTA')}
+                  </span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; color:#94a3b8;">
+                  <span>Marcó: <strong style="color:${markedColor}; font-size:1.15rem; margin-left:4px;">${markedLabel}</strong></span>
+                  <span>Clave esperada: <strong style="color:#22c55e; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
+                </div>
+              `;
+              omrContainer.appendChild(item);
             });
 
-            let markedLabel = qRes.marked;
-            let markedColor = '#f8fafc';
-            if (qRes.marked === 'BLANK') {
-              markedLabel = '⚠️ En blanco (no marcada)';
-              markedColor = '#fbbf24';
-            } else if (qRes.marked === 'MULTIPLE') {
-              markedLabel = '⚠️ Doble marca';
-              markedColor = '#f87171';
+            lastOMRInfo = { allCorrect: allCorrect, results: evaluatedResults };
+            persistCapture(studentId, studentName, lastOMRInfo);
+          }
+          if (hwContainer) hwContainer.style.display = 'none';
+        } else {
+          lastOMRInfo = null;
+          persistCapture(studentId, studentName, null);
+          if (omrContainer) omrContainer.style.display = 'none';
+          if (hwContainer) hwContainer.style.display = 'block';
+
+          const ansImgEl = document.getElementById('captured-answer-img');
+          if (ansImgEl) {
+            if (answerPreviewUrl) {
+              ansImgEl.src = answerPreviewUrl;
+              ansImgEl.style.display = 'block';
+            } else {
+              ansImgEl.style.display = 'none';
             }
+          }
 
-            const item = document.createElement('div');
-            item.style.background = '#1e293b';
-            item.style.borderRadius = '8px';
-            item.style.padding = '8px 12px';
-            item.style.border = isCorrect ? '1.5px solid #22c55e' : (qRes.marked === 'BLANK' ? '1.5px solid #f59e0b' : '1.5px solid #ef4444');
-            item.innerHTML = `
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:700; color:#e2e8f0; font-size:0.85rem;">Pregunta ${qRes.qIndex}</span>
-                <span style="font-weight:800; font-size:0.82rem; padding:2px 8px; border-radius:5px; background:${isCorrect ? '#22c55e20' : '#ef444420'}; color:${isCorrect ? '#22c55e' : '#ef4444'};">
-                  ${isCorrect ? '✅ CORRECTA' : (qRes.marked === 'BLANK' ? '⚠️ SIN RESPUESTA' : '❌ INCORRECTA')}
-                </span>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.82rem; color:#94a3b8;">
-                <span>Marcó: <strong style="color:${markedColor}; font-size:1.15rem; margin-left:4px;">${markedLabel}</strong></span>
-                <span>Clave esperada: <strong style="color:#22c55e; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
-              </div>
-            `;
-            omrContainer.appendChild(item);
-          });
-
-          lastOMRInfo = { allCorrect: allCorrect, results: evaluatedResults };
-          persistCapture(studentId, studentName, lastOMRInfo);
+          const expValEl = document.getElementById('res-expected-val');
+          if (expValEl) expValEl.textContent = expectedAns;
         }
-        if (hwContainer) hwContainer.style.display = 'none';
-      } else {
-        lastOMRInfo = null;
-        persistCapture(studentId, studentName, null);
-        if (omrContainer) omrContainer.style.display = 'none';
-        if (hwContainer) hwContainer.style.display = 'block';
 
-        const ansImgEl = document.getElementById('captured-answer-img');
-        if (ansImgEl) {
-          if (answerPreviewUrl) {
-            ansImgEl.src = answerPreviewUrl;
-            ansImgEl.style.display = 'block';
+        const evalPromptEl = document.getElementById('res-eval-prompt');
+        if (evalPromptEl && activeEval) {
+          evalPromptEl.textContent = activeEval.prompt;
+        }
+
+        const sharpEl = document.getElementById('res-sharpness');
+        if (sharpEl) sharpEl.textContent = sharpness + '%';
+
+        // GUARDRAIL 9: Mostrar/ocultar advertencia de imagen oscura
+        const g9Banner = document.getElementById('g9-dark-image-warning');
+        const g9Val = document.getElementById('g9-brightness-val');
+        if (g9Banner) g9Banner.style.display = imageTooDark ? 'flex' : 'none';
+        if (g9Val) g9Val.textContent = brightnessPercent;
+
+        const focusDuration = targetLockStartTime ? ((Date.now() - targetLockStartTime) / 1000).toFixed(2) : '0.20';
+        const timeEl = document.getElementById('res-time');
+        if (timeEl) timeEl.textContent = focusDuration + ' s';
+
+        // Selector de respaldo de 1 toque si el QR no se pudo decodificar
+        const manualWrap = document.getElementById('manual-student-wrap');
+        if (manualWrap) {
+          if (!qrSuccess) {
+            manualWrap.style.display = 'block';
+            populateManualStudentSelect();
           } else {
-            ansImgEl.style.display = 'none';
+            manualWrap.style.display = 'none';
           }
         }
 
-        const expValEl = document.getElementById('res-expected-val');
-        if (expValEl) expValEl.textContent = expectedAns;
+        renderModalPending();
+        playDing();
+
+        ultimaCaptura = {
+          momento: new Date().toLocaleTimeString(),
+          alumno: studentId + (studentObj ? ' (' + studentObj.name + ')' : ''),
+          qrTexto: qrText || '',
+          intentoQr: qrIntento === 0 ? 'ninguno (no se leyo)' : ('intento ' + qrIntento + ' de 3'),
+          cobertura: typeof coverage !== 'undefined' ? coverage : 0,
+          nitidez: sharpness,
+          brillo: brightnessPercent,
+          enfoque: focusDuration,
+          respuestaEsperada: expectedAns,
+          demasiadoOscura: imageTooDark,
+          yaEvaluado: alreadyEvaluated
+        };
+      } catch (modalErr) {
+        console.error('[Scanner] Error renderizando modal:', modalErr);
+      } finally {
+        const modal = document.getElementById('capture-modal');
+        if (modal) modal.classList.add('open');
       }
-
-      const evalPromptEl = document.getElementById('res-eval-prompt');
-      if (evalPromptEl && activeEval) {
-        evalPromptEl.textContent = activeEval.prompt;
-      }
-
-      const sharpEl = document.getElementById('res-sharpness');
-      if (sharpEl) sharpEl.textContent = sharpness + '%';
-
-      // GUARDRAIL 9: Mostrar/ocultar advertencia de imagen oscura
-      const g9Banner = document.getElementById('g9-dark-image-warning');
-      const g9Val = document.getElementById('g9-brightness-val');
-      if (g9Banner) g9Banner.style.display = imageTooDark ? 'flex' : 'none';
-      if (g9Val) g9Val.textContent = brightnessPercent;
-
-      const focusDuration = targetLockStartTime ? ((Date.now() - targetLockStartTime) / 1000).toFixed(2) : '0.20';
-      const timeEl = document.getElementById('res-time');
-      if (timeEl) timeEl.textContent = focusDuration + ' s';
-
-      // Selector de respaldo de 1 toque si el QR no se pudo decodificar
-      const manualWrap = document.getElementById('manual-student-wrap');
-      if (manualWrap) {
-        if (!qrSuccess) {
-          manualWrap.style.display = 'block';
-          populateManualStudentSelect();
-        } else {
-          manualWrap.style.display = 'none';
-        }
-      }
-
-      const modal = document.getElementById('capture-modal');
-      if (modal) modal.classList.add('open');
-      // Poblar pendientes en el modal (quiénes faltan escanear)
-      renderModalPending();
-      playDing();
-
-      // Rastro para el diagnóstico: TODO lo que hizo falta para resolver esta
-      // captura, junto. Si algo sale mal, esto es lo único que queda.
-      ultimaCaptura = {
-        momento: new Date().toLocaleTimeString(),
-        alumno: studentId + (studentObj ? ' (' + studentObj.name + ')' : ''),
-        qrTexto: qrText || '',
-        intentoQr: qrIntento === 0 ? 'ninguno (no se leyo)' : ('intento ' + qrIntento + ' de 3'),
-        cobertura: typeof coverage !== 'undefined' ? coverage : 0,
-        nitidez: sharpness,
-        brillo: brightnessPercent,
-        enfoque: focusDuration,
-        respuestaEsperada: expectedAns,
-        demasiadoOscura: imageTooDark,
-        yaEvaluado: alreadyEvaluated
-      };
     }, 150);
   }
 
