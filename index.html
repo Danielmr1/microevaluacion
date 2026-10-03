@@ -2619,7 +2619,7 @@
       const lista = ClassroomData.getEvaluationList().filter(ev => {
         const gradeMatch = ev.gradeStage === g.stage && Number(ev.gradeLevel) === Number(g.level);
         if (!gradeMatch) return false;
-        const isOMR = ev.type === 'mc' || ev.questionCount || (ev.questions && ev.questions.length > 0);
+        const isOMR = ev.type === 'mc';
         return !isOMR;
       });
       return { lista: lista, grado: g };
@@ -4086,7 +4086,7 @@
         return;
       }
 
-      const isOMR = session.type === 'mc' || session.questionCount || (session.questions && session.questions.length > 0);
+      const isOMR = session.type === 'mc';
       const qCount = session.questionCount || (session.questions ? session.questions.length : 1);
       wizardEvalType = isOMR ? (qCount === 2 ? 'mc2' : 'mc1') : 'free';
 
@@ -4136,7 +4136,7 @@
         <div class="fiducial fiducial-bl" title="ArUco 3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/></svg></div>
       `;
 
-      const isOMR = evaluation.type === 'mc' || evaluation.questionCount || (evaluation.questions && evaluation.questions.length > 0);
+      const isOMR = evaluation.type === 'mc';
       const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
 
       // CASO 1: Opción Múltiple - 1 Pregunta
