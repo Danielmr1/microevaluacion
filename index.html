@@ -2179,6 +2179,13 @@
 
     function selectEvalType(type) {
       wizardEvalType = type;
+      wizardEval = null;
+      ClassroomData.setActiveSession(null);
+
+      // Limpiar fichas impresas anteriores al cambiar de modo
+      const pages = document.getElementById('pages-container');
+      if (pages) pages.innerHTML = '';
+
       resetTypeButtons();
       const activeBtn = document.getElementById(type === 'mc' ? 'btn-type-mc' : 'btn-type-free');
       if (activeBtn) {
@@ -3347,19 +3354,29 @@
         const evalPrompt = currentQuestionCount === 1 ? q1Prompt : `1. ${q1Prompt}  |  2. ${q2Prompt}`;
         const evalExpected = currentQuestionCount === 1 ? `Clave: ${q1Correct}` : `P1: ${q1Correct} | P2: ${q2Correct}`;
 
+        const g = gradoDelSalonSeleccionado();
         const saved = ClassroomData.saveCustomEvaluation({
           title: currentQuestionCount === 1 ? 'Evaluación (1 Pregunta)' : 'Evaluación (2 Preguntas)',
           type: 'mc',
           questionCount: currentQuestionCount,
           prompt: evalPrompt,
           expectedAnswer: evalExpected,
-          questions: questions
+          questions: questions,
+          gradeStage: g.stage || null,
+          gradeLevel: g.level || null,
+          gradeText: g.texto || null
         });
 
         // Guardar también en Supabase (fire and forget)
         if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
-          SupabaseClient.saveEvaluation(evalPrompt, evalExpected, saved.title)
-            .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+          SupabaseClient.saveEvaluation({
+            prompt: evalPrompt,
+            expectedAnswer: evalExpected,
+            title: saved.title,
+            gradeStage: g.stage,
+            gradeLevel: g.level,
+            gradeText: g.texto
+          }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
         }
 
         wizardEvalType = 'mc';
@@ -3401,19 +3418,29 @@
 
         const unit = (document.getElementById('input-free-unit')?.value || '').trim();
 
+        const g = gradoDelSalonSeleccionado();
         const saved = ClassroomData.saveCustomEvaluation({
           title: 'Evaluación de Respuesta Libre',
           type: 'free',
           questionCount: 1,
           prompt: prompt,
           expectedAnswer: expected,
-          unitHint: unit
+          unitHint: unit,
+          gradeStage: g.stage || null,
+          gradeLevel: g.level || null,
+          gradeText: g.texto || null
         });
 
         // Guardar en Supabase
         if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
-          SupabaseClient.saveEvaluation(prompt, expected, saved.title)
-            .catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
+          SupabaseClient.saveEvaluation({
+            prompt: prompt,
+            expectedAnswer: expected,
+            title: saved.title,
+            gradeStage: g.stage,
+            gradeLevel: g.level,
+            gradeText: g.texto
+          }).catch(e => console.warn('[Banco] No se pudo guardar en Supabase:', e && e.message));
         }
 
         wizardEvalType = 'free';
@@ -3915,6 +3942,7 @@
 
       // 1. Guardar en el banco local del docente. Se REUTILIZA el id de la
       //    evaluación en curso cuando existe
+      const g = gradoDelSalon(classId);
       const savedEval = ClassroomData.saveCustomEvaluation({
         id: (wizardEval && wizardEval.id) || undefined,
         title: title,
@@ -3923,7 +3951,10 @@
         unitHint: '',
         type: (wizardEval && wizardEval.type) || undefined,
         questionCount: (wizardEval && wizardEval.questionCount) || undefined,
-        questions: (wizardEval && wizardEval.questions) || undefined
+        questions: (wizardEval && wizardEval.questions) || undefined,
+        gradeStage: (wizardEval && wizardEval.gradeStage) || (g && g.stage) || undefined,
+        gradeLevel: (wizardEval && wizardEval.gradeLevel) || (g && g.level) || undefined,
+        gradeText: (wizardEval && wizardEval.gradeText) || (g && g.texto) || undefined
       });
 
       // 2. Sesión activa

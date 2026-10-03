@@ -158,7 +158,10 @@
       gradeStage: e.gradeStage || null,
       gradeLevel: e.gradeLevel || null,
       gradeText: e.gradeText || formatGrade(e.gradeStage, e.gradeLevel),
-      hasRubric: !!e.rubric
+      hasRubric: !!e.rubric,
+      type: e.type || undefined,
+      questionCount: e.questionCount || undefined,
+      questions: e.questions || undefined
     }));
   }
 
