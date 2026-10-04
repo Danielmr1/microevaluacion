@@ -620,6 +620,56 @@
     return data || [];
   }
 
+  /**
+   * Elimina el resultado de un alumno específico en una sesión.
+   * @param {string} sessionRef
+   * @param {string} studentCode
+   * @returns {Promise<boolean>}
+   */
+  async function deleteResult(sessionRef, studentCode) {
+    const client = getClient();
+    if (!client || !sessionRef || !studentCode) return false;
+    const user = await getCurrentUser();
+    if (!user) return false;
+
+    const { error } = await client
+      .from('microeval_results')
+      .delete()
+      .eq('teacher_id', user.id)
+      .eq('session_ref', sessionRef)
+      .eq('student_code', studentCode);
+
+    if (error) {
+      console.error('[SupabaseClient] Error eliminando resultado:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Elimina todos los resultados de una sesión (reinicio completo de sesión).
+   * @param {string} sessionRef
+   * @returns {Promise<boolean>}
+   */
+  async function deleteSessionResults(sessionRef) {
+    const client = getClient();
+    if (!client || !sessionRef) return false;
+    const user = await getCurrentUser();
+    if (!user) return false;
+
+    const { error } = await client
+      .from('microeval_results')
+      .delete()
+      .eq('teacher_id', user.id)
+      .eq('session_ref', sessionRef);
+
+    if (error) {
+      console.error('[SupabaseClient] Error reiniciando resultados de la sesión:', error.message);
+      return false;
+    }
+    return true;
+  }
+
   // ─────────────────────────────────────────────
   // CORRECCIÓN CON IA (Edge Function)
   // ─────────────────────────────────────────────
@@ -687,6 +737,8 @@
     loadRecentEvaluations,
     saveResult,
     loadSessionResults,
+    deleteResult,
+    deleteSessionResults,
     gradeSheet
   };
 

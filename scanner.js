@@ -321,6 +321,13 @@
     renderModalPending();
   }
 
+  function removeEvaluatedStudent(id) {
+    if (id) evaluatedStudentIds.delete(id);
+    updateSessionCounter();
+    renderRosterPanel();
+    renderModalPending();
+  }
+
   // --- ENTRADA POR FOTO GUARDADA (botón "Probar Foto") ---
   // Procesa una imagen guardada por el MISMO camino que una captura en vivo:
   // se dibuja en el canvas de proceso de 640px, se buscan los 4 marcadores
@@ -1791,6 +1798,7 @@
     closeModal,
     setSession,
     setEvaluatedStudents,
+    removeEvaluatedStudent,
     onClassroomChanged,
     onEvaluationChanged,
     assignManualStudent,
