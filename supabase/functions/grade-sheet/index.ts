@@ -170,6 +170,7 @@ async function llamarGemini(params: {
     contents: [{ parts }],
     generationConfig: {
       temperature: 0.1,
+      maxOutputTokens: 600,
       responseMimeType: 'application/json',
       responseSchema: ESQUEMA_RESPUESTA
     }
