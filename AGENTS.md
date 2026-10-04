@@ -66,3 +66,49 @@ Todo asistente de inteligencia artificial o desarrollador que opere en este repo
     - **Reintentar con la IA.**
     - **Editar o corregir el enunciado y las alternativas.**
     - **Cancelar.**
+
+---
+
+## 7. Integridad del Modo de Corrección (Aislamiento de IA en Modo Rápido)
+* Si una sesión de alternativas está configurada en modo rápido (`session.correctionMode === 'quick'`), el sistema **TIENE TERMINANTEMENTE PROHIBIDO** disparar llamadas de red a modelos de IA.
+* La corrección en este modo es 100% determinista, instantánea y local mediante el algoritmo OMR.
+* La foto de la cuadrícula de cálculo se preserva siempre como respaldo visual, pero sin consumir cuota ni bloquear la experiencia con llamadas innecesarias a la nube.
+
+---
+
+## 8. Coherencia Total del Borrado de Resultados (Anti-Desincronización)
+* Toda acción de borrado de resultados (sea individual por alumno o reinicio total de sesión) **DEBE sincronizar en tiempo real los 3 niveles del sistema**:
+  1. **Base de Datos (Supabase):** Eliminar el registro en `microeval_results` con `deleteResult` o `deleteSessionResults`.
+  2. **Memoria del Escáner (`scanner.js`):** Actualizar el conjunto `evaluatedStudentIds` (`removeEvaluatedStudent` o `setEvaluatedStudents([])`).
+  3. **Interfaz de Usuario (UI):** Decrementar el contador en vivo y cambiar el estado del alumno en la nómina (de verde a gris) inmediatamente, para que el docente pueda volver a escanear a ese alumno de inmediato sin falsos avisos de duplicado.
+
+---
+
+## 9. Resiliencia de Aula: Falla Silenciosa y Fallback de IA (Cero Bloqueo)
+* El ritmo del docente en el aula escaneando fichas **NUNCA debe ser detenido ni bloqueado por la IA**.
+* Si la llamada a Gemini excede el tiempo límite (timeout de 4 segundos), hay intermitencia de red o falla el servidor:
+  * El escáner **JAMÁS congela la pantalla** ni impide pasar al siguiente alumno.
+  * La imagen y el OMR se almacenan con estado `Pendiente de análisis IA`.
+  * La cámara se desbloquea de inmediato para continuar con el siguiente estudiante.
+
+---
+
+## 10. Sanitización y Resiliencia en la Exportación a Excel
+* El generador de planillas de cálculo (SheetJS) **NUNCA debe arrojar excepciones no capturadas ni romper la aplicación**.
+* Todo campo nulo o indefinido debe sanitizarse con guion (`—`).
+* Los nombres de estudiantes con caracteres especiales (`Ñ`, tildes, símbolos) deben exportarse con codificación UTF-8 estricta para garantizar compatibilidad con cualquier versión de Microsoft Excel en Windows y Mac.
+
+---
+
+## 11. No-Invasión del Clasificador Neuronal Local (Gatekeeper INT8)
+* La red neuronal ligera local (simulador INT8) actúa **únicamente como filtro de eficiencia** (detección de cuadrícula vacía / pre-lectura de dígitos aislados) y **NUNCA califica ni reemplaza el criterio pedagógico de Gemini**.
+* Si la red local presenta baja certeza, ambigüedad o duda, **TIENE TERMINANTEMENTE PROHIBIDO descartar o penalizar el procedimiento del estudiante**: delega la imagen íntegra a Gemini para su evaluación integral.
+* El tiempo de inferencia local no debe superar los **50 ms** por captura para preservar la fluidez ininterrumpida del escaneo en el aula.
+
+---
+
+## 12. Preservación de Versión Funcional Estable (Checkpoints y Cero Pérdida)
+* **Siempre debe existir una versión funcional y verificada del sistema.**
+* Antes de iniciar cualquier refactorización o integración mayor (como módulos de IA o redes neuronales), el estado funcional anterior debe estar documentado, respaldado y con su número de versión claramente etiquetado (ej. `v3.1.6`).
+* Si una actualización o experimento introduce inestabilidad en módulos previamente probados, **se debe priorizar la restauración inmediata del estado estable verificado**.
+

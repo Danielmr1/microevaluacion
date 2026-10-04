@@ -1411,7 +1411,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Microevaluación A5 <span class="version-tag">v3.1.6</span></h1>
+        <h1>Microevaluación A5 <span class="version-tag">v3.1.7</span></h1>
         <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
@@ -2140,7 +2140,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.1.6</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.1.7</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -2171,6 +2171,8 @@
         <div class="answer-comparison-box" style="background:#0f172a; border-radius:10px; padding:10px 12px; border:1px solid #334155; display:flex; flex-direction:column; gap:6px;">
           <!-- Bloque dinámico de alternativas OMR -->
           <div id="omr-result-container" style="display:none; flex-direction:column; gap:8px;"></div>
+          <!-- Estado de procedimiento OMR con IA -->
+          <div id="omr-proc-status" style="display:none;"></div>
 
           <!-- Bloque tradicional para escritura manuscrita -->
           <div id="handwriting-result-container">
@@ -2181,6 +2183,8 @@
             <div style="background:#ffffff; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; min-height:48px; max-height:64px; overflow:hidden; border:1.5px solid #cbd5e1; margin-top:4px;">
               <img id="captured-answer-img" src="" alt="Respuesta escrita por el alumno" style="max-height:56px; width:auto; max-width:100%; object-fit:contain; filter:contrast(1.15);">
             </div>
+            <!-- Estado de análisis IA para respuesta libre -->
+            <div id="hw-ai-status" style="display:none;"></div>
           </div>
         </div>
 
@@ -3873,23 +3877,44 @@
       students.forEach((st, idx) => {
         const res = resultMap.get(st.id);
         const isEvaluated = !!res;
-        const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.ai_expected_match === true) || (res.deterministic_match === true));
+        const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
+        const isPendingAI = res && res.ai_raw && res.ai_raw.pendingAI;
+        const aiGrading = res && res.ai_raw && res.ai_raw.aiGrading;
 
-        const statusBadge = isEvaluated
-          ? `<span style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">✅ Evaluado</span>`
-          : `<span style="background:rgba(100,116,139,0.15); color:#94a3b8; border:1px solid #334155; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; white-space:nowrap;">⏳ Pendiente</span>`;
+        let statusBadge = `<span style="background:rgba(100,116,139,0.15); color:#94a3b8; border:1px solid #334155; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; white-space:nowrap;">⏳ Pendiente</span>`;
+        if (isEvaluated) {
+          if (isPendingAI) {
+            statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">⏳ Analizando IA</span>`;
+          } else {
+            statusBadge = `<span style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">✅ Evaluado</span>`;
+          }
+        }
 
-        const answerText = isEvaluated
-          ? (res.ai_answer_read || 'Marcada')
-          : '—';
+        let answerContent = '—';
+        if (isEvaluated) {
+          answerContent = `<div style="font-size:0.88rem; font-weight:800; color:#60a5fa;">${res.ai_answer_read || 'Registrado'}</div>`;
+          if (aiGrading) {
+            if (session.type === 'mc') {
+              const procOk = aiGrading.procedure_valid;
+              answerContent += `<div style="font-size:0.7rem; color:${procOk ? '#c084fc' : '#f59e0b'}; font-weight:700; margin-top:2px;">${procOk ? '🔬 Procedimiento OK' : '⚠️ Sin procedimiento'}</div>`;
+            } else {
+              answerContent += `<div style="font-size:0.7rem; color:#38bdf8; font-weight:700; margin-top:2px;">Nota: ${aiGrading.score}/4 pts</div>`;
+            }
+          }
+        }
 
         const expectedText = session.expectedAnswer || (res ? res.expected_answer : '—') || '—';
 
-        const verdictBadge = isEvaluated
-          ? (isOk
-              ? `<span style="color:#22c55e; font-weight:800; font-size:0.82rem;">✓ CORRECTA</span>`
-              : `<span style="color:#ef4444; font-weight:800; font-size:0.82rem;">✗ INCORRECTA</span>`)
-          : `<span style="color:#64748b; font-size:0.8rem;">—</span>`;
+        let verdictBadge = `<span style="color:#64748b; font-size:0.8rem;">—</span>`;
+        if (isEvaluated) {
+          if (isPendingAI) {
+            verdictBadge = `<span style="color:#f59e0b; font-size:0.78rem; font-weight:700;">⏳ En proceso</span>`;
+          } else if (isOk) {
+            verdictBadge = `<span style="color:#22c55e; font-weight:800; font-size:0.82rem;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}">✓ CORRECTA</span>`;
+          } else {
+            verdictBadge = `<span style="color:#ef4444; font-weight:800; font-size:0.82rem;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}">✗ INCORRECTA</span>`;
+          }
+        }
 
         const deleteBtn = isEvaluated
           ? `<button type="button" onclick="handleDeleteSingleResult('${st.id}')" title="Borrar este resultado para reevaluar"
@@ -3904,7 +3929,7 @@
             <td style="padding:10px 12px; font-size:0.8rem; font-weight:800; color:#cbd5e1; white-space:nowrap;">${st.id}</td>
             <td style="padding:10px 12px; font-size:0.85rem; font-weight:700; color:#f8fafc;">${st.name}</td>
             <td style="padding:10px 12px;">${statusBadge}</td>
-            <td style="padding:10px 12px; font-size:0.88rem; font-weight:800; color:${isEvaluated ? '#60a5fa' : '#64748b'};">${answerText}</td>
+            <td style="padding:10px 12px;">${answerContent}</td>
             <td style="padding:10px 12px; font-size:0.85rem; font-weight:700; color:#94a3b8;">${expectedText}</td>
             <td style="padding:10px 12px;">${verdictBadge}</td>
             <td style="padding:10px 12px; text-align:center;">${deleteBtn}</td>
@@ -3999,16 +4024,21 @@
 
       const rows = students.map((s, idx) => {
         const res = resultMap ? resultMap.get(s.id) : null;
-        const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.ai_expected_match === true) || (res.deterministic_match === true));
+        const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
+        const aiGrading = res && res.ai_raw && res.ai_raw.aiGrading;
         return {
           'N°': idx + 1,
           'Código': s.id,
           'Estudiante': s.name,
           'Salón': classroom.name,
-          'Estado': res ? 'EVALUADO' : 'PENDIENTE',
-          'Marcó / Respuesta': res ? (res.ai_answer_read || 'S/D') : '—',
+          'Estado': res ? (res.ai_raw?.pendingAI ? 'ANALIZANDO_IA' : 'EVALUADO') : 'PENDIENTE',
+          'Marcó / Respuesta': res ? (res.ai_answer_read || '—') : '—',
           'Clave Esperada': session.expectedAnswer || '—',
           'Veredicto': res ? (isOk ? 'CORRECTA' : 'INCORRECTA') : 'PENDIENTE',
+          'Puntaje (0-4)': (aiGrading && aiGrading.score != null) ? aiGrading.score : '—',
+          'Procedimiento Válido': (aiGrading && aiGrading.procedure_valid != null) ? (aiGrading.procedure_valid ? 'SÍ' : 'NO') : '—',
+          'Error Pedagógico': (res && res.ai_error_type && res.ai_error_type !== 'ninguno') ? res.ai_error_type : '—',
+          'Retroalimentación IA': (res && res.ai_teacher_feedback) ? res.ai_teacher_feedback : '—',
           'Fecha y Hora': res && res.captured_at ? new Date(res.captured_at).toLocaleString() : '—'
         };
       });

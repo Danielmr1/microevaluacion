@@ -433,7 +433,135 @@
   //
   let lastOMRInfo = null;
 
-  function persistCapture(studentId, studentName, omrInfo = null) {
+  function updateModalWithAIResult(studentId, evalData, isMC) {
+    const idEl = document.getElementById('res-student-id');
+    if (!idEl || !idEl.textContent.includes(studentId)) return;
+
+    if (!isMC) {
+      const hwStatus = document.getElementById('hw-ai-status');
+      if (hwStatus) {
+        hwStatus.style.display = 'block';
+        const isOk = evalData.verdict === 'CORRECTO' || evalData.score >= 3.5;
+        const color = isOk ? '#4ade80' : (evalData.score > 0 ? '#f59e0b' : '#f87171');
+        const badge = isOk ? '✅ CORRECTO' : (evalData.score > 0 ? '⚠️ PARCIAL' : '❌ INCORRECTO');
+        hwStatus.innerHTML = `
+          <div style="background:#0f172a; border:1px solid ${color}; border-radius:6px; padding:6px 10px; margin-top:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.75rem; color:${color};">
+              <span>🤖 IA leyó: "${evalData.answer_read || '—'}"</span>
+              <span>${badge} (${evalData.score || 0}/4 pts)</span>
+            </div>
+            ${evalData.feedback ? `<div style="font-size:0.7rem; color:#cbd5e1; margin-top:3px; line-height:1.3;">${evalData.feedback}</div>` : ''}
+          </div>
+        `;
+      }
+    } else {
+      const omrStatus = document.getElementById('omr-proc-status');
+      if (omrStatus) {
+        omrStatus.style.display = 'block';
+        const valid = evalData.procedure_valid;
+        const color = valid ? '#a855f7' : '#f59e0b';
+        omrStatus.innerHTML = `
+          <div style="background:#1e1035; border:1px solid ${color}; border-radius:6px; padding:6px 10px; margin-top:6px; font-size:0.74rem;">
+            <strong style="color:${color};">🔬 Análisis de Procedimiento IA:</strong>
+            <span style="color:#e9d5ff; margin-left:4px;">${valid ? '✅ Procedimiento en cuadrícula respalda la respuesta.' : '⚠️ No se identificó procedimiento que respalde el resultado.'}</span>
+            ${evalData.feedback ? `<div style="font-size:0.69rem; color:#d8b4fe; margin-top:3px;">${evalData.feedback}</div>` : ''}
+          </div>
+        `;
+      }
+    }
+  }
+
+  function dispatchBackgroundGradeSheet(context) {
+    const { studentId, studentName, session, cls, activeEval, isUuid, isMC, info, images, aiRawBase, answerRead, isMatch, verdict } = context;
+
+    if (!images || (!images.answerImage && !images.gridImage)) {
+      return;
+    }
+
+    const payload = {
+      type: isMC ? 'mc' : 'free',
+      prompt: session.prompt || (activeEval ? activeEval.prompt : ''),
+      expectedAnswer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : ''),
+      rubric: activeEval?.rubric || session?.rubric || null,
+      answerImage: images.answerImage || null,
+      gridImage: images.gridImage || null,
+      omrSelected: info?.results ? info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(', ') : null,
+      omrMatch: info ? info.allCorrect : null
+    };
+
+    // Carrera de timeout de 4.5 segundos según Regla 9 (Resiliencia y Cero Bloqueo)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout de 4.5s excedido en llamada IA')), 4500)
+    );
+
+    Promise.race([
+      SupabaseClient.gradeSheet(payload),
+      timeoutPromise
+    ]).then(res => {
+      if (!res || !res.ok || !res.data) {
+        console.warn('[GradeSheet] No se obtuvo evaluación válida de IA:', res?.error);
+        return;
+      }
+
+      const evalData = res.data;
+      console.log('[GradeSheet] Resultado IA recibido para', studentId, evalData);
+
+      const isMatchAI = isMC
+        ? (info ? info.allCorrect : false)
+        : (evalData.score >= 3.5 || evalData.verdict === 'CORRECTO');
+
+      const updatedVerdict = isMC
+        ? (info && info.allCorrect ? 'CORRECTA' : 'INCORRECTA')
+        : (evalData.verdict || (isMatchAI ? 'CORRECTA' : 'INCORRECTA'));
+
+      const updatedRaw = Object.assign({}, aiRawBase || {}, {
+        aiGrading: evalData,
+        pendingAI: false,
+        gradedAt: new Date().toISOString()
+      });
+
+      // Actualizar registro en Supabase con los datos de procedimiento
+      SupabaseClient.saveResult({
+        session_ref: session.sessionRef,
+        classroom_id: isUuid ? currentClassroomId : null,
+        student_code: studentId,
+        student_name: studentName,
+        grade_stage: cls ? cls.gradeStage : null,
+        grade_level: cls ? cls.gradeLevel : null,
+        evaluation_ref: currentEvaluationId,
+        evaluation_title: session.title || null,
+        prompt: session.prompt || (activeEval ? activeEval.prompt : null),
+        expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+        ai_answer_read: isMC ? answerRead : (evalData.answer_read || 'Leído por IA'),
+        ai_expected_match: isMatchAI,
+        deterministic_match: isMC ? (info ? info.allCorrect : false) : isMatchAI,
+        ai_procedure: evalData.procedure_valid ? 'correcto' : 'incorrecto',
+        ai_error_type: evalData.error_detectado || 'ninguno',
+        ai_teacher_feedback: evalData.feedback || null,
+        teacher_verdict: updatedVerdict,
+        ai_raw: updatedRaw,
+        captured_at: new Date().toISOString()
+      }).then(() => {
+        // Refrescar modal de resultados si está en pantalla
+        if (typeof loadAndRenderResultsTable === 'function') {
+          const resultsModal = document.getElementById('results-modal');
+          if (resultsModal && resultsModal.style.display !== 'none') {
+            loadAndRenderResultsTable();
+          }
+        }
+        // Actualizar distintivo visual en el modal de captura si aún está abierto
+        updateModalWithAIResult(studentId, evalData, isMC);
+      }).catch(err => {
+        console.warn('[GradeSheet] Error actualizando resultado IA:', err);
+      });
+
+    }).catch(err => {
+      // Regla 9: Falla silenciosa sin interrumpir al docente
+      console.warn('[GradeSheet] Falla silenciosa de IA (resiliencia de aula):', err?.message || err);
+    });
+  }
+
+  function persistCapture(studentId, studentName, omrInfo = null, images = null) {
     if (typeof SupabaseClient === 'undefined' || !SupabaseClient.saveResult) return;
     if (typeof ClassroomData === 'undefined') return;
 
@@ -462,6 +590,8 @@
 
     const info = omrInfo || lastOMRInfo;
     const correctionMode = session.correctionMode || (session.type === 'mc' ? 'quick' : 'rubric');
+    const isMC = (session.type === 'mc' || (activeEval && activeEval.type === 'mc'));
+
     if (info && info.results && info.results.length > 0) {
       answerRead = info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(' | ');
       isMatch = info.allCorrect;
@@ -471,8 +601,16 @@
         correctionMode: correctionMode,
         pendingAI: (correctionMode === 'full')
       };
+    } else {
+      answerRead = 'Pendiente de análisis IA';
+      verdict = 'PENDIENTE';
+      aiRaw = {
+        pendingAI: true,
+        correctionMode: 'rubric'
+      };
     }
 
+    // 1. Guardado determinista inmediato en Supabase (cero latencia)
     SupabaseClient.saveResult({
       session_ref: session.sessionRef,
       classroom_id: isUuid ? currentClassroomId : null,
@@ -494,6 +632,29 @@
       if (row) console.log('[Resultados] Captura guardada en Supabase:', studentId, verdict);
     }).catch(e => {
       console.warn('[Resultados] No se pudo guardar la captura:', e && e.message);
+    });
+
+    // 2. Comprobar si requiere análisis de IA en segundo plano
+    // Regla 7: Si es MC y quick -> TERMINANTEMENTE PROHIBIDO llamar a IA
+    if (isMC && correctionMode === 'quick') {
+      return;
+    }
+
+    // Regla 9: Análisis en segundo plano sin congelar la cámara
+    dispatchBackgroundGradeSheet({
+      studentId,
+      studentName,
+      session,
+      cls,
+      activeEval,
+      isUuid,
+      isMC,
+      info,
+      images,
+      aiRawBase: aiRaw,
+      answerRead,
+      isMatch,
+      verdict
     });
   }
 
@@ -1622,12 +1783,23 @@
             });
 
             lastOMRInfo = { allCorrect: allCorrect, results: evaluatedResults };
-            persistCapture(studentId, studentName, lastOMRInfo);
+            let omrGridDataUrl = null;
+            if (omrCrops && omrCrops[0] && omrCrops[0].gridCanvas) {
+              omrGridDataUrl = omrCrops[0].gridCanvas.toDataURL('image/jpeg', 0.88);
+            }
+            persistCapture(studentId, studentName, lastOMRInfo, {
+              answerImage: null,
+              gridImage: omrGridDataUrl,
+              omrCrops: omrCrops
+            });
           }
           if (hwContainer) hwContainer.style.display = 'none';
         } else {
           lastOMRInfo = null;
-          persistCapture(studentId, studentName, null);
+          persistCapture(studentId, studentName, null, {
+            answerImage: answerPreviewUrl,
+            gridImage: resolutionPreviewUrl
+          });
           if (omrContainer) omrContainer.style.display = 'none';
           if (hwContainer) hwContainer.style.display = 'block';
 
