@@ -436,21 +436,23 @@
   function updateModalWithAIResult(studentId, evalData, isMC) {
     const idEl = document.getElementById('res-student-id');
     if (!idEl || !idEl.textContent.includes(studentId)) return;
+    const cleanData = (evalData && evalData.data) ? evalData.data : evalData;
+    if (!cleanData) return;
 
     if (!isMC) {
       const hwStatus = document.getElementById('hw-ai-status');
       if (hwStatus) {
         hwStatus.style.display = 'block';
-        const isOk = evalData.verdict === 'CORRECTO' || evalData.score >= 3.5;
-        const color = isOk ? '#4ade80' : (evalData.score > 0 ? '#f59e0b' : '#f87171');
-        const badge = isOk ? '✅ CORRECTO' : (evalData.score > 0 ? '⚠️ PARCIAL' : '❌ INCORRECTO');
+        const isOk = cleanData.verdict === 'CORRECTO' || cleanData.score >= 3.5;
+        const color = isOk ? '#4ade80' : (cleanData.score > 0 ? '#f59e0b' : '#f87171');
+        const badge = isOk ? '✅ CORRECTO' : (cleanData.score > 0 ? '⚠️ PARCIAL' : '❌ INCORRECTO');
         hwStatus.innerHTML = `
           <div style="background:#0f172a; border:1px solid ${color}; border-radius:6px; padding:6px 10px; margin-top:6px;">
             <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.75rem; color:${color};">
-              <span>🤖 IA leyó: "${evalData.answer_read || '—'}"</span>
-              <span>${badge} (${evalData.score || 0}/4 pts)</span>
+              <span>🤖 IA leyó: "${cleanData.answer_read || '—'}"</span>
+              <span>${badge} (${cleanData.score || 0}/4 pts)</span>
             </div>
-            ${evalData.feedback ? `<div style="font-size:0.7rem; color:#cbd5e1; margin-top:3px; line-height:1.3;">${evalData.feedback}</div>` : ''}
+            ${cleanData.feedback ? `<div style="font-size:0.7rem; color:#cbd5e1; margin-top:3px; line-height:1.3;">${cleanData.feedback}</div>` : ''}
           </div>
         `;
       }
@@ -458,13 +460,13 @@
       const omrStatus = document.getElementById('omr-proc-status');
       if (omrStatus) {
         omrStatus.style.display = 'block';
-        const valid = evalData.procedure_valid;
+        const valid = cleanData.procedure_valid;
         const color = valid ? '#a855f7' : '#f59e0b';
         omrStatus.innerHTML = `
           <div style="background:#1e1035; border:1px solid ${color}; border-radius:6px; padding:6px 10px; margin-top:6px; font-size:0.74rem;">
             <strong style="color:${color};">🔬 Análisis de Procedimiento IA:</strong>
             <span style="color:#e9d5ff; margin-left:4px;">${valid ? '✅ Procedimiento en cuadrícula respalda la respuesta.' : '⚠️ No se identificó procedimiento que respalde el resultado.'}</span>
-            ${evalData.feedback ? `<div style="font-size:0.69rem; color:#d8b4fe; margin-top:3px;">${evalData.feedback}</div>` : ''}
+            ${cleanData.feedback ? `<div style="font-size:0.69rem; color:#d8b4fe; margin-top:3px;">${cleanData.feedback}</div>` : ''}
           </div>
         `;
       }
@@ -557,7 +559,8 @@
         throw new Error(res?.error || 'Respuesta no válida del servicio de IA');
       }
 
-      const evalData = res.data;
+      // Desempaquetar datos en caso de envoltura { ok: true, data: { ... } }
+      const evalData = (res.data && res.data.data) ? res.data.data : res.data;
       console.log('[GradeSheet] Resultado IA recibido para', studentId, evalData);
 
       const isMatchAI = isMC

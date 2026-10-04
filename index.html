@@ -3879,7 +3879,7 @@
         const isEvaluated = !!res;
         const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
         const isPendingAI = res && res.ai_raw && res.ai_raw.pendingAI;
-        const aiGrading = res && res.ai_raw && res.ai_raw.aiGrading;
+        const aiGrading = res && res.ai_raw && (res.ai_raw.aiGrading?.data || res.ai_raw.aiGrading);
         const capturedTime = res && res.captured_at ? new Date(res.captured_at).getTime() : 0;
         const isStale = isPendingAI && capturedTime && (Date.now() - capturedTime > 40000);
 
@@ -4041,7 +4041,7 @@
       const rows = students.map((s, idx) => {
         const res = resultMap ? resultMap.get(s.id) : null;
         const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
-        const aiGrading = res && res.ai_raw && res.ai_raw.aiGrading;
+        const aiGrading = res && res.ai_raw && (res.ai_raw.aiGrading?.data || res.ai_raw.aiGrading);
         return {
           'N°': idx + 1,
           'Código': s.id,
