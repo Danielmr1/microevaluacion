@@ -3885,7 +3885,9 @@
         if (isEvaluated) {
           if (isPendingAI) {
             if (res.ai_raw && res.ai_raw.aiError) {
-              statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="${res.ai_raw.errorDetail || 'Sin respuesta en 30s'}">⚠️ Sin conexión</span>`;
+              const isOffline = res.ai_raw.aiError === 'timeout_or_offline';
+              const label = isOffline ? '⚠️ Sin conexión' : '⚠️ Error IA';
+              statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="${res.ai_raw.errorDetail || ''}">${label}</span>`;
             } else {
               statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">⏳ Analizando IA</span>`;
             }

@@ -620,13 +620,15 @@
       updateModalWithAIResult(studentId, evalData, isMC);
 
     } catch (err) {
-      console.warn('[GradeSheet] Falla silenciosa o timeout de 30s:', err?.message || err);
+      console.warn('[GradeSheet] Error en llamada IA:', err?.message || err);
 
-      // Guardar con estado explícito de 'Sin conexión' para permitir reintento posterior
+      const isTimeout = err?.message && err.message.includes('Timeout');
+      const errType = isTimeout ? 'timeout_or_offline' : 'ai_error';
+
       const updatedRaw = Object.assign({}, aiRawBase || {}, {
         pendingAI: true,
-        aiError: 'timeout_or_offline',
-        errorDetail: err?.message || 'Sin respuesta en 30s'
+        aiError: errType,
+        errorDetail: err?.message || 'Error en análisis IA'
       });
 
       try {
