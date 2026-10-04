@@ -2862,7 +2862,7 @@
           headerRow.style.cssText = 'display:flex; justify-content:space-between; align-items:center; width:100%; gap:8px;';
 
           const title = document.createElement('span');
-          title.textContent = q.title || 'Pregunta de alternativa';
+          title.textContent = (q.title && !q.title.includes('2 Preguntas')) ? q.title : 'Pregunta de alternativa';
           title.style.cssText = 'font-size:0.88rem; font-weight:800; color:#f1f5f9; flex:1;';
 
           const actionsRow = document.createElement('div');
@@ -3245,7 +3245,7 @@
         titleBox.style.cssText = 'display:flex; align-items:center; gap:8px; flex:1; min-width:0;';
         titleBox.innerHTML = `
           <span style="background:#1e3a8a; color:#93c5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;">🔘 Alternativas</span>
-          <span style="font-size:0.85rem; font-weight:800; color:#f1f5f9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escaparHtml(q.title || 'Pregunta de alternativa')}</span>
+          <span style="font-size:0.85rem; font-weight:800; color:#f1f5f9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escaparHtml((q.title && !q.title.includes('2 Preguntas')) ? q.title : 'Pregunta de alternativa')}</span>
         `;
 
         const btnDel = document.createElement('button');

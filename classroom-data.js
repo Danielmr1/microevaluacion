@@ -340,7 +340,7 @@
             gradeStage: ev.gradeStage || stage,
             gradeLevel: ev.gradeLevel || level,
             gradeText: ev.gradeText || formatGrade(stage, level),
-            title: ev.title || 'Pregunta de alternativa'
+            title: (q.title && !q.title.includes('2 Preguntas') ? q.title : 'Pregunta de alternativa')
           });
         });
       } else if (ev.options && (ev.options.A || ev.options.B || ev.options.C || ev.options.D)) {
@@ -367,7 +367,7 @@
           gradeStage: ev.gradeStage || stage,
           gradeLevel: ev.gradeLevel || level,
           gradeText: ev.gradeText || formatGrade(stage, level),
-          title: ev.title || 'Pregunta de alternativa'
+          title: (ev.title && !ev.title.includes('2 Preguntas') ? ev.title : 'Pregunta de alternativa')
         });
       }
     });
