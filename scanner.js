@@ -934,6 +934,9 @@
     if (ctx && overlay) {
       ctx.clearRect(0, 0, overlay.width, overlay.height);
     }
+    if (screen.orientation && screen.orientation.unlock) {
+      try { screen.orientation.unlock(); } catch (e) {}
+    }
     resetHUD();
   }
 
@@ -1849,13 +1852,16 @@
               item.style.border = `1.5px solid ${cardBorder}`;
               item.style.marginBottom = '8px';
               item.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">
-                  <div style="font-weight:700; color:#f8fafc; font-size:0.85rem; line-height:1.35;">
-                    <span style="color:#60a5fa; font-weight:800; margin-right:4px;">${qRes.qIndex}.</span> ${safeEscape(qPrompt)}
-                  </div>
-                  <span style="font-weight:800; font-size:0.75rem; padding:2px 8px; border-radius:5px; background:${badgeBg}; color:${badgeColor}; white-space:nowrap;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-size:0.75rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.04em;">
+                    Pregunta ${qRes.qIndex}
+                  </span>
+                  <span style="font-weight:800; font-size:0.75rem; padding:3px 9px; border-radius:5px; background:${badgeBg}; color:${badgeColor}; white-space:nowrap;">
                     ${badgeText}
                   </span>
+                </div>
+                <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; line-height:1.4; margin-bottom:8px;">
+                  ${safeEscape(qPrompt)}
                 </div>
 
                 ${gridImgUrl ? `
