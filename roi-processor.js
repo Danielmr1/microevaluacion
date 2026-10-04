@@ -337,12 +337,11 @@
    * @param {number} cxMm Coordenada X del centro en mm
    * @param {number} cyMm Coordenada Y del centro en mm
    * @param {number} darkCutoff Umbral de luminancia por debajo del cual un píxel es considerado oscuro
-   * @returns {number} Densidad de píxeles oscuros de 0.0 a 1.0
    */
   function measureBubbleDarkness(sheetCanvas, cxMm, cyMm, darkCutoff = 165) {
-    // Para ser tolerante a variaciones de impresión, corte y encuadre (+-2mm vertical),
+    // Para ser tolerante a variaciones de impresión, corte y encuadre (+-2.8mm vertical),
     // probamos el centro y offsets de barrido vertical
-    const offsets = [0, -1.0, 1.0, -2.0, 2.0];
+    const offsets = [0, -0.7, 0.7, -1.4, 1.4, -2.1, 2.1, -2.8, 2.8];
     let maxDark = 0;
     const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
 
@@ -426,6 +425,7 @@
 
   /**
    * Evalúa la ficha completa en modo alternativas (1 o 2 preguntas)
+   * Disposición estándar: Enunciado -> Cuadrícula de cálculo -> Alternativas al pie
    * @param {HTMLCanvasElement} sheetCanvas
    * @param {number} questionCount 1 o 2 preguntas
    * @returns {Array<{ qIndex: number, marked: string, confidence: number, densities: Object }>}
@@ -433,14 +433,16 @@
   function evaluateOMRSheet(sheetCanvas, questionCount = 1) {
     if (!isValidCanvas(sheetCanvas)) return [];
     if (questionCount === 2) {
-      const q1Result = evaluateAlternativeRow(sheetCanvas, 47.5);
-      const q2Result = evaluateAlternativeRow(sheetCanvas, 99.5);
+      // 2 Preguntas: P1 tiene alternativas a Y=71.5mm y P2 a Y=125.5mm
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 71.5);
+      const q2Result = evaluateAlternativeRow(sheetCanvas, 125.5);
       return [
         Object.assign({ qIndex: 1 }, q1Result),
         Object.assign({ qIndex: 2 }, q2Result)
       ];
     } else {
-      const q1Result = evaluateAlternativeRow(sheetCanvas, 50.5);
+      // 1 Pregunta: Alternativas al pie en Y=124.0mm (misma altura que franja Rpta en libre)
+      const q1Result = evaluateAlternativeRow(sheetCanvas, 124.0);
       return [
         Object.assign({ qIndex: 1 }, q1Result)
       ];
@@ -449,14 +451,14 @@
 
   const ROI_OMR_CONFIG = {
     MC2: {
-      Q1_BUBBLES: mmToPx(15.0, 42.5, 156.0, 10.0),
-      Q1_GRID: mmToPx(16.0, 53.0, 154.0, 20.0),
-      Q2_BUBBLES: mmToPx(15.0, 94.5, 156.0, 10.0),
-      Q2_GRID: mmToPx(16.0, 105.0, 154.0, 20.0)
+      Q1_GRID: mmToPx(15.0, 40.0, 156.0, 26.0),
+      Q1_BUBBLES: mmToPx(15.0, 65.5, 156.0, 12.0),
+      Q2_GRID: mmToPx(15.0, 94.0, 156.0, 26.0),
+      Q2_BUBBLES: mmToPx(15.0, 119.5, 156.0, 12.0)
     },
     MC1: {
-      Q1_BUBBLES: mmToPx(15.0, 45.0, 156.0, 10.5),
-      Q1_GRID: mmToPx(16.0, 57.0, 154.0, 68.0)
+      Q1_GRID: mmToPx(14.0, 49.0, 158.0, 67.0),
+      Q1_BUBBLES: mmToPx(15.0, 117.5, 156.0, 13.0)
     }
   };
 
@@ -475,7 +477,7 @@
     const list = [];
 
     // Brillo base del papel para Pregunta 1
-    const pLum1 = samplePaperLuminance(sheetCanvas, is2Q ? 47.5 : 50.5);
+    const pLum1 = samplePaperLuminance(sheetCanvas, is2Q ? 71.5 : 124.0);
     const whiteCutoff1 = Math.max(90, Math.min(235, Math.round(pLum1 * 0.98)));
     const blackCutoff1 = Math.max(25, Math.round(pLum1 * 0.40));
 
@@ -496,7 +498,7 @@
 
     // Pregunta 2 si corresponde
     if (is2Q) {
-      const pLum2 = samplePaperLuminance(sheetCanvas, 99.5);
+      const pLum2 = samplePaperLuminance(sheetCanvas, 125.5);
       const whiteCutoff2 = Math.max(90, Math.min(235, Math.round(pLum2 * 0.98)));
       const blackCutoff2 = Math.max(25, Math.round(pLum2 * 0.40));
 

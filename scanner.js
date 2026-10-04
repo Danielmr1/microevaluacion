@@ -1569,17 +1569,6 @@
                   </span>
                 </div>
 
-                ${bubblesImgUrl ? `
-                <div style="margin-bottom:6px;">
-                  <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
-                    🔘 Alternativas en la ficha:
-                  </div>
-                  <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:48px; overflow:hidden; border:1px solid #475569;">
-                    <img src="${bubblesImgUrl}" alt="Alternativas Pregunta ${qRes.qIndex}" style="max-height:44px; width:auto; max-width:100%; object-fit:contain;">
-                  </div>
-                </div>
-                ` : ''}
-
                 ${gridImgUrl ? `
                 <div style="margin-bottom:6px;">
                   <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
@@ -1587,6 +1576,17 @@
                   </div>
                   <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:85px; overflow:hidden; border:1px solid #475569;">
                     <img src="${gridImgUrl}" alt="Cálculo Pregunta ${qRes.qIndex}" style="max-height:80px; width:auto; max-width:100%; object-fit:contain;">
+                  </div>
+                </div>
+                ` : ''}
+
+                ${bubblesImgUrl ? `
+                <div style="margin-bottom:6px;">
+                  <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
+                    🔘 Alternativas marcadas:
+                  </div>
+                  <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:48px; overflow:hidden; border:1px solid #475569;">
+                    <img src="${bubblesImgUrl}" alt="Alternativas Pregunta ${qRes.qIndex}" style="max-height:44px; width:auto; max-width:100%; object-fit:contain;">
                   </div>
                 </div>
                 ` : ''}
