@@ -2880,7 +2880,7 @@
           btnDel.addEventListener('mouseleave', () => { btnDel.style.background = 'rgba(239,68,68,0.15)'; btnDel.style.color = '#ef4444'; });
           btnDel.addEventListener('click', (e) => {
             e.stopPropagation();
-            handleDeleteQuestionFromBank(q.prompt, q.prompt);
+            handleDeleteQuestionFromBank(q.prompt, q.prompt, q.id);
           });
           actionsRow.appendChild(btnDel);
 
@@ -3071,9 +3071,9 @@
       });
     }
 
-    function handleDeleteQuestionFromBank(target, displayText) {
+    function handleDeleteQuestionFromBank(target, displayText, optionalId) {
       const evalObj = (typeof ClassroomData !== 'undefined' && ClassroomData.getEvaluation)
-        ? (ClassroomData.getEvaluation(target) || Object.values(ClassroomData.EVALUATIONS || {}).find(e => e && (e.id === target || e.prompt === target)))
+        ? (ClassroomData.getEvaluation(target) || (optionalId && ClassroomData.getEvaluation(optionalId)) || Object.values(ClassroomData.EVALUATIONS || {}).find(e => e && (e.id === target || e.prompt === target || (optionalId && e.id === optionalId))))
         : null;
       const promptToDelete = evalObj ? evalObj.prompt : target;
       const promptPreview = (displayText || promptToDelete || '').substring(0, 180);
@@ -3101,12 +3101,17 @@
               try {
                 if (typeof ClassroomData !== 'undefined' && ClassroomData.deleteCustomEvaluation) {
                   ClassroomData.deleteCustomEvaluation(target);
+                  if (optionalId) ClassroomData.deleteCustomEvaluation(optionalId);
                   if (promptToDelete && promptToDelete !== target) {
                     ClassroomData.deleteCustomEvaluation(promptToDelete);
                   }
                 }
                 if (typeof SupabaseClient !== 'undefined' && SupabaseClient.deleteEvaluation) {
-                  await SupabaseClient.deleteEvaluation(promptToDelete);
+                  await SupabaseClient.deleteEvaluation(target);
+                  if (optionalId) await SupabaseClient.deleteEvaluation(optionalId);
+                  if (promptToDelete && promptToDelete !== target) {
+                    await SupabaseClient.deleteEvaluation(promptToDelete);
+                  }
                 }
                 showToast('🗑️ Pregunta eliminada del banco');
                 renderBankCards();
@@ -3255,7 +3260,7 @@
         btnDel.addEventListener('mouseenter', () => { btnDel.style.background = '#ef4444'; btnDel.style.color = '#fff'; });
         btnDel.addEventListener('mouseleave', () => { btnDel.style.background = 'rgba(239,68,68,0.15)'; btnDel.style.color = '#ef4444'; });
         btnDel.onclick = () => {
-          handleDeleteQuestionFromBank(q.prompt, q.prompt);
+          handleDeleteQuestionFromBank(q.prompt, q.prompt, q.id);
         };
 
         header.appendChild(titleBox);

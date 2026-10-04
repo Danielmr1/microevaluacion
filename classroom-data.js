@@ -543,34 +543,70 @@
   function deleteCustomEvaluation(evalIdOrPrompt) {
     if (!evalIdOrPrompt) return false;
     const target = String(evalIdOrPrompt).trim();
-    let targetId = null;
+    let deletedCount = 0;
 
+    // 1. Si es ID directo de una evaluación
     if (EVALUATIONS[target]) {
-      targetId = target;
-    } else {
-      targetId = Object.keys(EVALUATIONS).find(k =>
-        EVALUATIONS[k] && (EVALUATIONS[k].id === target || EVALUATIONS[k].prompt === target)
-      );
+      delete EVALUATIONS[target];
+      deletedCount++;
     }
 
-    if (!targetId) return false;
-
-    delete EVALUATIONS[targetId];
-
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        const raw = window.localStorage.getItem(STORAGE_KEY_BANK);
-        if (raw) {
-          const bank = JSON.parse(raw);
-          delete bank[targetId];
-          window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(bank));
-        }
-      } catch (e) {
-        console.warn('[ClassroomData] Error al eliminar de localStorage:', e);
+    // 2. Si el ID tiene sufijo de subpregunta (_q0, _q1, etc.)
+    if (target.includes('_q')) {
+      const rootId = target.replace(/_q\d+$/, '');
+      if (EVALUATIONS[rootId]) {
+        delete EVALUATIONS[rootId];
+        deletedCount++;
       }
     }
 
-    return true;
+    // 3. Buscar en todas las evaluaciones por ID, prompt exacto, prompt compuesto o dentro de questions[]
+    Object.keys(EVALUATIONS).forEach(k => {
+      const ev = EVALUATIONS[k];
+      if (!ev) return;
+
+      if (ev.id === target || ev.prompt === target) {
+        delete EVALUATIONS[k];
+        deletedCount++;
+        return;
+      }
+
+      // Si el prompt raíz contiene el enunciado buscado (ej: "1. ¿Cuanto es 30 + 25? | 2. ...")
+      if (ev.prompt && typeof ev.prompt === 'string' && ev.prompt.includes(target)) {
+        delete EVALUATIONS[k];
+        deletedCount++;
+        return;
+      }
+
+      // Si la pregunta está dentro del array questions
+      if (Array.isArray(ev.questions) && ev.questions.length > 0) {
+        const initialLen = ev.questions.length;
+        ev.questions = ev.questions.filter(q => {
+          if (!q) return false;
+          if (q.id === target) return false;
+          if (q.prompt && q.prompt.trim() === target) return false;
+          return true;
+        });
+
+        if (ev.questions.length < initialLen) {
+          deletedCount++;
+          // Si ya no le quedan preguntas, borrar la evaluación padre completa
+          if (ev.questions.length === 0) {
+            delete EVALUATIONS[k];
+          }
+        }
+      }
+    });
+
+    if (deletedCount > 0 && typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(EVALUATIONS));
+      } catch (e) {
+        console.warn('[ClassroomData] Error al sincronizar eliminación con localStorage:', e);
+      }
+    }
+
+    return deletedCount > 0;
   }
 
   /**
