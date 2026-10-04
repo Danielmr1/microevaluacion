@@ -320,6 +320,8 @@
       if (stage && ev.gradeStage && ev.gradeStage !== stage) return;
       if (level && ev.gradeLevel && Number(ev.gradeLevel) !== Number(level)) return;
 
+      ev = enrichQuestionOptions(ev);
+
       if (Array.isArray(ev.questions) && ev.questions.length > 0) {
         ev.questions.forEach((q, idx) => {
           const prompt = String(q.prompt || '').trim();
@@ -327,6 +329,7 @@
           const hasOptions = q.options && (q.options.A || q.options.B || q.options.C || q.options.D);
           if (!hasOptions) return;
           seen.add(prompt);
+          const correctKey = (q.correct || 'A').toUpperCase();
           list.push({
             id: ev.id + '_q' + idx,
             prompt: prompt,
@@ -336,11 +339,13 @@
               C: q.options?.C || '',
               D: q.options?.D || ''
             },
-            correct: (q.correct || 'A').toUpperCase(),
+            correct: correctKey,
             gradeStage: ev.gradeStage || stage,
             gradeLevel: ev.gradeLevel || level,
             gradeText: ev.gradeText || formatGrade(stage, level),
-            title: (q.title && !q.title.includes('2 Preguntas') ? q.title : 'Pregunta de alternativa')
+            title: (q.title && !q.title.includes('2 Preguntas') ? q.title : 'Pregunta de evaluación'),
+            rubric: q.rubric || ev.rubric || null,
+            expectedAnswer: (q.options ? q.options[correctKey] : '') || ev.expectedAnswer || ''
           });
         });
       } else if (ev.options && (ev.options.A || ev.options.B || ev.options.C || ev.options.D)) {
@@ -367,7 +372,9 @@
           gradeStage: ev.gradeStage || stage,
           gradeLevel: ev.gradeLevel || level,
           gradeText: ev.gradeText || formatGrade(stage, level),
-          title: (ev.title && !ev.title.includes('2 Preguntas') ? ev.title : 'Pregunta de alternativa')
+          title: (ev.title && !ev.title.includes('2 Preguntas') ? ev.title : 'Pregunta de evaluación'),
+          rubric: ev.rubric || null,
+          expectedAnswer: (ev.options ? ev.options[correct] : '') || ev.expectedAnswer || ''
         });
       }
     });
