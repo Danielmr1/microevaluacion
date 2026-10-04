@@ -471,39 +471,6 @@
     }
   }
 
-  /**
-   * Comprime y reescala un dataURL a un tamaño ligero para transmisión móvil instantánea (~15 KB).
-   */
-  function compressDataUrl(dataUrl, maxDim = 520, quality = 0.75) {
-    if (!dataUrl || typeof dataUrl !== 'string') return Promise.resolve(null);
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width;
-        let h = img.height;
-        if (w > maxDim || h > maxDim) {
-          if (w > h) {
-            h = Math.round((h * maxDim) / w);
-            w = maxDim;
-          } else {
-            w = Math.round((w * maxDim) / h);
-            h = maxDim;
-          }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = () => resolve(dataUrl);
-      img.src = dataUrl;
-    });
-  }
-
   // Cola secuencial en segundo plano para evitar saturar el ancho de banda del celular
   const aiGradingQueue = [];
   let isProcessingAIQueue = false;
@@ -532,23 +499,45 @@
   async function executeGradeSheetCall(context) {
     const { studentId, studentName, session, cls, activeEval, isUuid, isMC, info, images, aiRawBase, answerRead, isMatch, verdict } = context;
 
-    if (!images || (!images.answerImage && !images.gridImage)) {
+    const imgAnswer = images?.answerImage || null;
+    const imgGrid = images?.gridImage || null;
+
+    if (!imgAnswer && !imgGrid) {
+      console.warn('[GradeSheet] No hay imágenes de la ficha para evaluar.');
+      try {
+        await SupabaseClient.saveResult({
+          session_ref: session.sessionRef,
+          classroom_id: isUuid ? currentClassroomId : null,
+          student_code: studentId,
+          student_name: studentName,
+          grade_stage: cls ? cls.gradeStage : null,
+          grade_level: cls ? cls.gradeLevel : null,
+          evaluation_ref: currentEvaluationId,
+          evaluation_title: session.title || null,
+          prompt: session.prompt || (activeEval ? activeEval.prompt : null),
+          expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+          ai_answer_read: answerRead,
+          ai_expected_match: isMatch,
+          deterministic_match: isMatch,
+          teacher_verdict: verdict,
+          ai_raw: Object.assign({}, aiRawBase || {}, {
+            pendingAI: false,
+            aiError: 'no_image',
+            errorDetail: 'No se obtuvo imagen de la cuadrícula'
+          }),
+          captured_at: new Date().toISOString()
+        });
+      } catch (e) {}
       return;
     }
-
-    // Comprimir imágenes a formato ligero antes de subir
-    const [optAnswer, optGrid] = await Promise.all([
-      compressDataUrl(images.answerImage, 480, 0.75),
-      compressDataUrl(images.gridImage, 540, 0.75)
-    ]);
 
     const payload = {
       type: isMC ? 'mc' : 'free',
       prompt: session.prompt || (activeEval ? activeEval.prompt : ''),
       expectedAnswer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : ''),
       rubric: activeEval?.rubric || session?.rubric || null,
-      answerImage: optAnswer,
-      gridImage: optGrid,
+      answerImage: imgAnswer,
+      gridImage: imgGrid,
       omrSelected: info?.results ? info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(', ') : null,
       omrMatch: info ? info.allCorrect : null
     };
@@ -1885,7 +1874,9 @@
             lastOMRInfo = { allCorrect: allCorrect, results: evaluatedResults };
             let omrGridDataUrl = null;
             if (omrCrops && omrCrops[0] && omrCrops[0].gridCanvas) {
-              omrGridDataUrl = omrCrops[0].gridCanvas.toDataURL('image/jpeg', 0.88);
+              omrGridDataUrl = omrCrops[0].gridCanvas.toDataURL('image/jpeg', 0.82);
+            } else if (resolutionPreviewUrl) {
+              omrGridDataUrl = resolutionPreviewUrl;
             }
             persistCapture(studentId, studentName, lastOMRInfo, {
               answerImage: null,
