@@ -1411,7 +1411,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Microevaluación A5 <span class="version-tag">v3.1.7</span></h1>
+        <h1>Microevaluación A5 <span class="version-tag">v3.1.8</span></h1>
         <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
@@ -2140,7 +2140,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.1.7</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.1.8</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -3884,7 +3884,11 @@
         let statusBadge = `<span style="background:rgba(100,116,139,0.15); color:#94a3b8; border:1px solid #334155; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; white-space:nowrap;">⏳ Pendiente</span>`;
         if (isEvaluated) {
           if (isPendingAI) {
-            statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">⏳ Analizando IA</span>`;
+            if (res.ai_raw && res.ai_raw.aiError) {
+              statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="${res.ai_raw.errorDetail || 'Sin respuesta en 30s'}">⚠️ Sin conexión</span>`;
+            } else {
+              statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">⏳ Analizando IA</span>`;
+            }
           } else {
             statusBadge = `<span style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">✅ Evaluado</span>`;
           }
@@ -3908,7 +3912,11 @@
         let verdictBadge = `<span style="color:#64748b; font-size:0.8rem;">—</span>`;
         if (isEvaluated) {
           if (isPendingAI) {
-            verdictBadge = `<span style="color:#f59e0b; font-size:0.78rem; font-weight:700;">⏳ En proceso</span>`;
+            if (res.ai_raw && res.ai_raw.aiError) {
+              verdictBadge = `<span style="color:#f87171; font-size:0.78rem; font-weight:700;" title="La llamada a la IA no respondió a tiempo. Pulsa recargar para reintentar.">⚠️ Reintentar</span>`;
+            } else {
+              verdictBadge = `<span style="color:#f59e0b; font-size:0.78rem; font-weight:700;">⏳ En proceso</span>`;
+            }
           } else if (isOk) {
             verdictBadge = `<span style="color:#22c55e; font-weight:800; font-size:0.82rem;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}">✓ CORRECTA</span>`;
           } else {

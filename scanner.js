@@ -471,36 +471,101 @@
     }
   }
 
-  function dispatchBackgroundGradeSheet(context) {
+  /**
+   * Comprime y reescala un dataURL a un tamaño ligero para transmisión móvil instantánea (~15 KB).
+   */
+  function compressDataUrl(dataUrl, maxDim = 520, quality = 0.75) {
+    if (!dataUrl || typeof dataUrl !== 'string') return Promise.resolve(null);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  // Cola secuencial en segundo plano para evitar saturar el ancho de banda del celular
+  const aiGradingQueue = [];
+  let isProcessingAIQueue = false;
+
+  function enqueueAIGrading(context) {
+    aiGradingQueue.push(context);
+    processAIGradingQueue();
+  }
+
+  async function processAIGradingQueue() {
+    if (isProcessingAIQueue || aiGradingQueue.length === 0) return;
+    isProcessingAIQueue = true;
+
+    while (aiGradingQueue.length > 0) {
+      const item = aiGradingQueue.shift();
+      try {
+        await executeGradeSheetCall(item);
+      } catch (err) {
+        console.warn('[AI Queue] Error procesando evaluación en cola:', err);
+      }
+    }
+
+    isProcessingAIQueue = false;
+  }
+
+  async function executeGradeSheetCall(context) {
     const { studentId, studentName, session, cls, activeEval, isUuid, isMC, info, images, aiRawBase, answerRead, isMatch, verdict } = context;
 
     if (!images || (!images.answerImage && !images.gridImage)) {
       return;
     }
 
+    // Comprimir imágenes a formato ligero antes de subir
+    const [optAnswer, optGrid] = await Promise.all([
+      compressDataUrl(images.answerImage, 480, 0.75),
+      compressDataUrl(images.gridImage, 540, 0.75)
+    ]);
+
     const payload = {
       type: isMC ? 'mc' : 'free',
       prompt: session.prompt || (activeEval ? activeEval.prompt : ''),
       expectedAnswer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : ''),
       rubric: activeEval?.rubric || session?.rubric || null,
-      answerImage: images.answerImage || null,
-      gridImage: images.gridImage || null,
+      answerImage: optAnswer,
+      gridImage: optGrid,
       omrSelected: info?.results ? info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(', ') : null,
       omrMatch: info ? info.allCorrect : null
     };
 
-    // Carrera de timeout de 4.5 segundos según Regla 9 (Resiliencia y Cero Bloqueo)
+    // Margen holgado de 30 segundos en segundo plano (Regla 9: Cero Bloqueo de Cámara)
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout de 4.5s excedido en llamada IA')), 4500)
+      setTimeout(() => reject(new Error('Timeout de 30s excedido en llamada IA')), 30000)
     );
 
-    Promise.race([
-      SupabaseClient.gradeSheet(payload),
-      timeoutPromise
-    ]).then(res => {
+    try {
+      const res = await Promise.race([
+        SupabaseClient.gradeSheet(payload),
+        timeoutPromise
+      ]);
+
       if (!res || !res.ok || !res.data) {
-        console.warn('[GradeSheet] No se obtuvo evaluación válida de IA:', res?.error);
-        return;
+        throw new Error(res?.error || 'Respuesta no válida del servicio de IA');
       }
 
       const evalData = res.data;
@@ -517,11 +582,12 @@
       const updatedRaw = Object.assign({}, aiRawBase || {}, {
         aiGrading: evalData,
         pendingAI: false,
+        aiError: null,
         gradedAt: new Date().toISOString()
       });
 
-      // Actualizar registro en Supabase con los datos de procedimiento
-      SupabaseClient.saveResult({
+      // Actualizar registro en Supabase con los datos analizados
+      await SupabaseClient.saveResult({
         session_ref: session.sessionRef,
         classroom_id: isUuid ? currentClassroomId : null,
         student_code: studentId,
@@ -541,24 +607,56 @@
         teacher_verdict: updatedVerdict,
         ai_raw: updatedRaw,
         captured_at: new Date().toISOString()
-      }).then(() => {
-        // Refrescar modal de resultados si está en pantalla
+      });
+
+      // Refrescar modal de resultados si está abierto
+      if (typeof loadAndRenderResultsTable === 'function') {
+        const resultsModal = document.getElementById('results-modal');
+        if (resultsModal && resultsModal.style.display !== 'none') {
+          loadAndRenderResultsTable();
+        }
+      }
+      // Actualizar distintivo visual en el modal de captura si el docente sigue ahí
+      updateModalWithAIResult(studentId, evalData, isMC);
+
+    } catch (err) {
+      console.warn('[GradeSheet] Falla silenciosa o timeout de 30s:', err?.message || err);
+
+      // Guardar con estado explícito de 'Sin conexión' para permitir reintento posterior
+      const updatedRaw = Object.assign({}, aiRawBase || {}, {
+        pendingAI: true,
+        aiError: 'timeout_or_offline',
+        errorDetail: err?.message || 'Sin respuesta en 30s'
+      });
+
+      try {
+        await SupabaseClient.saveResult({
+          session_ref: session.sessionRef,
+          classroom_id: isUuid ? currentClassroomId : null,
+          student_code: studentId,
+          student_name: studentName,
+          grade_stage: cls ? cls.gradeStage : null,
+          grade_level: cls ? cls.gradeLevel : null,
+          evaluation_ref: currentEvaluationId,
+          evaluation_title: session.title || null,
+          prompt: session.prompt || (activeEval ? activeEval.prompt : null),
+          expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+          ai_answer_read: answerRead,
+          ai_expected_match: isMatch,
+          deterministic_match: isMatch,
+          teacher_verdict: verdict,
+          ai_raw: updatedRaw,
+          captured_at: new Date().toISOString()
+        });
+
         if (typeof loadAndRenderResultsTable === 'function') {
           const resultsModal = document.getElementById('results-modal');
           if (resultsModal && resultsModal.style.display !== 'none') {
             loadAndRenderResultsTable();
           }
         }
-        // Actualizar distintivo visual en el modal de captura si aún está abierto
-        updateModalWithAIResult(studentId, evalData, isMC);
-      }).catch(err => {
-        console.warn('[GradeSheet] Error actualizando resultado IA:', err);
-      });
-
-    }).catch(err => {
-      // Regla 9: Falla silenciosa sin interrumpir al docente
-      console.warn('[GradeSheet] Falla silenciosa de IA (resiliencia de aula):', err?.message || err);
-    });
+      } catch (saveErr) {}
+    }
   }
 
   function persistCapture(studentId, studentName, omrInfo = null, images = null) {
@@ -640,8 +738,8 @@
       return;
     }
 
-    // Regla 9: Análisis en segundo plano sin congelar la cámara
-    dispatchBackgroundGradeSheet({
+    // Regla 9: Análisis en cola de segundo plano sin congelar la cámara
+    enqueueAIGrading({
       studentId,
       studentName,
       session,
