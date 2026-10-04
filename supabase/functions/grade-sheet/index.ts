@@ -82,6 +82,53 @@ function parseBase64Image(dataUri: string): { mimeType: string; data: string } |
 }
 
 /**
+ * Saca y limpia el JSON de la respuesta del modelo, tolerando reasoning/thoughts y bloques markdown.
+ */
+function extraerJSON(candidato: any): any {
+  const partes = (candidato && candidato.content && candidato.content.parts) || [];
+  const conTexto = partes.filter((p: any) => p && typeof p.text === 'string');
+  if (!conTexto.length) throw new Error('La respuesta del modelo no contiene texto.');
+
+  const sinRazonamiento = conTexto.filter((p: any) => !p.thought);
+
+  const limpiar = (t: string) => String(t)
+    .replace(/^\s*```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/, '')
+    .trim();
+
+  const candidatos = [];
+  if (sinRazonamiento.length) candidatos.push(sinRazonamiento.map((p: any) => p.text).join(''));
+  candidatos.push(conTexto.map((p: any) => p.text).join(''));
+  if (conTexto.length > 1) candidatos.push(conTexto[conTexto.length - 1].text);
+
+  const vistos = new Set();
+  for (const bruto of candidatos) {
+    const texto = limpiar(bruto);
+    if (!texto || vistos.has(texto)) continue;
+    vistos.add(texto);
+    try {
+      const datos = JSON.parse(texto);
+      if (datos && typeof datos === 'object') return datos;
+    } catch { /* probar siguiente */ }
+  }
+
+  // Fallback: extraer entre la primera { y la última }
+  for (const bruto of candidatos) {
+    const primero = bruto.indexOf('{');
+    const ultimo = bruto.lastIndexOf('}');
+    if (primero !== -1 && ultimo > primero) {
+      try {
+        const sub = bruto.substring(primero, ultimo + 1);
+        const datos = JSON.parse(sub);
+        if (datos && typeof datos === 'object') return datos;
+      } catch {}
+    }
+  }
+
+  throw new Error('La respuesta del modelo no es un JSON válido.');
+}
+
+/**
  * Construye el prompt para la IA según la modalidad de evaluación.
  */
 function construirPromptEvaluacion(params: {
@@ -170,7 +217,6 @@ async function llamarGemini(params: {
     contents: [{ parts }],
     generationConfig: {
       temperature: 0.1,
-      maxOutputTokens: 600,
       responseMimeType: 'application/json',
       responseSchema: ESQUEMA_RESPUESTA
     }
@@ -195,15 +241,7 @@ async function llamarGemini(params: {
       const candidato = (datos.candidates || [])[0];
       if (!candidato) throw new Error('El proveedor no devolvió ningún candidato (filtro de seguridad).');
 
-      const contenidoTexto = candidato.content?.parts?.[0]?.text;
-      if (!contenidoTexto) throw new Error('Respuesta vacía del modelo.');
-
-      let jsonEvaluacion = null;
-      try {
-        jsonEvaluacion = JSON.parse(contenidoTexto);
-      } catch (err) {
-        throw new Error('Error al parsear el resultado estructurado de la IA.');
-      }
+      const jsonEvaluacion = extraerJSON(candidato);
 
       return {
         evaluacion: jsonEvaluacion,
