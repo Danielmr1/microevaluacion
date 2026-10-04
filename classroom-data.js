@@ -529,6 +529,44 @@
   }
 
   /**
+   * Elimina una evaluación del banco en runtime y en localStorage.
+   * @param {string} evalIdOrPrompt ID o enunciado de la evaluación
+   * @returns {boolean} true si se eliminó
+   */
+  function deleteCustomEvaluation(evalIdOrPrompt) {
+    if (!evalIdOrPrompt) return false;
+    const target = String(evalIdOrPrompt).trim();
+    let targetId = null;
+
+    if (EVALUATIONS[target]) {
+      targetId = target;
+    } else {
+      targetId = Object.keys(EVALUATIONS).find(k =>
+        EVALUATIONS[k] && (EVALUATIONS[k].id === target || EVALUATIONS[k].prompt === target)
+      );
+    }
+
+    if (!targetId) return false;
+
+    delete EVALUATIONS[targetId];
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY_BANK);
+        if (raw) {
+          const bank = JSON.parse(raw);
+          delete bank[targetId];
+          window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(bank));
+        }
+      } catch (e) {
+        console.warn('[ClassroomData] Error al eliminar de localStorage:', e);
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Fija el grado de un salón SOLO en el runtime (memoria).
    * La persistencia en Supabase la hace SupabaseClient.updateClassroomGrade(),
    * que se llama por separado: así el selector responde al instante aunque la
@@ -589,6 +627,7 @@
     getEvaluationRubric,
     getStudent,
     saveCustomEvaluation,
+    deleteCustomEvaluation,
     setClassroomGrade,
     setActiveSession,
     getActiveSession,

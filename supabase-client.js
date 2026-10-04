@@ -500,6 +500,36 @@
     return data || [];
   }
 
+  /**
+   * Elimina una evaluación del banco en la nube (por su enunciado).
+   * @param {string} prompt Enunciado exacto de la evaluación
+   * @returns {Promise<boolean>}
+   */
+  async function deleteEvaluation(prompt) {
+    const client = getClient();
+    if (!client) return false;
+    const user = await getCurrentUser();
+    if (!user) return false;
+    if (!prompt) return false;
+
+    try {
+      const { error } = await client
+        .from('microeval_evaluations')
+        .delete()
+        .eq('teacher_id', user.id)
+        .eq('prompt', prompt.trim());
+
+      if (error) {
+        console.error('[SupabaseClient] Error al eliminar evaluación:', error.message);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('[SupabaseClient] Error inesperado al eliminar evaluación:', e);
+      return false;
+    }
+  }
+
   // ─────────────────────────────────────────────
   // RESULTADOS POR ALUMNO
   // ─────────────────────────────────────────────
@@ -636,6 +666,7 @@
     generateRubric,
     diagnosticoIA,
     saveEvaluation,
+    deleteEvaluation,
     loadRecentEvaluations,
     saveResult,
     loadSessionResults,
