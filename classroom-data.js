@@ -275,6 +275,21 @@
             bank[k] = enrichQuestionOptions(bank[k]);
           });
           Object.assign(EVALUATIONS, bank);
+          // Depurar evaluaciones compuestas obsoletas ya eliminadas de la nube
+          let modified = false;
+          Object.keys(bank).forEach(k => {
+            const ev = bank[k];
+            if (!ev) return;
+            const promptStr = String(ev.prompt || '');
+            if (promptStr.includes('30 + 25') || promptStr.includes('30-15') || promptStr.includes('80+20')) {
+              delete bank[k];
+              delete EVALUATIONS[k];
+              modified = true;
+            }
+          });
+          if (modified) {
+            window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(bank));
+          }
         }
       } catch (e) {
         console.warn('[ClassroomData] Error al cargar banco de localStorage:', e);

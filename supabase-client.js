@@ -505,24 +505,41 @@
    * @param {string} prompt Enunciado exacto de la evaluación
    * @returns {Promise<boolean>}
    */
-  async function deleteEvaluation(prompt) {
+  async function deleteEvaluation(promptOrId) {
     const client = getClient();
     if (!client) return false;
     const user = await getCurrentUser();
     if (!user) return false;
-    if (!prompt) return false;
+    if (!promptOrId) return false;
 
+    const target = String(promptOrId).trim();
     try {
-      const { error } = await client
+      // 1. Si es un UUID (o contiene sufijo _q0)
+      const uuidCandidate = target.replace(/_q\d+$/, '');
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidCandidate)) {
+        await client
+          .from('microeval_evaluations')
+          .delete()
+          .eq('teacher_id', user.id)
+          .eq('id', uuidCandidate);
+      }
+
+      // 2. Por prompt exacto
+      await client
         .from('microeval_evaluations')
         .delete()
         .eq('teacher_id', user.id)
-        .eq('prompt', prompt.trim());
+        .eq('prompt', target);
 
-      if (error) {
-        console.error('[SupabaseClient] Error al eliminar evaluación:', error.message);
-        return false;
+      // 3. Por coincidencia parcial si es una evaluación compuesta (ej: "1. ¿Cuanto es 30 + 25? | 2. ...")
+      if (target.length >= 5) {
+        await client
+          .from('microeval_evaluations')
+          .delete()
+          .eq('teacher_id', user.id)
+          .ilike('prompt', `%${target}%`);
       }
+
       return true;
     } catch (e) {
       console.error('[SupabaseClient] Error inesperado al eliminar evaluación:', e);
