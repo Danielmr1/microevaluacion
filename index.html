@@ -1914,6 +1914,29 @@
             <div id="summary-answer" style="font-size:0.88rem; font-weight:800; color:#22c55e;"></div>
           </div>
           <div id="summary-rubric" style="padding:8px 12px; border-radius:8px; font-size:0.78rem; font-weight:700;"></div>
+
+          <!-- Selector de Modo de Corrección (Exclusivo para Alternativas) -->
+          <div id="mc-correction-mode-selector" style="display:none; margin-top:12px; padding:12px; background:#1e293b; border-radius:10px; border:1px solid #334155;">
+            <span style="font-size:0.7rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:8px;">
+              🎯 Modo de Corrección en el Escáner:
+            </span>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <label id="lbl-mode-quick" style="flex:1; min-width:140px; display:flex; align-items:flex-start; gap:8px; cursor:pointer; background:#0f172a; padding:10px 12px; border-radius:8px; border:2px solid #38bdf8;">
+                <input type="radio" name="mc-correction-mode" value="quick" checked onchange="updateCorrectionModeUI('quick')" style="margin-top:2px;">
+                <div>
+                  <strong style="display:block; font-size:0.8rem; color:#f8fafc;">⚡ Solo Alternativa (Rápido)</strong>
+                  <span style="font-size:0.7rem; color:#94a3b8; line-height:1.25; display:block; margin-top:2px;">Registro directo de la opción marcada. El procedimiento queda respaldado en la foto.</span>
+                </div>
+              </label>
+              <label id="lbl-mode-full" style="flex:1; min-width:140px; display:flex; align-items:flex-start; gap:8px; cursor:pointer; background:#0f172a; padding:10px 12px; border-radius:8px; border:1px solid #475569;">
+                <input type="radio" name="mc-correction-mode" value="full" onchange="updateCorrectionModeUI('full')" style="margin-top:2px;">
+                <div>
+                  <strong style="display:block; font-size:0.8rem; color:#f8fafc;">🔬 Alternativa + Procedimiento</strong>
+                  <span style="font-size:0.7rem; color:#94a3b8; line-height:1.25; display:block; margin-top:2px;">Evalúa la alternativa y prepara el análisis pedagógico de la cuadrícula con rúbrica.</span>
+                </div>
+              </label>
+            </div>
+          </div>
         </div>
 
         <!-- Acciones Principales -->
@@ -2110,7 +2133,7 @@
 
       <div class="modal-col-right">
         <div class="modal-header-row">
-          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.1.4</span></span>
+          <span style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸 ¡FICHA CAPTURADA! <span class="version-tag" style="font-size:0.6rem; padding:1px 5px;">v3.1.5</span></span>
           <button onclick="closeModal()" style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;" title="Cerrar">✕</button>
         </div>
 
@@ -5376,6 +5399,12 @@
         if (elUnit) elUnit.value = wizardEval.unitHint || '';
         updatePromptCounter();
 
+        // Mostrar u ocultar selector de modo de corrección OMR
+        const mcModeSel = document.getElementById('mc-correction-mode-selector');
+        if (mcModeSel) {
+          mcModeSel.style.display = isOMR ? 'block' : 'none';
+        }
+
         // Mostrar paso 5 y ocultar los anteriores
         const bankListEl = document.getElementById('step-bank-list');
         if (bankListEl) bankListEl.style.display = 'none';
@@ -5805,6 +5834,12 @@
         gradeText: (wizardEval && wizardEval.gradeText) || (g && g.texto) || undefined
       });
 
+      // Modo de corrección para opciones múltiples (rápido vs completo)
+      const mcRadio = document.querySelector('input[name="mc-correction-mode"]:checked');
+      const correctionMode = (savedEval.type === 'mc')
+        ? (mcRadio ? mcRadio.value : 'quick')
+        : 'rubric';
+
       // 2. Sesión activa
       const session = {
         sessionRef: classId + '::' + savedEval.id,
@@ -5817,6 +5852,7 @@
         type: (savedEval.type === 'mc') ? 'mc' : 'free',
         questionCount: savedEval.questionCount || 1,
         questions: savedEval.questions || [],
+        correctionMode: correctionMode,
         timestamp: Date.now()
       };
       ClassroomData.setActiveSession(session);
@@ -5842,6 +5878,25 @@
       if (barEl) barEl.style.borderLeft = `4px solid ${color}`;
       const targetEl = document.getElementById('scan-active-target');
       if (targetEl) targetEl.textContent = session.expectedAnswer;
+    }
+
+    function updateCorrectionModeUI(mode) {
+      const lblQuick = document.getElementById('lbl-mode-quick');
+      const lblFull = document.getElementById('lbl-mode-full');
+      if (lblQuick && lblFull) {
+        if (mode === 'quick') {
+          lblQuick.style.border = '2px solid #38bdf8';
+          lblFull.style.border = '1px solid #475569';
+        } else {
+          lblQuick.style.border = '1px solid #475569';
+          lblFull.style.border = '2px solid #a855f7';
+        }
+      }
+      const session = ClassroomData.getActiveSession();
+      if (session && session.type === 'mc') {
+        session.correctionMode = mode;
+        ClassroomData.setActiveSession(session);
+      }
     }
 
     function goToScannerWithSession() {

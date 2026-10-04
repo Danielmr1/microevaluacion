@@ -454,11 +454,16 @@
     let aiRaw = null;
 
     const info = omrInfo || lastOMRInfo;
+    const correctionMode = session.correctionMode || (session.type === 'mc' ? 'quick' : 'rubric');
     if (info && info.results && info.results.length > 0) {
       answerRead = info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(' | ');
       isMatch = info.allCorrect;
       verdict = info.allCorrect ? 'CORRECTA' : 'INCORRECTA';
-      aiRaw = { omrResults: info.results };
+      aiRaw = {
+        omrResults: info.results,
+        correctionMode: correctionMode,
+        pendingAI: (correctionMode === 'full')
+      };
     }
 
     SupabaseClient.saveResult({
@@ -1481,6 +1486,16 @@
             const questionsList = (activeEval && activeEval.questions)
                                || (activeSession && activeSession.questions)
                                || [];
+
+            const correctionMode = (activeSession && activeSession.correctionMode) || 'quick';
+            const modeHeader = document.createElement('div');
+            modeHeader.style.cssText = correctionMode === 'full'
+              ? 'display:flex; justify-content:space-between; align-items:center; padding:5px 10px; background:#3b0764; border:1px solid #a855f7; border-radius:6px; font-size:0.73rem; color:#e9d5ff; font-weight:700; margin-bottom:4px;'
+              : 'display:flex; justify-content:space-between; align-items:center; padding:5px 10px; background:#0c4a6e; border:1px solid #38bdf8; border-radius:6px; font-size:0.73rem; color:#bae6fd; font-weight:700; margin-bottom:4px;';
+            modeHeader.innerHTML = correctionMode === 'full'
+              ? '<span>🔬 Modo: Alternativa + Procedimiento</span><span style="font-size:0.68rem; color:#d8b4fe;">(Rúbrica lista)</span>'
+              : '<span>⚡ Modo: Solo Alternativa</span><span style="font-size:0.68rem; color:#7dd3fc;">(Registro rápido)</span>';
+            omrContainer.appendChild(modeHeader);
 
             let allCorrect = true;
             const evaluatedResults = [];
