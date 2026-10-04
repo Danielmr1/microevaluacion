@@ -573,6 +573,7 @@
 
       const updatedRaw = Object.assign({}, aiRawBase || {}, {
         aiGrading: evalData,
+        gridImage: imgGrid,
         pendingAI: false,
         aiError: null,
         gradedAt: new Date().toISOString()
@@ -590,6 +591,8 @@
         evaluation_title: session.title || null,
         prompt: session.prompt || (activeEval ? activeEval.prompt : null),
         expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+        grid_image_path: imgGrid,
+        answer_image_path: imgAnswer,
         ai_answer_read: isMC ? answerRead : (evalData.answer_read || 'Leído por IA'),
         ai_expected_match: isMatchAI,
         deterministic_match: isMC ? (info ? info.allCorrect : false) : isMatchAI,
@@ -619,6 +622,7 @@
 
       const updatedRaw = Object.assign({}, aiRawBase || {}, {
         pendingAI: true,
+        gridImage: imgGrid,
         aiError: errType,
         errorDetail: err?.message || 'Error en análisis IA'
       });
@@ -635,6 +639,8 @@
           evaluation_title: session.title || null,
           prompt: session.prompt || (activeEval ? activeEval.prompt : null),
           expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+          grid_image_path: imgGrid,
+          answer_image_path: imgAnswer,
           ai_answer_read: answerRead,
           ai_expected_match: isMatch,
           deterministic_match: isMatch,
@@ -702,6 +708,12 @@
       };
     }
 
+    const imgAnswer = images?.answerImage || null;
+    const imgGrid = images?.gridImage || null;
+    if (aiRaw && imgGrid) {
+      aiRaw.gridImage = imgGrid;
+    }
+
     // 1. Guardado determinista inmediato en Supabase (cero latencia)
     SupabaseClient.saveResult({
       session_ref: session.sessionRef,
@@ -714,6 +726,8 @@
       evaluation_title: session.title || null,
       prompt: session.prompt || (activeEval ? activeEval.prompt : null),
       expected_answer: session.expectedAnswer || (activeEval ? activeEval.expectedAnswer : null),
+      grid_image_path: imgGrid,
+      answer_image_path: imgAnswer,
       ai_answer_read: answerRead,
       ai_expected_match: isMatch,
       deterministic_match: isMatch,
@@ -721,7 +735,7 @@
       ai_raw: aiRaw,
       captured_at: new Date().toISOString()
     }).then(row => {
-      if (row) console.log('[Resultados] Captura guardada en Supabase:', studentId, verdict);
+      if (row) console.log('[Resultados] Captura guardada en Supabase con imagen:', studentId, verdict);
     }).catch(e => {
       console.warn('[Resultados] No se pudo guardar la captura:', e && e.message);
     });
