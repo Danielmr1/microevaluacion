@@ -844,8 +844,8 @@
     const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
     if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
       req.call(docEl).then(() => {
-        // Desbloquear cualquier bloqueo previo para permitir rotación automática con el acelerómetro
-        if (screen.orientation && screen.orientation.unlock) {
+        // Desbloquear rotación solo si no se está escaneando actualmente
+        if (!isScanning && screen.orientation && screen.orientation.unlock) {
           try { screen.orientation.unlock(); } catch (e) {}
         }
       }).catch(() => {});
