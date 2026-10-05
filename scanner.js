@@ -938,8 +938,10 @@
       activeTarget = null;
       lostFramesCount = 0;
       requestAnimationFrame(processFrame);
+      return true;
     } catch (err) {
       alert('No se pudo acceder a la cámara: ' + err.message);
+      return false;
     }
   }
 
@@ -2103,6 +2105,8 @@
 
   // Exportar funciones para interacción con la interfaz HTML
   global.Scanner = {
+    startCamera,
+    stopCamera,
     toggleCamera,
     toggleTorch,
     toggleFullscreen,
@@ -2122,6 +2126,8 @@
   // handleFile tiene que estar acá además de en Scanner: el input de archivo lo
   // llama desde un atributo onchange, y esos se resuelven en el ámbito global.
   global.handleFile = handleFile;
+  global.startCamera = startCamera;
+  global.stopCamera = stopCamera;
   global.toggleCamera = toggleCamera;
   global.toggleTorch = toggleTorch;
   global.toggleFullscreen = toggleFullscreen;

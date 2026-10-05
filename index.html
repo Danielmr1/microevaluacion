@@ -1494,8 +1494,8 @@
     </p>
   </div>
 
-  <!-- Pestañas de Navegación Unificada -->
-  <div class="tab-bar">
+  <!-- Pestañas de Navegación Unificada (Ocultas para simplificar el flujo) -->
+  <div class="tab-bar" style="display:none;">
     <button id="tab-btn-create" class="tab-btn active" onclick="switchTab('create')">
       <span>📝 1. Preparar fichas</span>
     </button>
@@ -1986,7 +1986,7 @@
             style="flex:1; min-width:180px; background:#16a34a; border:none; color:#fff; border-radius:8px; padding:12px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #16a34a40; display:flex; align-items:center; justify-content:center; gap:8px;">
             🖨️ Imprimir Fichas
           </button>
-          <button type="button" onclick="irAlEscanerDirecto()" class="btn-goto-scan"
+          <button type="button" onclick="irAlEscanerDirecto(this)" class="btn-goto-scan"
             style="flex:1; min-width:180px; background:#4f46e5; border:none; color:#fff; border-radius:8px; padding:12px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #4f46e540; display:flex; align-items:center; justify-content:center; gap:8px;">
             📷 Ir al Escáner
           </button>
@@ -2040,7 +2040,7 @@
         <span class="session-badge-active" id="scan-active-target" style="color: #22c55e;">—</span>
       </div>
       <button id="btn-scan-results" onclick="openResultsModal()" style="display:none; background:#064e3b; border:1px solid #10b981; color:#a7f3d0; border-radius:6px; padding:3px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Ver resultados de esta sesión">📊 Resultados</button>
-      <button onclick="switchTab('create')" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:3px 8px; font-size:0.75rem; cursor:pointer;" title="Cambiar salón o problema">✏️ Modificar</button>
+      <button onclick="switchTab('create')" style="background:#1e293b; border:1px solid #6366f1; color:#c7d2fe; border-radius:6px; padding:3px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Volver a la preparación de fichas">↩ Salir del Escáner</button>
       <!-- Diagnóstico: cuando algo falla en el celular no hay forma de mirar la
            consola, así que la app vuelca todo lo que sabe como texto y el docente
            lo pega donde lo necesite. Queda en la barra de sesión, que se oculta
@@ -2159,6 +2159,9 @@
         <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(event)">
         <button class="btn-secondary" onclick="document.getElementById('file-input').click()" title="Cargar una foto guardada de una ficha y procesarla por el mismo camino que la cámara">
           📁 Probar Foto
+        </button>
+        <button class="btn-secondary" onclick="switchTab('create')" title="Volver a la preparación de fichas">
+          ↩ Volver a Fichas
         </button>
       </div>
     </div>
@@ -2326,7 +2329,7 @@
 
         <!-- Botones de Acción -->
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <button id="btn-return-to-scan" type="button" onclick="goToScannerFromResults()"
+          <button id="btn-return-to-scan" type="button" onclick="goToScannerFromResults(this)"
             style="display:inline-flex; align-items:center; gap:6px; background:#0284c7; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #0284c730;"
             title="Ir al escáner de aula para evaluar fichas pendientes">
             📷 Escáner de Aula
@@ -3867,38 +3870,102 @@
     }
     window.goToSessionResults = goToSessionResults;
 
-    function goToScannerFromResults() {
-      closeResultsModal();
-      if (typeof switchTab === 'function') {
-        switchTab('scan');
+    async function irAlEscanerDirecto(btnEl) {
+      const originalHtml = btnEl ? btnEl.innerHTML : null;
+      if (btnEl) {
+        btnEl.innerHTML = '<span>⏳ Encendiendo cámara...</span>';
+        btnEl.style.opacity = '0.85';
+        btnEl.style.pointerEvents = 'none';
       }
-      if (typeof intentarIniciarCamara === 'function') {
-        intentarIniciarCamara();
-      }
-    }
-    window.goToScannerFromResults = goToScannerFromResults;
 
-    function irAlEscanerDirecto() {
-      if (typeof switchTab === 'function') {
-        switchTab('scan');
-      }
-      if (typeof intentarIniciarCamara === 'function') {
-        intentarIniciarCamara();
+      try {
+        const estado = estadoParaEscanear();
+        if (!estado.ok) {
+          if (estado.puedeGenerar) {
+            const quiere = window.confirm(
+              'Esta evaluación todavía no tiene rúbrica.\n\n' +
+              'La IA la necesita para corregir: sin ella no puede juzgar a todo el ' +
+              'salón con el mismo criterio ni decir qué error cometió el alumno.\n\n' +
+              '¿La genero ahora? Tarda unos segundos.'
+            );
+            if (!quiere) return;
+            const lista = await generarRubricaDeLaSesion();
+            if (!lista) return;
+          } else {
+            showToast('⚠️ ' + estado.detalle);
+            return;
+          }
+        }
+
+        // 1. Activar pantalla completa y orientación horizontal apaisada sincrónicamente
+        if (typeof enterFullscreen === 'function') {
+          enterFullscreen();
+        }
+        if (screen.orientation && screen.orientation.lock) {
+          try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+        }
+
+        // 2. Encender cámara en segundo plano y esperar a que el sensor esté corriendo
+        if (typeof Scanner !== 'undefined' && Scanner.startCamera) {
+          const started = await Scanner.startCamera();
+          if (!started) return;
+        }
+
+        // 3. SOLO cuando la cámara ya está viva y transmitiendo, revelamos el escáner
+        if (typeof switchTab === 'function') {
+          switchTab('scan');
+        }
+
+      } catch (err) {
+        console.error('Error al encender cámara directa:', err);
+        showToast('⚠️ No se pudo acceder a la cámara: ' + err.message);
+      } finally {
+        if (btnEl) {
+          btnEl.innerHTML = originalHtml;
+          btnEl.style.opacity = '1';
+          btnEl.style.pointerEvents = '';
+        }
       }
     }
     window.irAlEscanerDirecto = irAlEscanerDirecto;
 
-    function onTabScanClick() {
-      switchTab('scan');
-      const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
-      const isCamActive = document.body.classList.contains('camera-active');
-      if (!isCamActive && session && session.prompt) {
-        if (typeof intentarIniciarCamara === 'function') {
-          intentarIniciarCamara();
+    async function goToScannerFromResults(btnEl) {
+      const originalHtml = btnEl ? btnEl.innerHTML : null;
+      if (btnEl) {
+        btnEl.innerHTML = '<span>⏳ Conectando cámara...</span>';
+        btnEl.style.opacity = '0.85';
+        btnEl.style.pointerEvents = 'none';
+      }
+
+      try {
+        if (typeof enterFullscreen === 'function') {
+          enterFullscreen();
+        }
+        if (screen.orientation && screen.orientation.lock) {
+          try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+        }
+
+        if (typeof Scanner !== 'undefined' && Scanner.startCamera) {
+          const started = await Scanner.startCamera();
+          if (!started) return;
+        }
+
+        closeResultsModal();
+        if (typeof switchTab === 'function') {
+          switchTab('scan');
+        }
+
+      } catch (err) {
+        console.error('Error al ir al escáner desde resultados:', err);
+      } finally {
+        if (btnEl) {
+          btnEl.innerHTML = originalHtml;
+          btnEl.style.opacity = '1';
+          btnEl.style.pointerEvents = '';
         }
       }
     }
-    window.onTabScanClick = onTabScanClick;
+    window.goToScannerFromResults = goToScannerFromResults;
 
     async function loadAndRenderResultsTable() {
       const container = document.getElementById('results-table-container');
@@ -6518,14 +6585,9 @@
       }
     }
 
-    function goToScannerWithSession() {
+    async function goToScannerWithSession(btnEl) {
       generateAndActivateSession();
-      if (typeof switchTab === 'function') {
-        switchTab('scan');
-      }
-      if (typeof intentarIniciarCamara === 'function') {
-        intentarIniciarCamara();
-      }
+      await irAlEscanerDirecto(btnEl);
     }
 
     // ── Helpers de auth UI ──
