@@ -160,6 +160,22 @@
       isScanning = false;
     }
 
+    // Mostrar u ocultar botones de "Ver Resultados" según si hay alumnos evaluados
+    const btnResultsHeader = document.getElementById('btn-open-results-modal');
+    if (btnResultsHeader) {
+      btnResultsHeader.style.display = evaluated > 0 ? 'inline-flex' : 'none';
+      if (evaluated > 0) {
+        btnResultsHeader.innerHTML = `📊 Ver Resultados (${evaluated})`;
+      }
+    }
+    const btnScanResults = document.getElementById('btn-scan-results');
+    if (btnScanResults) {
+      btnScanResults.style.display = evaluated > 0 ? 'inline-flex' : 'none';
+      if (evaluated > 0) {
+        btnScanResults.innerHTML = `📊 Resultados (${evaluated})`;
+      }
+    }
+
     // Actualizar el panel de nómina en tiempo real
     renderRosterPanel();
   }
@@ -822,14 +838,15 @@
     } catch (e) {}
   }
 
-  // --- MODO PANTALLA COMPLETA ---
+  // --- MODO PANTALLA COMPLETA (Con libre rotación automática) ---
   function enterFullscreen() {
     const docEl = document.documentElement;
     const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
     if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
       req.call(docEl).then(() => {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(() => {});
+        // Desbloquear cualquier bloqueo previo para permitir rotación automática con el acelerómetro
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) {}
         }
       }).catch(() => {});
     }
