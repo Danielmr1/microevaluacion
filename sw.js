@@ -1,5 +1,5 @@
 // Service Worker para Microevaluación A5 (PWA)
-const CACHE_NAME = 'microeval-cache-v3.1.19';
+const CACHE_NAME = 'microeval-cache-v3.1.20';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
