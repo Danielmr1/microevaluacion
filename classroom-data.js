@@ -691,6 +691,25 @@
     getActiveSession,
     flushSyncQueue,
 
+    updateStudent(classroomId, studentCode, fullName, shortName) {
+      const cls = CLASSROOMS[classroomId];
+      if (!cls || !cls.students) return false;
+      const st = cls.students.find(s => s.id === studentCode);
+      if (st) {
+        st.name = fullName;
+        st.shortName = shortName;
+        return true;
+      }
+      return false;
+    },
+
+    deleteStudent(classroomId, studentCode) {
+      const cls = CLASSROOMS[classroomId];
+      if (!cls || !cls.students) return false;
+      cls.students = cls.students.filter(s => s.id !== studentCode);
+      return true;
+    },
+
     /**
      * Reemplaza el runtime de salones con datos frescos de Supabase.
      * Recibe un array en el formato { id, name, gradeCode, color, students[] }

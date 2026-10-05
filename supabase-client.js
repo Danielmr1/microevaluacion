@@ -273,6 +273,63 @@
     return true;
   }
 
+  /**
+   * Actualiza los datos de un alumno específico (nombre completo y/o nombre corto).
+   * @param {string} classroomId UUID del salón
+   * @param {string} studentCode Código único del alumno (ej: 'ALUM_01')
+   * @param {string} fullName Nombre completo actualizado
+   * @param {string} shortName Nombre corto actualizado
+   * @returns {Promise<boolean>} true si se actualizó con éxito
+   */
+  async function updateStudent(classroomId, studentCode, fullName, shortName) {
+    const client = getClient();
+    if (!client || !classroomId || !studentCode) return false;
+
+    const user = await getCurrentUser();
+    if (!user) return false;
+
+    const { error } = await client
+      .from('microeval_students')
+      .update({
+        full_name: fullName,
+        short_name: shortName
+      })
+      .eq('classroom_id', classroomId)
+      .eq('student_code', studentCode);
+
+    if (error) {
+      console.error('[SupabaseClient] Error actualizando alumno:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Elimina un alumno específico de un salón.
+   * @param {string} classroomId UUID del salón
+   * @param {string} studentCode Código único del alumno (ej: 'ALUM_01')
+   * @returns {Promise<boolean>} true si se eliminó con éxito
+   */
+  async function deleteStudent(classroomId, studentCode) {
+    const client = getClient();
+    if (!client || !classroomId || !studentCode) return false;
+
+    const user = await getCurrentUser();
+    if (!user) return false;
+
+    const { error } = await client
+      .from('microeval_students')
+      .delete()
+      .eq('classroom_id', classroomId)
+      .eq('student_code', studentCode);
+
+    if (error) {
+      console.error('[SupabaseClient] Error eliminando alumno:', error.message);
+      return false;
+    }
+    return true;
+  }
+
   // ─────────────────────────────────────────────
   // RÚBRICA DE CORRECCIÓN (Edge Function 'rubric')
   // ─────────────────────────────────────────────
@@ -730,6 +787,8 @@
     deleteClassroom,
     updateClassroomGrade,
     importStudents,
+    updateStudent,
+    deleteStudent,
     generateRubric,
     diagnosticoIA,
     saveEvaluation,
