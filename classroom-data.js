@@ -680,6 +680,10 @@
     getIndividualMCQuestions,
     getClassroom,
     getClassroomColor,
+    pickColorForNewClassroom() {
+      const count = Object.keys(CLASSROOMS).length;
+      return CLASSROOM_COLOR_PALETTE[count % CLASSROOM_COLOR_PALETTE.length] || '#3b82f6';
+    },
     getClassroomGrade,
     getEvaluation,
     getEvaluationRubric,
