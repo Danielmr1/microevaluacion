@@ -1000,47 +1000,37 @@
       z-index: 10;
     }
 
-    /* Salón, objetivo y contador se ocultan mientras se apunta: no se miran en
-       ese momento, y el contador reaparece en el modal después de cada captura
-       (ver #modal-counter) y en la barra al detener la cámara. El panel de
-       nómina también: los pendientes se ven en el modal. */
+    /* La barra de sesión y la nómina se ocultan mientras la cámara está activa.
+       El docente no mira el salón ni el objetivo mientras enfoca una ficha;
+       esa info reaparece en el modal post-captura. */
     body.camera-active .session-bar,
     body.camera-active #roster-panel {
       display: none !important;
     }
 
-    /* Durante el escaneo el panel de controles se oculta por completo: el
-       botón de cámara vive en la fila de medidores (ver .quality-metrics) y
-       "Probar Foto" no se usa con la cámara encendida, porque ya se está
-       capturando en vivo. Así el borde inferior queda libre del todo. */
+    /* El panel de controles (con ▶ Iniciar Cámara y ↩ Volver a Fichas)
+       se oculta completamente una vez que la cámara está encendida.
+       El único botón accesible durante el escaneo es #btn-exit-scanner. */
     body.camera-active .controls-panel {
       display: none !important;
     }
 
-    /* El botón de detener se achica para entrar como una columna más de la
-       fila de medidores */
-    body.camera-active .btn-main {
-      padding: 10px 14px;
-      font-size: 0.9rem;
+    /* El botón flotante de salida aparece SOLO con la cámara activa */
+    body.camera-active #btn-exit-scanner {
+      display: block !important;
     }
 
-    /* La fila de medidores pasa a ser la barra de acción inferior: tres
-       medidores y el botón de la cámara, todo en una sola franja. */
+    /* La fila de medidores flota sobre el borde inferior del video.
+       Ya no contiene un botón, solo los tres indicadores de calidad. */
     body.camera-active .quality-metrics {
       position: absolute;
       bottom: 24px;
       left: 16px;
       right: 16px;
-      max-width: 620px;
+      max-width: 480px;
       margin: 0 auto;
       z-index: 25;
       pointer-events: none;
-    }
-    /* La fila entera ignora los toques para no bloquear el video, pero el
-       botón sí tiene que responder */
-    body.camera-active .quality-metrics #btn-start {
-      pointer-events: auto;
-      flex: 1 1 0;
     }
 
     /* Acá estaban .hud-guide y .corner-bracket (el rectángulo fijo con las 4
@@ -1325,9 +1315,8 @@
         bottom: 12px;
         left: 10px;
         right: 10px;
-        /* 560px para que entren los 3 medidores MÁS el botón: con 4 columnas
-           cada una queda en ~131px, el mismo ancho que tenían las 3 de 440px. */
-        max-width: 560px;
+        /* 360px para los 3 medidores solos (sin botón) */
+        max-width: 360px;
         gap: 6px;
       }
       .metric-card {
@@ -1340,9 +1329,11 @@
       .progress-bar-bg {
         height: 5px;
       }
-      body.camera-active .btn-main {
+      body.camera-active #btn-exit-scanner {
+        top: 8px;
+        right: 8px;
         padding: 6px 10px;
-        font-size: 0.8rem;
+        font-size: 0.76rem;
       }
       body.camera-active header {
         padding: 4px 12px;
@@ -1446,7 +1437,7 @@
     <div class="brand">
       <div class="brand-icon">📷</div>
       <div class="brand-text">
-        <h1>Microevaluación A5 <span class="version-tag">v3.1.16</span></h1>
+        <h1>Microevaluación A5 <span class="version-tag">v3.1.17</span></h1>
         <p>Portal Docente: Fichas & Escáner Integrado</p>
       </div>
     </div>
@@ -2029,7 +2020,7 @@
       <button onclick="Scanner.nextScan(); document.getElementById('g8-session-complete-banner').style.display='none';" style="background:#16a34a; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.8rem; font-weight:700; cursor:pointer; white-space:nowrap;">↩️ Continuar igual</button>
     </div>
 
-    <!-- Barra de Sesión Activa -->
+    <!-- Barra de Sesión Activa — solo el botón de salida; el resto se lee en el modal post-captura -->
     <div class="session-bar">
       <div class="session-field">
         <label>Salón:</label>
@@ -2040,14 +2031,11 @@
         <span class="session-badge-active" id="scan-active-target" style="color: #22c55e;">—</span>
       </div>
       <button id="btn-scan-results" onclick="openResultsModal()" style="display:none; background:#064e3b; border:1px solid #10b981; color:#a7f3d0; border-radius:6px; padding:3px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Ver resultados de esta sesión">📊 Resultados</button>
-      <button onclick="switchTab('create')" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:3px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Volver a la preparación de fichas">↩ Volver a Fichas</button>
-      <!-- Diagnóstico: cuando algo falla en el celular no hay forma de mirar la
-           consola, así que la app vuelca todo lo que sabe como texto y el docente
-           lo pega donde lo necesite. Queda en la barra de sesión, que se oculta
-           en modo cámara para no estorbar. -->
-      <button id="btn-diagnostico" onclick="copiarDiagnostico()" title="Copiar un informe técnico de lo que está pasando"
-        style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:3px 8px; font-size:0.75rem; cursor:pointer;">🔍</button>
-      <div class="session-counter" id="session-counter">
+      <button onclick="salirDelEscaner()" style="background:#1e293b; border:1px solid #475569; color:#f8fafc; border-radius:6px; padding:3px 8px; font-size:0.75rem; font-weight:700; cursor:pointer;" title="Volver a la preparación de fichas">↩ Volver a Fichas</button>
+      <!-- Diagnóstico oculto: permanece en DOM por si se necesita desde consola -->
+      <button id="btn-diagnostico" onclick="copiarDiagnostico()" title="Copiar informe técnico"
+        style="display:none; background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:3px 8px; font-size:0.75rem; cursor:pointer;">🔍</button>
+      <div class="session-counter" id="session-counter" style="display:none;">
         — evaluados
       </div>
     </div>
@@ -2110,14 +2098,9 @@
            El diseño original ya la había desactivado por lo mismo
            (backup v2.5.0, "DESHABILITADO PARA MODO CUADRILÁTERO DINÁMICO"). -->
 
-      <!-- Medidores de calidad + botón de cámara, en UNA sola fila.
-           El botón vive acá, y no en un panel aparte, por dos razones:
-             · mientras se escanea esta fila es lo único que ocupa el borde
-               inferior, así que el video se queda con toda la pantalla;
-             · queda al lado de los medidores, que es donde el docente ya está
-               mirando cuando espera el disparo automático.
-           Con la cámara apagada los medidores se ocultan y en la fila queda
-           solo el botón, a ancho completo. -->
+      <!-- Medidores de calidad: Cobertura, Nitidez, Estabilidad.
+           Con la cámara encendida flotan sobre el borde inferior del video.
+           Con la cámara apagada se ocultan (ver CSS :not(.camera-active)). -->
       <div class="quality-metrics">
         <div class="metric-card">
           <div class="metric-header">
@@ -2146,21 +2129,30 @@
             <div class="progress-bar-fill" id="bar-stability"></div>
           </div>
         </div>
-        <button class="btn-main" id="btn-start" onclick="intentarIniciarCamara()">
-          <span>▶ Iniciar Cámara</span>
-        </button>
       </div>
+
+      <!-- Botón de salida flotante: visible SOLO con la cámara encendida.
+           Detiene la cámara y vuelve a Fichas. Es el único botón usable
+           durante el escaneo en vivo (además de los medidores). -->
+      <button id="btn-exit-scanner" onclick="salirDelEscaner()"
+        style="display:none; position:absolute; top:12px; right:12px; z-index:30;
+               background:rgba(30,41,59,0.88); border:1.5px solid #475569; color:#f8fafc;
+               border-radius:10px; padding:8px 14px; font-size:0.82rem; font-weight:700;
+               cursor:pointer; backdrop-filter:blur(6px); pointer-events:auto;">
+        ↩ Volver a Fichas
+      </button>
     </div>
 
-    <!-- Carga de una foto guardada. Queda fuera del visor porque solo se usa
-         con la cámara apagada, y en modo inmersivo este panel se oculta. -->
+    <!-- Panel de controles: visible SOLO con la cámara apagada (camera-active lo oculta).
+         Contiene el botón para encender la cámara y para salir al paso de Fichas. -->
     <div class="controls-panel">
       <div class="action-row">
+        <!-- input oculto necesario para handleFile() — no se muestra nunca -->
         <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(event)">
-        <button class="btn-secondary" onclick="document.getElementById('file-input').click()" title="Cargar una foto guardada de una ficha y procesarla por el mismo camino que la cámara">
-          📁 Probar Foto
+        <button class="btn-main" id="btn-start" onclick="intentarIniciarCamara()" style="flex:1;">
+          <span>▶ Iniciar Cámara</span>
         </button>
-        <button class="btn-secondary" onclick="switchTab('create')" title="Volver a la preparación de fichas">
+        <button class="btn-secondary" onclick="salirDelEscaner()" title="Volver a la preparación de fichas">
           ↩ Volver a Fichas
         </button>
       </div>
@@ -5070,6 +5062,18 @@
      *     criterio de otro grado;
      *   · falta la rúbrica → ofrece generarla (solo si hay con qué).
      */
+    /**
+     * Detiene la cámara si está encendida y vuelve a la vista de Fichas.
+     * Es el único punto de salida del escáner durante el escaneo en vivo.
+     */
+    function salirDelEscaner() {
+      if (typeof Scanner !== 'undefined' && Scanner.stopCamera) {
+        Scanner.stopCamera();
+      }
+      switchTab('create');
+    }
+    window.salirDelEscaner = salirDelEscaner;
+
     async function intentarIniciarCamara() {
       const encendida = document.body.classList.contains('camera-active');
 

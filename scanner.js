@@ -924,13 +924,6 @@
       procCanvas.height = Math.round((640 * video.videoHeight) / video.videoWidth);
 
       document.body.classList.add('camera-active');
-      const btn = document.getElementById('btn-start');
-      if (btn) {
-        // Etiqueta corta: en modo inmersivo el botón comparte la fila con los
-        // tres medidores y no entra "Detener Cámara" completo.
-        btn.innerHTML = '<span>⏹ Detener</span>';
-        btn.style.background = '#dc2626';
-      }
 
       isScanning = true;
       scanStartTime = Date.now();
@@ -946,11 +939,6 @@
   function stopCamera() {
     isScanning = false;
     document.body.classList.remove('camera-active');
-    const btn = document.getElementById('btn-start');
-    if (btn) {
-      btn.innerHTML = '<span>▶ Iniciar Cámara</span>';
-      btn.style.background = '#2563eb';
-    }
     activeTarget = null;
     lostFramesCount = 0;
     if (videoStream) {
@@ -2104,6 +2092,7 @@
   // Exportar funciones para interacción con la interfaz HTML
   global.Scanner = {
     toggleCamera,
+    stopCamera,
     toggleTorch,
     toggleFullscreen,
     nextScan,
