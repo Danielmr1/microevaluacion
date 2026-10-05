@@ -878,12 +878,21 @@
     } else {
       if (!checkDependencies()) return;
       enterFullscreen();
+      // Bloquear en horizontal exclusivamente para el escaneo de la ficha física A5
+      if (screen.orientation && screen.orientation.lock) {
+        try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+      }
       await startCamera();
     }
   }
 
   async function startCamera() {
     try {
+      // Garantizar orientación horizontal para capturar video panorámico 16:9 (1920x1080)
+      if (screen.orientation && screen.orientation.lock) {
+        try { await screen.orientation.lock('landscape'); } catch (e) {}
+      }
+
       const constraints = {
         video: {
           facingMode: { ideal: currentFacingMode },
