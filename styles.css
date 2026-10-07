@@ -486,18 +486,17 @@
     }
 
     /* ── CABECERA: 20mm fijos ──
-       El padding horizontal de 11mm deja nombre y QR dentro de x=15..171mm,
+       El padding horizontal de 16mm deja nombre y QR dentro de x=15..171mm,
        la zona libre de marcadores (los ArUco ocupan las esquinas hasta 15mm).
-       El nombre largo se recorta con puntos suspensivos en vez de empujar
-       el QR o romper el alto de la cabecera. */
+       El nombre largo se expande a todo lo ancho con el grado debajo. */
     .card-header {
       height: 20mm;
       flex: 0 0 20mm;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 4mm;
-      padding: 0 16mm 1.5mm 16mm;
+      gap: 3mm;
+      padding: 0 16mm 1mm 16mm;
       border-bottom: 2px solid #0f172a;
       box-sizing: border-box;
       overflow: hidden;
@@ -505,21 +504,31 @@
 
     .student-block {
       display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.2mm;
+      min-width: 0;
+      overflow: hidden;
+      flex: 1 1 auto;
+    }
+
+    .student-main-row {
+      display: flex;
       align-items: baseline;
-      gap: 6px;
+      gap: 5px;
       min-width: 0;
       overflow: hidden;
     }
 
     .student-label {
-      font-size: 12pt;
+      font-size: 11pt;
       color: #475569;
       font-weight: 600;
       flex: 0 0 auto;
     }
 
     .student-name {
-      font-size: 14pt;
+      font-size: 13.5pt;
       color: #0f172a;
       font-weight: 800;
       letter-spacing: 0.2px;
@@ -529,26 +538,35 @@
       min-width: 0;
     }
 
+    .student-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
     .student-grade {
-      font-size: 10pt;
+      font-size: 8.5pt;
       color: #64748b;
       font-weight: 600;
       flex: 0 0 auto;
       white-space: nowrap;
+      line-height: 1;
     }
 
     .qr-block {
       display: flex;
       align-items: center;
-      gap: 3mm;
+      gap: 2.5mm;
       flex: 0 0 auto;
     }
 
     .qr-code-text {
       font-family: monospace;
-      font-size: 7pt;
-      font-weight: 700;
-      color: #64748b;
+      font-size: 9pt;
+      font-weight: 800;
+      color: #475569;
       letter-spacing: 0.5px;
     }
 
@@ -625,7 +643,8 @@
       display: grid;
       grid-template-columns: repeat(16, 1fr);
       grid-template-rows: repeat(7, 1fr);
-      border: 0.75pt solid #e4e4e7;
+      border: 1.2px solid #64748b;
+      border-radius: 2.5px;
       background: #ffffff;
     }
 
@@ -638,6 +657,7 @@
     /* Sin bordes duplicados en el perímetro de la cuadrícula. */
     .notebook-grid > i:nth-child(16n) { border-right: none; }
     .notebook-grid > i:nth-child(n+97) { border-bottom: none; }
+    .mc-grid-2q .notebook-grid > i:nth-child(n+49) { border-bottom: none; }
 
     /* ── FRANJA DE RESPUESTA: 156 x 12 mm FIJAS ──
        Ocupa x=15..171mm (libre de marcadores) e y=118..130mm de la ficha.

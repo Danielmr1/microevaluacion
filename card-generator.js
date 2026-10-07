@@ -44,6 +44,25 @@ function createA5Card(student, classroom, evaluation) {
 
   const safeStudentName = escape(student.name.toUpperCase());
   const safeGradeText = escape(gradeText);
+  const orderMatch = String(student.id || '').match(/\d+/);
+  const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
+
+  const headerHTML = `
+        <div class="card-header">
+          <div class="student-block">
+            <div class="student-main-row">
+              <span class="student-label">Nombre:</span>
+              <span class="student-name">${safeStudentName}</span>
+            </div>
+            <div class="student-sub-row">
+              <span class="student-grade">(${safeGradeText})</span>
+            </div>
+          </div>
+          <div class="qr-block">
+            <span class="qr-code-text">${orderNumber}</span>
+            <div class="qr-box" id="qr-box-${student.id}"></div>
+          </div>
+        </div>`;
 
   // CASO 1: Opción Múltiple - 1 Pregunta
   if (isOMR && qCount === 1) {
@@ -54,17 +73,7 @@ function createA5Card(student, classroom, evaluation) {
     return `
       <div class="card-a5 mc-card mc-1q">
         ${fiducialsHTML}
-        <div class="card-header">
-          <div class="student-block">
-            <span class="student-label">Nombre:</span>
-            <span class="student-name">${safeStudentName}</span>
-            <span class="student-grade">(${safeGradeText})</span>
-          </div>
-          <div class="qr-block">
-            <span class="qr-code-text">${student.id}</span>
-            <div class="qr-box" id="qr-box-${student.id}"></div>
-          </div>
-        </div>
+        ${headerHTML}
 
         <div class="problem-wide mc-problem">
           <div class="problem-text">${escape(q1.prompt)}</div>
@@ -92,17 +101,7 @@ function createA5Card(student, classroom, evaluation) {
     return `
       <div class="card-a5 mc-card mc-2q">
         ${fiducialsHTML}
-        <div class="card-header">
-          <div class="student-block">
-            <span class="student-label">Nombre:</span>
-            <span class="student-name">${safeStudentName}</span>
-            <span class="student-grade">(${safeGradeText})</span>
-          </div>
-          <div class="qr-block">
-            <span class="qr-code-text">${student.id}</span>
-            <div class="qr-box" id="qr-box-${student.id}"></div>
-          </div>
-        </div>
+        ${headerHTML}
 
         <!-- Pregunta 1 -->
         <div class="mc-q-block">
@@ -145,17 +144,7 @@ function createA5Card(student, classroom, evaluation) {
   return `
     <div class="card-a5">
       ${fiducialsHTML}
-      <div class="card-header">
-        <div class="student-block">
-          <span class="student-label">Nombre:</span>
-          <span class="student-name">${safeStudentName}</span>
-          <span class="student-grade">(${safeGradeText})</span>
-        </div>
-        <div class="qr-block">
-          <span class="qr-code-text">${student.id}</span>
-          <div class="qr-box" id="qr-box-${student.id}"></div>
-        </div>
-      </div>
+      ${headerHTML}
 
       <div class="problem-wide">
         <div class="problem-text">
