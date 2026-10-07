@@ -1,5 +1,5 @@
 // =============================================================================
-// card-generator.js — Microevaluación A5 v3.1.36
+// card-generator.js — Microevaluación A5 v3.1.37
 // MÓDULO: GENERADOR DE FICHAS A5, HOJAS DE IMPRESIÓN A4 Y AJUSTE TIPOGRÁFICO
 //
 // Guardarraíles activos:
@@ -188,8 +188,16 @@ function renderAllPrintPages(classId, evaluation) {
   const sheetCount = Math.ceil(students.length / 2);
   const printBtn = document.getElementById('btn-print-sheets');
   if (printBtn) {
-    printBtn.textContent = '🖨️ Imprimir ' + sheetCount +
-      (sheetCount === 1 ? ' hoja A4' : ' hojas A4');
+    const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
+    printBtn.innerHTML = `🖨️ Descargar / Imprimir ${sheetCount} ${pageWord}`;
+    printBtn.onclick = () => printEvaluationSheets(classId);
+  }
+
+  // Actualizar también el título del documento preventivamente por si se usa Ctrl+P o menú del navegador
+  try {
+    document.title = getPdfExportTitle(classroom);
+  } catch (e) {
+    // Silencioso en entornos headless o restringidos
   }
 
   for (let i = 0; i < students.length; i += 2) {
@@ -228,6 +236,97 @@ function renderAllPrintPages(classId, evaluation) {
 
   // Ajustar el tamaño de fuente del enunciado a su ranura fija
   fitProblemText();
+}
+
+/**
+ * Genera el nombre dinámico del archivo para exportar a PDF (document.title),
+ * asegurando el formato: [nombre_del_salon]_[fecha_hora]
+ * Compatible con la convención de Excel y fotos ZIP del sistema.
+ */
+function getPdfExportTitle(classroom) {
+  const sanitizeFn = (typeof sanitizeExportFileName === 'function')
+    ? sanitizeExportFileName
+    : (name) => (name || 'Salon')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_\-]/g, '');
+
+  const timestampFn = (typeof getExportTimestamp === 'function')
+    ? getExportTimestamp
+    : () => {
+        const d = new Date();
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const mins = String(d.getMinutes()).padStart(2, '0');
+        return `${day}-${month}_${hours}-${mins}`;
+      };
+
+  const cleanClassroom = sanitizeFn(classroom ? classroom.name : 'Salon');
+  const timeStamp = timestampFn();
+  return `${cleanClassroom}_${timeStamp}`;
+}
+
+/**
+ * Dispara el diálogo de impresión / descarga a PDF del navegador configurando
+ * de manera reactiva el título del documento para que el archivo descargado
+ * tenga el nombre dinámico: "[salon]_[fecha].pdf".
+ */
+function printEvaluationSheets(classId) {
+  let classroom = null;
+  if (classId && typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
+    classroom = ClassroomData.getClassroom(classId);
+  }
+  if (!classroom && typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession) {
+    const session = ClassroomData.getActiveSession();
+    if (session && session.classroomId) {
+      classroom = ClassroomData.getClassroom(session.classroomId);
+    }
+  }
+
+  const originalTitle = document.title;
+  const pdfTitle = getPdfExportTitle(classroom);
+
+  document.title = pdfTitle;
+
+  const restoreTitle = () => {
+    document.title = originalTitle;
+    window.removeEventListener('afterprint', restoreTitle);
+  };
+  window.addEventListener('afterprint', restoreTitle, { once: true });
+
+  setTimeout(() => {
+    if (document.title === pdfTitle) {
+      document.title = originalTitle;
+    }
+  }, 10000);
+
+  window.print();
+}
+
+// Escuchas reactivas para atajos de teclado (Ctrl+P) y opciones de impresión del navegador
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('beforeprint', () => {
+    const container = document.getElementById('pages-container');
+    if (container && container.style.display !== 'none' && container.children.length > 0) {
+      let classroom = null;
+      if (typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession) {
+        const session = ClassroomData.getActiveSession();
+        if (session && session.classroomId) {
+          classroom = ClassroomData.getClassroom(session.classroomId);
+        }
+      }
+      if (classroom) {
+        document.title = getPdfExportTitle(classroom);
+      }
+    }
+  });
+
+  window.addEventListener('afterprint', () => {
+    document.title = 'Microevaluación';
+  });
 }
 
 /* ── AUTO-AJUSTE DEL ENUNCIADO A LA RANURA DE 20mm ──
@@ -270,5 +369,7 @@ if (typeof window !== 'undefined') {
   window.createA5Card = createA5Card;
   window.renderAllPrintPages = renderAllPrintPages;
   window.fitProblemText = fitProblemText;
+  window.getPdfExportTitle = getPdfExportTitle;
+  window.printEvaluationSheets = printEvaluationSheets;
 }
 

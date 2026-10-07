@@ -38,14 +38,14 @@ Minimum version required to store current data is: `+i+`.
   </script>
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
-  <script src="roi-processor.js?v=3.1.36"></script>
-  <script src="scanner.js?v=3.1.36"></script>
-  <script src="results-manager.js?v=3.1.36"></script>
-  <script src="classroom-manager.js?v=3.1.36"></script>
-  <script src="question-bank.js?v=3.1.36"></script>
-  <script src="card-generator.js?v=3.1.36"></script>
+  <script src="roi-processor.js?v=3.1.37"></script>
+  <script src="scanner.js?v=3.1.37"></script>
+  <script src="results-manager.js?v=3.1.37"></script>
+  <script src="classroom-manager.js?v=3.1.37"></script>
+  <script src="question-bank.js?v=3.1.37"></script>
+  <script src="card-generator.js?v=3.1.37"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.1.36">
+  <link rel="stylesheet" href="styles.css?v=3.1.37">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -57,7 +57,7 @@ Minimum version required to store current data is: `+i+`.
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.1.36</span>
+          <span class="version-tag">v3.1.37</span>
         </div>
       </div>
     </div>
@@ -703,9 +703,9 @@ Minimum version required to store current data is: `+i+`.
 
         <!-- Acciones Principales: 3 Botones Visibles en Móvil y Escritorio -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
-          <button id="btn-print-sheets" type="button" onclick="window.print()" class="btn-print-action"
+          <button id="btn-print-sheets" type="button" onclick="printEvaluationSheets()" class="btn-print-action"
             style="background:#16a34a; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #16a34a40; display:flex; align-items:center; justify-content:center; gap:8px;">
-            🖨️ Imprimir hoja
+            🖨️ Descargar / Imprimir páginas A4
           </button>
           <button type="button" onclick="switchTab('scan')" class="btn-goto-scan"
             style="background:#4f46e5; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #4f46e540; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -1639,6 +1639,7 @@ Minimum version required to store current data is: `+i+`.
         try { Scanner.stopCamera(); } catch (e) {}
       }
       document.body.classList.remove('camera-active');
+      document.title = 'Microevaluación';
       closeBankManagerModal();
       showView('hub');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2051,6 +2052,7 @@ Minimum version required to store current data is: `+i+`.
 
         function cambiarSalonOEvaluacion() {
       resetWizard();
+      document.title = 'Microevaluación';
       const stepClass = document.getElementById('step-classroom');
       if (stepClass) stepClass.style.display = 'block';
       const stepType = document.getElementById('step-eval-type');
