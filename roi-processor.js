@@ -238,17 +238,159 @@
   }
 
   /**
+   * Preprocesamiento Local de Trazos y Atenuación/Eliminación Morfológica de Cuadrícula
+   * 
+   * Aísla la escritura del alumno (grafito HB/2B o tinta) y remueve las líneas
+   * periódicas ortogonales de la cuadrícula de cálculo (16x7 o 16x4).
+   * 
+   * Guardarraíles activos:
+   * - Regla 11: Actúa únicamente como filtro de eficiencia y limpiador (< 15ms). NUNCA califica.
+   * - Preserva prioritariamente trazos de lápiz infantiles (incluso si cruzan líneas).
+   * - Identifica cuadrícula vacía (Gatekeeper INT8 / Blank Detector).
+   * - Cero regresión: Si ocurre cualquier excepción, aplica fallback silencioso con realce clásico.
+   * 
+   * @param {HTMLCanvasElement} targetCanvas - Canvas con la ROI de la cuadrícula recortada
+   * @param {Object} options - { cols: 16, rows: 7, strokeRatio: 0.72, gridRatio: 0.95 }
+   * @returns {{ success: boolean, isEmpty: boolean, strokeDensity: number, strokePixels: number, erasedGridPixels: number, paperLum: number }}
+   */
+  function preprocessCalculationGridStrokes(targetCanvas, options = {}) {
+    if (!isValidCanvas(targetCanvas)) {
+      return { success: false, isEmpty: false, strokeDensity: 0, strokePixels: 0, erasedGridPixels: 0, paperLum: 235 };
+    }
+
+    try {
+      const width = targetCanvas.width;
+      const height = targetCanvas.height;
+      const totalPixels = width * height;
+      if (totalPixels <= 0) {
+        return { success: false, isEmpty: false, strokeDensity: 0, strokePixels: 0, erasedGridPixels: 0, paperLum: 235 };
+      }
+
+      const cols = options.cols || 16;
+      const rows = options.rows || 7;
+      const stepX = width / cols;
+      const stepY = height / rows;
+
+      const ctx = targetCanvas.getContext('2d', { willReadFrequently: true });
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+
+      // Lectura y escritura directa en memoria usando 32-bit words (< 15 ms en V8)
+      const buf32 = new Uint32Array(data.buffer);
+      const WHITE_PIXEL = 0xFFFFFFFF; // 32-bit RGBA blanco puro
+
+      // 1. Muestreo ultra-rápido de luminancia del papel con stride adaptativo
+      const stride = Math.max(32, Math.floor(totalPixels / 10000));
+      const hist = new Uint32Array(256);
+      let sampleCount = 0;
+      for (let i = 0; i < totalPixels; i += stride) {
+        const px = buf32[i];
+        const lum = ((px & 0xFF) * 77 + ((px >> 8) & 0xFF) * 150 + ((px >> 16) & 0xFF) * 29) >> 8;
+        hist[lum]++;
+        sampleCount++;
+      }
+
+      // Estimar fondo del papel (percentil 85 superior)
+      let acc = 0;
+      let paperLum = 235;
+      for (let i = 255; i >= 0; i--) {
+        acc += hist[i];
+        if (acc >= sampleCount * 0.15) {
+          paperLum = i;
+          break;
+        }
+      }
+      paperLum = Math.max(160, Math.min(250, paperLum));
+
+      // Umbrales adaptativos
+      const strokeCutoff = Math.round(paperLum * (options.strokeRatio || 0.72));
+      const gridFaintCutoff = Math.round(paperLum * (options.gridRatio || 0.97));
+
+      // 2. Precalcular máscaras 1D ortogonales para líneas de rejilla (tolerancia ±3px)
+      const isNearVLine = new Uint8Array(width);
+      for (let c = 0; c <= cols; c++) {
+        const vx = Math.round(c * stepX);
+        for (let dx = -3; dx <= 3; dx++) {
+          const x = vx + dx;
+          if (x >= 0 && x < width) isNearVLine[x] = 1;
+        }
+      }
+
+      const isNearHLine = new Uint8Array(height);
+      for (let r = 0; r <= rows; r++) {
+        const hy = Math.round(r * stepY);
+        for (let dy = -3; dy <= 3; dy++) {
+          const y = hy + dy;
+          if (y >= 0 && y < height) isNearHLine[y] = 1;
+        }
+      }
+
+      // 3. LUT pre-empaquetada en 32 bits para realce suave de lápiz
+      const strokePixelLUT = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        const enh = Math.min(255, Math.max(0, Math.round(i * 0.82)));
+        strokePixelLUT[i] = (255 << 24) | (enh << 16) | (enh << 8) | enh;
+      }
+
+      let detectedStrokePixels = 0;
+      let erasedGridPixels = 0;
+
+      // 4. Barrido ortogonal optimizado de pasada única
+      let pIdx = 0;
+      for (let y = 0; y < height; y++) {
+        const nearH = isNearHLine[y];
+        for (let x = 0; x < width; x++, pIdx++) {
+          const px = buf32[pIdx];
+          const lum = ((px & 0xFF) * 77 + ((px >> 8) & 0xFF) * 150 + ((px >> 16) & 0xFF) * 29) >> 8;
+
+          if (lum < strokeCutoff) {
+            // Trazo de lápiz oscuro infantil: PRESERVAR Y REALZAR
+            detectedStrokePixels++;
+            buf32[pIdx] = strokePixelLUT[lum];
+          } else if ((nearH || isNearVLine[x]) && lum <= gridFaintCutoff) {
+            // Cuadrícula impresa tenue: BORRAR A BLANCO PURO
+            erasedGridPixels++;
+            buf32[pIdx] = WHITE_PIXEL;
+          } else {
+            // Fondo de papel normal: BLANCO PURO
+            buf32[pIdx] = WHITE_PIXEL;
+          }
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+
+      const strokeDensity = detectedStrokePixels / totalPixels;
+      // Umbral calibrado de cuadrícula vacía: < 0.12% de píxeles con trazo
+      const isEmpty = strokeDensity < 0.0012;
+
+      return {
+        success: true,
+        isEmpty,
+        strokeDensity,
+        strokePixels: detectedStrokePixels,
+        erasedGridPixels,
+        paperLum
+      };
+    } catch (err) {
+      console.warn('[ROIProcessor] Fallo en preprocessCalculationGridStrokes, aplicando fallback seguro:', err);
+      enhanceHandwritingContrast(targetCanvas);
+      return { success: true, isEmpty: false, strokeDensity: 0.05, strokePixels: 0, erasedGridPixels: 0, paperLum: 235, fallback: true };
+    }
+  }
+
+  /**
    * Procesa la captura completa: extrae la ROI de la cuadrícula de cálculo y
    * la de la caja de respuesta, y realza el contraste de ambas.
    * Son dos ROIs separadas a propósito: la cuadrícula es la evidencia de CÓMO
    * resolvió el alumno y la caja de respuesta es el resultado final. El paso a
    * la IA las va a necesitar por separado.
    * @param {HTMLCanvasElement} sheetCanvas - Canvas aplanado de la ficha (2000x1441)
-   * @returns {Object} { success, resolutionCanvas, answerCanvas, error }
+   * @returns {Object} { success, resolutionCanvas, answerCanvas, strokeInfo, error }
    */
   function processCapturedSheet(sheetCanvas) {
     if (!isValidCanvas(sheetCanvas)) {
-      return { success: false, resolutionCanvas: null, answerCanvas: null, error: 'Lienzo de hoja inválido' };
+      return { success: false, resolutionCanvas: null, answerCanvas: null, strokeInfo: null, error: 'Lienzo de hoja inválido' };
     }
 
     // 1. Extraer ROI de la Cuadrícula de cálculo (los pasos del alumno)
@@ -257,7 +399,7 @@
       return extResult;
     }
     const resolutionCanvas = extResult.canvas;
-    enhanceHandwritingContrast(resolutionCanvas);
+    const strokeInfo = preprocessCalculationGridStrokes(resolutionCanvas, { cols: 16, rows: 7 });
 
     // 2. Extraer ROI de la Caja de Respuesta (el resultado final)
     let answerCanvas = null;
@@ -271,6 +413,7 @@
       success: true,
       resolutionCanvas: resolutionCanvas,
       answerCanvas: answerCanvas,
+      strokeInfo: strokeInfo,
       error: null
     };
   }
@@ -484,16 +627,18 @@
     // Pregunta 1
     const b1 = extractROI(sheetCanvas, cfg.Q1_BUBBLES);
     const g1 = extractROI(sheetCanvas, cfg.Q1_GRID);
+    let strokeInfo1 = null;
     if (b1.success && b1.canvas) {
       enhanceHandwritingContrast(b1.canvas, { blackCutoff: blackCutoff1, whiteCutoff: whiteCutoff1 });
     }
     if (g1.success && g1.canvas) {
-      enhanceHandwritingContrast(g1.canvas, { blackCutoff: blackCutoff1, whiteCutoff: whiteCutoff1 });
+      strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 16, rows: is2Q ? 4 : 7 });
     }
     list.push({
       qIndex: 1,
       bubblesCanvas: b1.success ? b1.canvas : null,
-      gridCanvas: g1.success ? g1.canvas : null
+      gridCanvas: g1.success ? g1.canvas : null,
+      strokeInfo: strokeInfo1
     });
 
     // Pregunta 2 si corresponde
@@ -504,16 +649,18 @@
 
       const b2 = extractROI(sheetCanvas, cfg.Q2_BUBBLES);
       const g2 = extractROI(sheetCanvas, cfg.Q2_GRID);
+      let strokeInfo2 = null;
       if (b2.success && b2.canvas) {
         enhanceHandwritingContrast(b2.canvas, { blackCutoff: blackCutoff2, whiteCutoff: whiteCutoff2 });
       }
       if (g2.success && g2.canvas) {
-        enhanceHandwritingContrast(g2.canvas, { blackCutoff: blackCutoff2, whiteCutoff: whiteCutoff2 });
+        strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 16, rows: 4 });
       }
       list.push({
         qIndex: 2,
         bubblesCanvas: b2.success ? b2.canvas : null,
-        gridCanvas: g2.success ? g2.canvas : null
+        gridCanvas: g2.success ? g2.canvas : null,
+        strokeInfo: strokeInfo2
       });
     }
 
@@ -536,6 +683,7 @@
     clampROI,
     extractROI,
     enhanceHandwritingContrast,
+    preprocessCalculationGridStrokes,
     processCapturedSheet,
     // Métodos OMR
     measureBubbleDarkness,

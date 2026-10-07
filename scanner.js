@@ -556,6 +556,7 @@
       rubric: activeEval?.rubric || session?.rubric || null,
       answerImage: imgAnswer,
       gridImage: imgGrid,
+      strokeAnalysis: images?.strokeInfo || null,
       omrSelected: info?.results ? info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(', ') : null,
       omrMatch: info ? info.allCorrect : null
     };
@@ -728,6 +729,9 @@
     const imgGrid = images?.gridImage || null;
     if (aiRaw && imgGrid) {
       aiRaw.gridImage = imgGrid;
+    }
+    if (aiRaw && images?.strokeInfo) {
+      aiRaw.strokeAnalysis = images.strokeInfo;
     }
 
     // 1. Guardado determinista inmediato en Supabase (cero latencia)
@@ -1532,6 +1536,7 @@
     let fullWarpCanvas = null;
     let resolutionPreviewUrl = null;
     let answerPreviewUrl = null;
+    let gridStrokeInfo = null;
     let qrText = qrData;
     // Qué intento de lectura del QR fue el que funcionó (0 = ninguno). Saber si
     // lo leyó el detector nativo, jsQR sobre todo el lienzo o el recorte con
@@ -1643,6 +1648,7 @@
           if (procResult.success && procResult.answerCanvas) {
             answerPreviewUrl = procResult.answerCanvas.toDataURL('image/jpeg', 0.92);
           }
+          gridStrokeInfo = procResult.strokeInfo || null;
         }
       }
 
@@ -1926,7 +1932,8 @@
           lastOMRInfo = null;
           persistCapture(studentId, studentName, null, {
             answerImage: answerPreviewUrl,
-            gridImage: resolutionPreviewUrl
+            gridImage: resolutionPreviewUrl,
+            strokeInfo: gridStrokeInfo
           });
           if (omrContainer) omrContainer.style.display = 'none';
           if (hwContainer) hwContainer.style.display = 'block';

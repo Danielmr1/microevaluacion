@@ -625,13 +625,13 @@
       display: grid;
       grid-template-columns: repeat(16, 1fr);
       grid-template-rows: repeat(7, 1fr);
-      border: 1px solid #d4d4d8;
+      border: 0.75pt solid #e4e4e7;
       background: #ffffff;
     }
 
     .notebook-grid > i {
-      border-right: 1px solid #d4d4d8;
-      border-bottom: 1px solid #d4d4d8;
+      border-right: 0.75pt solid #e4e4e7;
+      border-bottom: 0.75pt solid #e4e4e7;
       box-sizing: border-box;
     }
 
