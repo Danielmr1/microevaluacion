@@ -1,5 +1,5 @@
 // =============================================================================
-// card-generator.js — Microevaluación A5 v3.1.31
+// card-generator.js — Microevaluación A5 v3.1.36
 // MÓDULO: GENERADOR DE FICHAS A5, HOJAS DE IMPRESIÓN A4 Y AJUSTE TIPOGRÁFICO
 //
 // Guardarraíles activos:

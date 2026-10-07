@@ -1409,25 +1409,49 @@
 
     /* VISTA DE IMPRESIÓN (CTRL + P) */
     @media print {
-      body {
+      html, body {
         background: transparent !important;
         padding: 0 !important;
         margin: 0 !important;
+        width: 100% !important;
       }
-      header, .tab-bar, .teacher-panel, #view-scan, .controls-panel, .capture-modal,
-      #dependency-error-banner, #toast-msg, #login-overlay, .btn-print-action {
+      header,
+      .tab-bar,
+      .teacher-panel,
+      .flow-topbar,
+      .btn-flow-back,
+      #view-hub,
+      #view-classrooms,
+      #view-scan,
+      .controls-panel,
+      .capture-modal,
+      #dependency-error-banner,
+      #toast-msg,
+      #login-overlay,
+      .btn-print-action,
+      .modal,
+      .modal-backdrop,
+      #user-menu-wrap,
+      .user-menu-dropdown {
         display: none !important;
       }
       #view-create {
         display: block !important;
         background: transparent !important;
         padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+      }
+      /* Garantía estricta: ocultar cualquier elemento dentro de view-create que no sea pages-container */
+      #view-create > :not(#pages-container) {
+        display: none !important;
       }
       #pages-container {
         display: block !important;
         width: 188mm !important;
         max-width: none !important;
         margin: 0 auto !important;
+        padding: 0 !important;
       }
       /* ── UNA HOJA = UNA PÁGINA ──
          El alto explícito (275mm) más la ausencia de margin-bottom son lo que
