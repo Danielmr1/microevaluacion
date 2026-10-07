@@ -561,9 +561,9 @@
       omrMatch: info ? info.allCorrect : null
     };
 
-    // Margen holgado de 30 segundos en segundo plano (Regla 9: Cero Bloqueo de Cámara)
+    // Margen holgado de 60 segundos en segundo plano (Regla 9: Cero Bloqueo de Cámara)
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout de 30s excedido en llamada IA')), 30000)
+      setTimeout(() => reject(new Error('Timeout de 60s excedido en llamada IA')), 60000)
     );
 
     try {
@@ -634,8 +634,9 @@
     } catch (err) {
       console.warn('[GradeSheet] Error en llamada IA:', err?.message || err);
 
+      const isOffline = (typeof navigator !== 'undefined' && !navigator.onLine);
       const isTimeout = err?.message && err.message.includes('Timeout');
-      const errType = isTimeout ? 'timeout_or_offline' : 'ai_error';
+      const errType = isOffline ? 'offline' : (isTimeout ? 'timeout' : 'ai_error');
 
       const updatedRaw = Object.assign({}, aiRawBase || {}, {
         pendingAI: true,

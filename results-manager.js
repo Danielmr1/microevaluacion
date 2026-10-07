@@ -1,5 +1,5 @@
 // =============================================================================
-// results-manager.js — Microevaluación A5 v3.1.31
+// results-manager.js — Microevaluación A5 v3.1.38
 // MÓDULO: RESULTADOS DE LA SESIÓN ACTIVA (CONSULTA, EXCEL Y BORRADO)
 //
 // Guardarraíles activos:
@@ -166,11 +166,23 @@ async function loadAndRenderResultsTable() {
     if (isEvaluated) {
       if (isPendingAI) {
         if (res.ai_raw && res.ai_raw.aiError) {
-          const isOffline = res.ai_raw.aiError === 'timeout_or_offline';
-          const label = isOffline ? '⚠️ Sin conexión' : '⚠️ Error IA';
-          statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="${res.ai_raw.errorDetail || ''}">${label}</span>`;
+          const isOffline = res.ai_raw.aiError === 'offline' || (typeof navigator !== 'undefined' && !navigator.onLine);
+          const isTimeout = res.ai_raw.aiError === 'timeout' || res.ai_raw.aiError === 'timeout_or_offline';
+          let label = '⚠️ Error IA';
+          let badgeColor = '#f87171';
+          let borderCol = 'rgba(239,68,68,0.3)';
+          let bgCol = 'rgba(239,68,68,0.15)';
+          if (isOffline) {
+            label = '⚠️ Sin conexión';
+          } else if (isTimeout) {
+            label = '⏳ Tiempo excedido';
+            badgeColor = '#facc15';
+            borderCol = 'rgba(234,179,8,0.3)';
+            bgCol = 'rgba(234,179,8,0.15)';
+          }
+          statusBadge = `<span style="background:${bgCol}; color:${badgeColor}; border:1px solid ${borderCol}; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="${res.ai_raw.errorDetail || ''}">${label}</span>`;
         } else if (isStale) {
-          statusBadge = `<span style="background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="Tiempo de espera agotado. Puedes reescanear la ficha.">⚠️ Expirado</span>`;
+          statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="Tiempo de espera agotado. Puedes reintentar con el botón.">⏳ Expirado</span>`;
         } else {
           statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">⏳ Analizando IA</span>`;
         }
@@ -202,9 +214,21 @@ async function loadAndRenderResultsTable() {
     if (isEvaluated) {
       if (isPendingAI) {
         if (res.ai_raw && res.ai_raw.aiError) {
-          verdictBadge = `<span style="color:#f87171; font-size:0.78rem; font-weight:700;" title="${res.ai_raw.errorDetail || ''}">⚠️ Reintentar</span>`;
+          verdictBadge = `
+            <button type="button" onclick="handleRetrySingleAI('${st.id}', this)"
+              title="${res.ai_raw.errorDetail || 'Reintentar análisis con IA'}"
+              style="background:#1e293b; border:1px solid #f59e0b; color:#fbbf24; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+              🔄 Reintentar IA
+            </button>
+          `;
         } else if (isStale) {
-          verdictBadge = `<span style="color:#f87171; font-size:0.78rem; font-weight:700;" title="Tiempo de espera agotado">⚠️ Reintentar</span>`;
+          verdictBadge = `
+            <button type="button" onclick="handleRetrySingleAI('${st.id}', this)"
+              title="Tiempo de espera agotado. Reintentar análisis."
+              style="background:#1e293b; border:1px solid #f59e0b; color:#fbbf24; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+              🔄 Reintentar IA
+            </button>
+          `;
         } else {
           verdictBadge = `<span style="color:#f59e0b; font-size:0.78rem; font-weight:700;">⏳ En proceso</span>`;
         }
@@ -411,6 +435,119 @@ async function handleDeleteSingleResult(studentId, triggerBtn = null) {
     if (triggerBtn) {
       triggerBtn.disabled = false;
       triggerBtn.innerHTML = '🗑️';
+    }
+  }
+}
+
+// ── Reintento individual de análisis IA ────────────────────────────────────
+// Permite al docente reevaluar con Gemini directamente desde la tabla de resultados
+// usando la imagen ya capturada y almacenada, sin tener que volver a escanear.
+
+async function handleRetrySingleAI(studentId, triggerBtn = null) {
+  const { session, classroom, resultMap } = currentResultsCache;
+  if (!session || !session.sessionRef || !studentId) {
+    showToast('⚠️ No hay sesión activa.');
+    return;
+  }
+  const res = resultMap ? resultMap.get(studentId) : null;
+  if (!res) {
+    showToast('⚠️ No se encontró el registro del estudiante.');
+    return;
+  }
+
+  const imgGrid = res.grid_image_path || res.ai_raw?.gridImage;
+  const imgAnswer = res.answer_image_path;
+
+  if (!imgGrid && !imgAnswer) {
+    showToast('⚠️ No hay fotos guardadas de este estudiante para reanalizar.');
+    return;
+  }
+
+  const isMC = session.type === 'mc' || (res.evaluation_ref && res.evaluation_ref.startsWith('mc_')) || (res.prompt && res.expected_answer && res.expected_answer.startsWith('Clave:'));
+
+  const payload = {
+    type: isMC ? 'mc' : 'free',
+    prompt: res.prompt || session.prompt || '',
+    expectedAnswer: res.expected_answer || session.expectedAnswer || '',
+    rubric: session.rubric || res.ai_raw?.rubric || null,
+    answerImage: imgAnswer || null,
+    gridImage: imgGrid || null,
+    strokeAnalysis: res.ai_raw?.strokeAnalysis || null,
+    omrSelected: res.ai_answer_read || null,
+    omrMatch: (res.teacher_verdict === 'CORRECTA' || res.ai_expected_match === true)
+  };
+
+  try {
+    if (triggerBtn) {
+      triggerBtn.disabled = true;
+      triggerBtn.innerHTML = '⏳ Analizando...';
+    }
+    showToast('🤖 Enviando ficha a Gemini para análisis...');
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout de 60s excedido en reintento IA')), 60000)
+    );
+
+    const aiRes = await Promise.race([
+      SupabaseClient.gradeSheet(payload),
+      timeoutPromise
+    ]);
+
+    if (!aiRes || !aiRes.ok || !aiRes.data) {
+      throw new Error(aiRes?.error || 'No se obtuvo respuesta de la IA');
+    }
+
+    const evalData = (aiRes.data && aiRes.data.data) ? aiRes.data.data : aiRes.data;
+
+    const isMatchAI = isMC
+      ? (res.teacher_verdict === 'CORRECTA' || res.ai_expected_match === true)
+      : (evalData.score >= 3.5 || evalData.verdict === 'CORRECTO');
+
+    const updatedVerdict = isMC
+      ? (res.teacher_verdict || (isMatchAI ? 'CORRECTA' : 'INCORRECTA'))
+      : (evalData.verdict || (isMatchAI ? 'CORRECTA' : 'INCORRECTA'));
+
+    const updatedRaw = Object.assign({}, res.ai_raw || {}, {
+      aiGrading: evalData,
+      gridImage: imgGrid,
+      pendingAI: false,
+      aiError: null,
+      errorDetail: null,
+      gradedAt: new Date().toISOString()
+    });
+
+    await SupabaseClient.saveResult({
+      session_ref: session.sessionRef,
+      classroom_id: res.classroom_id || (classroom ? classroom.id : null),
+      student_code: studentId,
+      student_name: res.student_name,
+      grade_stage: res.grade_stage,
+      grade_level: res.grade_level,
+      evaluation_ref: res.evaluation_ref,
+      evaluation_title: res.evaluation_title,
+      prompt: res.prompt,
+      expected_answer: res.expected_answer,
+      grid_image_path: imgGrid,
+      answer_image_path: imgAnswer,
+      ai_answer_read: res.ai_answer_read,
+      ai_expected_match: isMatchAI,
+      deterministic_match: res.deterministic_match ?? isMatchAI,
+      ai_procedure: evalData.procedure_valid ? 'correcto' : 'incorrecto',
+      ai_error_type: evalData.error_detectado || 'ninguno',
+      ai_teacher_feedback: evalData.feedback || null,
+      teacher_verdict: updatedVerdict,
+      ai_raw: updatedRaw,
+      captured_at: res.captured_at || new Date().toISOString()
+    });
+
+    showToast('✅ ¡Análisis de IA completado con éxito!');
+    loadAndRenderResultsTable();
+  } catch (err) {
+    console.error('[Retry AI Error]', err);
+    showToast('⚠️ No se pudo completar el análisis IA: ' + (err.message || 'Error de conexión'));
+    if (triggerBtn) {
+      triggerBtn.disabled = false;
+      triggerBtn.innerHTML = '🔄 Reintentar IA';
     }
   }
 }
