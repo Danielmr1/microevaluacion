@@ -972,9 +972,9 @@ function setPrintPageOrientation(orientation) {
     document.head.appendChild(styleEl);
   }
   if (orientation === 'landscape') {
-    styleEl.textContent = '@page { size: A4 landscape; margin: 0; }';
+    styleEl.textContent = '@page { size: 297mm 210mm; margin: 0; }';
   } else {
-    styleEl.textContent = '@page { size: A4 portrait; margin: 0; }';
+    styleEl.textContent = '@page { size: 210mm 297mm; margin: 0; }';
   }
 }
 

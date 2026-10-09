@@ -2538,6 +2538,8 @@
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
+        width: 100% !important;
+        max-width: none !important;
       }
       /* Garantía estricta: ocultar cualquier elemento dentro de view-create que no sea pages-container o booklet-container */
       #view-create > :not(#pages-container):not(#booklet-container) {
@@ -2562,7 +2564,9 @@
       }
       body.print-mode-booklet #booklet-container {
         display: block !important;
-        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
         padding: 0 !important;
       }
       body.print-mode-booklet .sheet-booklet-quad {
