@@ -2892,7 +2892,7 @@ function selectBranchMode(branch) {
       badgeLabel.style.borderColor = '#10b981';
       badgeLabel.style.color = '#a7f3d0';
     } else if (branch === 'rama2') {
-      badgeLabel.innerHTML = '⚡ Focalizada de Contenido (1–3 Preguntas)';
+      badgeLabel.innerHTML = '⚡ Focalizada en la Respuesta (1–3 Preguntas)';
       badgeLabel.style.background = '#082f49';
       badgeLabel.style.borderColor = '#38bdf8';
       badgeLabel.style.color = '#bae6fd';
@@ -3173,29 +3173,27 @@ function renderRama2Questions() {
           oninput="onRama2PromptInput(${i}, this.value)"
           style="resize:vertical; font-size:0.8rem; margin-bottom:8px;">${escaparHtml(q.prompt || '')}</textarea>
       `;
-
-      if (r2State.responseType === 'mc') {
-        html += `
-          <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px;">Alternativas y clave correcta:</label>
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            ${['A', 'B', 'C', 'D'].map(opt => `
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="r2_rad_${i}" id="r2_rad_${i}_${opt}" value="${opt}" ${q.correct === opt ? 'checked' : ''}
-                  onchange="onRama2CorrectChange(${i}, '${opt}')" style="accent-color:#10b981; width:16px; height:16px; cursor:pointer;">
-                <label for="r2_rad_${i}_${opt}" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">${opt})</label>
-                <input type="text" class="form-control" placeholder="Alternativa ${opt}" value="${escaparHtml(q.options?.[opt] || '')}"
-                  oninput="onRama2OptionInput(${i}, '${opt}', this.value)" style="padding:4px 8px; font-size:0.78rem;">
-              </div>
-            `).join('')}
+      html += `
+        <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px;">
+          Alternativas (marca el círculo verde de la <strong>clave correcta</strong>):
+        </label>
+        ${r2State.responseType === 'free' ? `
+          <div style="font-size:0.7rem; color:#6ee7b7; background:#064e3b25; border:1px solid #10b98140; border-radius:6px; padding:6px 8px; margin-bottom:8px; line-height:1.4;">
+            💡 En la ficha escrita el estudiante verá el recuadro <strong>Rpta: _______</strong>. El texto de la alternativa correcta que marques será la respuesta esperada para calificarla.
           </div>
-        `;
-      } else {
-        html += `
-          <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px;">Respuesta esperada:</label>
-          <input type="text" class="form-control" placeholder="Ej: 24 km/h ó 150..." value="${escaparHtml(q.expectedAnswer || '')}"
-            oninput="onRama2ExpectedInput(${i}, this.value)" style="padding:6px 10px; font-size:0.82rem;">
-        `;
-      }
+        ` : ''}
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          ${['A', 'B', 'C', 'D'].map(opt => `
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="radio" name="r2_rad_${i}" id="r2_rad_${i}_${opt}" value="${opt}" ${q.correct === opt ? 'checked' : ''}
+                onchange="onRama2CorrectChange(${i}, '${opt}')" style="accent-color:#10b981; width:16px; height:16px; cursor:pointer;">
+              <label for="r2_rad_${i}_${opt}" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">${opt})</label>
+              <input type="text" class="form-control" placeholder="Alternativa ${opt}" value="${escaparHtml(q.options?.[opt] || '')}"
+                oninput="onRama2OptionInput(${i}, '${opt}', this.value)" style="padding:4px 8px; font-size:0.78rem;">
+            </div>
+          `).join('')}
+        </div>
+      `;
     }
 
     html += `</div>`;
@@ -3217,37 +3215,60 @@ function confirmRama2() {
       showToast(`⚠️ Falta el enunciado para la Pregunta ${i + 1}.`);
       return;
     }
-    if (r2State.responseType === 'mc') {
-      if (!q.options || !q.options.A || !q.options.B || !q.options.C || !q.options.D) {
-        showToast(`⚠️ Completa las 4 alternativas para la Pregunta ${i + 1}.`);
-        return;
-      }
-      activeQuestions.push({
-        id: q.id || ('r2_q' + (i + 1)),
-        prompt: q.prompt.trim(),
-        options: {
-          A: q.options.A.trim(),
-          B: q.options.B.trim(),
-          C: q.options.C.trim(),
-          D: q.options.D.trim()
-        },
-        correct: q.correct || 'A'
-      });
-    } else {
-      if (!q.expectedAnswer || !q.expectedAnswer.trim()) {
-        showToast(`⚠️ Ingresa la respuesta esperada para la Pregunta ${i + 1}.`);
-        return;
-      }
-      activeQuestions.push({
-        id: q.id || ('r2_q' + (i + 1)),
-        prompt: q.prompt.trim(),
-        expectedAnswer: q.expectedAnswer.trim()
-      });
+    if (!q.options || !q.options.A || !q.options.B || !q.options.C || !q.options.D ||
+        !q.options.A.trim() || !q.options.B.trim() || !q.options.C.trim() || !q.options.D.trim()) {
+      showToast(`⚠️ Completa las 4 alternativas (A, B, C, D) para la Pregunta ${i + 1}.`);
+      return;
     }
+
+    const correctKey = q.correct || 'A';
+    const optObj = {
+      A: q.options.A.trim(),
+      B: q.options.B.trim(),
+      C: q.options.C.trim(),
+      D: q.options.D.trim()
+    };
+    const answerText = optObj[correctKey] || '';
+
+    activeQuestions.push({
+      id: q.id || ('r2_q' + (i + 1)),
+      prompt: q.prompt.trim(),
+      options: optObj,
+      correct: correctKey,
+      expectedAnswer: answerText,
+      mode: q.mode
+    });
   }
 
   const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
   const isOMR = r2State.responseType === 'mc';
+
+  // Guardar en el banco de preguntas del grado las que hayan sido redactadas nuevas (sin IA)
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+    activeQuestions.forEach(aq => {
+      if (aq.mode === 'new') {
+        ClassroomData.saveCustomEvaluation({
+          title: 'Pregunta de alternativa',
+          prompt: aq.prompt,
+          options: aq.options,
+          correct: aq.correct,
+          expectedAnswer: aq.expectedAnswer,
+          gradeStage: g?.stage,
+          gradeLevel: g?.level,
+          gradeText: g?.texto,
+          type: 'mc',
+          questionCount: 1,
+          questions: [{
+            prompt: aq.prompt,
+            options: aq.options,
+            correct: aq.correct,
+            expectedAnswer: aq.expectedAnswer
+          }],
+          hasRubric: false
+        });
+      }
+    });
+  }
 
   wizardEval = {
     id: 'eval_r2_' + Date.now(),
@@ -3256,9 +3277,9 @@ function confirmRama2() {
     withGrid: r2State.withGrid,
     questionCount: r2State.count,
     questions: activeQuestions,
-    title: `Evaluación Focalizada (${r2State.count}P)`,
-    prompt: activeQuestions[0].prompt,
-    expectedAnswer: isOMR ? activeQuestions[0].correct : activeQuestions[0].expectedAnswer,
+    title: `Focalizada en la Respuesta (${r2State.count}P)`,
+    prompt: activeQuestions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join(' | '),
+    expectedAnswer: isOMR ? activeQuestions.map(q => q.correct).join(' ') : activeQuestions.map(q => q.expectedAnswer).join(' ; '),
     correctionMode: 'quick',
     gradeStage: g?.stage,
     gradeLevel: g?.level,

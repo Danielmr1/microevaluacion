@@ -172,6 +172,12 @@
 
   function syncToCloudGuardrail(evalObj) {
     if (!evalObj || !evalObj.prompt) return;
+    const promptLimpio = String(evalObj.prompt || '').trim();
+    // REGLA FUNDAMENTAL: Cartillas OMR o casilleros ficticios jamás entran al banco de la nube
+    if (evalObj.branch === 'rama3' || (evalObj.id && String(evalObj.id).startsWith('eval_r3_')) ||
+        /^Pregunta\s+\d+$/i.test(promptLimpio) || promptLimpio.startsWith('Cartilla de respuestas')) {
+      return;
+    }
 
     const payload = {
       prompt: evalObj.prompt,
@@ -195,12 +201,13 @@
       queueForSync(payload);
     }
 
-    // Si es una evaluación compuesta de opción múltiple (2 preguntas),
-    // también sincronizar cada pregunta individual al banco de la nube
-    if (payload.type === 'mc' && Array.isArray(payload.questions) && payload.questions.length > 1) {
+    // Si es una evaluación compuesta de opción múltiple (2 o 3 preguntas legítimas del docente),
+    // sincronizar cada pregunta individual al banco de la nube
+    if (payload.type === 'mc' && Array.isArray(payload.questions) && payload.questions.length > 1 && evalObj.branch !== 'rama3') {
       payload.questions.forEach((q, idx) => {
         if (!q || !q.prompt) return;
         const qPrompt = String(q.prompt).trim();
+        if (/^Pregunta\s+\d+$/i.test(qPrompt) || qPrompt.startsWith('Cartilla de respuestas')) return;
         const singlePayload = {
           prompt: qPrompt,
           expectedAnswer: `Clave: ${q.correct || 'A'}`,
@@ -275,13 +282,19 @@
             bank[k] = enrichQuestionOptions(bank[k]);
           });
           Object.assign(EVALUATIONS, bank);
-          // Depurar evaluaciones compuestas obsoletas ya eliminadas de la nube
+          // Depurar evaluaciones compuestas obsoletas, cartillas OMR y placeholders ficticios
           let modified = false;
           Object.keys(bank).forEach(k => {
             const ev = bank[k];
             if (!ev) return;
-            const promptStr = String(ev.prompt || '');
-            if (promptStr.includes('30 + 25') || promptStr.includes('30-15') || promptStr.includes('80+20')) {
+            const promptStr = String(ev.prompt || '').trim();
+            if (
+              ev.branch === 'rama3' ||
+              k.startsWith('eval_r3_') ||
+              /^Pregunta\s+\d+$/i.test(promptStr) ||
+              promptStr.startsWith('Cartilla de respuestas') ||
+              promptStr.includes('30 + 25') || promptStr.includes('30-15') || promptStr.includes('80+20')
+            ) {
               delete bank[k];
               delete EVALUATIONS[k];
               modified = true;
@@ -332,6 +345,11 @@
     const list = [];
     const seen = new Set();
     Object.values(EVALUATIONS).forEach(ev => {
+      if (!ev) return;
+      if (ev.branch === 'rama3' || (ev.id && String(ev.id).startsWith('eval_r3_'))) return;
+      const rootPrompt = String(ev.prompt || '').trim();
+      if (/^Pregunta\s+\d+$/i.test(rootPrompt) || rootPrompt.startsWith('Cartilla de respuestas')) return;
+
       if (stage && ev.gradeStage && ev.gradeStage !== stage) return;
       if (level && ev.gradeLevel && Number(ev.gradeLevel) !== Number(level)) return;
 
@@ -341,6 +359,7 @@
         ev.questions.forEach((q, idx) => {
           const prompt = String(q.prompt || '').trim();
           if (!prompt || seen.has(prompt)) return;
+          if (/^Pregunta\s+\d+$/i.test(prompt)) return; // Ignorar casilleros OMR numéricos
           const hasOptions = q.options && (q.options.A || q.options.B || q.options.C || q.options.D);
           if (!hasOptions) return;
           seen.add(prompt);
@@ -367,6 +386,7 @@
       } else if (ev.options && (ev.options.A || ev.options.B || ev.options.C || ev.options.D)) {
         const prompt = String(ev.prompt || '').trim();
         if (!prompt || seen.has(prompt)) return;
+        if (/^Pregunta\s+\d+$/i.test(prompt)) return; // Ignorar casilleros OMR numéricos
         seen.add(prompt);
         let correct = 'A';
         if (ev.correct) {
@@ -530,6 +550,12 @@
     if (evalData.questions) newEval.questions = evalData.questions;
     if (evalData.branch) newEval.branch = evalData.branch;
     if (evalData.withGrid !== undefined) newEval.withGrid = evalData.withGrid;
+
+    // REGLA: Las Cartillas OMR (Rama 3) son plantillas de sesión para escanear burbujas,
+    // NO son preguntas de banco. Se devuelven en memoria para la sesión pero NUNCA se guardan en el banco.
+    if (evalData.branch === 'rama3' || String(id).startsWith('eval_r3_') || String(promptLimpio).startsWith('Cartilla de respuestas')) {
+      return newEval;
+    }
 
     EVALUATIONS[id] = newEval;
 
@@ -763,6 +789,10 @@
     setRecentEvaluations(list) {
       (list || []).forEach(ev => {
         if (!ev || !ev.prompt) return;
+        const promptLimpio = String(ev.prompt || '').trim();
+        if (ev.branch === 'rama3' || /^Pregunta\s+\d+$/i.test(promptLimpio) || promptLimpio.startsWith('Cartilla de respuestas')) {
+          return;
+        }
 
         const idLocal = Object.keys(EVALUATIONS)
           .find(k => EVALUATIONS[k] && EVALUATIONS[k].prompt === ev.prompt);

@@ -243,6 +243,49 @@ function createA5Card(student, classroom, evaluation) {
     `;
   }
 
+  // CASO RAMA 2: 2 Preguntas Escritas con Borrador (Cuadrícula)
+  if (!isOMR && qCount === 2 && evaluation.branch === 'rama2') {
+    const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '' };
+    const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '' };
+    const GRID_CELLS_2Q = new Array(16 * 4).fill('<i></i>').join('');
+    return `
+      <div class="card-a5 free-card-2q">
+        ${fiducialsHTML}
+        ${headerHTML}
+
+        <!-- Pregunta 1 -->
+        <div class="mc-q-block">
+          <div class="problem-wide mc-problem-2q">
+            <div class="problem-text"><strong>1.</strong> ${escape(q1.prompt)}</div>
+          </div>
+          <div class="grid-wrapper mc-grid-2q">
+            <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+          </div>
+          <div class="answer-strip" style="margin-top:4px;">
+            <span class="answer-tag">Rpta:</span>
+            <div class="answer-box-open"></div>
+          </div>
+        </div>
+
+        <div class="mc-divider"></div>
+
+        <!-- Pregunta 2 -->
+        <div class="mc-q-block">
+          <div class="problem-wide mc-problem-2q">
+            <div class="problem-text"><strong>2.</strong> ${escape(q2.prompt)}</div>
+          </div>
+          <div class="grid-wrapper mc-grid-2q">
+            <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+          </div>
+          <div class="answer-strip" style="margin-top:4px;">
+            <span class="answer-tag">Rpta:</span>
+            <div class="answer-box-open"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   // CASO 3: Escritura manual tradicional (Fallback)
   return `
     <div class="card-a5">

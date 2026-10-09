@@ -444,6 +444,10 @@
     const prompt = d.prompt;
     const expectedAnswer = d.expectedAnswer;
     if (!prompt) { console.warn('[SupabaseClient] saveEvaluation sin enunciado.'); return null; }
+    const pTrim = String(prompt).trim();
+    if (d.branch === 'rama3' || /^Pregunta\s+\d+$/i.test(pTrim) || pTrim.startsWith('Cartilla de respuestas')) {
+      return null;
+    }
 
     // Buscar si ya existe
     const { data: existing } = await client
@@ -554,7 +558,10 @@
       .limit(50);
 
     if (error) { console.error('[SupabaseClient] Error cargando evaluaciones:', error.message); return []; }
-    return data || [];
+    return (data || []).filter(ev => {
+      const p = String(ev.prompt || '').trim();
+      return p && !/^Pregunta\s+\d+$/i.test(p) && !p.startsWith('Cartilla de respuestas') && ev.branch !== 'rama3';
+    });
   }
 
   /**
