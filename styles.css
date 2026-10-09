@@ -510,42 +510,44 @@
 
     .a6-card-header {
       height: 18.5mm;
-      padding: 1.5mm 13mm 1mm 13mm;
+      padding: 2.2mm 16mm 1.8mm 16mm;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
     }
 
-    .a6-header-top-title {
-      width: 100%;
-      font-size: 7.2pt;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      text-align: center;
-      color: #000000;
-      line-height: 1.2;
-      flex: 0 0 auto;
+    .a6-header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 13.5mm;
+      flex: 1;
+      padding-right: 4mm;
       box-sizing: border-box;
-      display: block;
     }
 
-    .a6-header-main-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      flex: 1;
-      box-sizing: border-box;
+    .a6-header-top-title {
+      font-size: 7.2pt;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      text-align: left;
+      color: #000000;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
     }
 
     .a6-student-block {
       display: flex;
       align-items: baseline;
       gap: 4px;
-      max-width: 80mm;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -580,18 +582,21 @@
       align-items: center;
       gap: 2.5mm;
       flex-shrink: 0;
+      height: 13.5mm;
     }
 
     .a6-qr-meta {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      justify-content: center;
-      gap: 1.2mm;
+      justify-content: space-between;
+      height: 13.5mm;
+      padding: 0.5mm 0;
+      box-sizing: border-box;
     }
 
     .a6-qr-code-text {
-      font-size: 7.5pt;
+      font-size: 8pt;
       font-weight: 800;
       color: #000000;
       line-height: 1;
@@ -610,8 +615,8 @@
     }
 
     .a6-qr-box {
-      width: 12.5mm;
-      height: 12.5mm;
+      width: 13.5mm;
+      height: 13.5mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -791,42 +796,44 @@
 
     .v-card-header {
       height: 20mm;
-      padding: 1.5mm 13mm 1mm 13mm;
+      padding: 2.5mm 16mm 2mm 16mm;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
     }
 
-    .v-header-top-title {
-      width: 100%;
-      font-size: 7.5pt;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      text-align: center;
-      color: #000000;
-      line-height: 1.2;
-      flex: 0 0 auto;
+    .v-header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 14.5mm;
+      flex: 1;
+      padding-right: 4mm;
       box-sizing: border-box;
-      display: block;
     }
 
-    .v-header-main-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      flex: 1;
-      box-sizing: border-box;
+    .v-header-top-title {
+      font-size: 7.8pt;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      text-align: left;
+      color: #000000;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
     }
 
     .v-student-block {
       display: flex;
       align-items: baseline;
       gap: 4px;
-      max-width: 80mm;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -861,18 +868,21 @@
       align-items: center;
       gap: 2.5mm;
       flex-shrink: 0;
+      height: 14.5mm;
     }
 
     .v-qr-meta {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      justify-content: center;
-      gap: 1.2mm;
+      justify-content: space-between;
+      height: 14.5mm;
+      padding: 0.5mm 0;
+      box-sizing: border-box;
     }
 
     .v-qr-code-text {
-      font-size: 7.5pt;
+      font-size: 8pt;
       font-weight: 800;
       color: #000000;
       line-height: 1;
@@ -891,8 +901,8 @@
     }
 
     .v-qr-box {
-      width: 12.5mm;
-      height: 12.5mm;
+      width: 14.5mm;
+      height: 14.5mm;
       display: flex;
       align-items: center;
       justify-content: center;

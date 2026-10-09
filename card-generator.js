@@ -352,20 +352,20 @@ function createA6Card(student, classroom, evaluation) {
     <div class="card-a6-r3">
       ${fiducialsHTML}
       <div class="a6-card-header">
-        <div class="a6-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
-        <div class="a6-header-main-row">
+        <div class="a6-header-left">
+          <div class="a6-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
           <div class="a6-student-block">
             <span class="a6-student-label">Nombre:</span>
             <span class="a6-student-name">${safeStudentName}</span>
             <span class="a6-student-grade">(${safeGradeText})</span>
           </div>
-          <div class="a6-qr-block">
-            <div class="a6-qr-meta">
-              <span class="a6-qr-code-text">${orderNumber}</span>
-              <span class="a6-qr-hint">Rellena: <b>●</b></span>
-            </div>
-            <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+        </div>
+        <div class="a6-qr-block">
+          <div class="a6-qr-meta">
+            <span class="a6-qr-code-text">${orderNumber}</span>
+            <span class="a6-qr-hint">Rellena: <b>●</b></span>
           </div>
+          <div class="a6-qr-box" id="qr-box-${student.id}"></div>
         </div>
       </div>
 
@@ -465,20 +465,20 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
     <div class="card-a5-v-r3">
       ${fiducialsHTML}
       <div class="v-card-header">
-        <div class="v-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
-        <div class="v-header-main-row">
+        <div class="v-header-left">
+          <div class="v-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
           <div class="v-student-block">
             <span class="v-student-label">Nombre:</span>
             <span class="v-student-name">${safeStudentName}</span>
             <span class="v-student-grade">(${safeGradeText})</span>
           </div>
-          <div class="v-qr-block">
-            <div class="v-qr-meta">
-              <span class="v-qr-code-text">${orderNumber}</span>
-              <span class="v-qr-hint">Rellena: <b>●</b></span>
-            </div>
-            <div class="v-qr-box" id="qr-box-${student.id}"></div>
+        </div>
+        <div class="v-qr-block">
+          <div class="v-qr-meta">
+            <span class="v-qr-code-text">${orderNumber}</span>
+            <span class="v-qr-hint">Rellena: <b>●</b></span>
           </div>
+          <div class="v-qr-box" id="qr-box-${student.id}"></div>
         </div>
       </div>
 
