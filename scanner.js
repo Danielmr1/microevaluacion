@@ -1127,11 +1127,20 @@
   // coordenadas de ROIProcessor.CONFIG.
   function getExpandedSheetQuad(quad, marginX, marginY) {
     if (marginX === undefined || marginY === undefined) {
-      const gm = (typeof ROIProcessor !== 'undefined' && ROIProcessor.getExpansionMargins)
-        ? ROIProcessor.getExpansionMargins()
-        : { marginX: 0.0595238095, marginY: 0.0847457627 };
-      marginX = gm.marginX;
-      marginY = gm.marginY;
+      const topW = Math.hypot(quad.pTR.x - quad.pTL.x, quad.pTR.y - quad.pTL.y);
+      const leftH = Math.hypot(quad.pBL.x - quad.pTL.x, quad.pBL.y - quad.pTL.y);
+      const isPortrait = leftH > topW * 1.15;
+
+      if (isPortrait) {
+        marginX = 0.062;
+        marginY = 0.043;
+      } else {
+        const gm = (typeof ROIProcessor !== 'undefined' && ROIProcessor.getExpansionMargins)
+          ? ROIProcessor.getExpansionMargins()
+          : { marginX: 0.0595238095, marginY: 0.0847457627 };
+        marginX = gm.marginX;
+        marginY = gm.marginY;
+      }
     }
 
     const vTopX = quad.pTR.x - quad.pTL.x;
@@ -1577,9 +1586,16 @@
       if (sheetQuad) {
         // Perspective Warp al tamaño estándar del lienzo, tomado de
         // ROIProcessor para que el warp y las ROIs no puedan desincronizarse.
-        // 2000 x 1441 px = 10.75 px/mm sobre la ficha de 186 x 134 mm.
-        const warpW = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_WIDTH) || 2000;
-        const warpH = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_HEIGHT) || 1441;
+        // Si la ficha es vertical (A5 portrait: leftH > topW * 1.15), rectificar en 1441 x 2000.
+        const topW = Math.hypot(sheetQuad.pTR.x - sheetQuad.pTL.x, sheetQuad.pTR.y - sheetQuad.pTL.y);
+        const leftH = Math.hypot(sheetQuad.pBL.x - sheetQuad.pTL.x, sheetQuad.pBL.y - sheetQuad.pTL.y);
+        const isCardPortrait = leftH > topW * 1.15;
+
+        const baseW = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_WIDTH) || 2000;
+        const baseH = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_HEIGHT) || 1441;
+        const warpW = isCardPortrait ? baseH : baseW;
+        const warpH = isCardPortrait ? baseW : baseH;
+
         // La fuente es el <video> con la cámara en vivo, o la imagen cargada a
         // mano. Las coordenadas del cuadrilátero vienen en el espacio de
         // píxeles de esa misma fuente, por eso el warp da igual en los dos casos.

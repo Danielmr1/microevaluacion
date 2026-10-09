@@ -646,6 +646,230 @@
       line-height: 1;
     }
 
+    /* ── HOJA A4 CON 2 ALUMNOS EN PARALELO (CARTILLA OMR 9 A 20 PREGUNTAS) ──
+       Orientación Horizontal (Landscape: 275 x 188 mm).
+       Alumno 1 a la IZQUIERDA y Alumno 2 a la DERECHA.
+       Línea de corte vertical central (✂️ cortar por aquí).
+       Cada alumno tiene una cartilla vertical A5 (136 x 188 mm) con
+       ESTRICTAMENTE 1 SOLA COLUMNA VERTICAL de burbujas (01 al N hacia abajo). */
+    .sheet-a4-split {
+      background: #ffffff;
+      width: 275mm;
+      height: 188mm;
+      margin: 6mm auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: row;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      color: #000000;
+    }
+
+    .dual-vcut {
+      width: 3mm;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: #f8fafc;
+      user-select: none;
+    }
+
+    .dual-vcut-line {
+      flex: 1;
+      width: 0;
+      border-left: 1px dashed #94a3b8;
+    }
+
+    .dual-vcut-text {
+      font-size: 0.65rem;
+      color: #64748b;
+      margin: 2mm 0;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      letter-spacing: 1px;
+    }
+
+    .card-a5-v-empty {
+      width: 136mm;
+      height: 188mm;
+      box-sizing: border-box;
+      background: #ffffff;
+    }
+
+    /* ── CARTILLA A5 VERTICAL (136 x 188 mm) PARA RAMA 3 ─────────── */
+    .card-a5-v-r3 {
+      width: 136mm;
+      height: 188mm;
+      flex: 0 0 136mm;
+      border: 0.8mm solid #000000;
+      padding: 2.5mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+
+    .card-a5-v-r3 .fiducial {
+      position: absolute;
+      width: 8mm;
+      height: 8mm;
+      z-index: 10;
+    }
+    .card-a5-v-r3 .fiducial svg { width: 100%; height: 100%; display: block; }
+    .card-a5-v-r3 .fiducial-tl { top: 3.5mm; left: 3.5mm; }
+    .card-a5-v-r3 .fiducial-tr { top: 3.5mm; right: 3.5mm; }
+    .card-a5-v-r3 .fiducial-bl { bottom: 3.5mm; left: 3.5mm; }
+    .card-a5-v-r3 .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
+
+    .v-card-header {
+      height: 16mm;
+      padding: 0 13mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000000;
+      box-sizing: border-box;
+    }
+
+    .v-student-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 88mm;
+      overflow: hidden;
+    }
+
+    .v-student-main-row {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .v-student-label {
+      font-size: 6.8pt;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+    }
+
+    .v-student-name {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #000000;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .v-student-grade {
+      font-size: 6.8pt;
+      color: #64748b;
+      margin-top: 1px;
+    }
+
+    .v-qr-block {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .v-qr-code-text {
+      font-size: 7.2pt;
+      font-weight: 800;
+      color: #000000;
+    }
+
+    .v-qr-box {
+      width: 12.5mm;
+      height: 12.5mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .v-qr-box svg { width: 100%; height: 100%; display: block; }
+
+    .v-b3-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1mm 13mm;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      box-sizing: border-box;
+    }
+
+    .v-b3-title {
+      font-size: 6.5pt;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      color: #0f172a;
+    }
+
+    .v-b3-hint {
+      font-size: 6pt;
+      color: #64748b;
+    }
+
+    .v-b3-body {
+      flex: 1;
+      padding: 0 13mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .v-q-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6mm;
+      box-sizing: border-box;
+    }
+
+    .v-q-num {
+      font-size: 8pt;
+      font-weight: 800;
+      color: #000000;
+      width: 7mm;
+      text-align: right;
+    }
+
+    .v-bubbles-group {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+    }
+
+    .v-bubble {
+      width: 4.8mm;
+      height: 4.8mm;
+      border-radius: 50%;
+      border: 1.4px solid #000000;
+      font-size: 7pt;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000000;
+      background: #ffffff;
+      box-sizing: border-box;
+      line-height: 1;
+    }
+
     /* ── CUADERNILLO DE PREGUNTAS (EXAMEN PARA ESTUDIANTES) ─────────
        No lleva QR ni fiducials ArUco. Genérico para todos los alumnos.
        - A5 (Landscape): 2 copias por hoja A4 cortadas por la mitad.
@@ -2166,8 +2390,9 @@
         break-after: auto !important;
       }
 
-      /* ── HOJA A4 CON 4 ALUMNOS (CARTILLA OMR HASTA 8 PREGUNTAS) ── */
-      body:not(.print-mode-booklet) .sheet-a4-quad {
+      /* ── HOJA A4 CON 4 O 2 ALUMNOS (CARTILLAS OMR HORIZONTALES) ── */
+      body:not(.print-mode-booklet) .sheet-a4-quad,
+      body:not(.print-mode-booklet) .sheet-a4-split {
         box-shadow: none !important;
         width: 275mm !important;
         height: 188mm !important;
@@ -2183,9 +2408,15 @@
         background: #ffffff !important;
         color: #000000 !important;
         display: flex !important;
+      }
+      body:not(.print-mode-booklet) .sheet-a4-quad {
         flex-direction: column !important;
       }
-      body:not(.print-mode-booklet) .sheet-a4-quad:last-child {
+      body:not(.print-mode-booklet) .sheet-a4-split {
+        flex-direction: row !important;
+      }
+      body:not(.print-mode-booklet) .sheet-a4-quad:last-child,
+      body:not(.print-mode-booklet) .sheet-a4-split:last-child {
         page-break-after: auto !important;
         break-after: auto !important;
       }
