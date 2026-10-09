@@ -3348,6 +3348,21 @@ function updateRama3ControlsUI() {
     }
   });
 
+  const layoutBadge = document.getElementById('r3-layout-badge');
+  if (layoutBadge) {
+    if (r3State.count <= 8) {
+      layoutBadge.innerHTML = '⚡ <b>4 alumnos por hoja A4</b> (Horizontal · 1 columna vertical por alumno)';
+      layoutBadge.style.color = '#38bdf8';
+      layoutBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+      layoutBadge.style.background = 'rgba(2, 132, 199, 0.12)';
+    } else {
+      layoutBadge.innerHTML = '📄 <b>2 alumnos por hoja A4</b> (Vertical · 2 columnas por alumno)';
+      layoutBadge.style.color = '#a78bfa';
+      layoutBadge.style.borderColor = 'rgba(167, 139, 250, 0.4)';
+      layoutBadge.style.background = 'rgba(124, 58, 237, 0.12)';
+    }
+  }
+
   const btnKeys = document.getElementById('btn-r3-mode-keys');
   const btnBank = document.getElementById('btn-r3-mode-bank');
   const wrapKeys = document.getElementById('rama3-keys-wrap');

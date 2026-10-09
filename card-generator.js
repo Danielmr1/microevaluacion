@@ -313,15 +313,83 @@ function createA5Card(student, classroom, evaluation) {
   `;
 }
 
+/**
+ * Genera la Cartilla A6 individual (136 x 92 mm) para el modo de 4 alumnos por hoja A4 (Rama 3 <= 8 preguntas).
+ * Cumple con la regla inmutable: ESTRICTAMENTE 1 SOLA COLUMNA VERTICAL de burbujas (01 al 0N hacia abajo).
+ */
+function createA6Card(student, classroom, evaluation) {
+  const gradeText = ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel)
+    || classroom.name;
+
+  const fiducialsHTML = `
+    <div class="fiducial fiducial-tl" title="ArUco 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/></svg></div>
+    <div class="fiducial fiducial-tr" title="ArUco 1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+    <div class="fiducial fiducial-br" title="ArUco 2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+    <div class="fiducial fiducial-bl" title="ArUco 3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/></svg></div>
+  `;
+
+  const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 5);
+
+  const escape = (typeof escaparHtml === 'function')
+    ? escaparHtml
+    : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  const safeStudentName = escape(student.name.toUpperCase());
+  const safeGradeText = escape(gradeText);
+  const orderMatch = String(student.id || '').match(/\d+/);
+  const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
+
+  const qRows = [];
+  for (let i = 0; i < totalQ; i++) {
+    const qNum = String(i + 1).padStart(2, '0');
+    qRows.push(`
+      <div class="a6-q-row">
+        <span class="a6-q-num">${qNum}</span>
+        <div class="a6-bubbles-group">
+          <span class="a6-bubble">A</span>
+          <span class="a6-bubble">B</span>
+          <span class="a6-bubble">C</span>
+          <span class="a6-bubble">D</span>
+        </div>
+      </div>
+    `);
+  }
+
+  return `
+    <div class="card-a6-r3">
+      ${fiducialsHTML}
+      <div class="a6-card-header">
+        <div class="a6-student-block">
+          <div class="a6-student-main-row">
+            <span class="a6-student-label">Nombre:</span>
+            <span class="a6-student-name">${safeStudentName}</span>
+          </div>
+          <div class="a6-student-grade">(${safeGradeText})</div>
+        </div>
+        <div class="a6-qr-block">
+          <span class="a6-qr-code-text">${orderNumber}</span>
+          <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+        </div>
+      </div>
+
+      <div class="a6-b3-banner">
+        <span class="a6-b3-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</span>
+        <span class="a6-b3-hint">Rellena: <b style="color:#000;">●</b></span>
+      </div>
+
+      <div class="a6-b3-body">
+        ${qRows.join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderAllPrintPages(classId, evaluation) {
   const container = document.getElementById('pages-container');
   if (!container) return;
   container.style.display = 'flex';
   const classroom = ClassroomData.getClassroom(classId);
   if (!classroom || !classroom.students || classroom.students.length === 0) {
-    // Caso real: sesión restaurada después de que el salón se borró, o
-    // salón importado sin alumnos. Antes esto lanzaba una excepción por
-    // leer .students de undefined.
     container.innerHTML = '';
     console.warn('[Fichas] No se pudieron generar: el salón no existe o no tiene alumnos.', classId);
     return;
@@ -329,8 +397,71 @@ function renderAllPrintPages(classId, evaluation) {
   const students = classroom.students;
   container.innerHTML = '';
 
-  // 2 fichas A5 por hoja A4. La cantidad de hojas la define el salón:
-  // 10 alumnos = 5 hojas.
+  const qCount = evaluation?.questionCount || (evaluation?.questions ? evaluation.questions.length : 5);
+  const isR3Quad = evaluation && evaluation.branch === 'rama3' && qCount <= 8;
+
+  if (isR3Quad) {
+    // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS: 4 ALUMNOS POR HOJA A4 (HORIZONTAL) ──
+    const sheetCount = Math.ceil(students.length / 4);
+    const printBtn = document.getElementById('btn-print-sheets');
+    if (printBtn) {
+      const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
+      printBtn.innerHTML = `🖨️ Descargar Cartillas OMR (${sheetCount} ${pageWord}) [4 por hoja]`;
+      printBtn.onclick = () => printEvaluationSheets(classId);
+    }
+
+    try {
+      document.title = getPdfExportTitle(classroom);
+    } catch (e) {}
+
+    for (let i = 0; i < students.length; i += 4) {
+      const sTL = students[i];
+      const sTR = students[i + 1] || null;
+      const sBL = students[i + 2] || null;
+      const sBR = students[i + 3] || null;
+
+      const sheetEl = document.createElement('div');
+      sheetEl.className = 'sheet-a4-quad';
+      sheetEl.innerHTML = `
+        <div class="quad-row">
+          ${sTL ? createA6Card(sTL, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
+          <div class="quad-vcut">
+            <div class="quad-vcut-line"></div>
+            <span class="quad-vcut-text">✂️</span>
+            <div class="quad-vcut-line"></div>
+          </div>
+          ${sTR ? createA6Card(sTR, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
+        </div>
+        <div class="quad-hcut">
+          <span>✂️ cortar por aquí ✂️</span>
+        </div>
+        <div class="quad-row">
+          ${sBL ? createA6Card(sBL, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
+          <div class="quad-vcut">
+            <div class="quad-vcut-line"></div>
+            <span class="quad-vcut-text">✂️</span>
+            <div class="quad-vcut-line"></div>
+          </div>
+          ${sBR ? createA6Card(sBR, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
+        </div>
+      `;
+      container.appendChild(sheetEl);
+
+      // Generar códigos QR para los alumnos presentes en esta hoja
+      if (typeof QRCode !== 'undefined' && QRCode.toString) {
+        [sTL, sTR, sBL, sBR].filter(Boolean).forEach(st => {
+          QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+            if (err) return;
+            const el = document.getElementById('qr-box-' + st.id);
+            if (el) el.innerHTML = svg;
+          });
+        });
+      }
+    }
+    return;
+  }
+
+  // ── CASO GENERAL (2 FICHAS A5 POR HOJA A4 VERTICAL) ──
   const sheetCount = Math.ceil(students.length / 2);
   const printBtn = document.getElementById('btn-print-sheets');
   if (printBtn) {
@@ -353,10 +484,6 @@ function renderAllPrintPages(classId, evaluation) {
 
   for (let i = 0; i < students.length; i += 2) {
     const sTop = students[i];
-    // Con número impar de alumnos la última hoja lleva UNA sola ficha, en
-    // vez de repetir la del compañero. Antes se duplicaba (students[i+1]
-    // || students[i]) y salían dos fichas con el mismo QR, así que el
-    // escáner podía registrar dos veces al mismo alumno.
     const sBot = students[i + 1] || null;
 
     const sheetEl = document.createElement('div');
@@ -372,8 +499,7 @@ function renderAllPrintPages(classId, evaluation) {
       : createA5Card(sTop, classroom, evaluation);
     container.appendChild(sheetEl);
 
-    // Generar el QR (ALUM_01) de cada alumno que va en esta hoja.
-    // Con salón impar, sBot es null y solo se genera el de arriba.
+    // Generar el QR (ALUM_01) de cada alumno que va en esta hoja
     if (typeof QRCode !== 'undefined' && QRCode.toString) {
       [sTop, sBot].filter(Boolean).forEach(st => {
         QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
@@ -437,11 +563,13 @@ function printEvaluationSheets(classId) {
     }
   }
 
-  // Asegurar que se imprima la plantilla de cartillas (no cuadernillo) en formato vertical
+  // Configurar orientación según si es pliego de 4 alumnos (landscape) o estándar (portrait)
   if (typeof document !== 'undefined') {
     document.body.classList.remove('print-mode-booklet');
     document.body.classList.add('print-mode-sheets');
-    setPrintPageOrientation('portrait');
+    const container = document.getElementById('pages-container');
+    const isQuad = container && container.querySelector('.sheet-a4-quad');
+    setPrintPageOrientation(isQuad ? 'landscape' : 'portrait');
   }
 
   const originalTitle = document.title;
@@ -469,6 +597,9 @@ if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('beforeprint', () => {
     const container = document.getElementById('pages-container');
     if (container && container.style.display !== 'none' && container.children.length > 0) {
+      const isQuad = container.querySelector('.sheet-a4-quad');
+      setPrintPageOrientation(isQuad ? 'landscape' : 'portrait');
+
       let classroom = null;
       if (typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession) {
         const session = ClassroomData.getActiveSession();

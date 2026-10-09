@@ -623,11 +623,31 @@
     const branch = options.branch || (questionCount > 3 ? 'rama3' : 'rama1');
     const withGrid = options.withGrid !== undefined ? options.withGrid : true;
 
-    // ── RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS EN 2 COLUMNAS) ──
+    // ── RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS) ──
     if (branch === 'rama3' || questionCount > 3) {
       const totalQ = questionCount;
-      const half = Math.ceil(totalQ / 2);
       const results = [];
+
+      // SUB-RAMA 3A: Cartilla A6 (4 alumnos por hoja A4, hasta 8 preguntas, 1 sola columna vertical)
+      if (branch === 'rama3' && totalQ <= 8) {
+        const a6Bubbles = [
+          { key: 'A', xMm: 86.9 },
+          { key: 'B', xMm: 96.9 },
+          { key: 'C', xMm: 106.9 },
+          { key: 'D', xMm: 116.9 }
+        ];
+        const stepY = 98.4 / (totalQ + 1);
+        for (let i = 0; i < totalQ; i++) {
+          const qNum = i + 1;
+          const yMm = 32.0 + (i + 1) * stepY;
+          const res = evaluateCompactRow(sheetCanvas, a6Bubbles, yMm);
+          results.push(Object.assign({ qIndex: qNum }, res));
+        }
+        return results;
+      }
+
+      // SUB-RAMA 3B: Cartilla A5 (2 alumnos por hoja A4, 9 a 20 preguntas en 2 columnas)
+      const half = Math.ceil(totalQ / 2);
 
       // Coordenadas X para Columna 1 y Columna 2
       const col1Bubbles = [
