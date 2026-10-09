@@ -413,9 +413,11 @@
       width: 275mm;
       height: 188mm;
       margin: 6mm auto;
+      padding: 3mm 4mm;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       box-sizing: border-box;
       overflow: hidden;
       position: relative;
@@ -429,7 +431,8 @@
     .quad-row {
       display: flex;
       flex-direction: row;
-      height: 92mm;
+      justify-content: space-between;
+      height: 89mm;
       width: 100%;
       box-sizing: border-box;
       overflow: hidden;
@@ -447,6 +450,7 @@
       background: #f8fafc;
       letter-spacing: 0.5px;
       user-select: none;
+      margin: 0 -4mm;
     }
 
     .quad-vcut {
@@ -473,17 +477,17 @@
     }
 
     .card-a6-empty {
-      width: 136mm;
-      height: 92mm;
+      width: 132mm;
+      height: 89mm;
       box-sizing: border-box;
       background: #ffffff;
     }
 
-    /* ── CARTILLA A6 (136 x 92 mm) ────────────────────────────────── */
+    /* ── CARTILLA A6 (132 x 89 mm) ────────────────────────────────── */
     .card-a6-r3 {
-      width: 136mm;
-      height: 92mm;
-      flex: 0 0 136mm;
+      width: 132mm;
+      height: 89mm;
+      flex: 0 0 132mm;
       border: 1mm solid #000000;
       padding: 2.5mm;
       box-sizing: border-box;
@@ -718,9 +722,11 @@
       width: 275mm;
       height: 188mm;
       margin: 6mm auto;
+      padding: 3mm 4mm;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: row;
+      justify-content: space-between;
       box-sizing: border-box;
       overflow: hidden;
       position: relative;
@@ -733,7 +739,8 @@
 
     .dual-vcut {
       width: 3mm;
-      height: 100%;
+      height: calc(100% + 6mm);
+      margin: -3mm 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -759,17 +766,17 @@
     }
 
     .card-a5-v-empty {
-      width: 136mm;
-      height: 188mm;
+      width: 132mm;
+      height: 182mm;
       box-sizing: border-box;
       background: #ffffff;
     }
 
-    /* ── CARTILLA A5 VERTICAL (136 x 188 mm) PARA RAMA 3 ─────────── */
+    /* ── CARTILLA A5 VERTICAL (132 x 182 mm) PARA RAMA 3 ─────────── */
     .card-a5-v-r3 {
-      width: 136mm;
-      height: 188mm;
-      flex: 0 0 136mm;
+      width: 132mm;
+      height: 182mm;
+      flex: 0 0 132mm;
       border: 1mm solid #000000;
       padding: 2.5mm;
       box-sizing: border-box;
@@ -2509,7 +2516,7 @@
         min-height: 0 !important;
         max-height: 188mm !important;
         margin: 0 auto !important;
-        padding: 0 !important;
+        padding: 3mm 4mm !important;
         overflow: hidden !important;
         page-break-after: always !important;
         break-after: page !important;
@@ -2521,9 +2528,11 @@
       }
       body:not(.print-mode-booklet) .sheet-a4-quad {
         flex-direction: column !important;
+        justify-content: space-between !important;
       }
       body:not(.print-mode-booklet) .sheet-a4-split {
         flex-direction: row !important;
+        justify-content: space-between !important;
       }
       body:not(.print-mode-booklet) .sheet-a4-quad:last-child,
       body:not(.print-mode-booklet) .sheet-a4-split:last-child {

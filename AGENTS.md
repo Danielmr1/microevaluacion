@@ -112,3 +112,10 @@ Todo asistente de inteligencia artificial o desarrollador que opere en este repo
 * Antes de iniciar cualquier refactorización o integración mayor (como módulos de IA o redes neuronales), el estado funcional anterior debe estar documentado, respaldado y con su número de versión claramente etiquetado (ej. `v3.1.6`).
 * Si una actualización o experimento introduce inestabilidad en módulos previamente probados, **se debe priorizar la restauración inmediata del estado estable verificado**.
 
+---
+
+## 13. Guardarraíl de Borde y Margen Perimetral en PDF (ArUco y QR)
+* Toda ficha, tarjeta o cartilla imprimible que contenga marcadores ArUco y código QR **DEBE contar obligatoriamente con un marco perimetral negro cerrado (`border: 1mm solid #000000`)**.
+* Entre el límite físico exterior de la hoja A4 y el marco negro de la ficha **SIEMPRE debe existir un espacio libre en blanco (margen/padding)**, garantizando que el borde nunca quede pegado al filo del papel ni sea mutilado por los márgenes de impresión de la impresora física.
+
+
