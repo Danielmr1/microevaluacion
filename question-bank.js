@@ -3421,8 +3421,12 @@ function renderRama3BankList() {
 
   if (bankList.length === 0) {
     container.innerHTML = `
-      <div style="padding:12px; background:#1e293b; border-radius:8px; font-size:0.78rem; color:#f59e0b; text-align:center;">
-        ⚠️ No hay preguntas guardadas para este grado. Puedes usar el <strong>Modo A (Solo Claves)</strong> para definir la pauta de corrección rápidamente.
+      <div style="padding:14px; background:#1e293b; border-radius:8px; font-size:0.78rem; color:#cbd5e1; text-align:center;">
+        <p style="color:#f59e0b; font-weight:700; margin-bottom:6px;">⚠️ No hay preguntas guardadas para este grado en el banco.</p>
+        <p style="margin-bottom:10px;">Puedes redactar preguntas nuevas con el botón verde de arriba o usar el <strong>Modo A (Solo Claves)</strong> para ingresar la pauta directamente.</p>
+        <button type="button" onclick="rama3OpenAddQuickModal(0)" style="background:#059669; border:none; color:#fff; border-radius:6px; padding:6px 14px; font-size:0.75rem; font-weight:800; cursor:pointer;">
+          ✏️ Redactar primera pregunta
+        </button>
       </div>
     `;
     return;
@@ -3442,6 +3446,10 @@ function renderRama3BankList() {
             </option>
           `).join('')}
         </select>
+        <button type="button" onclick="rama3OpenAddQuickModal(${i})" title="Redactar nueva pregunta para este espacio"
+          style="background:#1e293b; border:1px solid #475569; color:#94a3b8; border-radius:4px; padding:3px 6px; font-size:0.7rem; cursor:pointer;">
+          ✏️
+        </button>
         <span style="font-size:0.75rem; font-weight:800; color:#4ade80; background:#064e3b; padding:2px 8px; border-radius:4px; border:1px solid #10b981;">
           ${r3State.keys[i] || 'A'}
         </span>
@@ -3486,6 +3494,101 @@ function rama3AutofillFromBank() {
   showToast(`⚡ Se autocompletaron las preguntas disponibles.`);
 }
 
+function rama3OpenAddQuickModal(targetIdx = null) {
+  const form = document.getElementById('rama3-quick-form');
+  const targetSelect = document.getElementById('r3-qform-target');
+  if (!form || !targetSelect) return;
+
+  targetSelect.innerHTML = '';
+  for (let i = 0; i < r3State.count; i++) {
+    const isSel = (targetIdx !== null) ? (targetIdx === i) : (!r3State.bankQuestions[i]);
+    targetSelect.innerHTML += `
+      <option value="${i}" ${isSel ? 'selected' : ''}>P${(i + 1).toString().padStart(2, '0')}${r3State.bankQuestions[i] ? ' (Reemplazar)' : ''}</option>
+    `;
+  }
+
+  // Limpiar campos
+  const promptEl = document.getElementById('r3-qform-prompt');
+  if (promptEl) promptEl.value = '';
+  ['a', 'b', 'c', 'd'].forEach(k => {
+    const el = document.getElementById('r3-qform-' + k);
+    if (el) el.value = '';
+  });
+  const radA = document.getElementById('r3-rad-a');
+  if (radA) radA.checked = true;
+
+  form.style.display = 'block';
+  if (promptEl) promptEl.focus();
+}
+
+function rama3CloseQuickModal() {
+  const form = document.getElementById('rama3-quick-form');
+  if (form) form.style.display = 'none';
+}
+
+function rama3SaveQuickQuestion() {
+  if (!wizardClassroomId) {
+    showToast('⚠️ Selecciona un salón primero.');
+    return;
+  }
+  const prompt = (document.getElementById('r3-qform-prompt')?.value || '').trim();
+  if (!prompt) {
+    showToast('⚠️ Escribe el enunciado de la pregunta.');
+    return;
+  }
+  const optA = (document.getElementById('r3-qform-a')?.value || '').trim();
+  const optB = (document.getElementById('r3-qform-b')?.value || '').trim();
+  const optC = (document.getElementById('r3-qform-c')?.value || '').trim();
+  const optD = (document.getElementById('r3-qform-d')?.value || '').trim();
+  if (!optA || !optB || !optC || !optD) {
+    showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
+    return;
+  }
+
+  const rad = document.querySelector('input[name="r3-qform-correct"]:checked');
+  const correctKey = (rad ? rad.value : 'A').toUpperCase();
+
+  const targetIdx = parseInt(document.getElementById('r3-qform-target')?.value || '0', 10);
+  const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
+
+  const evalObj = {
+    title: 'Pregunta de alternativa',
+    type: 'mc',
+    questionCount: 1,
+    prompt: prompt,
+    expectedAnswer: `Clave: ${correctKey}`,
+    options: { A: optA, B: optB, C: optC, D: optD },
+    correct: correctKey,
+    questions: [{
+      prompt: prompt,
+      options: { A: optA, B: optB, C: optC, D: optD },
+      correct: correctKey,
+      gradeStage: g?.stage,
+      gradeLevel: Number(g?.level),
+      gradeText: g?.texto
+    }],
+    gradeStage: g?.stage,
+    gradeLevel: Number(g?.level),
+    gradeText: g?.texto
+  };
+
+  let savedEval = null;
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+    savedEval = ClassroomData.saveCustomEvaluation(evalObj);
+  }
+  if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+    SupabaseClient.saveEvaluation(savedEval || evalObj).catch(e => console.warn('[R3 Quick Save Cloud]', e));
+  }
+
+  const qAssigned = savedEval || evalObj;
+  r3State.bankQuestions[targetIdx] = qAssigned;
+  r3State.keys[targetIdx] = correctKey;
+
+  renderRama3BankList();
+  rama3CloseQuickModal();
+  showToast(`✅ Pregunta guardada en el banco y asignada a P${(targetIdx + 1).toString().padStart(2, '0')}`);
+}
+
 function confirmRama3() {
   if (!wizardClassroomId) {
     showToast('⚠️ Por favor selecciona un salón primero.');
@@ -3493,8 +3596,12 @@ function confirmRama3() {
   }
 
   const questions = [];
+  let hasRealQuestions = false;
   for (let i = 0; i < r3State.count; i++) {
     const qObj = r3State.bankQuestions[i];
+    const isReal = qObj && qObj.prompt && !qObj.prompt.startsWith('Pregunta ');
+    if (isReal) hasRealQuestions = true;
+
     questions.push({
       id: qObj?.id || ('r3_q' + (i + 1)),
       num: i + 1,
@@ -3513,6 +3620,7 @@ function confirmRama3() {
     withGrid: false,
     questionCount: r3State.count,
     questions: questions,
+    hasQuestionnaire: (r3State.mode === 'bank' && hasRealQuestions),
     title: `Cartilla de Respuestas (${r3State.count} Preguntas)`,
     prompt: `Cartilla de respuestas de ${r3State.count} preguntas`,
     expectedAnswer: r3State.keys.slice(0, r3State.count).join(' '),
@@ -3593,6 +3701,9 @@ if (typeof window !== 'undefined') {
   window.renderRama3BankList = renderRama3BankList;
   window.onRama3BankSelect = onRama3BankSelect;
   window.rama3AutofillFromBank = rama3AutofillFromBank;
+  window.rama3OpenAddQuickModal = rama3OpenAddQuickModal;
+  window.rama3CloseQuickModal = rama3CloseQuickModal;
+  window.rama3SaveQuickQuestion = rama3SaveQuickQuestion;
   window.confirmRama3 = confirmRama3;
   window.r2State = r2State;
   window.r3State = r3State;

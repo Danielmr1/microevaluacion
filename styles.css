@@ -404,6 +404,214 @@
       position: relative;
     }
 
+    /* ── CUADERNILLO DE PREGUNTAS (EXAMEN PARA ESTUDIANTES) ─────────
+       No lleva QR ni fiducials ArUco. Genérico para todos los alumnos.
+       - A5 (Landscape): 2 copias por hoja A4 cortadas por la mitad.
+       - A4 (Portrait): 2 columnas para 6 o más preguntas. */
+    #booklet-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      gap: 20px;
+    }
+
+    .sheet-booklet-landscape {
+      background: #ffffff;
+      width: 275mm;
+      height: 188mm;
+      margin: 6mm auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: row;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      color: #000000;
+    }
+
+    .booklet-half {
+      width: 135mm;
+      height: 100%;
+      padding: 6mm 8mm;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .booklet-divider {
+      width: 5mm;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    .booklet-divider-line {
+      flex: 1;
+      width: 0;
+      border-left: 1px dashed #64748b;
+    }
+
+    .booklet-divider-scissors {
+      font-size: 0.65rem;
+      color: #64748b;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      margin: 4mm 0;
+      letter-spacing: 1px;
+    }
+
+    .sheet-booklet-portrait {
+      background: #ffffff;
+      width: 188mm;
+      height: 275mm;
+      padding: 6mm 8mm;
+      margin: 6mm auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      color: #000000;
+    }
+
+    .booklet-header {
+      border-bottom: 1.5px solid #000000;
+      padding-bottom: 2.5mm;
+      margin-bottom: 3.5mm;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+    }
+
+    .booklet-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #334155;
+      text-transform: uppercase;
+    }
+
+    .booklet-title {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #000000;
+      line-height: 1.2;
+    }
+
+    .booklet-student-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8pt;
+      color: #000000;
+      margin-top: 1mm;
+    }
+
+    .booklet-instructions {
+      font-size: 7.2pt;
+      color: #475569;
+      font-style: italic;
+      line-height: 1.2;
+    }
+
+    .booklet-body-a5 {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      gap: 2mm;
+      overflow: hidden;
+    }
+
+    .booklet-columns {
+      flex: 1;
+      display: flex;
+      gap: 5mm;
+      overflow: hidden;
+    }
+
+    .booklet-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3mm;
+      overflow: hidden;
+    }
+
+    .booklet-col-divider {
+      width: 0;
+      border-left: 1px solid #cbd5e1;
+    }
+
+    .booklet-q-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+    }
+
+    .booklet-q-prompt {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #000000;
+      line-height: 1.25;
+    }
+
+    .booklet-q-num {
+      font-weight: 800;
+      color: #000000;
+    }
+
+    .booklet-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5mm 3mm;
+      font-size: 7.8pt;
+      color: #1e293b;
+      margin-left: 2mm;
+    }
+
+    .booklet-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+      font-size: 7.8pt;
+      color: #1e293b;
+      margin-left: 2mm;
+    }
+
+    .booklet-opt-item {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      line-height: 1.2;
+    }
+
+    .booklet-opt-item strong {
+      font-weight: 800;
+      color: #000000;
+      min-width: 14px;
+    }
+
+    .booklet-footer {
+      border-top: 1px solid #cbd5e1;
+      padding-top: 2mm;
+      margin-top: 2mm;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: #64748b;
+    }
+
     /* ── FICHA A5: 186 x 134 mm, RANURAS DE ALTO FIJO ───────────────
        Todo el alto está repartido en tramos cerrados, así que la cuadrícula
        y la franja de respuesta caen SIEMPRE en el mismo milímetro, sin
@@ -1619,16 +1827,72 @@
         margin: 0 !important;
         border: none !important;
       }
-      /* Garantía estricta: ocultar cualquier elemento dentro de view-create que no sea pages-container */
-      #view-create > :not(#pages-container) {
+      /* Garantía estricta: ocultar cualquier elemento dentro de view-create que no sea pages-container o booklet-container */
+      #view-create > :not(#pages-container):not(#booklet-container) {
         display: none !important;
       }
-      #pages-container {
+
+      /* MODO CARTILLAS (Por defecto o sin clase print-mode-booklet) */
+      body:not(.print-mode-booklet) #booklet-container {
+        display: none !important;
+      }
+      body:not(.print-mode-booklet) #pages-container {
         display: block !important;
         width: 188mm !important;
         max-width: none !important;
         margin: 0 auto !important;
         padding: 0 !important;
+      }
+
+      /* MODO CUADERNILLO DE PREGUNTAS */
+      body.print-mode-booklet #pages-container {
+        display: none !important;
+      }
+      body.print-mode-booklet #booklet-container {
+        display: block !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+      }
+      body.print-mode-booklet .sheet-booklet-landscape {
+        box-shadow: none !important;
+        width: 275mm !important;
+        height: 188mm !important;
+        min-height: 0 !important;
+        max-height: 188mm !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+        flex-direction: row !important;
+      }
+      body.print-mode-booklet .sheet-booklet-portrait {
+        box-shadow: none !important;
+        width: 188mm !important;
+        height: 275mm !important;
+        min-height: 0 !important;
+        max-height: 275mm !important;
+        margin: 0 auto !important;
+        padding: 6mm 8mm !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      body.print-mode-booklet .sheet-booklet-landscape:last-child,
+      body.print-mode-booklet .sheet-booklet-portrait:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
       }
       /* ── UNA HOJA = UNA PÁGINA ──
          El alto explícito (275mm) más la ausencia de margin-bottom son lo que

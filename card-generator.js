@@ -334,8 +334,13 @@ function renderAllPrintPages(classId, evaluation) {
   const sheetCount = Math.ceil(students.length / 2);
   const printBtn = document.getElementById('btn-print-sheets');
   if (printBtn) {
+    const isR3 = evaluation && evaluation.branch === 'rama3';
     const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-    printBtn.innerHTML = `🖨️ Descargar / Imprimir ${sheetCount} ${pageWord}`;
+    if (isR3) {
+      printBtn.innerHTML = `🖨️ Descargar Cartillas OMR (${sheetCount} ${pageWord})`;
+    } else {
+      printBtn.innerHTML = `🖨️ Descargar / Imprimir ${sheetCount} ${pageWord}`;
+    }
     printBtn.onclick = () => printEvaluationSheets(classId);
   }
 
@@ -432,6 +437,13 @@ function printEvaluationSheets(classId) {
     }
   }
 
+  // Asegurar que se imprima la plantilla de cartillas (no cuadernillo) en formato vertical
+  if (typeof document !== 'undefined') {
+    document.body.classList.remove('print-mode-booklet');
+    document.body.classList.add('print-mode-sheets');
+    setPrintPageOrientation('portrait');
+  }
+
   const originalTitle = document.title;
   const pdfTitle = getPdfExportTitle(classroom);
 
@@ -507,6 +519,285 @@ function fitProblemText() {
   });
 }
 
+// ── CUADERNILLO DE PREGUNTAS (COMPAÑERO DE CARTILLAS OMR) ──────────────────────
+
+/**
+ * Determina si el cuadernillo de preguntas entra en formato A5 (para imprimir 2 exámenes por hoja A4 horizontal).
+ * Criterio: 5 o menos preguntas y que los enunciados no excedan los 240 caracteres.
+ */
+function checkIfBookletFitsA5(evaluation) {
+  if (!evaluation) return false;
+  const questions = evaluation.questions || [];
+  const qCount = evaluation.questionCount || questions.length || 1;
+  if (qCount <= 5) {
+    const hasLongPrompt = questions.some(q => (q.prompt || '').length > 240);
+    return !hasLongPrompt;
+  }
+  return false;
+}
+
+/**
+ * Genera el título para la descarga del PDF del Cuadernillo de Preguntas.
+ */
+function getBookletPdfExportTitle(classroom, evaluation) {
+  const sanitizeFn = (typeof sanitizeExportFileName === 'function')
+    ? sanitizeExportFileName
+    : (name) => (name || 'Salon')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_\-]/g, '');
+
+  const timestampFn = (typeof getExportTimestamp === 'function')
+    ? getExportTimestamp
+    : () => {
+        const d = new Date();
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        return `${day}-${month}`;
+      };
+
+  const cleanClassroom = sanitizeFn(classroom ? classroom.name : 'Salon');
+  const cleanTitle = sanitizeFn(evaluation ? evaluation.title : 'Cuadernillo');
+  const timeStamp = timestampFn();
+  return `Cuadernillo_${cleanTitle}_${cleanClassroom}_${timeStamp}`;
+}
+
+/**
+ * Configura la regla @page dinámica en el DOM antes de imprimir para que el navegador
+ * abra el diálogo de impresión directamente en Horizontal (Landscape) o Vertical (Portrait).
+ */
+function setPrintPageOrientation(orientation) {
+  if (typeof document === 'undefined') return;
+  let styleEl = document.getElementById('dynamic-print-page-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamic-print-page-style';
+    document.head.appendChild(styleEl);
+  }
+  if (orientation === 'landscape') {
+    styleEl.textContent = '@page { size: A4 landscape; margin: 6mm; }';
+  } else {
+    styleEl.textContent = '@page { size: A4 portrait; margin: 6mm; }';
+  }
+}
+
+/**
+ * Renderiza el HTML de una sola pregunta con sus 4 alternativas para el cuadernillo.
+ */
+function renderBookletQuestionHTML(q, idx) {
+  const escape = (typeof escaparHtml === 'function')
+    ? escaparHtml
+    : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  const num = q.num || (idx + 1);
+  const prompt = escape(q.prompt || `Pregunta ${num}`);
+  const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
+
+  // Detectar si alguna alternativa es larga para usar 1 columna o 2 columnas en las alternativas
+  const maxOptLen = Math.max(
+    String(opts.A || '').length,
+    String(opts.B || '').length,
+    String(opts.C || '').length,
+    String(opts.D || '').length
+  );
+  const gridClass = maxOptLen > 30 ? 'booklet-options-list' : 'booklet-options-grid';
+
+  return `
+    <div class="booklet-q-item">
+      <div class="booklet-q-prompt">
+        <span class="booklet-q-num">${num}.</span> ${prompt}
+      </div>
+      <div class="${gridClass}">
+        <div class="booklet-opt-item"><strong>A)</strong> <span>${escape(opts.A || '—')}</span></div>
+        <div class="booklet-opt-item"><strong>B)</strong> <span>${escape(opts.B || '—')}</span></div>
+        <div class="booklet-opt-item"><strong>C)</strong> <span>${escape(opts.C || '—')}</span></div>
+        <div class="booklet-opt-item"><strong>D)</strong> <span>${escape(opts.D || '—')}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Construye y renderiza el Cuadernillo de Preguntas en el contenedor #booklet-container.
+ * Caso A: Si cabe en A5 -> 1 hoja A4 Landscape con 2 exámenes idénticos lado a lado.
+ * Caso B: Si excede A5 -> Hojas A4 Portrait con 2 columnas de preguntas.
+ */
+function renderQuestionBooklet(classId, evaluation) {
+  if (typeof document === 'undefined') return;
+  const container = document.getElementById('booklet-container');
+  if (!container) return;
+
+  if (!evaluation || !evaluation.questions || evaluation.questions.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const escape = (typeof escaparHtml === 'function')
+    ? escaparHtml
+    : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  let classroom = null;
+  if (classId && typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
+    classroom = ClassroomData.getClassroom(classId);
+  }
+  const gradeText = classroom ? (ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel) || classroom.name) : (evaluation.gradeText || '');
+  const titleText = evaluation.title || 'Cuadernillo de Preguntas';
+
+  const questions = evaluation.questions;
+  const fitsA5 = checkIfBookletFitsA5(evaluation);
+
+  container.innerHTML = '';
+
+  if (fitsA5) {
+    // ── CASO A: A4 HORIZONTAL (LANDSCAPE) CON 2 EXÁMENES A5 IDÉNTICOS ──
+    const examA5HTML = `
+      <div class="booklet-half">
+        <div class="booklet-header">
+          <div class="booklet-header-top">
+            <span class="booklet-institution">EVALUACIÓN ESCOLAR</span>
+            <span class="booklet-grade">${escape(gradeText)}</span>
+          </div>
+          <div class="booklet-title">${escape(titleText)}</div>
+          <div class="booklet-student-line">
+            <span>Estudiante: _________________________________</span>
+            <span>Fecha: ___/___/____</span>
+          </div>
+          <div class="booklet-instructions">
+            * Lee con atención cada enunciado y marca tu respuesta en la Cartilla de Respuestas OMR.
+          </div>
+        </div>
+        <div class="booklet-body-a5">
+          ${questions.map((q, idx) => renderBookletQuestionHTML(q, idx)).join('')}
+        </div>
+      </div>
+    `;
+
+    const sheetEl = document.createElement('div');
+    sheetEl.className = 'sheet-booklet-landscape';
+    sheetEl.innerHTML = `
+      ${examA5HTML}
+      <div class="booklet-divider">
+        <div class="booklet-divider-line"></div>
+        <span class="booklet-divider-scissors">✂️ cortar aquí</span>
+        <div class="booklet-divider-line"></div>
+      </div>
+      ${examA5HTML}
+    `;
+    container.appendChild(sheetEl);
+  } else {
+    // ── CASO B: A4 VERTICAL (PORTRAIT) EN 2 COLUMNAS ──
+    const perPage = 10; // Hasta 10 preguntas por página A4 (5 por columna)
+    const pageCount = Math.ceil(questions.length / perPage);
+
+    for (let p = 0; p < pageCount; p++) {
+      const pageQuestions = questions.slice(p * perPage, (p + 1) * perPage);
+      const mid = Math.ceil(pageQuestions.length / 2);
+      const col1 = pageQuestions.slice(0, mid);
+      const col2 = pageQuestions.slice(mid);
+
+      const sheetEl = document.createElement('div');
+      sheetEl.className = 'sheet-booklet-portrait';
+      sheetEl.innerHTML = `
+        <div class="booklet-header">
+          <div class="booklet-header-top">
+            <span class="booklet-institution">EVALUACIÓN ESCOLAR</span>
+            <span class="booklet-grade">${escape(gradeText)}</span>
+          </div>
+          <div class="booklet-title">${escape(titleText)}${pageCount > 1 ? ` — Parte ${p + 1}` : ''}</div>
+          ${p === 0 ? `
+          <div class="booklet-student-line">
+            <span>Estudiante: __________________________________________________</span>
+            <span>Fecha: ___/___/____</span>
+          </div>
+          <div class="booklet-instructions">
+            * Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas OMR asignada.
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="booklet-columns">
+          <div class="booklet-col">
+            ${col1.map((q, idx) => renderBookletQuestionHTML(q, p * perPage + idx)).join('')}
+          </div>
+          <div class="booklet-col-divider"></div>
+          <div class="booklet-col">
+            ${col2.map((q, idx) => renderBookletQuestionHTML(q, p * perPage + mid + idx)).join('')}
+          </div>
+        </div>
+
+        <div class="booklet-footer">
+          <span>Microevaluación Formativa — Cuadernillo de Preguntas</span>
+          <span>Página ${p + 1} de ${pageCount}</span>
+        </div>
+      `;
+      container.appendChild(sheetEl);
+    }
+  }
+}
+
+/**
+ * Dispara la impresión del Cuadernillo de Preguntas (PDF para los estudiantes).
+ */
+function printQuestionBooklet() {
+  const container = document.getElementById('booklet-container');
+  if (!container || container.children.length === 0) {
+    if (typeof wizardClassroomId !== 'undefined' && typeof wizardEval !== 'undefined') {
+      renderQuestionBooklet(wizardClassroomId, wizardEval);
+    }
+  }
+
+  if (!container || container.children.length === 0) {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ No hay preguntas cargadas en esta evaluación para armar el cuadernillo.');
+    }
+    return;
+  }
+
+  let classroom = null;
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
+    if (typeof wizardClassroomId !== 'undefined' && wizardClassroomId) {
+      classroom = ClassroomData.getClassroom(wizardClassroomId);
+    } else if (ClassroomData.getActiveSession) {
+      const session = ClassroomData.getActiveSession();
+      if (session && session.classroomId) classroom = ClassroomData.getClassroom(session.classroomId);
+    }
+  }
+
+  const evalObj = (typeof wizardEval !== 'undefined') ? wizardEval : null;
+  const isA5 = checkIfBookletFitsA5(evalObj);
+
+  // Activar modo de impresión de cuadernillo en body
+  document.body.classList.remove('print-mode-sheets');
+  document.body.classList.add('print-mode-booklet');
+
+  // Ajustar tamaño/orientación de página en el diálogo del navegador
+  setPrintPageOrientation(isA5 ? 'landscape' : 'portrait');
+
+  const originalTitle = document.title;
+  const pdfTitle = getBookletPdfExportTitle(classroom, evalObj);
+  document.title = pdfTitle;
+
+  const restore = () => {
+    document.title = originalTitle;
+    document.body.classList.remove('print-mode-booklet');
+    setPrintPageOrientation('portrait');
+    window.removeEventListener('afterprint', restore);
+  };
+  window.addEventListener('afterprint', restore, { once: true });
+
+  setTimeout(() => {
+    if (document.title === pdfTitle) {
+      document.title = originalTitle;
+      document.body.classList.remove('print-mode-booklet');
+      setPrintPageOrientation('portrait');
+    }
+  }, 10000);
+
+  window.print();
+}
+
 // ── EXPOSICIÓN GLOBAL PARA RENDERIZADO EN EL ASISTENTE Y VISOR DE IMPRESIÓN ──
 if (typeof window !== 'undefined') {
   window.A5_GRID_COLS = A5_GRID_COLS;
@@ -517,5 +808,11 @@ if (typeof window !== 'undefined') {
   window.fitProblemText = fitProblemText;
   window.getPdfExportTitle = getPdfExportTitle;
   window.printEvaluationSheets = printEvaluationSheets;
+  window.checkIfBookletFitsA5 = checkIfBookletFitsA5;
+  window.getBookletPdfExportTitle = getBookletPdfExportTitle;
+  window.setPrintPageOrientation = setPrintPageOrientation;
+  window.renderBookletQuestionHTML = renderBookletQuestionHTML;
+  window.renderQuestionBooklet = renderQuestionBooklet;
+  window.printQuestionBooklet = printQuestionBooklet;
 }
 
