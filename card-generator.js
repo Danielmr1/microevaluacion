@@ -353,7 +353,7 @@ function createA6Card(student, classroom, evaluation) {
       ${fiducialsHTML}
       <div class="a6-card-header">
         <div class="a6-header-left">
-          <div class="a6-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
+          <div class="a6-header-top-title">CARTILLA DE RESPUESTAS</div>
           <div class="a6-student-block">
             <span class="a6-student-label">Nombre:</span>
             <span class="a6-student-name">${safeStudentName}</span>
@@ -464,7 +464,7 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
       ${fiducialsHTML}
       <div class="v-card-header">
         <div class="v-header-left">
-          <div class="v-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
+          <div class="v-header-top-title">CARTILLA DE RESPUESTAS</div>
           <div class="v-student-block">
             <span class="v-student-label">Nombre:</span>
             <span class="v-student-name">${safeStudentName}</span>
