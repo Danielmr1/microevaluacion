@@ -1072,23 +1072,13 @@ function renderQuestionBooklet(classId, evaluation) {
     sheetEl.innerHTML = `
       <div class="quad-row">
         ${examQuadHTML}
-        <div class="quad-vcut">
-          <div class="quad-vcut-line"></div>
-          <span class="quad-vcut-text">✂️</span>
-          <div class="quad-vcut-line"></div>
-        </div>
+        <div class="booklet-divider"></div>
         ${examQuadHTML}
       </div>
-      <div class="quad-hcut">
-        <span>✂️ cortar por aquí ✂️</span>
-      </div>
+      <div class="booklet-divider-h"></div>
       <div class="quad-row">
         ${examQuadHTML}
-        <div class="quad-vcut">
-          <div class="quad-vcut-line"></div>
-          <span class="quad-vcut-text">✂️</span>
-          <div class="quad-vcut-line"></div>
-        </div>
+        <div class="booklet-divider"></div>
         ${examQuadHTML}
       </div>
     `;
@@ -1103,7 +1093,6 @@ function renderQuestionBooklet(classId, evaluation) {
           <div class="booklet-subcol">
             ${layout.pages[0].col1.map((q, idx) => renderBookletQuestionHTML(q, idx, true)).join('')}
           </div>
-          <div class="booklet-subcol-divider"></div>
           <div class="booklet-subcol">
             ${layout.pages[0].col2.map((q, idx) => renderBookletQuestionHTML(q, layout.pages[0].col1.length + idx, true)).join('')}
           </div>
@@ -1136,11 +1125,7 @@ function renderQuestionBooklet(classId, evaluation) {
     sheetEl.className = 'sheet-booklet-landscape';
     sheetEl.innerHTML = `
       ${examHalfHTML}
-      <div class="booklet-divider">
-        <div class="booklet-divider-line"></div>
-        <span class="booklet-divider-scissors">✂️ cortar aquí</span>
-        <div class="booklet-divider-line"></div>
-      </div>
+      <div class="booklet-divider"></div>
       ${examHalfHTML}
     `;
     container.appendChild(sheetEl);

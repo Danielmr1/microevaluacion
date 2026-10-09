@@ -1029,9 +1029,18 @@
       color: #000000;
     }
 
-    .booklet-quad-item {
-      width: 132mm;
-      height: 88mm;
+    .sheet-booklet-quad .quad-row {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: calc(50% - 1px);
+      box-sizing: border-box;
+    }
+
+    .sheet-booklet-quad .booklet-quad-item {
+      flex: 1 1 50%;
+      width: 50%;
+      height: 100%;
       padding: 2.5mm 3.5mm;
       box-sizing: border-box;
       display: flex;
@@ -1077,9 +1086,10 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
-      gap: 1.5mm;
+      justify-content: flex-start;
+      gap: 2mm;
       overflow: hidden;
+      margin-top: 1.5mm;
     }
 
     .booklet-q-item.booklet-q-compact {
@@ -1111,9 +1121,10 @@
     }
 
     .booklet-half {
-      width: 135mm;
+      flex: 1 1 50%;
+      width: 50%;
       height: 100%;
-      padding: 5mm 7mm;
+      padding: 4mm 8mm;
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
@@ -1121,50 +1132,41 @@
     }
 
     .booklet-divider {
-      width: 5mm;
+      width: 0;
       height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      flex: 0 0 0;
+      border-left: 1.5px dashed #64748b;
       box-sizing: border-box;
     }
 
-    .booklet-divider-line {
-      flex: 1;
-      width: 0;
-      border-left: 1px dashed #64748b;
-    }
-
-    .booklet-divider-scissors {
-      font-size: 0.65rem;
-      color: #64748b;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      margin: 4mm 0;
-      letter-spacing: 1px;
+    .booklet-divider-h {
+      width: 100%;
+      height: 0;
+      flex: 0 0 0;
+      border-top: 1.5px dashed #64748b;
+      box-sizing: border-box;
     }
 
     .booklet-2subcol-wrap {
       flex: 1;
       display: flex;
-      gap: 4mm;
+      gap: 6mm;
       overflow: hidden;
       box-sizing: border-box;
+      margin-top: 2mm;
     }
 
     .booklet-subcol {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
-      gap: 2mm;
+      justify-content: flex-start;
+      gap: 3.5mm;
       overflow: hidden;
     }
 
     .booklet-subcol-divider {
-      width: 0;
-      border-left: 1px dashed #cbd5e1;
+      display: none;
     }
 
     /* ── NIVEL 3: HOJA A4 VERTICAL EN 2 COLUMNAS CONTINUAS ── */
@@ -1225,9 +1227,10 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
-      gap: 2mm;
+      justify-content: flex-start;
+      gap: 4mm;
       overflow: hidden;
+      margin-top: 2mm;
     }
 
     .booklet-columns {
