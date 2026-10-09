@@ -739,7 +739,9 @@ function printEvaluationSheets(classId) {
     }
   }, 10000);
 
-  window.print();
+  setTimeout(() => {
+    window.print();
+  }, 60);
 }
 
 // Escuchas reactivas para atajos de teclado (Ctrl+P) y opciones de impresión del navegador
@@ -991,10 +993,13 @@ function setPrintPageOrientation(orientation) {
     styleEl.id = 'dynamic-print-page-style';
     document.head.appendChild(styleEl);
   }
-  if (orientation === 'landscape') {
-    styleEl.textContent = '@page { size: A4 landscape !important; margin: 0 !important; }';
-  } else {
-    styleEl.textContent = '@page { size: A4 portrait !important; margin: 0 !important; }';
+  const isLandscape = orientation === 'landscape';
+  styleEl.textContent = isLandscape
+    ? '@page { size: A4 landscape !important; margin: 0 !important; }'
+    : '@page { size: A4 portrait !important; margin: 0 !important; }';
+
+  if (document.body) {
+    void document.body.offsetHeight;
   }
 }
 
@@ -1225,7 +1230,8 @@ function printQuestionBooklet() {
 
   const evalObj = (typeof wizardEval !== 'undefined') ? wizardEval : null;
   const layout = determineBookletLayout(evalObj);
-  const isLandscape = (layout.level === 'quad' || layout.level === 'half');
+  const hasPortraitSheet = !!(container && container.querySelector('.sheet-booklet-portrait'));
+  const isLandscape = !hasPortraitSheet && (layout.level === 'quad' || layout.level === 'half');
 
   // Activar modo de impresión de cuadernillo en body
   document.body.classList.remove('print-mode-sheets');
@@ -1254,7 +1260,9 @@ function printQuestionBooklet() {
     }
   }, 10000);
 
-  window.print();
+  setTimeout(() => {
+    window.print();
+  }, 60);
 }
 
 // ── EXPOSICIÓN GLOBAL PARA RENDERIZADO EN EL ASISTENTE Y VISOR DE IMPRESIÓN ──
