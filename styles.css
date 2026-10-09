@@ -605,21 +605,20 @@
     }
     .a6-qr-box svg { width: 100%; height: 100%; display: block; }
 
-    .a6-fill-hint-row {
-      padding: 1.2mm 16mm 0.8mm 16mm;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      box-sizing: border-box;
-    }
-
-    .a6-fill-hint {
+    .a6-fill-hint-side {
+      position: absolute;
+      left: 3.5mm;
+      top: 28mm;
+      transform: translateY(-50%);
       font-size: 6.8pt;
       color: #475569;
       line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 5;
     }
 
-    .a6-fill-hint b {
+    .a6-fill-hint-side b {
       color: #000000;
       font-size: 7.5pt;
     }
@@ -891,21 +890,20 @@
     }
     .v-qr-box svg { width: 100%; height: 100%; display: block; }
 
-    .v-fill-hint-row {
-      padding: 1.2mm 16mm 0.8mm 16mm;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      box-sizing: border-box;
-    }
-
-    .v-fill-hint {
+    .v-fill-hint-side {
+      position: absolute;
+      left: 3.5mm;
+      top: 30mm;
+      transform: translateY(-50%);
       font-size: 6.8pt;
       color: #475569;
       line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 5;
     }
 
-    .v-fill-hint b {
+    .v-fill-hint-side b {
       color: #000000;
       font-size: 7.5pt;
     }

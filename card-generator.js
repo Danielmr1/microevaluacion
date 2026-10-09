@@ -366,10 +366,7 @@ function createA6Card(student, classroom, evaluation) {
         </div>
       </div>
 
-      <div class="a6-fill-hint-row">
-        <span class="a6-fill-hint">Rellena: <b>●</b></span>
-      </div>
-
+      <span class="a6-fill-hint-side">Rellena: <b>●</b></span>
       <div class="a6-b3-body">
         ${bodyHTML}
       </div>
@@ -480,10 +477,7 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
         </div>
       </div>
 
-      <div class="v-fill-hint-row">
-        <span class="v-fill-hint">Rellena: <b>●</b></span>
-      </div>
-
+      <span class="v-fill-hint-side">Rellena: <b>●</b></span>
       <div class="v-b3-body">
         ${bodyHTML}
       </div>
