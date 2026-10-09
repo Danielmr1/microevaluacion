@@ -972,9 +972,9 @@ function setPrintPageOrientation(orientation) {
     document.head.appendChild(styleEl);
   }
   if (orientation === 'landscape') {
-    styleEl.textContent = '@page { size: A4 landscape; margin: 3mm; }';
+    styleEl.textContent = '@page { size: A4 landscape; margin: 0; }';
   } else {
-    styleEl.textContent = '@page { size: A4 portrait; margin: 5mm; }';
+    styleEl.textContent = '@page { size: A4 portrait; margin: 0; }';
   }
 }
 
@@ -1072,15 +1072,14 @@ function renderQuestionBooklet(classId, evaluation) {
     sheetEl.innerHTML = `
       <div class="quad-row">
         ${examQuadHTML}
-        <div class="booklet-divider"></div>
         ${examQuadHTML}
       </div>
-      <div class="booklet-divider-h"></div>
       <div class="quad-row">
         ${examQuadHTML}
-        <div class="booklet-divider"></div>
         ${examQuadHTML}
       </div>
+      <div class="booklet-divider"></div>
+      <div class="booklet-divider-h"></div>
     `;
     container.appendChild(sheetEl);
 
@@ -1125,8 +1124,8 @@ function renderQuestionBooklet(classId, evaluation) {
     sheetEl.className = 'sheet-booklet-landscape';
     sheetEl.innerHTML = `
       ${examHalfHTML}
-      <div class="booklet-divider"></div>
       ${examHalfHTML}
+      <div class="booklet-divider"></div>
     `;
     container.appendChild(sheetEl);
 

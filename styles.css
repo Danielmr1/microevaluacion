@@ -1015,14 +1015,13 @@
     /* ── NIVEL 1: HOJA A4 HORIZONTAL EN 4 CUADRANTES IGUALES ── */
     .sheet-booklet-quad {
       background: #ffffff;
-      width: 275mm;
-      height: 188mm;
+      width: 297mm;
+      height: 210mm;
       margin: 6mm auto;
-      padding: 3mm 4mm;
+      padding: 0;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       box-sizing: border-box;
       overflow: hidden;
       position: relative;
@@ -1033,15 +1032,17 @@
       display: flex;
       flex-direction: row;
       width: 100%;
-      height: calc(50% - 1px);
+      height: 105mm;
       box-sizing: border-box;
     }
 
     .sheet-booklet-quad .booklet-quad-item {
-      flex: 1 1 50%;
-      width: 50%;
-      height: 100%;
-      padding: 2.5mm 3.5mm;
+      flex: 0 0 148.5mm;
+      width: 148.5mm;
+      max-width: 148.5mm;
+      min-width: 148.5mm;
+      height: 105mm;
+      padding: 4mm 8mm;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -1105,12 +1106,13 @@
       font-size: 7.2pt;
     }
 
-    /* ── NIVEL 2: HOJA A4 HORIZONTAL EN 2 MITADES IGUALES ── */
+    /* ── NIVEL 2: HOJA A4 HORIZONTAL EN 2 MITADES IGUALES (EXACTO 50% A4) ── */
     .sheet-booklet-landscape {
       background: #ffffff;
-      width: 275mm;
-      height: 188mm;
+      width: 297mm;
+      height: 210mm;
       margin: 6mm auto;
+      padding: 0;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: row;
@@ -1121,10 +1123,12 @@
     }
 
     .booklet-half {
-      flex: 1 1 50%;
-      width: 50%;
+      flex: 0 0 148.5mm;
+      width: 148.5mm;
+      max-width: 148.5mm;
+      min-width: 148.5mm;
       height: 100%;
-      padding: 4mm 8mm;
+      padding: 6mm 10mm;
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
@@ -1132,19 +1136,27 @@
     }
 
     .booklet-divider {
+      position: absolute;
+      left: 148.5mm;
+      top: 0;
+      bottom: 0;
       width: 0;
-      height: 100%;
-      flex: 0 0 0;
       border-left: 1.5px dashed #64748b;
       box-sizing: border-box;
+      pointer-events: none;
+      z-index: 10;
     }
 
     .booklet-divider-h {
-      width: 100%;
+      position: absolute;
+      top: 105mm;
+      left: 0;
+      right: 0;
       height: 0;
-      flex: 0 0 0;
       border-top: 1.5px dashed #64748b;
       box-sizing: border-box;
+      pointer-events: none;
+      z-index: 10;
     }
 
     .booklet-2subcol-wrap {
@@ -2555,12 +2567,12 @@
       }
       body.print-mode-booklet .sheet-booklet-quad {
         box-shadow: none !important;
-        width: 275mm !important;
-        height: 188mm !important;
-        min-height: 0 !important;
-        max-height: 188mm !important;
-        margin: 0 auto !important;
-        padding: 3mm 4mm !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        min-height: 210mm !important;
+        max-height: 210mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
         overflow: hidden !important;
         page-break-after: always !important;
         break-after: page !important;
@@ -2570,15 +2582,27 @@
         color: #000000 !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: space-between !important;
+        position: relative !important;
+      }
+      body.print-mode-booklet .sheet-booklet-quad .quad-row {
+        height: 105mm !important;
+      }
+      body.print-mode-booklet .sheet-booklet-quad .booklet-quad-item {
+        flex: 0 0 148.5mm !important;
+        width: 148.5mm !important;
+        max-width: 148.5mm !important;
+        min-width: 148.5mm !important;
+        height: 105mm !important;
+        padding: 4mm 8mm !important;
+        box-sizing: border-box !important;
       }
       body.print-mode-booklet .sheet-booklet-landscape {
         box-shadow: none !important;
-        width: 275mm !important;
-        height: 188mm !important;
-        min-height: 0 !important;
-        max-height: 188mm !important;
-        margin: 0 auto !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        min-height: 210mm !important;
+        max-height: 210mm !important;
+        margin: 0 !important;
         padding: 0 !important;
         overflow: hidden !important;
         page-break-after: always !important;
@@ -2589,6 +2613,34 @@
         color: #000000 !important;
         display: flex !important;
         flex-direction: row !important;
+        position: relative !important;
+      }
+      body.print-mode-booklet .booklet-half {
+        flex: 0 0 148.5mm !important;
+        width: 148.5mm !important;
+        max-width: 148.5mm !important;
+        min-width: 148.5mm !important;
+        height: 100% !important;
+        padding: 6mm 10mm !important;
+        box-sizing: border-box !important;
+      }
+      body.print-mode-booklet .booklet-divider {
+        position: absolute !important;
+        left: 148.5mm !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 0 !important;
+        border-left: 1.5px dashed #64748b !important;
+        z-index: 10 !important;
+      }
+      body.print-mode-booklet .booklet-divider-h {
+        position: absolute !important;
+        top: 105mm !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 0 !important;
+        border-top: 1.5px dashed #64748b !important;
+        z-index: 10 !important;
       }
       body.print-mode-booklet .sheet-booklet-portrait {
         box-shadow: none !important;
