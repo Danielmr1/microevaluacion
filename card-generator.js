@@ -1201,7 +1201,236 @@ function renderQuestionBooklet(classId, evaluation) {
 }
 
 /**
- * Dispara la impresión del Cuadernillo de Preguntas (PDF para los estudiantes).
+ * Genera el documento PDF del Cuadernillo de Preguntas con jsPDF.
+ * - Nivel 1 (<= 4 preguntas): A4 Landscape con 4 cuadrantes (4 exámenes por pliego).
+ * - Nivel 2 (5 a 10 preguntas): A4 Landscape con 2 mitades (2 exámenes por pliego).
+ * - Nivel 3 (> 10 preguntas o textos largos): A4 Vertical en 2 columnas (1 o más páginas).
+ */
+function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
+  const jsPDFConstructor = customJsPDF
+    || ((typeof window !== 'undefined' && window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : null)
+    || (typeof jsPDF !== 'undefined' ? jsPDF : null);
+
+  if (!jsPDFConstructor) return null;
+
+  const questions = (evalObj && evalObj.questions) ? evalObj.questions : [];
+  if (questions.length === 0) return null;
+
+  const layout = (typeof determineBookletLayout === 'function')
+    ? determineBookletLayout(evalObj)
+    : { level: questions.length <= 4 ? 'quad' : (questions.length <= 10 ? 'half' : 'portrait') };
+
+  const isLandscape = (layout.level === 'quad' || layout.level === 'half');
+  const doc = new jsPDFConstructor({
+    orientation: isLandscape ? 'landscape' : 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  // Helper para renderizar una pregunta en (startX, startY, colWidth)
+  function renderQuestion(q, idx, startX, startY, colWidth, isCompact) {
+    let curY = startY;
+    const num = q.num || (idx + 1);
+    const promptText = `${num}. ${q.prompt || ''}`;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(isCompact ? 7.5 : 8.5);
+    doc.setTextColor(0, 0, 0);
+
+    const lines = doc.splitTextToSize(promptText, colWidth);
+    doc.text(lines, startX, curY);
+    curY += lines.length * (isCompact ? 3.0 : 3.6);
+
+    const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
+    const maxOptLen = Math.max(
+      String(opts.A || '').length,
+      String(opts.B || '').length,
+      String(opts.C || '').length,
+      String(opts.D || '').length
+    );
+    const isGrid2x2 = maxOptLen <= (colWidth > 70 ? 24 : 14);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(isCompact ? 7 : 8);
+
+    if (isGrid2x2) {
+      const halfW = colWidth / 2;
+      // Fila 1: A y B
+      doc.setFont('helvetica', 'bold');
+      doc.text('A)', startX, curY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(opts.A || '—'), startX + 4.5, curY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('B)', startX + halfW, curY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(opts.B || '—'), startX + halfW + 4.5, curY);
+      curY += (isCompact ? 3.0 : 3.6);
+
+      // Fila 2: C y D
+      doc.setFont('helvetica', 'bold');
+      doc.text('C)', startX, curY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(opts.C || '—'), startX + 4.5, curY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('D)', startX + halfW, curY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(opts.D || '—'), startX + halfW + 4.5, curY);
+      curY += (isCompact ? 3.0 : 3.6);
+    } else {
+      ['A', 'B', 'C', 'D'].forEach(optKey => {
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${optKey})`, startX, curY);
+        doc.setFont('helvetica', 'normal');
+        const optLines = doc.splitTextToSize(String(opts[optKey] || '—'), colWidth - 5);
+        doc.text(optLines, startX + 4.5, curY);
+        curY += optLines.length * (isCompact ? 2.8 : 3.4);
+      });
+    }
+
+    curY += (isCompact ? 1.5 : 2.5);
+    return curY - startY;
+  }
+
+  // Helper para renderizar cabecera de examen
+  function renderHeader(originX, originY, width, isCompact) {
+    let curY = originY + 4;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(isCompact ? 8.5 : 10.5);
+    doc.text('EVALUACIÓN ESCOLAR', originX, curY);
+    curY += (isCompact ? 3.5 : 4.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(isCompact ? 7 : 8);
+    doc.text('Estudiante: __________________________________________________', originX, curY);
+    curY += (isCompact ? 3.0 : 3.8);
+
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(isCompact ? 6 : 7);
+    doc.setTextColor(80, 80, 80);
+    doc.text('* Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.', originX, curY);
+    doc.setTextColor(0, 0, 0);
+    curY += 2;
+
+    doc.setLineWidth(0.35);
+    doc.setDrawColor(0, 0, 0);
+    doc.line(originX, curY, originX + width, curY);
+    curY += (isCompact ? 3 : 4);
+    return curY;
+  }
+
+  if (layout.level === 'quad') {
+    // ── NIVEL 1: 4 EXÁMENES POR HOJA A4 HORIZONTAL ──
+    const positions = [
+      { x: 10, y: 8, w: 128 },
+      { x: 158.5, y: 8, w: 128 },
+      { x: 10, y: 113, w: 128 },
+      { x: 158.5, y: 113, w: 128 }
+    ];
+
+    positions.forEach(pos => {
+      let qY = renderHeader(pos.x, pos.y, pos.w, true);
+      questions.forEach((q, idx) => {
+        qY += renderQuestion(q, idx, pos.x, qY, pos.w, true);
+      });
+    });
+
+    // Líneas divisorias punteadas exactas
+    doc.setLineDashPattern([2, 2], 0);
+    doc.setDrawColor(100, 116, 139);
+    doc.setLineWidth(0.35);
+    doc.line(148.5, 0, 148.5, 210);
+    doc.line(0, 105, 297, 105);
+    doc.setLineDashPattern([], 0);
+
+  } else if (layout.level === 'half') {
+    // ── NIVEL 2: 2 EXÁMENES POR HOJA A4 HORIZONTAL (IZQUIERDA Y DERECHA) ──
+    const halves = [
+      { startX: 10, w: 128 },
+      { startX: 158.5, w: 128 }
+    ];
+
+    halves.forEach(h => {
+      const qStartY = renderHeader(h.startX, 10, h.w, false);
+      const isSubCol = layout.subColumns === 2 || questions.length > 5;
+      if (isSubCol) {
+        const mid = Math.ceil(questions.length / 2);
+        const subColW = (h.w - 6) / 2;
+
+        let col1Y = qStartY;
+        for (let i = 0; i < mid; i++) {
+          col1Y += renderQuestion(questions[i], i, h.startX, col1Y, subColW, true);
+        }
+
+        let col2Y = qStartY;
+        for (let i = mid; i < questions.length; i++) {
+          col2Y += renderQuestion(questions[i], i, h.startX + subColW + 6, col2Y, subColW, true);
+        }
+      } else {
+        let qY = qStartY;
+        questions.forEach((q, idx) => {
+          qY += renderQuestion(q, idx, h.startX, qY, h.w, false);
+        });
+      }
+    });
+
+    // Línea divisoria central punteada EXACTA al centro (148.5 mm)
+    doc.setLineDashPattern([2, 2], 0);
+    doc.setDrawColor(100, 116, 139);
+    doc.setLineWidth(0.4);
+    doc.line(148.5, 0, 148.5, 210);
+    doc.setLineDashPattern([], 0);
+
+  } else {
+    // ── NIVEL 3: A4 VERTICAL EN 2 COLUMNAS (1 O MÁS PÁGINAS) ──
+    const colW = 88;
+    const col1X = 12;
+    const col2X = 110;
+
+    const pages = layout.pages && layout.pages.length > 0
+      ? layout.pages
+      : [{ col1: questions.slice(0, Math.ceil(questions.length / 2)), col2: questions.slice(Math.ceil(questions.length / 2)), pageNum: 1 }];
+
+    pages.forEach((p, pIdx) => {
+      if (pIdx > 0) {
+        doc.addPage('a4', 'portrait');
+      }
+
+      let col1Y = 14;
+      let col2Y = 14;
+
+      if (p.pageNum === 1) {
+        const headerEndY = renderHeader(12, 10, 186, false);
+        col1Y = headerEndY;
+        col2Y = headerEndY;
+      }
+
+      // Render Col 1
+      p.col1.forEach((q, idx) => {
+        col1Y += renderQuestion(q, idx, col1X, col1Y, colW, false);
+      });
+
+      // Render Col 2
+      p.col2.forEach((q, idx) => {
+        col2Y += renderQuestion(q, p.col1.length + idx, col2X, col2Y, colW, false);
+      });
+
+      // Footer
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      doc.text('Cuadernillo de Preguntas', 12, 290);
+      doc.text(`Página ${p.pageNum} de ${pages.length}`, 175, 290);
+      doc.setTextColor(0, 0, 0);
+    });
+  }
+
+  return doc;
+}
+
+/**
+ * Dispara la descarga directa en PDF o impresión del Cuadernillo de Preguntas.
  */
 function printQuestionBooklet() {
   const container = document.getElementById('booklet-container');
@@ -1229,6 +1458,29 @@ function printQuestionBooklet() {
   }
 
   const evalObj = (typeof wizardEval !== 'undefined') ? wizardEval : null;
+  const pdfTitle = getBookletPdfExportTitle(classroom, evalObj);
+
+  // ── DESCARGA DIRECTA EN PDF CON jsPDF (SI ESTÁ DISPONIBLE) ──
+  const jsPDFClass = (typeof window !== 'undefined' && window.jspdf && window.jspdf.jsPDF)
+    ? window.jspdf.jsPDF
+    : (typeof jsPDF !== 'undefined' ? jsPDF : null);
+
+  if (jsPDFClass && typeof generateBookletWithJsPDF === 'function') {
+    try {
+      const doc = generateBookletWithJsPDF(evalObj, classroom ? classroom.name : null, jsPDFClass);
+      if (doc) {
+        doc.save(`${pdfTitle}.pdf`);
+        if (typeof showToast === 'function') {
+          showToast('📥 Cuadernillo de preguntas descargado en PDF.');
+        }
+        return;
+      }
+    } catch (err) {
+      console.error('Error generando PDF con jsPDF:', err);
+    }
+  }
+
+  // ── FALLBACK A DIÁLOGO DE IMPRESIÓN DEL NAVEGADOR ──
   const layout = determineBookletLayout(evalObj);
   const hasPortraitSheet = !!(container && container.querySelector('.sheet-booklet-portrait'));
   const isLandscape = !hasPortraitSheet && (layout.level === 'quad' || layout.level === 'half');
@@ -1241,7 +1493,6 @@ function printQuestionBooklet() {
   setPrintPageOrientation(isLandscape ? 'landscape' : 'portrait');
 
   const originalTitle = document.title;
-  const pdfTitle = getBookletPdfExportTitle(classroom, evalObj);
   document.title = pdfTitle;
 
   const restore = () => {
@@ -1281,6 +1532,7 @@ if (typeof window !== 'undefined') {
   window.renderBookletQuestionHTML = renderBookletQuestionHTML;
   window.determineBookletLayout = determineBookletLayout;
   window.renderQuestionBooklet = renderQuestionBooklet;
+  window.generateBookletWithJsPDF = generateBookletWithJsPDF;
   window.printQuestionBooklet = printQuestionBooklet;
 }
 
