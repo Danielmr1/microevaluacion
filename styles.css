@@ -514,13 +514,14 @@
 
     .a6-card-header {
       height: 18.5mm;
-      padding: 2.2mm 20mm 1.8mm 16mm;
+      padding: 2.2mm 16.5mm 1.8mm 16mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     .a6-header-left {
@@ -528,8 +529,10 @@
       flex-direction: column;
       justify-content: space-between;
       height: 13.5mm;
-      flex: 1;
-      padding-right: 4mm;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      padding-right: 3mm;
       box-sizing: border-box;
     }
 
@@ -552,6 +555,7 @@
       line-height: 1;
       margin: 0;
       padding: 0;
+      min-width: 0;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -571,6 +575,8 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
+      flex: 0 1 auto;
     }
 
     .a6-student-grade {
@@ -584,21 +590,24 @@
     .a6-qr-block {
       display: flex;
       align-items: center;
-      gap: 3.5mm;
-      flex-shrink: 0;
+      gap: 2.5mm;
+      flex: 0 0 auto;
       height: 13.5mm;
     }
 
     .a6-qr-code-text {
+      font-family: monospace;
       font-size: 9pt;
       font-weight: 800;
       color: #000000;
       line-height: 1;
+      flex-shrink: 0;
     }
 
     .a6-qr-box {
       width: 13.5mm;
       height: 13.5mm;
+      flex: 0 0 13.5mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -799,13 +808,14 @@
 
     .v-card-header {
       height: 20mm;
-      padding: 2.5mm 20mm 2mm 16mm;
+      padding: 2.5mm 16.5mm 2mm 16mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     .v-header-left {
@@ -813,8 +823,10 @@
       flex-direction: column;
       justify-content: space-between;
       height: 14.5mm;
-      flex: 1;
-      padding-right: 4mm;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      padding-right: 3mm;
       box-sizing: border-box;
     }
 
@@ -837,6 +849,7 @@
       line-height: 1;
       margin: 0;
       padding: 0;
+      min-width: 0;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -856,6 +869,8 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
+      flex: 0 1 auto;
     }
 
     .v-student-grade {
@@ -869,21 +884,24 @@
     .v-qr-block {
       display: flex;
       align-items: center;
-      gap: 3.5mm;
-      flex-shrink: 0;
+      gap: 3mm;
+      flex: 0 0 auto;
       height: 14.5mm;
     }
 
     .v-qr-code-text {
+      font-family: monospace;
       font-size: 9.5pt;
       font-weight: 800;
       color: #000000;
       line-height: 1;
+      flex-shrink: 0;
     }
 
     .v-qr-box {
       width: 14.5mm;
       height: 14.5mm;
+      flex: 0 0 14.5mm;
       display: flex;
       align-items: center;
       justify-content: center;
