@@ -64,63 +64,14 @@ function createA5Card(student, classroom, evaluation) {
           </div>
         </div>`;
 
-  // ── CASO RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS EN 2 COLUMNAS) ──
-  const isBranch3 = evaluation.branch === 'rama3' || (isOMR && qCount > 3);
+  // ── CASO RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS) ──
+  const isBranch3 = evaluation.branch === 'rama3' ||
+    (evaluation.id && String(evaluation.id).startsWith('eval_r3_')) ||
+    (isOMR && qCount > 2);
   if (isBranch3) {
-    const totalQ = qCount;
-    const half = Math.ceil(totalQ / 2);
-
-    const qList = [];
-    for (let i = 0; i < totalQ; i++) {
-      const existing = (evaluation.questions && evaluation.questions[i]);
-      qList.push(existing || { id: 'r3_q' + (i + 1), num: i + 1 });
-    }
-
-    const col1 = qList.slice(0, half);
-    const col2 = qList.slice(half, totalQ);
-
-    const renderColumnHTML = (items, startIdx) => {
-      return items.map((q, idx) => {
-        const qNum = startIdx + idx + 1;
-        return `
-          <div class="b3-q-row">
-            <span class="b3-q-num">${String(qNum).padStart(2, '0')}</span>
-            <div class="b3-bubbles-group">
-              <span class="b3-bubble">A</span>
-              <span class="b3-bubble">B</span>
-              <span class="b3-bubble">C</span>
-              <span class="b3-bubble">D</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-    };
-
-    return `
-      <div class="card-a5 mc-card branch3-card">
-        ${fiducialsHTML}
-        ${headerHTML}
-
-        <div class="b3-body">
-          <div class="b3-banner">
-            <span class="b3-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</span>
-            <span class="b3-hint">Rellena completamente el círculo: <b class="b3-sample-fill">●</b></span>
-          </div>
-
-          <div class="b3-columns-wrap">
-            <div class="b3-column">
-              ${renderColumnHTML(col1, 0)}
-            </div>
-
-            <div class="b3-vdivider"></div>
-
-            <div class="b3-column">
-              ${renderColumnHTML(col2, half)}
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    return qCount <= 8
+      ? createA6Card(student, classroom, evaluation)
+      : createA5VerticalR3Card(student, classroom, evaluation);
   }
 
   // ── CASO RAMA 2: EVALUACIÓN FOCALIZADA SIN BORRADOR (1 A 3 PREGUNTAS) ──
@@ -359,22 +310,21 @@ function createA6Card(student, classroom, evaluation) {
     <div class="card-a6-r3">
       ${fiducialsHTML}
       <div class="a6-card-header">
-        <div class="a6-student-block">
-          <div class="a6-student-main-row">
+        <div class="a6-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
+        <div class="a6-header-main-row">
+          <div class="a6-student-block">
             <span class="a6-student-label">Nombre:</span>
             <span class="a6-student-name">${safeStudentName}</span>
+            <span class="a6-student-grade">(${safeGradeText})</span>
           </div>
-          <div class="a6-student-grade">(${safeGradeText})</div>
+          <div class="a6-qr-block">
+            <div class="a6-qr-meta">
+              <span class="a6-qr-code-text">${orderNumber}</span>
+              <span class="a6-qr-hint">Rellena: <b>●</b></span>
+            </div>
+            <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+          </div>
         </div>
-        <div class="a6-qr-block">
-          <span class="a6-qr-code-text">${orderNumber}</span>
-          <div class="a6-qr-box" id="qr-box-${student.id}"></div>
-        </div>
-      </div>
-
-      <div class="a6-b3-banner">
-        <span class="a6-b3-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</span>
-        <span class="a6-b3-hint">Rellena: <b style="color:#000;">●</b></span>
       </div>
 
       <div class="a6-b3-body">
@@ -431,22 +381,21 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
     <div class="card-a5-v-r3">
       ${fiducialsHTML}
       <div class="v-card-header">
-        <div class="v-student-block">
-          <div class="v-student-main-row">
+        <div class="v-header-top-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</div>
+        <div class="v-header-main-row">
+          <div class="v-student-block">
             <span class="v-student-label">Nombre:</span>
             <span class="v-student-name">${safeStudentName}</span>
+            <span class="v-student-grade">(${safeGradeText})</span>
           </div>
-          <div class="v-student-grade">(${safeGradeText})</div>
+          <div class="v-qr-block">
+            <div class="v-qr-meta">
+              <span class="v-qr-code-text">${orderNumber}</span>
+              <span class="v-qr-hint">Rellena: <b>●</b></span>
+            </div>
+            <div class="v-qr-box" id="qr-box-${student.id}"></div>
+          </div>
         </div>
-        <div class="v-qr-block">
-          <span class="v-qr-code-text">${orderNumber}</span>
-          <div class="v-qr-box" id="qr-box-${student.id}"></div>
-        </div>
-      </div>
-
-      <div class="v-b3-banner">
-        <span class="v-b3-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</span>
-        <span class="v-b3-hint">Rellena: <b style="color:#000;">●</b></span>
       </div>
 
       <div class="v-b3-body">
@@ -470,7 +419,11 @@ function renderAllPrintPages(classId, evaluation) {
   container.innerHTML = '';
 
   const qCount = evaluation?.questionCount || (evaluation?.questions ? evaluation.questions.length : 5);
-  const isR3 = evaluation && evaluation.branch === 'rama3';
+  const isR3 = evaluation && (
+    evaluation.branch === 'rama3' ||
+    (evaluation.id && String(evaluation.id).startsWith('eval_r3_')) ||
+    (evaluation.type === 'mc' && qCount > 2)
+  );
 
   // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS: 4 ALUMNOS POR HOJA A4 (HORIZONTAL 2x2) ──
   if (isR3 && qCount <= 8) {
