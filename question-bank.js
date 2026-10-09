@@ -2880,6 +2880,29 @@ let currentBranchMode = 'rama1';
 
 function selectBranchMode(branch) {
   currentBranchMode = branch || 'rama1';
+  if (typeof window !== 'undefined') {
+    window.selectedBranch = currentBranchMode;
+  }
+
+  const badgeLabel = document.getElementById('branch-badge-label');
+  if (badgeLabel) {
+    if (branch === 'rama3') {
+      badgeLabel.innerHTML = '📋 Cartilla OMR (Hasta 20 Preguntas)';
+      badgeLabel.style.background = '#064e3b';
+      badgeLabel.style.borderColor = '#10b981';
+      badgeLabel.style.color = '#a7f3d0';
+    } else if (branch === 'rama2') {
+      badgeLabel.innerHTML = '⚡ Focalizada de Contenido (1–3 Preguntas)';
+      badgeLabel.style.background = '#082f49';
+      badgeLabel.style.borderColor = '#38bdf8';
+      badgeLabel.style.color = '#bae6fd';
+    } else {
+      badgeLabel.innerHTML = '🔬 Formativa con IA (Rúbrica Gemini)';
+      badgeLabel.style.background = '#1e1b4b';
+      badgeLabel.style.borderColor = '#6366f1';
+      badgeLabel.style.color = '#c7d2fe';
+    }
+  }
 
   const card1 = document.getElementById('card-branch-1');
   const card2 = document.getElementById('card-branch-2');
@@ -2889,7 +2912,7 @@ function selectBranchMode(branch) {
   const b2Opts = document.getElementById('branch-2-options');
   const b3Opts = document.getElementById('branch-3-options');
 
-  // Reset visual cards
+  // Reset visual cards si estuvieran presentes
   if (card1) {
     card1.style.borderColor = branch === 'rama1' ? '#7c3aed' : '#334155';
     card1.style.background = branch === 'rama1' ? 'rgba(124,58,237,0.12)' : '#1e293b';

@@ -429,51 +429,19 @@ Minimum version required to store current data is: `+i+`.
         </div>
       </div>
 
-      <!-- ── PASO 2: Modalidad y Tipo de Evaluación (Las 3 Ramas) ── -->
+      <!-- ── PASO 2: Preguntas de la Evaluación (según la modalidad elegida en el Hub) ── -->
       <div id="step-eval-type" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
-        <label style="display:block; font-size:0.75rem; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">
-          2 · ¿Qué modalidad de evaluación aplicarás hoy?
-        </label>
-
-        <!-- Selector de las 3 Ramas Principales -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px; margin-bottom:14px;">
-          <!-- RAMA 1: Formativa con IA -->
-          <div id="card-branch-1" onclick="selectBranchMode('rama1')"
-            style="padding:12px 14px; border-radius:12px; border:2px solid #7c3aed; background:rgba(124,58,237,0.12); cursor:pointer; text-align:left; transition:all 0.2s; display:flex; flex-direction:column; gap:4px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:1.3rem;">🤖</span>
-              <span style="font-weight:800; font-size:0.92rem; color:#f8fafc;">Rama 1 · Con IA</span>
-            </div>
-            <span style="font-size:0.72rem; color:#c4b5fd; font-weight:700;">Formativa Profunda (1-2 Preguntas)</span>
-            <span style="font-size:0.7rem; color:#94a3b8; line-height:1.35; margin-top:2px;">
-              Cuadrícula obligatoria. Gemini evalúa procedimiento y detecta errores paso a paso.
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <label style="font-size:0.74rem; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
+            2 · Preguntas de la Evaluación
+          </label>
+          <div id="branch-badge-indicator" style="display:inline-flex; align-items:center; gap:8px;">
+            <span id="branch-badge-label" style="background:#1e1b4b; border:1.5px solid #6366f1; color:#c7d2fe; font-size:0.74rem; font-weight:800; padding:4px 10px; border-radius:8px;">
+              🔬 Formativa con IA
             </span>
-          </div>
-
-          <!-- RAMA 2: Focalizada de Contenido -->
-          <div id="card-branch-2" onclick="selectBranchMode('rama2')"
-            style="padding:12px 14px; border-radius:12px; border:2px solid #334155; background:#1e293b; cursor:pointer; text-align:left; transition:all 0.2s; display:flex; flex-direction:column; gap:4px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:1.3rem;">⚡</span>
-              <span style="font-weight:800; font-size:0.92rem; color:#f8fafc;">Rama 2 · Solo Respuesta</span>
-            </div>
-            <span style="font-size:0.72rem; color:#6ee7b7; font-weight:700;">Focalizada (1 a 3 Preguntas)</span>
-            <span style="font-size:0.7rem; color:#94a3b8; line-height:1.35; margin-top:2px;">
-              Con o sin borrador. Corrección determinista de la clave sin analizar la cuadrícula.
-            </span>
-          </div>
-
-          <!-- RAMA 3: Cartilla de Respuestas -->
-          <div id="card-branch-3" onclick="selectBranchMode('rama3')"
-            style="padding:12px 14px; border-radius:12px; border:2px solid #334155; background:#1e293b; cursor:pointer; text-align:left; transition:all 0.2s; display:flex; flex-direction:column; gap:4px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:1.3rem;">📝</span>
-              <span style="font-weight:800; font-size:0.92rem; color:#f8fafc;">Rama 3 · Cartilla OMR</span>
-            </div>
-            <span style="font-size:0.72rem; color:#38bdf8; font-weight:700;">Examen / Prueba (Hasta 20P)</span>
-            <span style="font-size:0.7rem; color:#94a3b8; line-height:1.35; margin-top:2px;">
-              Solo burbujas A-B-C-D con nombre y QR del alumno. El alumno solo marca.
-            </span>
+            <button type="button" onclick="goHomeHub()" style="background:transparent; border:none; color:#94a3b8; font-size:0.72rem; font-weight:700; cursor:pointer; text-decoration:underline;">
+              Cambiar modalidad
+            </button>
           </div>
         </div>
 
@@ -1855,6 +1823,7 @@ Minimum version required to store current data is: `+i+`.
     }
 
     function openBranchFlow(branch) {
+      window.selectedBranch = branch;
       showView('eval');
       const session = ClassroomData.getActiveSession();
       if (!session || !session.classroomId) {
@@ -2055,10 +2024,11 @@ Minimum version required to store current data is: `+i+`.
         sel.style.color = color;
       }
 
-      // Mostrar paso 2 (tipo de evaluación), ocultar pasos 3, 4 y 5
+      // Mostrar paso 2 (preguntas según la modalidad elegida), ocultar pasos 3, 4 y 5
       const stepType = document.getElementById('step-eval-type');
       if (stepType) stepType.style.display = 'block';
-      if (typeof selectBranchMode === 'function') selectBranchMode('rama1');
+      const branchToActivate = window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
+      if (typeof selectBranchMode === 'function') selectBranchMode(branchToActivate);
       const stepSrc = document.getElementById('step-source');
       if (stepSrc) stepSrc.style.display = 'none';
       const stepBank = document.getElementById('step-bank-list');
