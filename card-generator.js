@@ -879,9 +879,29 @@ function determineBookletLayout(evaluation) {
     return { level: 'half', subColumns: 1, pages: [{ questions }] };
   }
 
-  // ── NIVEL 3: A4 Vertical en 2 columnas continuas (1 o más páginas) ──
-  // Ancho por columna en vertical: ~82mm.
-  // Alto disponible en Pág 1: ~234mm. En Pág 2+: ~248mm.
+  // ── NIVEL 3: A4 Vertical en 2 columnas (1 o más páginas) ──
+  // Si todas las preguntas caben en 1 sola hoja vertical, repartir equitativamente entre las 2 columnas:
+  const halfCount = Math.ceil(questions.length / 2);
+  let h1 = 0;
+  for (let i = 0; i < halfCount; i++) {
+    h1 += estimateBookletQuestionHeight(questions[i], 82, false);
+  }
+  let h2 = 0;
+  for (let i = halfCount; i < questions.length; i++) {
+    h2 += estimateBookletQuestionHeight(questions[i], 82, false);
+  }
+
+  if (Math.max(h1, h2) <= 240) {
+    return {
+      level: 'portrait',
+      pages: [{
+        col1: questions.slice(0, halfCount),
+        col2: questions.slice(halfCount),
+        pageNum: 1
+      }]
+    };
+  }
+
   const pages = [];
   let currentQIdx = 0;
   let pageNum = 1;
@@ -972,9 +992,9 @@ function setPrintPageOrientation(orientation) {
     document.head.appendChild(styleEl);
   }
   if (orientation === 'landscape') {
-    styleEl.textContent = '@page { size: 297mm 210mm; margin: 0; }';
+    styleEl.textContent = '@page { size: A4 landscape !important; margin: 0 !important; }';
   } else {
-    styleEl.textContent = '@page { size: 210mm 297mm; margin: 0; }';
+    styleEl.textContent = '@page { size: A4 portrait !important; margin: 0 !important; }';
   }
 }
 

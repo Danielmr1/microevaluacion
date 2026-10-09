@@ -1184,9 +1184,9 @@
     /* ── NIVEL 3: HOJA A4 VERTICAL EN 2 COLUMNAS CONTINUAS ── */
     .sheet-booklet-portrait {
       background: #ffffff;
-      width: 188mm;
-      height: 275mm;
-      padding: 6mm 8mm;
+      width: 210mm;
+      height: 297mm;
+      padding: 8mm 12mm;
       margin: 6mm auto;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
@@ -2648,12 +2648,13 @@
       }
       body.print-mode-booklet .sheet-booklet-portrait {
         box-shadow: none !important;
-        width: 188mm !important;
-        height: 275mm !important;
-        min-height: 0 !important;
-        max-height: 275mm !important;
-        margin: 0 auto !important;
-        padding: 6mm 8mm !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        margin: 0 !important;
+        padding: 8mm 12mm !important;
+        box-sizing: border-box !important;
         overflow: hidden !important;
         page-break-after: always !important;
         break-after: page !important;
