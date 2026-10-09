@@ -42,10 +42,10 @@ Minimum version required to store current data is: `+i+`.
   <script src="scanner.js?v=3.1.56"></script>
   <script src="results-manager.js?v=3.1.45"></script>
   <script src="classroom-manager.js?v=3.1.45"></script>
-  <script src="question-bank.js?v=3.1.45"></script>
-  <script src="card-generator.js?v=3.1.56"></script>
+  <script src="question-bank.js?v=3.1.57"></script>
+  <script src="card-generator.js?v=3.1.57"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.1.56">
+  <link rel="stylesheet" href="styles.css?v=3.1.57">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -57,7 +57,7 @@ Minimum version required to store current data is: `+i+`.
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.1.56</span>
+          <span class="version-tag">v3.1.57</span>
         </div>
       </div>
     </div>
@@ -636,6 +636,12 @@ Minimum version required to store current data is: `+i+`.
             </div>
 
             <div id="rama3-bank-list" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;"></div>
+
+            <!-- Botón para ver/descargar el cuadernillo de preguntas en Modo B -->
+            <button type="button" id="btn-r3-view-booklet-bank" onclick="rama3PrintBookletDirect()"
+              style="margin-top:10px; width:100%; background:#0284c7; border:1px solid #38bdf8; color:#fff; border-radius:8px; padding:9px 12px; font-size:0.82rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(2,132,199,0.3);">
+              📄 Ver / Descargar Cuadernillo con Preguntas (PDF)
+            </button>
           </div>
 
           <button type="button" onclick="confirmRama3()"
@@ -2705,8 +2711,8 @@ Minimum version required to store current data is: `+i+`.
         // ── Renderizar cuadernillo de preguntas si corresponde ──
         const btnBooklet = document.getElementById('btn-print-booklet');
         const hasBookletQuestions = wizardEval && (
-          (wizardEval.branch === 'rama3' && wizardEval.hasQuestionnaire) ||
-          (wizardEval.type === 'mc' && wizardEval.questions && wizardEval.questions.length > 0 && wizardEval.questions.some(q => q.prompt && !q.prompt.startsWith('Pregunta ')))
+          (wizardEval.branch === 'rama3' && (wizardEval.hasQuestionnaire || wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))) ||
+          (wizardEval.type === 'mc' && wizardEval.questions && wizardEval.questions.length > 0 && wizardEval.questions.some(q => q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())))
         );
         if (btnBooklet) {
           if (hasBookletQuestions && typeof renderQuestionBooklet === 'function') {

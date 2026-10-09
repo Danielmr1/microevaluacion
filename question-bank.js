@@ -3319,6 +3319,8 @@ function setRama3Count(count) {
   if (r3State.mode === 'keys') {
     renderRama3Matrix();
   } else {
+    // Si faltan preguntas en los nuevos casilleros, intentar autocompletar silenciosamente
+    rama3AutofillFromBank(true);
     renderRama3BankList();
   }
 }
@@ -3329,6 +3331,11 @@ function setRama3Mode(mode) {
   if (r3State.mode === 'keys') {
     renderRama3Matrix();
   } else {
+    // Si no hay preguntas asignadas aún, autocompletar silenciosamente con las del banco
+    const hasAny = r3State.bankQuestions.some(q => q !== null);
+    if (!hasAny) {
+      rama3AutofillFromBank(true);
+    }
     renderRama3BankList();
   }
 }
@@ -3488,25 +3495,30 @@ function onRama3BankSelect(qIdx, qId) {
   renderRama3BankList();
 }
 
-function rama3AutofillFromBank() {
+function rama3AutofillFromBank(silent = false) {
   const g = (typeof evaluacionesDelGradoActual === 'function')
     ? evaluacionesDelGradoActual()
     : { lista: [] };
   const bankList = g.lista || [];
 
   if (bankList.length === 0) {
-    showToast('⚠️ No hay preguntas en el banco para este grado.');
+    if (!silent) showToast('⚠️ No hay preguntas en el banco para este grado.');
     return;
   }
 
+  let assignedCount = 0;
   for (let i = 0; i < r3State.count; i++) {
     if (i < bankList.length) {
-      r3State.bankQuestions[i] = bankList[i];
-      r3State.keys[i] = bankList[i].correct || 'A';
+      // Si el slot está vacío o si no es silencioso, asignar
+      if (!r3State.bankQuestions[i] || !silent) {
+        r3State.bankQuestions[i] = bankList[i];
+        r3State.keys[i] = bankList[i].correct || 'A';
+        assignedCount++;
+      }
     }
   }
   renderRama3BankList();
-  showToast(`⚡ Se autocompletaron las preguntas disponibles.`);
+  if (!silent) showToast(`⚡ Se autocompletaron las preguntas disponibles.`);
 }
 
 function rama3OpenAddQuickModal(targetIdx = null) {
@@ -3610,11 +3622,16 @@ function confirmRama3() {
     return;
   }
 
+  // Si está en Modo B y no se ha asignado ninguna, intentar autocompletar silencioso
+  if (r3State.mode === 'bank' && !r3State.bankQuestions.some(q => q !== null)) {
+    rama3AutofillFromBank(true);
+  }
+
   const questions = [];
   let hasRealQuestions = false;
   for (let i = 0; i < r3State.count; i++) {
     const qObj = r3State.bankQuestions[i];
-    const isReal = qObj && qObj.prompt && !qObj.prompt.startsWith('Pregunta ');
+    const isReal = !!(qObj && (qObj.options || (qObj.prompt && !/^Pregunta\s+\d+$/i.test(qObj.prompt.trim()))));
     if (isReal) hasRealQuestions = true;
 
     questions.push({
@@ -3622,20 +3639,22 @@ function confirmRama3() {
       num: i + 1,
       prompt: qObj?.prompt || `Pregunta ${i + 1}`,
       options: qObj?.options || { A: 'A', B: 'B', C: 'C', D: 'D' },
-      correct: r3State.keys[i] || 'A'
+      correct: r3State.keys[i] || qObj?.correct || 'A'
     });
   }
 
   const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
+  const isBankMode = (r3State.mode === 'bank');
 
   wizardEval = {
     id: 'eval_r3_' + Date.now(),
     branch: 'rama3',
+    mode: r3State.mode,
     type: 'mc', // Regla 2: Cartilla OMR es type mc
     withGrid: false,
     questionCount: r3State.count,
     questions: questions,
-    hasQuestionnaire: (r3State.mode === 'bank' && hasRealQuestions),
+    hasQuestionnaire: isBankMode || hasRealQuestions,
     title: `Cartilla de Respuestas (${r3State.count} Preguntas)`,
     prompt: `Cartilla de respuestas de ${r3State.count} preguntas`,
     expectedAnswer: r3State.keys.slice(0, r3State.count).join(' '),
@@ -3647,6 +3666,62 @@ function confirmRama3() {
 
   wizardEvalType = 'mc';
   showSummary();
+}
+
+/**
+ * Dispara directamente la visualización/impresión del Cuadernillo de Preguntas desde Rama 3 (Modo B).
+ */
+function rama3PrintBookletDirect() {
+  if (!wizardClassroomId) {
+    showToast('⚠️ Por favor selecciona un salón primero.');
+    return;
+  }
+
+  // Si no hay preguntas asignadas aún en Modo B, autocompletar silenciosamente con el banco
+  const hasAssigned = r3State.bankQuestions.some(q => q !== null);
+  if (!hasAssigned) {
+    rama3AutofillFromBank(true);
+  }
+
+  const questions = [];
+  for (let i = 0; i < r3State.count; i++) {
+    const qObj = r3State.bankQuestions[i];
+    questions.push({
+      id: qObj?.id || ('r3_q' + (i + 1)),
+      num: i + 1,
+      prompt: qObj?.prompt || `Pregunta ${i + 1}`,
+      options: qObj?.options || { A: 'A', B: 'B', C: 'C', D: 'D' },
+      correct: r3State.keys[i] || qObj?.correct || 'A'
+    });
+  }
+
+  const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
+
+  wizardEval = {
+    id: 'eval_r3_' + Date.now(),
+    branch: 'rama3',
+    mode: 'bank',
+    type: 'mc',
+    withGrid: false,
+    questionCount: r3State.count,
+    questions: questions,
+    hasQuestionnaire: true,
+    title: `Cuadernillo de Preguntas (${r3State.count} Preguntas)`,
+    prompt: `Cartilla de respuestas de ${r3State.count} preguntas`,
+    expectedAnswer: r3State.keys.slice(0, r3State.count).join(' '),
+    correctionMode: 'quick',
+    gradeStage: g?.stage,
+    gradeLevel: g?.level,
+    gradeText: g?.texto
+  };
+  wizardEvalType = 'mc';
+
+  if (typeof renderQuestionBooklet === 'function') {
+    renderQuestionBooklet(wizardClassroomId, wizardEval);
+  }
+  if (typeof printQuestionBooklet === 'function') {
+    printQuestionBooklet();
+  }
 }
 
 // ── EXPOSICIÓN GLOBAL DE FUNCIONES PARA EVENTOS EN LÍNEA (HTML ONCLICK) ──
@@ -3719,6 +3794,7 @@ if (typeof window !== 'undefined') {
   window.rama3OpenAddQuickModal = rama3OpenAddQuickModal;
   window.rama3CloseQuickModal = rama3CloseQuickModal;
   window.rama3SaveQuickQuestion = rama3SaveQuickQuestion;
+  window.rama3PrintBookletDirect = rama3PrintBookletDirect;
   window.confirmRama3 = confirmRama3;
   window.r2State = r2State;
   window.r3State = r3State;
