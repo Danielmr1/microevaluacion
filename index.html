@@ -893,9 +893,9 @@ Minimum version required to store current data is: `+i+`.
             style="background:#4f46e5; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #4f46e540; display:flex; align-items:center; justify-content:center; gap:8px;">
             📷 Ir al Escáner
           </button>
-          <button type="button" onclick="cambiarSalonOEvaluacion()" id="btn-change-eval"
+          <button type="button" onclick="cambiarSalon()" id="btn-change-eval"
             style="background:#1e293b; border:1.5px solid #475569; color:#f1f5f9; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.15s;">
-            🔄 Cambiar salón o evaluación
+            🔄 Cambiar salón
           </button>
         </div>
       </div>
@@ -2265,13 +2265,46 @@ Minimum version required to store current data is: `+i+`.
 
     // [question-bank.js] BANCO DE PREGUNTAS + RÚBRICA IA + EVALUACIONES extraído en Tanda 4 (v3.1.31)
 
-        function cambiarSalonOEvaluacion() {
-      resetWizard();
+    function cambiarSalon() {
+      // Preservar la rama activa elegida en el Hub
+      const curBranch = (wizardEval && wizardEval.branch) || window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
+      window.selectedBranch = curBranch;
+
       document.title = 'Microevaluación';
+      ClassroomData.setActiveSession(null);
+      wizardEval = null;
+      wizardEvalType = null;
+      wizardClassroomId = null;
+
+      // Mostrar paso 1 (elección del salón)
       const stepClass = document.getElementById('step-classroom');
       if (stepClass) stepClass.style.display = 'block';
+
+      // Resetear selector de salón al estado inicial
+      const sel = document.getElementById('builder-classroom');
+      if (sel) {
+        sel.value = '';
+        sel.style.borderColor = '';
+        sel.style.color = '';
+      }
+      updateClassroomActionsVisibility(null);
+      renderGradeSelect(null);
+
+      // Ocultar paso 2, formularios y resumen
       const stepType = document.getElementById('step-eval-type');
-      if (stepType) stepType.style.display = wizardClassroomId ? 'block' : 'none';
+      if (stepType) stepType.style.display = 'none';
+      const stepSource = document.getElementById('step-source');
+      if (stepSource) stepSource.style.display = 'none';
+      const stepBank = document.getElementById('step-bank-list');
+      if (stepBank) stepBank.style.display = 'none';
+      const fNew = document.getElementById('step-new-form');
+      if (fNew) fNew.style.display = 'none';
+      const fMC1 = document.getElementById('step-new-form-mc1');
+      if (fMC1) fMC1.style.display = 'none';
+      const fMC2 = document.getElementById('step-mc2-builder');
+      if (fMC2) fMC2.style.display = 'none';
+      const fFree = document.getElementById('step-new-form-free');
+      if (fFree) fFree.style.display = 'none';
       const summaryEl = document.getElementById('step-summary');
       if (summaryEl) summaryEl.style.display = 'none';
       const pagesContainer = document.getElementById('pages-container');
@@ -2279,8 +2312,18 @@ Minimum version required to store current data is: `+i+`.
         pagesContainer.innerHTML = '';
         pagesContainer.style.display = 'none';
       }
+
+      if (typeof selectBranchMode === 'function') {
+        selectBranchMode(curBranch);
+      }
+      if (typeof updateHubSessionBadge === 'function') {
+        updateHubSessionBadge();
+      }
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    window.cambiarSalon = cambiarSalon;
+    window.cambiarSalonOEvaluacion = cambiarSalon;
 
     function showSummary() {
       try {
@@ -2642,7 +2685,8 @@ Minimum version required to store current data is: `+i+`.
       if (fFree) fFree.style.display = 'none';
       const stepSummary = document.getElementById('step-summary');
       if (stepSummary) stepSummary.style.display = 'none';
-      if (typeof selectBranchMode === 'function') selectBranchMode('rama1');
+      const branchToKeep = window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
+      if (typeof selectBranchMode === 'function') selectBranchMode(branchToKeep);
       resetTypeButtons();
       resetModeButtons();
     }
