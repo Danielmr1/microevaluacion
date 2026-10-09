@@ -290,20 +290,62 @@ function createA6Card(student, classroom, evaluation) {
   const orderMatch = String(student.id || '').match(/\d+/);
   const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
 
-  const qRows = [];
-  for (let i = 0; i < totalQ; i++) {
-    const qNum = String(i + 1).padStart(2, '0');
-    qRows.push(`
-      <div class="a6-q-row">
-        <span class="a6-q-num">${qNum}</span>
-        <div class="a6-bubbles-group">
-          <span class="a6-bubble">A</span>
-          <span class="a6-bubble">B</span>
-          <span class="a6-bubble">C</span>
-          <span class="a6-bubble">D</span>
+  let bodyHTML = '';
+  if (totalQ === 8) {
+    const col1Rows = [];
+    const col2Rows = [];
+    for (let i = 0; i < 4; i++) {
+      const qNum = String(i + 1).padStart(2, '0');
+      col1Rows.push(`
+        <div class="a6-q-row">
+          <span class="a6-q-num">${qNum}</span>
+          <div class="a6-bubbles-group">
+            <span class="a6-bubble">A</span>
+            <span class="a6-bubble">B</span>
+            <span class="a6-bubble">C</span>
+            <span class="a6-bubble">D</span>
+          </div>
         </div>
+      `);
+    }
+    for (let i = 4; i < 8; i++) {
+      const qNum = String(i + 1).padStart(2, '0');
+      col2Rows.push(`
+        <div class="a6-q-row">
+          <span class="a6-q-num">${qNum}</span>
+          <div class="a6-bubbles-group">
+            <span class="a6-bubble">A</span>
+            <span class="a6-bubble">B</span>
+            <span class="a6-bubble">C</span>
+            <span class="a6-bubble">D</span>
+          </div>
+        </div>
+      `);
+    }
+    bodyHTML = `
+      <div class="a6-2col-wrap">
+        <div class="a6-2col-col">${col1Rows.join('')}</div>
+        <div class="a6-2col-divider"></div>
+        <div class="a6-2col-col">${col2Rows.join('')}</div>
       </div>
-    `);
+    `;
+  } else {
+    const qRows = [];
+    for (let i = 0; i < totalQ; i++) {
+      const qNum = String(i + 1).padStart(2, '0');
+      qRows.push(`
+        <div class="a6-q-row">
+          <span class="a6-q-num">${qNum}</span>
+          <div class="a6-bubbles-group">
+            <span class="a6-bubble">A</span>
+            <span class="a6-bubble">B</span>
+            <span class="a6-bubble">C</span>
+            <span class="a6-bubble">D</span>
+          </div>
+        </div>
+      `);
+    }
+    bodyHTML = qRows.join('');
   }
 
   return `
@@ -328,7 +370,7 @@ function createA6Card(student, classroom, evaluation) {
       </div>
 
       <div class="a6-b3-body">
-        ${qRows.join('')}
+        ${bodyHTML}
       </div>
     </div>
   `;
@@ -361,20 +403,62 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
   const orderMatch = String(student.id || '').match(/\d+/);
   const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
 
-  const qRows = [];
-  for (let i = 0; i < totalQ; i++) {
-    const qNum = String(i + 1).padStart(2, '0');
-    qRows.push(`
-      <div class="v-q-row">
-        <span class="v-q-num">${qNum}</span>
-        <div class="v-bubbles-group">
-          <span class="v-bubble">A</span>
-          <span class="v-bubble">B</span>
-          <span class="v-bubble">C</span>
-          <span class="v-bubble">D</span>
+  let bodyHTML = '';
+  if (totalQ === 20) {
+    const col1Rows = [];
+    const col2Rows = [];
+    for (let i = 0; i < 10; i++) {
+      const qNum = String(i + 1).padStart(2, '0');
+      col1Rows.push(`
+        <div class="v-q-row">
+          <span class="v-q-num">${qNum}</span>
+          <div class="v-bubbles-group">
+            <span class="v-bubble">A</span>
+            <span class="v-bubble">B</span>
+            <span class="v-bubble">C</span>
+            <span class="v-bubble">D</span>
+          </div>
         </div>
+      `);
+    }
+    for (let i = 10; i < 20; i++) {
+      const qNum = String(i + 1).padStart(2, '0');
+      col2Rows.push(`
+        <div class="v-q-row">
+          <span class="v-q-num">${qNum}</span>
+          <div class="v-bubbles-group">
+            <span class="v-bubble">A</span>
+            <span class="v-bubble">B</span>
+            <span class="v-bubble">C</span>
+            <span class="v-bubble">D</span>
+          </div>
+        </div>
+      `);
+    }
+    bodyHTML = `
+      <div class="v-2col-wrap">
+        <div class="v-2col-col">${col1Rows.join('')}</div>
+        <div class="v-2col-divider"></div>
+        <div class="v-2col-col">${col2Rows.join('')}</div>
       </div>
-    `);
+    `;
+  } else {
+    const qRows = [];
+    for (let i = 0; i < totalQ; i++) {
+      const qNum = String(i + 1).padStart(2, '0');
+      qRows.push(`
+        <div class="v-q-row">
+          <span class="v-q-num">${qNum}</span>
+          <div class="v-bubbles-group">
+            <span class="v-bubble">A</span>
+            <span class="v-bubble">B</span>
+            <span class="v-bubble">C</span>
+            <span class="v-bubble">D</span>
+          </div>
+        </div>
+      `);
+    }
+    bodyHTML = qRows.join('');
   }
 
   return `
@@ -399,7 +483,7 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
       </div>
 
       <div class="v-b3-body">
-        ${qRows.join('')}
+        ${bodyHTML}
       </div>
     </div>
   `;

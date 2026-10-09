@@ -444,18 +444,21 @@
   function samplePaperLuminance(sheetCanvas, yCenterMm) {
     if (!isValidCanvas(sheetCanvas)) return 220;
     const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
-    // Zonas de fondo puro en la fila OMR: entre A y B (42mm), entre B y C (80mm), entre C y D (119mm), y derecha de D (152mm)
-    const bgXSpots = [42, 80, 119, 152];
+    const isVertical = sheetCanvas.height > sheetCanvas.width;
+    const pxMmX = sheetCanvas.width / (isVertical ? 136 : 186);
+    const pxMmY = sheetCanvas.height / (isVertical ? 188 : 134);
+    // Zonas de fondo puro en la fila OMR
+    const bgXSpots = isVertical ? [22, 45, 95, 115] : [42, 80, 119, 152];
     const sampleHalfSizeMm = 1.5;
     let totalLum = 0;
     let count = 0;
 
     for (let i = 0; i < bgXSpots.length; i++) {
       const xMm = bgXSpots[i];
-      const rx = Math.round((xMm - sampleHalfSizeMm) * PX_PER_MM_X);
-      const ry = Math.round((yCenterMm - sampleHalfSizeMm) * PX_PER_MM_Y);
-      const rw = Math.round(sampleHalfSizeMm * 2 * PX_PER_MM_X);
-      const rh = Math.round(sampleHalfSizeMm * 2 * PX_PER_MM_Y);
+      const rx = Math.round((xMm - sampleHalfSizeMm) * pxMmX);
+      const ry = Math.round((yCenterMm - sampleHalfSizeMm) * pxMmY);
+      const rw = Math.round(sampleHalfSizeMm * 2 * pxMmX);
+      const rh = Math.round(sampleHalfSizeMm * 2 * pxMmY);
 
       const clamped = clampROI({ x: rx, y: ry, width: rw, height: rh }, sheetCanvas.width, sheetCanvas.height);
       if (clamped.width <= 0 || clamped.height <= 0) continue;
@@ -476,12 +479,16 @@
 
   /**
    * Mide la densidad de grafito/tinta en una burbuja de alternativa de forma adaptativa
-   * @param {HTMLCanvasElement} sheetCanvas Lienzo rectificado (2000x1441 px)
+   * @param {HTMLCanvasElement} sheetCanvas Lienzo rectificado
    * @param {number} cxMm Coordenada X del centro en mm
    * @param {number} cyMm Coordenada Y del centro en mm
    * @param {number} darkCutoff Umbral de luminancia por debajo del cual un píxel es considerado oscuro
    */
   function measureBubbleDarkness(sheetCanvas, cxMm, cyMm, darkCutoff = 165) {
+    const isVertical = sheetCanvas.height > sheetCanvas.width;
+    const pxMmX = sheetCanvas.width / (isVertical ? 136 : 186);
+    const pxMmY = sheetCanvas.height / (isVertical ? 188 : 134);
+
     // Para ser tolerante a variaciones de impresión, corte y encuadre (+-2.8mm vertical),
     // probamos el centro y offsets de barrido vertical
     const offsets = [0, -0.7, 0.7, -1.4, 1.4, -2.1, 2.1, -2.8, 2.8];
@@ -490,10 +497,10 @@
 
     for (let i = 0; i < offsets.length; i++) {
       const dy = offsets[i];
-      const rx = Math.round((cxMm - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_X);
-      const ry = Math.round((cyMm + dy - OMR_BUBBLE_HALF_SIZE_MM) * PX_PER_MM_Y);
-      const rw = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_X);
-      const rh = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * PX_PER_MM_Y);
+      const rx = Math.round((cxMm - OMR_BUBBLE_HALF_SIZE_MM) * pxMmX);
+      const ry = Math.round((cyMm + dy - OMR_BUBBLE_HALF_SIZE_MM) * pxMmY);
+      const rw = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * pxMmX);
+      const rh = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * pxMmY);
 
       const clamped = clampROI({ x: rx, y: ry, width: rw, height: rh }, sheetCanvas.width, sheetCanvas.height);
       const imgData = ctx.getImageData(clamped.x, clamped.y, clamped.width, clamped.height);
@@ -628,8 +635,37 @@
       const totalQ = questionCount;
       const results = [];
 
-      // SUB-RAMA 3A: Cartilla A6 (4 alumnos por hoja A4, hasta 8 preguntas, 1 sola columna vertical)
+      // SUB-RAMA 3A: Cartilla A6 (4 alumnos por hoja A4, hasta 8 preguntas)
       if (branch === 'rama3' && totalQ <= 8) {
+        if (totalQ === 8) {
+          const col1Bubbles = [
+            { key: 'A', xMm: 43.8 },
+            { key: 'B', xMm: 53.3 },
+            { key: 'C', xMm: 62.9 },
+            { key: 'D', xMm: 72.5 }
+          ];
+          const col2Bubbles = [
+            { key: 'A', xMm: 120.3 },
+            { key: 'B', xMm: 129.9 },
+            { key: 'C', xMm: 139.5 },
+            { key: 'D', xMm: 149.1 }
+          ];
+          const stepY = 98.4 / 5;
+          for (let i = 0; i < 4; i++) {
+            const qNum = i + 1;
+            const yMm = 32.0 + (i + 1) * stepY;
+            const res = evaluateCompactRow(sheetCanvas, col1Bubbles, yMm);
+            results.push(Object.assign({ qIndex: qNum }, res));
+          }
+          for (let j = 0; j < 4; j++) {
+            const qNum = 4 + j + 1;
+            const yMm = 32.0 + (j + 1) * stepY;
+            const res = evaluateCompactRow(sheetCanvas, col2Bubbles, yMm);
+            results.push(Object.assign({ qIndex: qNum }, res));
+          }
+          return results;
+        }
+
         const a6Bubbles = [
           { key: 'A', xMm: 86.9 },
           { key: 'B', xMm: 96.9 },
@@ -646,46 +682,85 @@
         return results;
       }
 
-      // SUB-RAMA 3B: Cartilla A5 (2 alumnos por hoja A4, 9 a 20 preguntas en 2 columnas)
-      const half = Math.ceil(totalQ / 2);
+      // SUB-RAMA 3B: Cartilla A5 Vertical (2 alumnos por hoja A4, 9 a 20 preguntas)
+      if (branch === 'rama3') {
+        const isVertical = sheetCanvas.height > sheetCanvas.width;
+        if (totalQ === 20 && isVertical) {
+          const col1Bubbles = [
+            { key: 'A', xMm: 35.55 },
+            { key: 'B', xMm: 42.85 },
+            { key: 'C', xMm: 50.15 },
+            { key: 'D', xMm: 57.45 }
+          ];
+          const col2Bubbles = [
+            { key: 'A', xMm: 91.55 },
+            { key: 'B', xMm: 98.85 },
+            { key: 'C', xMm: 106.15 },
+            { key: 'D', xMm: 113.45 }
+          ];
+          const stepY = 163.0 / 11;
+          const startY = 20.0;
+          for (let i = 0; i < 10; i++) {
+            const qNum = i + 1;
+            const yMm = startY + (i + 1) * stepY;
+            const res = evaluateCompactRow(sheetCanvas, col1Bubbles, yMm);
+            results.push(Object.assign({ qIndex: qNum }, res));
+          }
+          for (let j = 0; j < 10; j++) {
+            const qNum = 10 + j + 1;
+            const yMm = startY + (j + 1) * stepY;
+            const res = evaluateCompactRow(sheetCanvas, col2Bubbles, yMm);
+            results.push(Object.assign({ qIndex: qNum }, res));
+          }
+          return results;
+        }
 
-      // Coordenadas X para Columna 1 y Columna 2
-      const col1Bubbles = [
-        { key: 'A', xMm: 54.0 },
-        { key: 'B', xMm: 63.7 },
-        { key: 'C', xMm: 73.4 },
-        { key: 'D', xMm: 83.1 }
-      ];
-      const col2Bubbles = [
-        { key: 'A', xMm: 135.0 },
-        { key: 'B', xMm: 144.7 },
-        { key: 'C', xMm: 154.4 },
-        { key: 'D', xMm: 164.1 }
-      ];
+        const vBubbles = isVertical
+          ? [
+              { key: 'A', xMm: 63.55 },
+              { key: 'B', xMm: 70.85 },
+              { key: 'C', xMm: 78.15 },
+              { key: 'D', xMm: 85.45 }
+            ]
+          : [
+              // Fallback apaisado si la imagen vino horizontal
+              { key: 'A', xMm: 86.9 },
+              { key: 'B', xMm: 96.9 },
+              { key: 'C', xMm: 106.9 },
+              { key: 'D', xMm: 116.9 }
+            ];
+        const stepY = isVertical ? (163.0 / (totalQ + 1)) : (98.4 / (totalQ + 1));
+        const startY = isVertical ? 22.5 : 32.0;
 
-      // Cálculo de paso vertical según cantidad de filas
-      let startY = 37.0;
-      let stepY = 9.5;
-      if (half <= 3) {
-        startY = 48.0;
-        stepY = 28.0;
-      } else if (half <= 5) {
-        startY = 42.0;
-        stepY = 19.0;
-      } else if (half <= 8) {
-        startY = 38.0;
-        stepY = 12.0;
+        for (let i = 0; i < totalQ; i++) {
+          const qNum = i + 1;
+          const yMm = startY + (i + 1) * stepY;
+          const res = evaluateCompactRow(sheetCanvas, vBubbles, yMm);
+          results.push(Object.assign({ qIndex: qNum }, res));
+        }
+        return results;
       }
 
-      // Evaluar Columna 1 (Preguntas 1 a half)
+      // Fallback genérico para evaluaciones no-rama3 con más de 3 preguntas
+      const half = Math.ceil(totalQ / 2);
+      const col1Bubbles = [
+        { key: 'A', xMm: 54.0 }, { key: 'B', xMm: 63.7 }, { key: 'C', xMm: 73.4 }, { key: 'D', xMm: 83.1 }
+      ];
+      const col2Bubbles = [
+        { key: 'A', xMm: 135.0 }, { key: 'B', xMm: 144.7 }, { key: 'C', xMm: 154.4 }, { key: 'D', xMm: 164.1 }
+      ];
+      let startY = 37.0;
+      let stepY = 9.5;
+      if (half <= 3) { startY = 48.0; stepY = 28.0; }
+      else if (half <= 5) { startY = 42.0; stepY = 19.0; }
+      else if (half <= 8) { startY = 38.0; stepY = 12.0; }
+
       for (let i = 0; i < half; i++) {
         const qNum = i + 1;
         const yMm = startY + i * stepY;
         const res = evaluateCompactRow(sheetCanvas, col1Bubbles, yMm);
         results.push(Object.assign({ qIndex: qNum }, res));
       }
-
-      // Evaluar Columna 2 (Preguntas half + 1 a totalQ)
       const col2Count = totalQ - half;
       for (let j = 0; j < col2Count; j++) {
         const qNum = half + j + 1;
