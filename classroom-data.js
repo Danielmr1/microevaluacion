@@ -360,6 +360,7 @@
             gradeText: ev.gradeText || formatGrade(stage, level),
             title: (q.title && !q.title.includes('2 Preguntas') ? q.title : 'Pregunta de evaluación'),
             rubric: q.rubric || ev.rubric || null,
+            hasRubric: !!(q.rubric || ev.rubric),
             expectedAnswer: (q.options ? q.options[correctKey] : '') || ev.expectedAnswer || ''
           });
         });
@@ -389,6 +390,7 @@
           gradeText: ev.gradeText || formatGrade(stage, level),
           title: (ev.title && !ev.title.includes('2 Preguntas') ? ev.title : 'Pregunta de evaluación'),
           rubric: ev.rubric || null,
+          hasRubric: !!ev.rubric,
           expectedAnswer: (ev.options ? ev.options[correct] : '') || ev.expectedAnswer || ''
         });
       }
@@ -522,10 +524,12 @@
     if (gLevel) newEval.gradeLevel = gLevel;
     if (gText) newEval.gradeText = gText;
 
-    // Propiedades de formato Opción Múltiple (OMR)
+    // Propiedades de formato Opción Múltiple (OMR) y Ramas de Evaluación
     if (evalData.type) newEval.type = evalData.type;
     if (evalData.questionCount) newEval.questionCount = evalData.questionCount;
     if (evalData.questions) newEval.questions = evalData.questions;
+    if (evalData.branch) newEval.branch = evalData.branch;
+    if (evalData.withGrid !== undefined) newEval.withGrid = evalData.withGrid;
 
     EVALUATIONS[id] = newEval;
 

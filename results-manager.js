@@ -86,7 +86,19 @@ async function loadAndRenderResultsTable() {
 
   const cls = ClassroomData.getClassroom(session.classroomId);
   const clsName = cls ? cls.name : session.classroomId;
-  const evalTypeLabel = session.type === 'mc' ? 'Opción Múltiple (OMR)' : 'Respuesta Libre';
+
+  const isBranch3 = session.branch === 'rama3' || (session.type === 'mc' && (session.questionCount > 3 || (session.questions && session.questions.length > 3)));
+  const isBranch2 = session.branch === 'rama2';
+  let evalTypeLabel = 'Respuesta Libre (con rúbrica IA)';
+  if (isBranch3) {
+    const qCount = session.questionCount || (session.questions ? session.questions.length : 20);
+    evalTypeLabel = `Cartilla OMR (${qCount} preguntas)`;
+  } else if (isBranch2) {
+    const qCount = session.questionCount || (session.questions ? session.questions.length : 1);
+    evalTypeLabel = `Focalizada Contenido (${qCount} preg. ${session.withGrid ? 'con borrador' : 'sin borrador'})`;
+  } else if (session.type === 'mc') {
+    evalTypeLabel = 'Opción Múltiple (OMR + IA)';
+  }
 
   if (subtitle) {
     subtitle.innerHTML = `
@@ -128,19 +140,57 @@ async function loadAndRenderResultsTable() {
 
   let correctCount = 0;
   let incorrectCount = 0;
+  let approvedCount = 0;
+  let sumGrade20 = 0;
 
   resultMap.forEach(r => {
     const isOk = (r.teacher_verdict === 'CORRECTA') || (r.ai_expected_match === true) || (r.deterministic_match === true);
     if (isOk) correctCount++;
     else incorrectCount++;
+
+    if (isBranch3) {
+      const g20 = (r.ai_raw && r.ai_raw.grade20 != null)
+        ? r.ai_raw.grade20
+        : (r.ai_raw && r.ai_raw.correctCount != null && r.ai_raw.totalQuestions)
+          ? Math.round((r.ai_raw.correctCount / r.ai_raw.totalQuestions) * 20)
+          : (isOk ? 20 : 0);
+      sumGrade20 += g20;
+      if (g20 >= 11) approvedCount++;
+    }
   });
 
   const pctCorrect = evaluatedCount > 0 ? Math.round((correctCount / evaluatedCount) * 100) : 0;
   const pctIncorrect = evaluatedCount > 0 ? Math.round((incorrectCount / evaluatedCount) * 100) : 0;
 
   if (kpiTotal) kpiTotal.textContent = `${evaluatedCount} / ${totalStudents}`;
-  if (kpiCorrect) kpiCorrect.textContent = `${correctCount} (${pctCorrect}%)`;
-  if (kpiIncorrect) kpiIncorrect.textContent = `${incorrectCount} (${pctIncorrect}%)`;
+
+  if (isBranch3) {
+    const avgGrade = evaluatedCount > 0 ? (sumGrade20 / evaluatedCount).toFixed(1) : '0';
+    const pctApproved = evaluatedCount > 0 ? Math.round((approvedCount / evaluatedCount) * 100) : 0;
+    if (kpiCorrect) {
+      const lbl = kpiCorrect.previousElementSibling;
+      if (lbl) lbl.textContent = 'Promedio Salón';
+      kpiCorrect.textContent = `${avgGrade} / 20`;
+      kpiCorrect.style.color = Number(avgGrade) >= 11 ? '#4ade80' : '#f87171';
+    }
+    if (kpiIncorrect) {
+      const lbl = kpiIncorrect.previousElementSibling;
+      if (lbl) lbl.textContent = 'Aprobados (≥11)';
+      kpiIncorrect.textContent = `${approvedCount} (${pctApproved}%)`;
+    }
+  } else {
+    if (kpiCorrect) {
+      const lbl = kpiCorrect.previousElementSibling;
+      if (lbl) lbl.textContent = 'Aciertos';
+      kpiCorrect.textContent = `${correctCount} (${pctCorrect}%)`;
+      kpiCorrect.style.color = '#22c55e';
+    }
+    if (kpiIncorrect) {
+      const lbl = kpiIncorrect.previousElementSibling;
+      if (lbl) lbl.textContent = 'Errores';
+      kpiIncorrect.textContent = `${incorrectCount} (${pctIncorrect}%)`;
+    }
+  }
 
   if (students.length === 0) {
     container.innerHTML = `
@@ -197,18 +247,46 @@ async function loadAndRenderResultsTable() {
 
     let answerContent = '—';
     if (isEvaluated) {
-      answerContent = `<div style="font-size:0.88rem; font-weight:800; color:#60a5fa;">${escape(res.ai_answer_read || 'Registrado')}</div>`;
-      if (aiGrading) {
-        if (session.type === 'mc') {
-          const procOk = aiGrading.procedure_valid;
-          answerContent += `<div style="font-size:0.7rem; color:${procOk ? '#c084fc' : '#f59e0b'}; font-weight:700; margin-top:2px;">${procOk ? '🔬 Procedimiento OK' : '⚠️ Sin procedimiento'}</div>`;
-        } else {
-          answerContent += `<div style="font-size:0.7rem; color:#38bdf8; font-weight:700; margin-top:2px;">Nota: ${aiGrading.score}/4 pts</div>`;
+      if (isBranch3) {
+        const grade20 = (res.ai_raw && res.ai_raw.grade20 != null)
+          ? res.ai_raw.grade20
+          : (res.ai_raw && res.ai_raw.correctCount != null && res.ai_raw.totalQuestions)
+            ? Math.round((res.ai_raw.correctCount / res.ai_raw.totalQuestions) * 20)
+            : (isOk ? 20 : 0);
+        const correctQ = (res.ai_raw && res.ai_raw.correctCount != null)
+          ? res.ai_raw.correctCount
+          : (isOk ? (res.ai_raw?.totalQuestions || 20) : 0);
+        const totalQ = res.ai_raw?.totalQuestions || session.questionCount || 20;
+        const gradeColor = grade20 >= 11 ? '#4ade80' : '#f87171';
+
+        answerContent = `
+          <div style="font-size:0.95rem; font-weight:800; color:${gradeColor};">Nota: ${grade20} / 20</div>
+          <div style="font-size:0.7rem; color:#94a3b8; font-weight:700; margin-top:2px;">${correctQ} / ${totalQ} aciertos</div>
+          <div style="font-size:0.67rem; color:#38bdf8; margin-top:2px; cursor:help;" title="${escape(res.ai_answer_read || '')}">🔍 Ver claves marcadas</div>
+        `;
+      } else {
+        answerContent = `<div style="font-size:0.88rem; font-weight:800; color:#60a5fa;">${escape(res.ai_answer_read || 'Registrado')}</div>`;
+        if (aiGrading) {
+          if (session.type === 'mc') {
+            const procOk = aiGrading.procedure_valid;
+            answerContent += `<div style="font-size:0.7rem; color:${procOk ? '#c084fc' : '#f59e0b'}; font-weight:700; margin-top:2px;">${procOk ? '🔬 Procedimiento OK' : '⚠️ Sin procedimiento'}</div>`;
+          } else {
+            answerContent += `<div style="font-size:0.7rem; color:#38bdf8; font-weight:700; margin-top:2px;">Nota: ${aiGrading.score}/4 pts</div>`;
+          }
         }
       }
     }
 
-    const expectedText = escape(session.expectedAnswer || (res ? res.expected_answer : '—') || '—');
+    let expectedText = '—';
+    if (isBranch3) {
+      const totalQ = session.questionCount || (session.questions ? session.questions.length : 20);
+      expectedText = `
+        <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1;">${totalQ} Claves</div>
+        <div style="font-size:0.67rem; color:#64748b; margin-top:1px; cursor:help;" title="${escape(session.expectedAnswer || '')}">🔍 Ver pauta</div>
+      `;
+    } else {
+      expectedText = escape(session.expectedAnswer || (res ? res.expected_answer : '—') || '—');
+    }
 
     let verdictBadge = `<span style="color:#64748b; font-size:0.8rem;">—</span>`;
     if (isEvaluated) {
@@ -231,6 +309,17 @@ async function loadAndRenderResultsTable() {
           `;
         } else {
           verdictBadge = `<span style="color:#f59e0b; font-size:0.78rem; font-weight:700;">⏳ En proceso</span>`;
+        }
+      } else if (isBranch3) {
+        const grade20 = (res.ai_raw && res.ai_raw.grade20 != null)
+          ? res.ai_raw.grade20
+          : (res.ai_raw && res.ai_raw.correctCount != null && res.ai_raw.totalQuestions)
+            ? Math.round((res.ai_raw.correctCount / res.ai_raw.totalQuestions) * 20)
+            : (isOk ? 20 : 0);
+        if (grade20 >= 11) {
+          verdictBadge = `<span style="color:#22c55e; font-weight:800; font-size:0.82rem;">✓ APROBADO</span>`;
+        } else {
+          verdictBadge = `<span style="color:#ef4444; font-weight:800; font-size:0.82rem;">✗ DESAPROBADO</span>`;
         }
       } else if (isOk) {
         verdictBadge = `<span style="color:#22c55e; font-weight:800; font-size:0.82rem;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}">✓ CORRECTA</span>`;
@@ -281,8 +370,8 @@ async function loadAndRenderResultsTable() {
           <th style="padding:8px 12px; font-weight:800;">Estudiante</th>
           <th style="padding:8px 12px; font-weight:800; text-align:center;">Foto</th>
           <th style="padding:8px 12px; font-weight:800;">Estado</th>
-          <th style="padding:8px 12px; font-weight:800;">Marcó</th>
-          <th style="padding:8px 12px; font-weight:800;">Clave</th>
+          <th style="padding:8px 12px; font-weight:800;">${isBranch3 ? 'Calificación / Aciertos' : 'Marcó'}</th>
+          <th style="padding:8px 12px; font-weight:800;">${isBranch3 ? 'Pauta Claves' : 'Clave'}</th>
           <th style="padding:8px 12px; font-weight:800;">Veredicto</th>
           <th style="padding:8px 12px; font-weight:800; text-align:center;">Acción</th>
         </tr>
@@ -622,31 +711,147 @@ function exportResultsToExcel() {
     return str;
   };
 
-  const rows = students.map((s, idx) => {
-    const res = resultMap ? resultMap.get(s.id) : null;
-    const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
-    const aiGrading = res && res.ai_raw && (res.ai_raw.aiGrading?.data || res.ai_raw.aiGrading);
-    return {
-      'N°': idx + 1,
-      'Código': s.id,
-      'Estudiante': sanitizeCell(s.name),
-      'Salón': sanitizeCell(classroom.name),
-      'Estado': res ? (res.ai_raw?.pendingAI ? 'ANALIZANDO_IA' : 'EVALUADO') : 'PENDIENTE',
-      'Marcó / Respuesta': sanitizeCell(res ? (res.ai_answer_read || '—') : '—'),
-      'Clave Esperada': sanitizeCell(session.expectedAnswer || '—'),
-      'Veredicto': res ? (isOk ? 'CORRECTA' : 'INCORRECTA') : 'PENDIENTE',
-      'Puntaje (0-4)': (aiGrading && aiGrading.score != null) ? aiGrading.score : '—',
-      'Procedimiento Válido': (aiGrading && aiGrading.procedure_valid != null) ? (aiGrading.procedure_valid ? 'SÍ' : 'NO') : '—',
-      'Error Pedagógico': sanitizeCell((res && res.ai_error_type && res.ai_error_type !== 'ninguno') ? res.ai_error_type : '—'),
-      'Retroalimentación IA': sanitizeCell((res && res.ai_teacher_feedback) ? res.ai_teacher_feedback : '—'),
-      'Fecha y Hora': res && res.captured_at ? new Date(res.captured_at).toLocaleString() : '—'
-    };
-  });
+  const isBranch3 = session.branch === 'rama3' || (session.type === 'mc' && (session.questionCount > 3 || (session.questions && session.questions.length > 3)));
+  const totalQ = session.questionCount || (session.questions ? session.questions.length : 20);
+
+  let rows;
+  let statsRows = null;
+
+  if (isBranch3) {
+    // ── EXPORTACIÓN PARA RAMA 3: CARTILLA DE RESPUESTAS (HASTA 20 PREGUNTAS) ──
+    const evaluatedList = students.map(s => resultMap ? resultMap.get(s.id) : null).filter(Boolean);
+    const evaluatedTotal = evaluatedList.length;
+
+    rows = students.map((s, idx) => {
+      const res = resultMap ? resultMap.get(s.id) : null;
+      const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
+
+      const grade20 = res ? (
+        (res.ai_raw && res.ai_raw.grade20 != null)
+          ? res.ai_raw.grade20
+          : (res.ai_raw && res.ai_raw.correctCount != null && res.ai_raw.totalQuestions)
+            ? Math.round((res.ai_raw.correctCount / res.ai_raw.totalQuestions) * 20)
+            : (isOk ? 20 : 0)
+      ) : '—';
+
+      const correctCount = res ? (
+        (res.ai_raw && res.ai_raw.correctCount != null)
+          ? res.ai_raw.correctCount
+          : (isOk ? totalQ : 0)
+      ) : '—';
+
+      const rowObj = {
+        'N°': idx + 1,
+        'Código': s.id,
+        'Estudiante': sanitizeCell(s.name),
+        'Salón': sanitizeCell(classroom.name),
+        'Estado': res ? (res.ai_raw?.pendingAI ? 'ANALIZANDO_IA' : 'EVALUADO') : 'PENDIENTE',
+        'Nota (0-20)': grade20,
+        'Aciertos': correctCount,
+        'Total Preguntas': totalQ,
+        '% Aciertos': (typeof grade20 === 'number') ? `${Math.round((grade20 / 20) * 100)}%` : '—',
+        'Veredicto': res ? (grade20 >= 11 ? 'APROBADO' : 'DESAPROBADO') : 'PENDIENTE'
+      };
+
+      // Mapear respuestas por pregunta P01..PN
+      const omrMap = new Map();
+      if (res && res.ai_raw && Array.isArray(res.ai_raw.omrResults)) {
+        res.ai_raw.omrResults.forEach(r => {
+          omrMap.set(r.qIndex, r.marked);
+        });
+      } else if (res && res.ai_answer_read) {
+        const parts = res.ai_answer_read.split(/\s*\|\s*/);
+        parts.forEach(p => {
+          const m = p.match(/P(\d+):\s*([A-D]|BLANK|MULTIPLE)/i);
+          if (m) omrMap.set(parseInt(m[1], 10), m[2]);
+        });
+      }
+
+      for (let q = 1; q <= totalQ; q++) {
+        const qKey = `P${String(q).padStart(2, '0')}`;
+        const val = omrMap.get(q);
+        rowObj[qKey] = sanitizeCell(val || (res ? '—' : '—'));
+      }
+
+      rowObj['Fecha y Hora'] = res && res.captured_at ? new Date(res.captured_at).toLocaleString() : '—';
+      return rowObj;
+    });
+
+    // Hoja 2: Estadísticas de acierto por pregunta
+    statsRows = [];
+    const expectedTokens = String(session.expectedAnswer || '').split(/[\s,;|]+/);
+    for (let q = 1; q <= totalQ; q++) {
+      const qKey = `P${String(q).padStart(2, '0')}`;
+      let expKey = '—';
+      if (session.questions && session.questions[q - 1]) {
+        expKey = session.questions[q - 1].correct || session.questions[q - 1].expectedAnswer || 'A';
+      } else {
+        expKey = (expectedTokens[q - 1] || 'A').toUpperCase();
+      }
+
+      let qHits = 0;
+      students.forEach(s => {
+        const res = resultMap ? resultMap.get(s.id) : null;
+        if (res) {
+          let marked = null;
+          if (res.ai_raw && Array.isArray(res.ai_raw.omrResults)) {
+            const item = res.ai_raw.omrResults.find(it => it.qIndex === q);
+            if (item) marked = item.marked;
+          }
+          if (!marked && res.ai_answer_read) {
+            const m = res.ai_answer_read.match(new RegExp(`P0?${q}:\\s*([A-D])`, 'i'));
+            if (m) marked = m[1];
+          }
+          if (marked && marked.toUpperCase() === expKey.toUpperCase()) {
+            qHits++;
+          }
+        }
+      });
+
+      const pctHit = evaluatedTotal > 0 ? `${Math.round((qHits / evaluatedTotal) * 100)}%` : '0%';
+      statsRows.push({
+        'Pregunta': qKey,
+        'Clave Correcta': expKey,
+        'Total Aciertos': qHits,
+        'Total Evaluados': evaluatedTotal,
+        '% de Acierto': pctHit
+      });
+    }
+
+  } else {
+    // ── EXPORTACIÓN PARA RAMA 1 Y RAMA 2 (RESPUESTA LIBRE / MC CORTO) ──
+    // Regla 1: Cero Regresión en Respuesta Libre
+    rows = students.map((s, idx) => {
+      const res = resultMap ? resultMap.get(s.id) : null;
+      const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
+      const aiGrading = res && res.ai_raw && (res.ai_raw.aiGrading?.data || res.ai_raw.aiGrading);
+      return {
+        'N°': idx + 1,
+        'Código': s.id,
+        'Estudiante': sanitizeCell(s.name),
+        'Salón': sanitizeCell(classroom.name),
+        'Estado': res ? (res.ai_raw?.pendingAI ? 'ANALIZANDO_IA' : 'EVALUADO') : 'PENDIENTE',
+        'Marcó / Respuesta': sanitizeCell(res ? (res.ai_answer_read || '—') : '—'),
+        'Clave Esperada': sanitizeCell(session.expectedAnswer || '—'),
+        'Veredicto': res ? (isOk ? 'CORRECTA' : 'INCORRECTA') : 'PENDIENTE',
+        'Puntaje (0-4)': (aiGrading && aiGrading.score != null) ? aiGrading.score : '—',
+        'Procedimiento Válido': (aiGrading && aiGrading.procedure_valid != null) ? (aiGrading.procedure_valid ? 'SÍ' : 'NO') : '—',
+        'Error Pedagógico': sanitizeCell((res && res.ai_error_type && res.ai_error_type !== 'ninguno') ? res.ai_error_type : '—'),
+        'Retroalimentación IA': sanitizeCell((res && res.ai_teacher_feedback) ? res.ai_teacher_feedback : '—'),
+        'Fecha y Hora': res && res.captured_at ? new Date(res.captured_at).toLocaleString() : '—'
+      };
+    });
+  }
 
   try {
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
+
+    if (statsRows && statsRows.length > 0) {
+      const wsStats = XLSX.utils.json_to_sheet(statsRows);
+      XLSX.utils.book_append_sheet(wb, wsStats, 'Estadísticas por Pregunta');
+    }
 
     const cleanClassroom = sanitizeExportFileName(classroom.name);
     const timeStamp = getExportTimestamp();

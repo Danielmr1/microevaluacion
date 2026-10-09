@@ -567,14 +567,143 @@
   }
 
   /**
-   * Evalúa la ficha completa en modo alternativas (1 o 2 preguntas)
-   * Disposición estándar: Enunciado -> Cuadrícula de cálculo -> Alternativas al pie
+   * Evalúa las alternativas de una fila de la cartilla OMR (con 4 burbujas compactas en columna)
    * @param {HTMLCanvasElement} sheetCanvas
-   * @param {number} questionCount 1 o 2 preguntas
+   * @param {Array<{key: string, xMm: number}>} bubblesCoords
+   * @param {number} yCenterMm
+   * @returns {{ marked: string, confidence: number, densities: Object }}
+   */
+  function evaluateCompactRow(sheetCanvas, bubblesCoords, yCenterMm) {
+    const paperLum = samplePaperLuminance(sheetCanvas, yCenterMm);
+    const darkCutoff = Math.max(40, Math.round(paperLum * 0.72));
+
+    const densities = {};
+    let maxDensity = -1;
+    let bestKey = null;
+
+    bubblesCoords.forEach(b => {
+      const dens = measureBubbleDarkness(sheetCanvas, b.xMm, yCenterMm, darkCutoff);
+      densities[b.key] = Math.round(dens * 100);
+      if (dens > maxDensity) {
+        maxDensity = dens;
+        bestKey = b.key;
+      }
+    });
+
+    let secondDensity = -1;
+    bubblesCoords.forEach(b => {
+      if (b.key !== bestKey && (densities[b.key] / 100) > secondDensity) {
+        secondDensity = densities[b.key] / 100;
+      }
+    });
+
+    const MIN_DARKNESS_THRESHOLD = 0.38;
+
+    if (maxDensity < MIN_DARKNESS_THRESHOLD) {
+      return { marked: 'BLANK', confidence: Math.round((1 - maxDensity) * 100), densities };
+    }
+
+    if (secondDensity >= MIN_DARKNESS_THRESHOLD && secondDensity >= maxDensity * 0.75) {
+      return { marked: 'MULTIPLE', confidence: 50, densities };
+    }
+
+    return { marked: bestKey, confidence: Math.round(maxDensity * 100), densities };
+  }
+
+  /**
+   * Evalúa la ficha completa en modo alternativas (1 o 2 preguntas con borrador, Rama 2 o Rama 3)
+   * @param {HTMLCanvasElement} sheetCanvas
+   * @param {number} questionCount Cantidad de preguntas
+   * @param {Object} options Opciones { branch, withGrid }
    * @returns {Array<{ qIndex: number, marked: string, confidence: number, densities: Object }>}
    */
-  function evaluateOMRSheet(sheetCanvas, questionCount = 1) {
+  function evaluateOMRSheet(sheetCanvas, questionCount = 1, options = {}) {
     if (!isValidCanvas(sheetCanvas)) return [];
+
+    const branch = options.branch || (questionCount > 3 ? 'rama3' : 'rama1');
+    const withGrid = options.withGrid !== undefined ? options.withGrid : true;
+
+    // ── RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS EN 2 COLUMNAS) ──
+    if (branch === 'rama3' || questionCount > 3) {
+      const totalQ = questionCount;
+      const half = Math.ceil(totalQ / 2);
+      const results = [];
+
+      // Coordenadas X para Columna 1 y Columna 2
+      const col1Bubbles = [
+        { key: 'A', xMm: 54.0 },
+        { key: 'B', xMm: 63.7 },
+        { key: 'C', xMm: 73.4 },
+        { key: 'D', xMm: 83.1 }
+      ];
+      const col2Bubbles = [
+        { key: 'A', xMm: 135.0 },
+        { key: 'B', xMm: 144.7 },
+        { key: 'C', xMm: 154.4 },
+        { key: 'D', xMm: 164.1 }
+      ];
+
+      // Cálculo de paso vertical según cantidad de filas
+      let startY = 37.0;
+      let stepY = 9.5;
+      if (half <= 3) {
+        startY = 48.0;
+        stepY = 28.0;
+      } else if (half <= 5) {
+        startY = 42.0;
+        stepY = 19.0;
+      } else if (half <= 8) {
+        startY = 38.0;
+        stepY = 12.0;
+      }
+
+      // Evaluar Columna 1 (Preguntas 1 a half)
+      for (let i = 0; i < half; i++) {
+        const qNum = i + 1;
+        const yMm = startY + i * stepY;
+        const res = evaluateCompactRow(sheetCanvas, col1Bubbles, yMm);
+        results.push(Object.assign({ qIndex: qNum }, res));
+      }
+
+      // Evaluar Columna 2 (Preguntas half + 1 a totalQ)
+      const col2Count = totalQ - half;
+      for (let j = 0; j < col2Count; j++) {
+        const qNum = half + j + 1;
+        const yMm = startY + j * stepY;
+        const res = evaluateCompactRow(sheetCanvas, col2Bubbles, yMm);
+        results.push(Object.assign({ qIndex: qNum }, res));
+      }
+
+      return results;
+    }
+
+    // ── RAMA 2: FOCALIZADA SIN BORRADOR (1 A 3 PREGUNTAS) ──
+    if (branch === 'rama2' && !withGrid) {
+      if (questionCount === 3) {
+        const q1Result = evaluateAlternativeRow(sheetCanvas, 54.0);
+        const q2Result = evaluateAlternativeRow(sheetCanvas, 89.0);
+        const q3Result = evaluateAlternativeRow(sheetCanvas, 124.0);
+        return [
+          Object.assign({ qIndex: 1 }, q1Result),
+          Object.assign({ qIndex: 2 }, q2Result),
+          Object.assign({ qIndex: 3 }, q3Result)
+        ];
+      } else if (questionCount === 2) {
+        const q1Result = evaluateAlternativeRow(sheetCanvas, 70.0);
+        const q2Result = evaluateAlternativeRow(sheetCanvas, 122.0);
+        return [
+          Object.assign({ qIndex: 1 }, q1Result),
+          Object.assign({ qIndex: 2 }, q2Result)
+        ];
+      } else {
+        const q1Result = evaluateAlternativeRow(sheetCanvas, 124.0);
+        return [
+          Object.assign({ qIndex: 1 }, q1Result)
+        ];
+      }
+    }
+
+    // ── RAMA 1: CASO ESTÁNDAR CLÁSICO (1 O 2 PREGUNTAS CON BORRADOR) ──
     if (questionCount === 2) {
       // 2 Preguntas: P1 tiene alternativas a Y=71.5mm y P2 a Y=125.5mm
       const q1Result = evaluateAlternativeRow(sheetCanvas, 71.5);
@@ -611,10 +740,19 @@
    * Realce adaptativo según el brillo real de la toma.
    * @param {HTMLCanvasElement} sheetCanvas
    * @param {number} questionCount 1 o 2 preguntas
+   * @param {Object} options Opciones { branch, withGrid }
    * @returns {Array<{ qIndex: number, bubblesCanvas: HTMLCanvasElement|null, gridCanvas: HTMLCanvasElement|null }>}
    */
-  function extractOMRCrops(sheetCanvas, questionCount = 1) {
+  function extractOMRCrops(sheetCanvas, questionCount = 1, options = {}) {
     if (!isValidCanvas(sheetCanvas)) return [];
+
+    const branch = options.branch || (questionCount > 3 ? 'rama3' : 'rama1');
+    const withGrid = options.withGrid !== undefined ? options.withGrid : true;
+    // Para Rama 3 no hay recortes de cuadrícula individuales (es cartilla pura) ni para fichas sin borrador
+    if (branch === 'rama3' || questionCount > 3 || !withGrid) {
+      return [];
+    }
+
     const is2Q = questionCount === 2;
     const cfg = is2Q ? ROI_OMR_CONFIG.MC2 : ROI_OMR_CONFIG.MC1;
     const list = [];

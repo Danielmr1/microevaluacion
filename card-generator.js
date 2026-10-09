@@ -64,7 +64,110 @@ function createA5Card(student, classroom, evaluation) {
           </div>
         </div>`;
 
-  // CASO 1: Opción Múltiple - 1 Pregunta
+  // ── CASO RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS EN 2 COLUMNAS) ──
+  const isBranch3 = evaluation.branch === 'rama3' || (isOMR && qCount > 3);
+  if (isBranch3) {
+    const totalQ = qCount;
+    const half = Math.ceil(totalQ / 2);
+
+    const qList = [];
+    for (let i = 0; i < totalQ; i++) {
+      const existing = (evaluation.questions && evaluation.questions[i]);
+      qList.push(existing || { id: 'r3_q' + (i + 1), num: i + 1 });
+    }
+
+    const col1 = qList.slice(0, half);
+    const col2 = qList.slice(half, totalQ);
+
+    const renderColumnHTML = (items, startIdx) => {
+      return items.map((q, idx) => {
+        const qNum = startIdx + idx + 1;
+        return `
+          <div class="b3-q-row">
+            <span class="b3-q-num">${String(qNum).padStart(2, '0')}</span>
+            <div class="b3-bubbles-group">
+              <span class="b3-bubble">A</span>
+              <span class="b3-bubble">B</span>
+              <span class="b3-bubble">C</span>
+              <span class="b3-bubble">D</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    return `
+      <div class="card-a5 mc-card branch3-card">
+        ${fiducialsHTML}
+        ${headerHTML}
+
+        <div class="b3-body">
+          <div class="b3-banner">
+            <span class="b3-title">CARTILLA DE RESPUESTAS · ${totalQ} PREGUNTAS</span>
+            <span class="b3-hint">Rellena completamente el círculo: <b class="b3-sample-fill">●</b></span>
+          </div>
+
+          <div class="b3-columns-wrap">
+            <div class="b3-column">
+              ${renderColumnHTML(col1, 0)}
+            </div>
+
+            <div class="b3-vdivider"></div>
+
+            <div class="b3-column">
+              ${renderColumnHTML(col2, half)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── CASO RAMA 2: EVALUACIÓN FOCALIZADA SIN BORRADOR (1 A 3 PREGUNTAS) ──
+  const isBranch2NoGrid = (evaluation.branch === 'rama2' || evaluation.withGrid === false) && evaluation.withGrid === false;
+  if (isBranch2NoGrid) {
+    const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
+      ? evaluation.questions
+      : [{
+          prompt: evaluation.prompt,
+          options: evaluation.options || { A: '', B: '', C: '', D: '' },
+          expectedAnswer: evaluation.expectedAnswer || ''
+        }];
+
+    return `
+      <div class="card-a5 branch2-nogrid-card">
+        ${fiducialsHTML}
+        ${headerHTML}
+
+        <div class="b2-body">
+          ${activeQuestions.map((q, idx) => `
+            <div class="b2-q-item">
+              <div class="b2-q-header">
+                <strong class="b2-q-num">${idx + 1}.</strong>
+                <span class="b2-q-prompt">${escape(q.prompt)}</span>
+              </div>
+              ${isOMR ? `
+                <div class="b2-omr-row">
+                  <div class="b2-omr-opt"><span class="omr-bubble">A</span> <span class="omr-text">${escape(q.options?.A || '')}</span></div>
+                  <div class="b2-omr-opt"><span class="omr-bubble">B</span> <span class="omr-text">${escape(q.options?.B || '')}</span></div>
+                  <div class="b2-omr-opt"><span class="omr-bubble">C</span> <span class="omr-text">${escape(q.options?.C || '')}</span></div>
+                  <div class="b2-omr-opt"><span class="omr-bubble">D</span> <span class="omr-text">${escape(q.options?.D || '')}</span></div>
+                </div>
+              ` : `
+                <div class="b2-free-row">
+                  <span class="b2-free-tag">Rpta:</span>
+                  <div class="b2-free-box"></div>
+                </div>
+              `}
+            </div>
+            ${idx < activeQuestions.length - 1 ? '<div class="b2-divider"></div>' : ''}
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // CASO 1: Opción Múltiple - 1 Pregunta (con cuadrícula)
   if (isOMR && qCount === 1) {
     const q1 = (evaluation.questions && evaluation.questions[0]) || {
       prompt: evaluation.prompt,
@@ -93,7 +196,7 @@ function createA5Card(student, classroom, evaluation) {
     `;
   }
 
-  // CASO 2: Opción Múltiple - 2 Preguntas
+  // CASO 2: Opción Múltiple - 2 Preguntas (con cuadrícula)
   if (isOMR && qCount === 2) {
     const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '', options: {} };
     const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '', options: {} };

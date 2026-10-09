@@ -709,12 +709,20 @@
     const isMC = (session.type === 'mc' || (activeEval && activeEval.type === 'mc'));
 
     if (info && info.results && info.results.length > 0) {
+      const correctCount = info.results.filter(r => r.correct).length;
+      const totalQ = info.results.length;
+      const grade20 = Math.round((correctCount / totalQ) * 20);
+
       answerRead = info.results.map(r => `P${r.qIndex}: ${r.marked}`).join(' | ');
       isMatch = info.allCorrect;
       verdict = info.allCorrect ? 'CORRECTA' : 'INCORRECTA';
       aiRaw = {
         omrResults: info.results,
         correctionMode: correctionMode,
+        correctCount: correctCount,
+        totalQuestions: totalQ,
+        grade20: grade20,
+        branch: session.branch || (activeEval && activeEval.branch) || (totalQ > 3 ? 'rama3' : 'rama2'),
         pendingAI: (correctionMode === 'full')
       };
     } else {
@@ -1626,18 +1634,28 @@
       if (fullWarpCanvas && typeof ROIProcessor !== 'undefined') {
         if (isOMR && ROIProcessor.evaluateOMRSheet) {
           let qCount = 1;
-          if (activeEval && (activeEval.questionCount === 2 || (activeEval.questions && activeEval.questions.length === 2))) {
-            qCount = 2;
-          } else if (activeSession && (activeSession.questionCount === 2 || (activeSession.questions && activeSession.questions.length === 2))) {
-            qCount = 2;
+          const branch = (activeSession && activeSession.branch) || (activeEval && activeEval.branch) || 'rama1';
+          const withGrid = (activeSession && activeSession.withGrid !== undefined)
+            ? activeSession.withGrid
+            : ((activeEval && activeEval.withGrid !== undefined) ? activeEval.withGrid : true);
+
+          if (activeEval && activeEval.questionCount) {
+            qCount = activeEval.questionCount;
+          } else if (activeSession && activeSession.questionCount) {
+            qCount = activeSession.questionCount;
+          } else if (activeEval && (activeEval.questions && activeEval.questions.length)) {
+            qCount = activeEval.questions.length;
+          } else if (activeSession && (activeSession.questions && activeSession.questions.length)) {
+            qCount = activeSession.questions.length;
           } else if (activeEval && activeEval.prompt && activeEval.prompt.includes('1.') && activeEval.prompt.includes('2.')) {
             qCount = 2;
           } else if (activeSession && activeSession.prompt && activeSession.prompt.includes('1.') && activeSession.prompt.includes('2.')) {
             qCount = 2;
           }
-          omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qCount);
+
+          omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qCount, { branch, withGrid });
           if (ROIProcessor.extractOMRCrops) {
-            omrCrops = ROIProcessor.extractOMRCrops(fullWarpCanvas, qCount);
+            omrCrops = ROIProcessor.extractOMRCrops(fullWarpCanvas, qCount, { branch, withGrid });
           }
           console.log('[Scanner] OMR Results detectados:', omrResults);
           resolutionPreviewUrl = fullWarpCanvas.toDataURL('image/jpeg', 0.90);
@@ -1800,120 +1818,189 @@
 
             const safeEscape = (str) => String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-            omrResults.forEach((qRes, idx) => {
-              const qObj = questionsList[idx] || null;
-              let qPrompt = qObj ? (qObj.prompt || '') : '';
-              if (!qPrompt && activeEval && activeEval.prompt) {
-                const parts = activeEval.prompt.split(/\s*\|\s*|\s*2\.\s*/);
-                if (idx === 0 && parts[0]) qPrompt = parts[0].replace(/^1\.\s*/, '').trim();
-                else if (idx === 1 && parts[1]) qPrompt = parts[1].trim();
-                else qPrompt = activeEval.prompt;
-              }
-              if (!qPrompt) qPrompt = `Pregunta ${qRes.qIndex}`;
-
-              let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
-              if (!expectedKey) {
-                if (idx === 0) {
-                  const m1 = String(expectedAns).match(/(?:P1[:\s]+)?([A-D])/i);
-                  if (m1) expectedKey = m1[1].toUpperCase();
-                } else if (idx === 1) {
-                  const m2 = String(expectedAns).match(/P2[:\s]+([A-D])/i);
-                  if (m2) expectedKey = m2[1].toUpperCase();
+            // ── CASO RAMA 3: CARTILLA COMPACTA (> 3 PREGUNTAS) ──
+            if (omrResults.length > 3) {
+              let correctCount = 0;
+              omrResults.forEach((qRes, idx) => {
+                const qObj = questionsList[idx] || null;
+                let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
+                if (!expectedKey) {
+                  const tokens = String(expectedAns).split(/[\s,;|]+/);
+                  expectedKey = tokens[idx] || 'A';
                 }
-              }
-              if (!expectedKey) {
-                const mDef = String(expectedAns).match(/[A-D]/i);
-                expectedKey = mDef ? mDef[0].toUpperCase() : 'A';
-              }
-              const m = String(expectedKey).match(/[A-D]/i);
-              if (m) expectedKey = m[0].toUpperCase();
+                const m = String(expectedKey).match(/[A-D]/i);
+                expectedKey = m ? m[0].toUpperCase() : 'A';
 
-              const isCorrect = qRes.marked === expectedKey;
-              if (!isCorrect) allCorrect = false;
+                const isCorrect = qRes.marked === expectedKey;
+                if (isCorrect) correctCount++;
 
-              evaluatedResults.push({
-                qIndex: qRes.qIndex,
-                marked: qRes.marked,
-                expected: expectedKey,
-                correct: isCorrect
+                evaluatedResults.push({
+                  qIndex: qRes.qIndex,
+                  marked: qRes.marked,
+                  expected: expectedKey,
+                  correct: isCorrect
+                });
               });
 
-              let markedLabel = qRes.marked;
-              let markedColor = '#f8fafc';
-              let badgeText = isCorrect ? '✅ CORRECTA' : '❌ INCORRECTA';
-              let badgeBg = isCorrect ? '#22c55e20' : '#ef444420';
-              let badgeColor = isCorrect ? '#22c55e' : '#ef4444';
-              let cardBorder = isCorrect ? '#22c55e' : '#ef4444';
+              allCorrect = (correctCount === omrResults.length);
+              const totalQ = omrResults.length;
+              const gradeScore = Math.round((correctCount / totalQ) * 20);
 
-              if (qRes.marked === 'BLANK') {
-                markedLabel = '⚠️ No marcó';
-                markedColor = '#fbbf24';
-                badgeText = '⚠️ NO MARCÓ';
-                badgeBg = '#f59e0b20';
-                badgeColor = '#f59e0b';
-                cardBorder = '#f59e0b';
-              } else if (qRes.marked === 'MULTIPLE') {
-                markedLabel = '⚠️ Doble marca';
-                markedColor = '#f87171';
-                badgeText = '⚠️ DOBLE MARCA';
-                badgeBg = '#ef444420';
-                badgeColor = '#ef4444';
-                cardBorder = '#ef4444';
-              }
-
-              // Recortes visuales de la pregunta (cuadrícula y alternativas)
-              const crop = omrCrops && omrCrops[idx];
-              const gridImgUrl = (crop && crop.gridCanvas) ? crop.gridCanvas.toDataURL('image/jpeg', 0.90) : '';
-              const bubblesImgUrl = (crop && crop.bubblesCanvas) ? crop.bubblesCanvas.toDataURL('image/jpeg', 0.90) : '';
-
-              const item = document.createElement('div');
-              item.style.background = '#0f172a';
-              item.style.borderRadius = '10px';
-              item.style.padding = '10px 12px';
-              item.style.border = `1.5px solid ${cardBorder}`;
-              item.style.marginBottom = '8px';
-              item.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <span style="font-size:0.75rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.04em;">
-                    Pregunta ${qRes.qIndex}
-                  </span>
-                  <span style="font-weight:800; font-size:0.75rem; padding:3px 9px; border-radius:5px; background:${badgeBg}; color:${badgeColor}; white-space:nowrap;">
-                    ${badgeText}
-                  </span>
-                </div>
-                <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; line-height:1.4; margin-bottom:8px;">
-                  ${safeEscape(qPrompt)}
-                </div>
-
-                ${gridImgUrl ? `
-                <div style="margin-bottom:6px;">
-                  <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
-                    📝 Cuadrícula de cálculo:
+              const summaryCard = document.createElement('div');
+              summaryCard.style.cssText = 'background:#0f172a; border:1.5px solid #0284c7; border-radius:10px; padding:12px; margin-bottom:10px; text-align:center;';
+              summaryCard.innerHTML = `
+                <div style="display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:8px;">
+                  <div>
+                    <span style="font-size:0.68rem; color:#94a3b8; display:block; text-transform:uppercase; font-weight:700;">Aciertos</span>
+                    <strong style="font-size:1.35rem; color:${correctCount > totalQ / 2 ? '#4ade80' : '#f87171'};">${correctCount} / ${totalQ}</strong>
                   </div>
-                  <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:85px; overflow:hidden; border:1px solid #475569;">
-                    <img src="${gridImgUrl}" alt="Cálculo Pregunta ${qRes.qIndex}" style="max-height:80px; width:auto; max-width:100%; object-fit:contain;">
+                  <div style="height:28px; width:1px; background:#334155;"></div>
+                  <div>
+                    <span style="font-size:0.68rem; color:#94a3b8; display:block; text-transform:uppercase; font-weight:700;">Nota Vigesimal</span>
+                    <strong style="font-size:1.35rem; color:#38bdf8;">${gradeScore} / 20</strong>
                   </div>
-                </div>
-                ` : ''}
-
-                ${bubblesImgUrl ? `
-                <div style="margin-bottom:6px;">
-                  <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
-                    🔘 Alternativas marcadas:
-                  </div>
-                  <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:48px; overflow:hidden; border:1px solid #475569;">
-                    <img src="${bubblesImgUrl}" alt="Alternativas Pregunta ${qRes.qIndex}" style="max-height:44px; width:auto; max-width:100%; object-fit:contain;">
-                  </div>
-                </div>
-                ` : ''}
-
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid #334155; font-size:0.82rem; color:#94a3b8;">
-                  <span>Marcó: <strong style="color:${markedColor}; font-size:1.15rem; margin-left:4px;">${markedLabel}</strong></span>
-                  <span>Clave esperada: <strong style="color:#22c55e; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
                 </div>
               `;
-              omrContainer.appendChild(item);
-            });
+              omrContainer.appendChild(summaryCard);
+
+              const gridCard = document.createElement('div');
+              gridCard.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fit, minmax(78px, 1fr)); gap:6px; max-height:260px; overflow-y:auto; padding:2px;';
+              evaluatedResults.forEach(r => {
+                const isOk = r.correct;
+                const isBlank = r.marked === 'BLANK';
+                const isMulti = r.marked === 'MULTIPLE';
+                let bg = isOk ? 'rgba(34,197,94,0.15)' : (isBlank ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)');
+                let border = isOk ? '#22c55e' : (isBlank ? '#f59e0b' : '#ef4444');
+                let markTxt = isBlank ? '—' : (isMulti ? 'Doble' : r.marked);
+
+                gridCard.innerHTML += `
+                  <div style="background:${bg}; border:1px solid ${border}; border-radius:6px; padding:5px 7px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.75rem; color:#cbd5e1; font-weight:700;">P${String(r.qIndex).padStart(2, '0')}</span>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                      <strong style="font-size:0.82rem; color:${isOk ? '#4ade80' : '#fca5a5'};">${markTxt}</strong>
+                      ${isOk ? '<span style="color:#4ade80; font-size:0.75rem;">✓</span>' : `<span style="color:#94a3b8; font-size:0.7rem;">(${r.expected})</span>`}
+                    </div>
+                  </div>
+                `;
+              });
+              omrContainer.appendChild(gridCard);
+            } else {
+              // ── CASO RAMA 1 O RAMA 2 (1 A 3 PREGUNTAS DETALLADAS) ──
+              omrResults.forEach((qRes, idx) => {
+                const qObj = questionsList[idx] || null;
+                let qPrompt = qObj ? (qObj.prompt || '') : '';
+                if (!qPrompt && activeEval && activeEval.prompt) {
+                  const parts = activeEval.prompt.split(/\s*\|\s*|\s*2\.\s*/);
+                  if (idx === 0 && parts[0]) qPrompt = parts[0].replace(/^1\.\s*/, '').trim();
+                  else if (idx === 1 && parts[1]) qPrompt = parts[1].trim();
+                  else qPrompt = activeEval.prompt;
+                }
+                if (!qPrompt) qPrompt = `Pregunta ${qRes.qIndex}`;
+
+                let expectedKey = qObj ? (qObj.correct || qObj.expectedAnswer) : null;
+                if (!expectedKey) {
+                  if (idx === 0) {
+                    const m1 = String(expectedAns).match(/(?:P1[:\s]+)?([A-D])/i);
+                    if (m1) expectedKey = m1[1].toUpperCase();
+                  } else if (idx === 1) {
+                    const m2 = String(expectedAns).match(/P2[:\s]+([A-D])/i);
+                    if (m2) expectedKey = m2[1].toUpperCase();
+                  }
+                }
+                if (!expectedKey) {
+                  const mDef = String(expectedAns).match(/[A-D]/i);
+                  expectedKey = mDef ? mDef[0].toUpperCase() : 'A';
+                }
+                const m = String(expectedKey).match(/[A-D]/i);
+                if (m) expectedKey = m[0].toUpperCase();
+
+                const isCorrect = qRes.marked === expectedKey;
+                if (!isCorrect) allCorrect = false;
+
+                evaluatedResults.push({
+                  qIndex: qRes.qIndex,
+                  marked: qRes.marked,
+                  expected: expectedKey,
+                  correct: isCorrect
+                });
+
+                let markedLabel = qRes.marked;
+                let markedColor = '#f8fafc';
+                let badgeText = isCorrect ? '✅ CORRECTA' : '❌ INCORRECTA';
+                let badgeBg = isCorrect ? '#22c55e20' : '#ef444420';
+                let badgeColor = isCorrect ? '#22c55e' : '#ef4444';
+                let cardBorder = isCorrect ? '#22c55e' : '#ef4444';
+
+                if (qRes.marked === 'BLANK') {
+                  markedLabel = '⚠️ No marcó';
+                  markedColor = '#fbbf24';
+                  badgeText = '⚠️ NO MARCÓ';
+                  badgeBg = '#f59e0b20';
+                  badgeColor = '#f59e0b';
+                  cardBorder = '#f59e0b';
+                } else if (qRes.marked === 'MULTIPLE') {
+                  markedLabel = '⚠️ Doble marca';
+                  markedColor = '#f87171';
+                  badgeText = '⚠️ DOBLE MARCA';
+                  badgeBg = '#ef444420';
+                  badgeColor = '#ef4444';
+                  cardBorder = '#ef4444';
+                }
+
+                // Recortes visuales de la pregunta (cuadrícula y alternativas)
+                const crop = omrCrops && omrCrops[idx];
+                const gridImgUrl = (crop && crop.gridCanvas) ? crop.gridCanvas.toDataURL('image/jpeg', 0.90) : '';
+                const bubblesImgUrl = (crop && crop.bubblesCanvas) ? crop.bubblesCanvas.toDataURL('image/jpeg', 0.90) : '';
+
+                const item = document.createElement('div');
+                item.style.background = '#0f172a';
+                item.style.borderRadius = '10px';
+                item.style.padding = '10px 12px';
+                item.style.border = `1.5px solid ${cardBorder}`;
+                item.style.marginBottom = '8px';
+                item.innerHTML = `
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:0.75rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.04em;">
+                      Pregunta ${qRes.qIndex}
+                    </span>
+                    <span style="font-weight:800; font-size:0.75rem; padding:3px 9px; border-radius:5px; background:${badgeBg}; color:${badgeColor}; white-space:nowrap;">
+                      ${badgeText}
+                    </span>
+                  </div>
+                  <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; line-height:1.4; margin-bottom:8px;">
+                    ${safeEscape(qPrompt)}
+                  </div>
+
+                  ${gridImgUrl ? `
+                  <div style="margin-bottom:6px;">
+                    <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
+                      📝 Cuadrícula de cálculo:
+                    </div>
+                    <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:85px; overflow:hidden; border:1px solid #475569;">
+                      <img src="${gridImgUrl}" alt="Cálculo Pregunta ${qRes.qIndex}" style="max-height:80px; width:auto; max-width:100%; object-fit:contain;">
+                    </div>
+                  </div>
+                  ` : ''}
+
+                  ${bubblesImgUrl ? `
+                  <div style="margin-bottom:6px;">
+                    <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
+                      🔘 Alternativas marcadas:
+                    </div>
+                    <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:48px; overflow:hidden; border:1px solid #475569;">
+                      <img src="${bubblesImgUrl}" alt="Alternativas Pregunta ${qRes.qIndex}" style="max-height:44px; width:auto; max-width:100%; object-fit:contain;">
+                    </div>
+                  </div>
+                  ` : ''}
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid #334155; font-size:0.82rem; color:#94a3b8;">
+                    <span>Marcó: <strong style="color:${markedColor}; font-size:1.15rem; margin-left:4px;">${markedLabel}</strong></span>
+                    <span>Clave esperada: <strong style="color:#22c55e; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
+                  </div>
+                `;
+                omrContainer.appendChild(item);
+              });
+            }
 
             lastOMRInfo = { allCorrect: allCorrect, results: evaluatedResults };
             let omrGridDataUrl = null;

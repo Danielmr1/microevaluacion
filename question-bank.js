@@ -156,6 +156,17 @@ function renderBankCards() {
       const actionsRow = document.createElement('div');
       actionsRow.style.cssText = 'display:flex; align-items:center; gap:6px;';
 
+      const hasRub = !!(q.hasRubric || q.rubric);
+      const rubBadge = document.createElement('span');
+      if (hasRub) {
+        rubBadge.textContent = '🤖 Rúbrica IA';
+        rubBadge.style.cssText = 'background:#4c1d95; color:#c4b5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;';
+      } else {
+        rubBadge.textContent = '⚡ Rápida';
+        rubBadge.style.cssText = 'background:#065f46; color:#6ee7b7; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;';
+      }
+      actionsRow.appendChild(rubBadge);
+
       const badge = document.createElement('span');
       badge.textContent = '🔘 Alternativa (1P)';
       badge.style.cssText = 'background:#1e3a8a; color:#93c5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;';
@@ -516,8 +527,11 @@ function renderBankManagerQuestions() {
     ? ClassroomData.getIndividualMCQuestions(stage, level)
     : [];
 
+  const countWithRubric = questions.filter(q => !!(q.hasRubric || q.rubric)).length;
+  const countQuick = questions.length - countWithRubric;
+
   if (summaryText) {
-    summaryText.textContent = `${questions.length} pregunta${questions.length === 1 ? '' : 's'} en ${bankManagerActiveGrade.label}`;
+    summaryText.textContent = `${questions.length} pregunta${questions.length === 1 ? '' : 's'} en ${bankManagerActiveGrade.label} (${countWithRubric} con Rúbrica IA · ${countQuick} rápidas)`;
   }
 
   if (questions.length === 0) {
@@ -525,13 +539,13 @@ function renderBankManagerQuestions() {
       <div style="text-align:center; padding:36px 20px; background:#1e293b50; border:1px dashed #334155; border-radius:12px; color:#94a3b8;">
         <span style="font-size:2rem; display:block; margin-bottom:8px;">📭</span>
         <div style="font-size:0.92rem; font-weight:700; color:#cbd5e1; margin-bottom:4px;">No hay preguntas para ${bankManagerActiveGrade.label}</div>
-        <div style="font-size:0.75rem; color:#64748b;">Haz clic en "➕ Nueva Pregunta para este Grado" para agregar la primera con rúbrica de IA.</div>
+        <div style="font-size:0.75rem; color:#64748b;">Haz clic en "➕ Nueva Pregunta para este Grado" para agregar preguntas con o sin rúbrica de IA.</div>
       </div>
     `;
     return;
   }
 
-  // Renderizar preguntas de forma unificada (con sus 4 alternativas y rúbrica)
+  // Renderizar preguntas de forma unificada (con sus 4 alternativas y distintivo de rúbrica)
   questions.forEach(q => {
     const card = document.createElement('div');
     card.style.cssText = 'background:#1e293b; border:1.5px solid #334155; border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;';
@@ -539,12 +553,21 @@ function renderBankManagerQuestions() {
     const header = document.createElement('div');
     header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px;';
 
+    const hasRubric = !!(q.hasRubric || q.rubric);
+
     const titleBox = document.createElement('div');
     titleBox.style.cssText = 'display:flex; align-items:center; gap:8px; flex:1; min-width:0;';
-    titleBox.innerHTML = `
-      <span style="background:#1e3a8a; color:#93c5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;">📘 Pregunta</span>
-      <span style="font-size:0.85rem; font-weight:800; color:#f1f5f9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Pregunta de evaluación</span>
-    `;
+    if (hasRubric) {
+      titleBox.innerHTML = `
+        <span style="background:#4c1d95; color:#c4b5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;">🤖 Con Rúbrica IA</span>
+        <span style="font-size:0.82rem; font-weight:700; color:#e2e8f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Procedimiento y Clave (Ramas 1, 2 y 3)</span>
+      `;
+    } else {
+      titleBox.innerHTML = `
+        <span style="background:#065f46; color:#6ee7b7; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;">⚡ Pregunta Rápida</span>
+        <span style="font-size:0.82rem; font-weight:700; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Solo Clave (Ramas 2 y 3)</span>
+      `;
+    }
 
     const btnDel = document.createElement('button');
     btnDel.type = 'button';
@@ -577,20 +600,39 @@ function renderBankManagerQuestions() {
     });
 
     const footer = document.createElement('div');
-    footer.style.cssText = 'display:flex; justify-content:flex-start; align-items:center; margin-top:4px;';
+    footer.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:4px; flex-wrap:wrap; gap:8px;';
 
-    const btnRubric = document.createElement('button');
-    btnRubric.type = 'button';
-    btnRubric.innerHTML = '📋 Ver Rúbrica de IA';
-    btnRubric.title = 'Ver la rúbrica y análisis pedagógico generado por la IA para esta pregunta';
-    btnRubric.style.cssText = 'background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#60a5fa; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
-    btnRubric.addEventListener('mouseenter', () => { btnRubric.style.background = '#2563eb'; btnRubric.style.color = '#fff'; });
-    btnRubric.addEventListener('mouseleave', () => { btnRubric.style.background = 'rgba(59,130,246,0.15)'; btnRubric.style.color = '#60a5fa'; });
-    btnRubric.onclick = () => {
-      handleViewQuestionRubric(q);
-    };
+    if (hasRubric) {
+      const btnRubric = document.createElement('button');
+      btnRubric.type = 'button';
+      btnRubric.innerHTML = '📋 Ver Rúbrica de IA';
+      btnRubric.title = 'Ver la solución canónica, criterios y errores frecuentes generados por la IA';
+      btnRubric.style.cssText = 'background:rgba(124,58,237,0.15); border:1px solid rgba(124,58,237,0.4); color:#c4b5fd; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
+      btnRubric.addEventListener('mouseenter', () => { btnRubric.style.background = '#7c3aed'; btnRubric.style.color = '#fff'; });
+      btnRubric.addEventListener('mouseleave', () => { btnRubric.style.background = 'rgba(124,58,237,0.15)'; btnRubric.style.color = '#c4b5fd'; });
+      btnRubric.onclick = () => {
+        handleViewQuestionRubric(q);
+      };
+      footer.appendChild(btnRubric);
+    } else {
+      const labelNoRubric = document.createElement('span');
+      labelNoRubric.style.cssText = 'font-size:0.72rem; color:#94a3b8; display:inline-flex; align-items:center; gap:4px;';
+      labelNoRubric.innerHTML = '⚡ <em>Sin análisis de procedimiento</em>';
 
-    footer.appendChild(btnRubric);
+      const btnUpgrade = document.createElement('button');
+      btnUpgrade.type = 'button';
+      btnUpgrade.innerHTML = '✨ Generar Rúbrica IA';
+      btnUpgrade.title = 'Analizar este problema con Gemini para habilitarlo en la Rama 1 (evaluación de procedimiento)';
+      btnUpgrade.style.cssText = 'background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#60a5fa; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
+      btnUpgrade.addEventListener('mouseenter', () => { btnUpgrade.style.background = '#2563eb'; btnUpgrade.style.color = '#fff'; });
+      btnUpgrade.addEventListener('mouseleave', () => { btnUpgrade.style.background = 'rgba(59,130,246,0.15)'; btnUpgrade.style.color = '#60a5fa'; });
+      btnUpgrade.onclick = () => {
+        handleUpgradeQuestionWithRubric(q);
+      };
+
+      footer.appendChild(labelNoRubric);
+      footer.appendChild(btnUpgrade);
+    }
 
     card.appendChild(header);
     card.appendChild(promptText);
@@ -954,6 +996,155 @@ async function handleSaveQuestionFromManager() {
   toggleBankManagerAddForm(false);
   renderBankManagerQuestions();
   if (typeof renderBankCards === 'function') renderBankCards();
+}
+
+/**
+ * Guarda una pregunta rápida de alternativas directamente en el banco sin consultar a Gemini.
+ * Apta para evaluación focalizada de contenido (Rama 2) y cartillas (Rama 3).
+ */
+async function handleSaveQuickQuestionFromManager() {
+  if (!bankManagerActiveGrade) {
+    showToast('⚠️ Selecciona un grado primero.');
+    return;
+  }
+
+  const promptInput = document.getElementById('bm-prompt');
+  const prompt = (promptInput?.value || '').trim();
+  if (!prompt) {
+    promptInput?.focus();
+    showToast('⚠️ Escribí el enunciado de la pregunta.');
+    return;
+  }
+
+  const optA = (document.getElementById('bm-opt-a')?.value || '').trim();
+  const optB = (document.getElementById('bm-opt-b')?.value || '').trim();
+  const optC = (document.getElementById('bm-opt-c')?.value || '').trim();
+  const optD = (document.getElementById('bm-opt-d')?.value || '').trim();
+  if (!optA || !optB || !optC || !optD) {
+    showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
+    return;
+  }
+
+  const rad = document.querySelector('input[name="bm-correct"]:checked');
+  const correctKey = (rad ? rad.value : 'A').toUpperCase();
+
+  const btnQuick = document.getElementById('btn-bm-save-quick');
+  if (btnQuick) btnQuick.disabled = true;
+
+  try {
+    const evalObj = {
+      title: 'Pregunta rápida de alternativa',
+      type: 'mc',
+      questionCount: 1,
+      prompt: prompt,
+      expectedAnswer: `Clave: ${correctKey}`,
+      options: { A: optA, B: optB, C: optC, D: optD },
+      correct: correctKey,
+      questions: [{
+        prompt: prompt,
+        options: { A: optA, B: optB, C: optC, D: optD },
+        correct: correctKey,
+        gradeStage: bankManagerActiveGrade.stage,
+        gradeLevel: Number(bankManagerActiveGrade.level),
+        gradeText: bankManagerActiveGrade.label,
+        rubric: null,
+        hasRubric: false
+      }],
+      rubric: null,
+      hasRubric: false,
+      gradeStage: bankManagerActiveGrade.stage,
+      gradeLevel: Number(bankManagerActiveGrade.level),
+      gradeText: bankManagerActiveGrade.label
+    };
+
+    ClassroomData.saveCustomEvaluation(evalObj);
+    SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud Quick]', e));
+
+    showToast('⚡ Pregunta rápida guardada con éxito en el banco');
+
+    // Limpiar campos y refrescar
+    if (promptInput) promptInput.value = '';
+    ['bm-opt-a', 'bm-opt-b', 'bm-opt-c', 'bm-opt-d'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const defaultRad = document.getElementById('bm-rad-a');
+    if (defaultRad) defaultRad.checked = true;
+
+    toggleBankManagerAddForm(false);
+    renderBankManagerQuestions();
+    if (typeof renderBankCards === 'function') renderBankCards();
+  } finally {
+    if (btnQuick) btnQuick.disabled = false;
+  }
+}
+
+/**
+ * Permite agregarle rúbrica pedagógica de IA a una pregunta rápida que no la tenía.
+ * Al generarse, la pregunta queda inmediatamente habilitada para evaluar procedimiento en la Rama 1.
+ */
+async function handleUpgradeQuestionWithRubric(q) {
+  if (!q || !q.prompt) return;
+
+  const gradoLabel = q.gradeText || (bankManagerActiveGrade ? bankManagerActiveGrade.label : 'Primaria');
+
+  showAIDialog({
+    icon: '✨',
+    title: 'Generar Rúbrica Pedagógica con IA',
+    bodyHtml: `
+      <div style="font-size:0.85rem; color:#cbd5e1; line-height:1.5; margin-bottom:12px;">
+        Esta acción consultará a Gemini para analizar el problema, generar la solución canónica y crear la rúbrica para evaluar el procedimiento manuscrito del alumno.
+      </div>
+      <div style="background:#0f172a; padding:10px 12px; border-radius:8px; border:1px solid #334155; font-size:0.8rem; color:#93c5fd; margin-bottom:12px;">
+        <strong>Enunciado:</strong> ${escaparHtml(q.prompt)}
+      </div>
+      <div style="font-size:0.75rem; color:#94a3b8;">
+        Al completar el análisis, esta pregunta quedará habilitada para la <strong>Rama 1 (Evaluación Formativa con Procedimiento)</strong>.
+      </div>
+    `,
+    buttons: [
+      {
+        label: '🚀 Iniciar Análisis IA ahora',
+        style: 'padding:8px 16px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:linear-gradient(135deg, #2563eb, #7c3aed); color:#fff;',
+        onClick: async () => {
+          closeAIDialogModal();
+          showToast('🤖 Consultando a Gemini... (~20-30 seg)');
+          try {
+            const res = await SupabaseClient.generateRubric({
+              prompt: q.prompt,
+              grado: gradoLabel
+            });
+            if (res && res.ok && res.rubrica) {
+              const evFull = ClassroomData.getEvaluation(q.id) || q;
+              evFull.rubric = res.rubrica;
+              evFull.hasRubric = true;
+              if (Array.isArray(evFull.questions)) {
+                evFull.questions.forEach(subQ => {
+                  if (subQ.prompt === q.prompt) {
+                    subQ.rubric = res.rubrica;
+                    subQ.hasRubric = true;
+                  }
+                });
+              }
+              ClassroomData.saveCustomEvaluation(evFull);
+              SupabaseClient.saveEvaluation(evFull).catch(e => console.warn('[Upgrade Question Cloud]', e));
+              renderBankManagerQuestions();
+              showToast('✅ Rúbrica de IA asignada exitosamente a la pregunta.');
+            } else {
+              showToast('⚠️ No se pudo generar la rúbrica: ' + (res?.error || 'Error desconocido'));
+            }
+          } catch (err) {
+            showToast('⚠️ Error al generar rúbrica: ' + (err?.message || err));
+          }
+        }
+      },
+      {
+        label: 'Cancelar',
+        style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #475569; background:#1e293b; color:#cbd5e1;',
+        onClick: () => {}
+      }
+    ]
+  });
 }
 
 
@@ -2681,6 +2872,610 @@ function selectMCCorrectionModeAndProceed(mode) {
   showSummary();
 }
 
+// =============================================================================
+// CONTROLADOR DE MODALIDADES DE EVALUACIÓN (RAMA 1, RAMA 2, RAMA 3) — FASE 2
+// =============================================================================
+
+let currentBranchMode = 'rama1';
+
+function selectBranchMode(branch) {
+  currentBranchMode = branch || 'rama1';
+
+  const card1 = document.getElementById('card-branch-1');
+  const card2 = document.getElementById('card-branch-2');
+  const card3 = document.getElementById('card-branch-3');
+
+  const b1Opts = document.getElementById('branch-1-options');
+  const b2Opts = document.getElementById('branch-2-options');
+  const b3Opts = document.getElementById('branch-3-options');
+
+  // Reset visual cards
+  if (card1) {
+    card1.style.borderColor = branch === 'rama1' ? '#7c3aed' : '#334155';
+    card1.style.background = branch === 'rama1' ? 'rgba(124,58,237,0.12)' : '#1e293b';
+  }
+  if (card2) {
+    card2.style.borderColor = branch === 'rama2' ? '#10b981' : '#334155';
+    card2.style.background = branch === 'rama2' ? 'rgba(16,185,129,0.12)' : '#1e293b';
+  }
+  if (card3) {
+    card3.style.borderColor = branch === 'rama3' ? '#0284c7' : '#334155';
+    card3.style.background = branch === 'rama3' ? 'rgba(2,132,199,0.12)' : '#1e293b';
+  }
+
+  // Toggle subpanels
+  if (b1Opts) b1Opts.style.display = branch === 'rama1' ? 'block' : 'none';
+  if (b2Opts) b2Opts.style.display = branch === 'rama2' ? 'block' : 'none';
+  if (b3Opts) b3Opts.style.display = branch === 'rama3' ? 'block' : 'none';
+
+  // Si se cambia de rama, ocultar formularios secundarios de Rama 1
+  if (branch !== 'rama1') {
+    const stepSrc = document.getElementById('step-source');
+    const stepBank = document.getElementById('step-bank-list');
+    const fNew = document.getElementById('step-new-form');
+    const fMC2 = document.getElementById('step-mc2-builder');
+    if (stepSrc) stepSrc.style.display = 'none';
+    if (stepBank) stepBank.style.display = 'none';
+    if (fNew) fNew.style.display = 'none';
+    if (fMC2) fMC2.style.display = 'none';
+  }
+
+  if (branch === 'rama2') {
+    initRama2Builder();
+  } else if (branch === 'rama3') {
+    initRama3Builder();
+  }
+}
+
+// ── CONTROLADOR RAMA 2: EVALUACIÓN FOCALIZADA ──
+let r2State = {
+  withGrid: true,
+  responseType: 'mc', // 'mc' | 'free'
+  count: 1, // 1, 2, 3
+  questions: [
+    { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' },
+    { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' },
+    { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' }
+  ]
+};
+
+function initRama2Builder() {
+  updateRama2ControlsUI();
+  renderRama2Questions();
+}
+
+function setRama2Grid(withGrid) {
+  r2State.withGrid = !!withGrid;
+  if (r2State.withGrid && r2State.count > 2) {
+    r2State.count = 2;
+  }
+  updateRama2ControlsUI();
+  renderRama2Questions();
+}
+
+function setRama2Type(type) {
+  r2State.responseType = (type === 'free') ? 'free' : 'mc';
+  updateRama2ControlsUI();
+  renderRama2Questions();
+}
+
+function setRama2Count(count) {
+  const max = r2State.withGrid ? 2 : 3;
+  r2State.count = Math.min(Math.max(1, count), max);
+  updateRama2ControlsUI();
+  renderRama2Questions();
+}
+
+function updateRama2ControlsUI() {
+  const btnGridYes = document.getElementById('btn-r2-grid-yes');
+  const btnGridNo = document.getElementById('btn-r2-grid-no');
+  if (btnGridYes && btnGridNo) {
+    if (r2State.withGrid) {
+      btnGridYes.style.borderColor = '#10b981';
+      btnGridYes.style.background = 'rgba(16,185,129,0.18)';
+      btnGridYes.style.color = '#a7f3d0';
+      btnGridNo.style.borderColor = '#334155';
+      btnGridNo.style.background = '#1e293b';
+      btnGridNo.style.color = '#94a3b8';
+    } else {
+      btnGridNo.style.borderColor = '#10b981';
+      btnGridNo.style.background = 'rgba(16,185,129,0.18)';
+      btnGridNo.style.color = '#a7f3d0';
+      btnGridYes.style.borderColor = '#334155';
+      btnGridYes.style.background = '#1e293b';
+      btnGridYes.style.color = '#94a3b8';
+    }
+  }
+
+  const btnTypeMC = document.getElementById('btn-r2-type-mc');
+  const btnTypeFree = document.getElementById('btn-r2-type-free');
+  if (btnTypeMC && btnTypeFree) {
+    if (r2State.responseType === 'mc') {
+      btnTypeMC.style.borderColor = '#10b981';
+      btnTypeMC.style.background = 'rgba(16,185,129,0.18)';
+      btnTypeMC.style.color = '#a7f3d0';
+      btnTypeFree.style.borderColor = '#334155';
+      btnTypeFree.style.background = '#1e293b';
+      btnTypeFree.style.color = '#94a3b8';
+    } else {
+      btnTypeFree.style.borderColor = '#10b981';
+      btnTypeFree.style.background = 'rgba(16,185,129,0.18)';
+      btnTypeFree.style.color = '#a7f3d0';
+      btnTypeMC.style.borderColor = '#334155';
+      btnTypeMC.style.background = '#1e293b';
+      btnTypeMC.style.color = '#94a3b8';
+    }
+  }
+
+  const btnC1 = document.getElementById('btn-r2-count-1');
+  const btnC2 = document.getElementById('btn-r2-count-2');
+  const btnC3 = document.getElementById('btn-r2-count-3');
+  [btnC1, btnC2, btnC3].forEach((b, idx) => {
+    if (!b) return;
+    const qNum = idx + 1;
+    if (r2State.count === qNum) {
+      b.style.borderColor = '#10b981';
+      b.style.background = 'rgba(16,185,129,0.18)';
+      b.style.color = '#a7f3d0';
+    } else {
+      b.style.borderColor = '#334155';
+      b.style.background = '#1e293b';
+      b.style.color = '#94a3b8';
+    }
+  });
+
+  if (btnC3) {
+    btnC3.style.display = r2State.withGrid ? 'none' : 'inline-block';
+  }
+}
+
+function setRama2QMode(qIdx, mode) {
+  if (!r2State.questions[qIdx]) return;
+  r2State.questions[qIdx].mode = mode;
+  renderRama2Questions();
+}
+
+function onRama2PromptInput(qIdx, val) {
+  if (r2State.questions[qIdx]) r2State.questions[qIdx].prompt = val;
+}
+
+function onRama2OptionInput(qIdx, optKey, val) {
+  if (r2State.questions[qIdx] && r2State.questions[qIdx].options) {
+    r2State.questions[qIdx].options[optKey] = val;
+  }
+}
+
+function onRama2CorrectChange(qIdx, val) {
+  if (r2State.questions[qIdx]) r2State.questions[qIdx].correct = val;
+}
+
+function onRama2ExpectedInput(qIdx, val) {
+  if (r2State.questions[qIdx]) r2State.questions[qIdx].expectedAnswer = val;
+}
+
+function onRama2BankSelect(qIdx, qId) {
+  const g = (typeof evaluacionesDelGradoActual === 'function')
+    ? evaluacionesDelGradoActual()
+    : { lista: [] };
+  const found = g.lista.find(q => q.id === qId);
+  if (!found || !r2State.questions[qIdx]) return;
+
+  r2State.questions[qIdx].id = found.id;
+  r2State.questions[qIdx].prompt = found.prompt || '';
+  if (found.options) {
+    r2State.questions[qIdx].options = { ...found.options };
+  }
+  r2State.questions[qIdx].correct = found.correct || 'A';
+  r2State.questions[qIdx].expectedAnswer = found.expectedAnswer || found.correct || '';
+  renderRama2Questions();
+}
+
+function renderRama2Questions() {
+  const container = document.getElementById('rama2-questions-container');
+  if (!container) return;
+
+  const g = (typeof evaluacionesDelGradoActual === 'function')
+    ? evaluacionesDelGradoActual()
+    : { lista: [] };
+  const bankList = g.lista || [];
+
+  let html = '';
+  for (let i = 0; i < r2State.count; i++) {
+    const q = r2State.questions[i] || {
+      mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: ''
+    };
+    const isBank = q.mode === 'bank';
+
+    html += `
+      <div style="background:#090d16; border:1px solid #334155; border-radius:10px; padding:12px; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+          <span style="font-size:0.78rem; font-weight:800; color:#6ee7b7; text-transform:uppercase;">
+            📌 Pregunta ${i + 1}
+          </span>
+          <div style="display:flex; gap:6px;">
+            <button type="button" onclick="setRama2QMode(${i}, 'bank')"
+              style="padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; cursor:pointer; border:1px solid ${isBank ? '#10b981' : '#334155'}; background:${isBank ? 'rgba(16,185,129,0.2)' : '#1e293b'}; color:${isBank ? '#a7f3d0' : '#94a3b8'};">
+              📚 Cargar del banco
+            </button>
+            <button type="button" onclick="setRama2QMode(${i}, 'new')"
+              style="padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; cursor:pointer; border:1px solid ${!isBank ? '#10b981' : '#334155'}; background:${!isBank ? 'rgba(16,185,129,0.2)' : '#1e293b'}; color:${!isBank ? '#a7f3d0' : '#94a3b8'};">
+              ✏️ Redactar nueva
+            </button>
+          </div>
+        </div>
+    `;
+
+    if (isBank) {
+      if (bankList.length === 0) {
+        html += `
+          <div style="padding:8px 10px; background:#1e293b; border-radius:6px; font-size:0.75rem; color:#f59e0b;">
+            ⚠️ No hay preguntas guardadas en el banco para este grado. Puedes redactarla haciendo clic en "✏️ Redactar nueva".
+          </div>
+        `;
+      } else {
+        html += `
+          <select class="form-control" onchange="onRama2BankSelect(${i}, this.value)" style="padding:6px 10px; font-size:0.8rem; margin-bottom:8px;">
+            <option value="">— Selecciona una pregunta del banco —</option>
+            ${bankList.map(item => `
+              <option value="${item.id}" ${q.id === item.id ? 'selected' : ''}>
+                ${escaparHtml((item.prompt || '').substring(0, 60))}${item.prompt && item.prompt.length > 60 ? '...' : ''} ${item.hasRubric ? '🤖' : '⚡'}
+              </option>
+            `).join('')}
+          </select>
+        `;
+        if (q.prompt) {
+          html += `
+            <div style="background:#1e293b; border:1px solid #334155; border-radius:6px; padding:8px; font-size:0.78rem;">
+              <div style="color:#f1f5f9; font-weight:600; margin-bottom:4px;">${escaparHtml(q.prompt)}</div>
+              ${r2State.responseType === 'mc' ? `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#94a3b8;">
+                  <span style="${q.correct === 'A' ? 'color:#4ade80; font-weight:700;' : ''}">A) ${escaparHtml(q.options?.A || '')}</span>
+                  <span style="${q.correct === 'B' ? 'color:#4ade80; font-weight:700;' : ''}">B) ${escaparHtml(q.options?.B || '')}</span>
+                  <span style="${q.correct === 'C' ? 'color:#4ade80; font-weight:700;' : ''}">C) ${escaparHtml(q.options?.C || '')}</span>
+                  <span style="${q.correct === 'D' ? 'color:#4ade80; font-weight:700;' : ''}">D) ${escaparHtml(q.options?.D || '')}</span>
+                </div>
+              ` : `
+                <div style="color:#4ade80; font-weight:700; font-size:0.75rem;">Rpta esperada: ${escaparHtml(q.expectedAnswer || q.correct || '')}</div>
+              `}
+            </div>
+          `;
+        }
+      }
+    } else {
+      // Modo New
+      html += `
+        <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado</label>
+        <textarea class="form-control" rows="2" maxlength="200"
+          placeholder="Escribe el enunciado de la pregunta ${i + 1}..."
+          oninput="onRama2PromptInput(${i}, this.value)"
+          style="resize:vertical; font-size:0.8rem; margin-bottom:8px;">${escaparHtml(q.prompt || '')}</textarea>
+      `;
+
+      if (r2State.responseType === 'mc') {
+        html += `
+          <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px;">Alternativas y clave correcta:</label>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            ${['A', 'B', 'C', 'D'].map(opt => `
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="radio" name="r2_rad_${i}" id="r2_rad_${i}_${opt}" value="${opt}" ${q.correct === opt ? 'checked' : ''}
+                  onchange="onRama2CorrectChange(${i}, '${opt}')" style="accent-color:#10b981; width:16px; height:16px; cursor:pointer;">
+                <label for="r2_rad_${i}_${opt}" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">${opt})</label>
+                <input type="text" class="form-control" placeholder="Alternativa ${opt}" value="${escaparHtml(q.options?.[opt] || '')}"
+                  oninput="onRama2OptionInput(${i}, '${opt}', this.value)" style="padding:4px 8px; font-size:0.78rem;">
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        html += `
+          <label style="font-size:0.68rem; color:#94a3b8; display:block; margin-bottom:4px;">Respuesta esperada:</label>
+          <input type="text" class="form-control" placeholder="Ej: 24 km/h ó 150..." value="${escaparHtml(q.expectedAnswer || '')}"
+            oninput="onRama2ExpectedInput(${i}, this.value)" style="padding:6px 10px; font-size:0.82rem;">
+        `;
+      }
+    }
+
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function confirmRama2() {
+  if (!wizardClassroomId) {
+    showToast('⚠️ Por favor selecciona un salón primero.');
+    return;
+  }
+
+  const activeQuestions = [];
+  for (let i = 0; i < r2State.count; i++) {
+    const q = r2State.questions[i];
+    if (!q || !q.prompt || !q.prompt.trim()) {
+      showToast(`⚠️ Falta el enunciado para la Pregunta ${i + 1}.`);
+      return;
+    }
+    if (r2State.responseType === 'mc') {
+      if (!q.options || !q.options.A || !q.options.B || !q.options.C || !q.options.D) {
+        showToast(`⚠️ Completa las 4 alternativas para la Pregunta ${i + 1}.`);
+        return;
+      }
+      activeQuestions.push({
+        id: q.id || ('r2_q' + (i + 1)),
+        prompt: q.prompt.trim(),
+        options: {
+          A: q.options.A.trim(),
+          B: q.options.B.trim(),
+          C: q.options.C.trim(),
+          D: q.options.D.trim()
+        },
+        correct: q.correct || 'A'
+      });
+    } else {
+      if (!q.expectedAnswer || !q.expectedAnswer.trim()) {
+        showToast(`⚠️ Ingresa la respuesta esperada para la Pregunta ${i + 1}.`);
+        return;
+      }
+      activeQuestions.push({
+        id: q.id || ('r2_q' + (i + 1)),
+        prompt: q.prompt.trim(),
+        expectedAnswer: q.expectedAnswer.trim()
+      });
+    }
+  }
+
+  const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
+  const isOMR = r2State.responseType === 'mc';
+
+  wizardEval = {
+    id: 'eval_r2_' + Date.now(),
+    branch: 'rama2',
+    type: isOMR ? 'mc' : 'free',
+    withGrid: r2State.withGrid,
+    questionCount: r2State.count,
+    questions: activeQuestions,
+    title: `Evaluación Focalizada (${r2State.count}P)`,
+    prompt: activeQuestions[0].prompt,
+    expectedAnswer: isOMR ? activeQuestions[0].correct : activeQuestions[0].expectedAnswer,
+    correctionMode: 'quick',
+    gradeStage: g?.stage,
+    gradeLevel: g?.level,
+    gradeText: g?.texto
+  };
+
+  wizardEvalType = isOMR ? (r2State.count === 1 ? 'mc1' : 'mc2') : 'free';
+  showSummary();
+}
+
+// ── CONTROLADOR RAMA 3: CARTILLA DE RESPUESTAS OMR ──
+let r3State = {
+  count: 10,
+  mode: 'keys', // 'keys' | 'bank'
+  keys: Array(20).fill('A'),
+  bankQuestions: Array(20).fill(null)
+};
+
+function initRama3Builder() {
+  updateRama3ControlsUI();
+  if (r3State.mode === 'keys') {
+    renderRama3Matrix();
+  } else {
+    renderRama3BankList();
+  }
+}
+
+function setRama3Count(count) {
+  r3State.count = parseInt(count, 10) || 10;
+  updateRama3ControlsUI();
+  if (r3State.mode === 'keys') {
+    renderRama3Matrix();
+  } else {
+    renderRama3BankList();
+  }
+}
+
+function setRama3Mode(mode) {
+  r3State.mode = mode === 'bank' ? 'bank' : 'keys';
+  updateRama3ControlsUI();
+  if (r3State.mode === 'keys') {
+    renderRama3Matrix();
+  } else {
+    renderRama3BankList();
+  }
+}
+
+function updateRama3ControlsUI() {
+  const countBtns = document.querySelectorAll('.btn-r3-qcount');
+  countBtns.forEach(btn => {
+    const val = parseInt(btn.textContent.trim(), 10);
+    if (val === r3State.count) {
+      btn.style.borderColor = '#0284c7';
+      btn.style.background = 'rgba(2,132,199,0.25)';
+      btn.style.color = '#38bdf8';
+    } else {
+      btn.style.borderColor = '#334155';
+      btn.style.background = '#1e293b';
+      btn.style.color = '#94a3b8';
+    }
+  });
+
+  const btnKeys = document.getElementById('btn-r3-mode-keys');
+  const btnBank = document.getElementById('btn-r3-mode-bank');
+  const wrapKeys = document.getElementById('rama3-keys-wrap');
+  const wrapBank = document.getElementById('rama3-bank-wrap');
+
+  if (btnKeys && btnBank) {
+    if (r3State.mode === 'keys') {
+      btnKeys.style.borderColor = '#0284c7';
+      btnKeys.style.background = 'rgba(2,132,199,0.2)';
+      btnKeys.style.color = '#38bdf8';
+      btnBank.style.borderColor = '#334155';
+      btnBank.style.background = '#1e293b';
+      btnBank.style.color = '#94a3b8';
+      if (wrapKeys) wrapKeys.style.display = 'block';
+      if (wrapBank) wrapBank.style.display = 'none';
+    } else {
+      btnBank.style.borderColor = '#0284c7';
+      btnBank.style.background = 'rgba(2,132,199,0.2)';
+      btnBank.style.color = '#38bdf8';
+      btnKeys.style.borderColor = '#334155';
+      btnKeys.style.background = '#1e293b';
+      btnKeys.style.color = '#94a3b8';
+      if (wrapKeys) wrapKeys.style.display = 'none';
+      if (wrapBank) wrapBank.style.display = 'block';
+    }
+  }
+}
+
+function setRama3Key(qIdx, key) {
+  if (qIdx >= 0 && qIdx < 20) {
+    r3State.keys[qIdx] = key;
+    renderRama3Matrix();
+  }
+}
+
+function renderRama3Matrix() {
+  const container = document.getElementById('rama3-keys-matrix');
+  if (!container) return;
+
+  let html = '';
+  for (let i = 0; i < r3State.count; i++) {
+    const selectedKey = r3State.keys[i] || 'A';
+    html += `
+      <div style="background:#090d16; border:1px solid #334155; border-radius:8px; padding:6px 8px; display:flex; align-items:center; justify-content:space-between; gap:4px;">
+        <span style="font-size:0.75rem; font-weight:800; color:#cbd5e1; width:28px;">P${(i + 1).toString().padStart(2, '0')}</span>
+        <div style="display:flex; gap:3px;">
+          ${['A', 'B', 'C', 'D'].map(k => {
+            const isSel = selectedKey === k;
+            return `
+              <button type="button" onclick="setRama3Key(${i}, '${k}')"
+                style="width:24px; height:24px; border-radius:50%; border:1px solid ${isSel ? '#0284c7' : '#334155'}; background:${isSel ? '#0284c7' : '#1e293b'}; color:${isSel ? '#fff' : '#94a3b8'}; font-size:0.72rem; font-weight:${isSel ? '800' : '600'}; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; transition:all 0.1s;">
+                ${k}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+function renderRama3BankList() {
+  const container = document.getElementById('rama3-bank-list');
+  if (!container) return;
+
+  const g = (typeof evaluacionesDelGradoActual === 'function')
+    ? evaluacionesDelGradoActual()
+    : { lista: [] };
+  const bankList = g.lista || [];
+
+  if (bankList.length === 0) {
+    container.innerHTML = `
+      <div style="padding:12px; background:#1e293b; border-radius:8px; font-size:0.78rem; color:#f59e0b; text-align:center;">
+        ⚠️ No hay preguntas guardadas para este grado. Puedes usar el <strong>Modo A (Solo Claves)</strong> para definir la pauta de corrección rápidamente.
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  for (let i = 0; i < r3State.count; i++) {
+    const selQ = r3State.bankQuestions[i];
+    html += `
+      <div style="background:#090d16; border:1px solid #334155; border-radius:8px; padding:6px 10px; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:0.75rem; font-weight:800; color:#38bdf8; width:30px;">P${(i + 1).toString().padStart(2, '0')}</span>
+        <select class="form-control" onchange="onRama3BankSelect(${i}, this.value)" style="flex:1; padding:5px 8px; font-size:0.75rem;">
+          <option value="">— Seleccionar pregunta —</option>
+          ${bankList.map(item => `
+            <option value="${item.id}" ${selQ && selQ.id === item.id ? 'selected' : ''}>
+              ${escaparHtml((item.prompt || '').substring(0, 50))}${item.prompt && item.prompt.length > 50 ? '...' : ''} (Clave: ${item.correct || 'A'})
+            </option>
+          `).join('')}
+        </select>
+        <span style="font-size:0.75rem; font-weight:800; color:#4ade80; background:#064e3b; padding:2px 8px; border-radius:4px; border:1px solid #10b981;">
+          ${r3State.keys[i] || 'A'}
+        </span>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+function onRama3BankSelect(qIdx, qId) {
+  const g = (typeof evaluacionesDelGradoActual === 'function')
+    ? evaluacionesDelGradoActual()
+    : { lista: [] };
+  const found = g.lista.find(q => q.id === qId);
+  if (found) {
+    r3State.bankQuestions[qIdx] = found;
+    r3State.keys[qIdx] = found.correct || 'A';
+  } else {
+    r3State.bankQuestions[qIdx] = null;
+  }
+  renderRama3BankList();
+}
+
+function rama3AutofillFromBank() {
+  const g = (typeof evaluacionesDelGradoActual === 'function')
+    ? evaluacionesDelGradoActual()
+    : { lista: [] };
+  const bankList = g.lista || [];
+
+  if (bankList.length === 0) {
+    showToast('⚠️ No hay preguntas en el banco para este grado.');
+    return;
+  }
+
+  for (let i = 0; i < r3State.count; i++) {
+    if (i < bankList.length) {
+      r3State.bankQuestions[i] = bankList[i];
+      r3State.keys[i] = bankList[i].correct || 'A';
+    }
+  }
+  renderRama3BankList();
+  showToast(`⚡ Se autocompletaron las preguntas disponibles.`);
+}
+
+function confirmRama3() {
+  if (!wizardClassroomId) {
+    showToast('⚠️ Por favor selecciona un salón primero.');
+    return;
+  }
+
+  const questions = [];
+  for (let i = 0; i < r3State.count; i++) {
+    const qObj = r3State.bankQuestions[i];
+    questions.push({
+      id: qObj?.id || ('r3_q' + (i + 1)),
+      num: i + 1,
+      prompt: qObj?.prompt || `Pregunta ${i + 1}`,
+      options: qObj?.options || { A: 'A', B: 'B', C: 'C', D: 'D' },
+      correct: r3State.keys[i] || 'A'
+    });
+  }
+
+  const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
+
+  wizardEval = {
+    id: 'eval_r3_' + Date.now(),
+    branch: 'rama3',
+    type: 'mc', // Regla 2: Cartilla OMR es type mc
+    withGrid: false,
+    questionCount: r3State.count,
+    questions: questions,
+    title: `Cartilla de Respuestas (${r3State.count} Preguntas)`,
+    prompt: `Cartilla de respuestas de ${r3State.count} preguntas`,
+    expectedAnswer: r3State.keys.slice(0, r3State.count).join(' '),
+    correctionMode: 'quick',
+    gradeStage: g?.stage,
+    gradeLevel: g?.level,
+    gradeText: g?.texto
+  };
+
+  wizardEvalType = 'mc';
+  showSummary();
+}
+
 // ── EXPOSICIÓN GLOBAL DE FUNCIONES PARA EVENTOS EN LÍNEA (HTML ONCLICK) ──
 if (typeof window !== 'undefined') {
   window.escaparHtml = escaparHtml;
@@ -2699,6 +3494,8 @@ if (typeof window !== 'undefined') {
   window.toggleBankManagerAddForm = toggleBankManagerAddForm;
   window.updateBMPromptCounter = updateBMPromptCounter;
   window.handleSaveQuestionFromManager = handleSaveQuestionFromManager;
+  window.handleSaveQuickQuestionFromManager = handleSaveQuickQuestionFromManager;
+  window.handleUpgradeQuestionWithRubric = handleUpgradeQuestionWithRubric;
   window.renderBankCards = renderBankCards;
   window.handleDeleteQuestionFromBank = handleDeleteQuestionFromBank;
   window.evaluacionesDelGradoActual = evaluacionesDelGradoActual;
@@ -2724,5 +3521,31 @@ if (typeof window !== 'undefined') {
   window.selectMCCorrectionModeAndProceed = selectMCCorrectionModeAndProceed;
   window.salirDelEscaner = salirDelEscaner;
   window.intentarIniciarCamara = intentarIniciarCamara;
+
+  // Nuevas funciones de Ramas 1, 2 y 3 (Fase 2)
+  window.selectBranchMode = selectBranchMode;
+  window.setRama2Grid = setRama2Grid;
+  window.setRama2Type = setRama2Type;
+  window.setRama2Count = setRama2Count;
+  window.setRama2QMode = setRama2QMode;
+  window.onRama2PromptInput = onRama2PromptInput;
+  window.onRama2OptionInput = onRama2OptionInput;
+  window.onRama2CorrectChange = onRama2CorrectChange;
+  window.onRama2ExpectedInput = onRama2ExpectedInput;
+  window.onRama2BankSelect = onRama2BankSelect;
+  window.renderRama2Questions = renderRama2Questions;
+  window.confirmRama2 = confirmRama2;
+
+  window.setRama3Count = setRama3Count;
+  window.setRama3Mode = setRama3Mode;
+  window.setRama3Key = setRama3Key;
+  window.renderRama3Matrix = renderRama3Matrix;
+  window.renderRama3BankList = renderRama3BankList;
+  window.onRama3BankSelect = onRama3BankSelect;
+  window.rama3AutofillFromBank = rama3AutofillFromBank;
+  window.confirmRama3 = confirmRama3;
+  window.r2State = r2State;
+  window.r3State = r3State;
 }
+
 
