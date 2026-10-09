@@ -239,7 +239,8 @@ function renderBankCards() {
         const saved = ClassroomData.saveCustomEvaluation(evalObj);
         wizardEval = saved;
         wizardEvalType = 'mc1';
-        promptMCCorrectionMode();
+        if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('full');
+        showSummary();
       });
 
       container.appendChild(card);
@@ -1156,11 +1157,11 @@ function selectEvaluation(evalObj) {
   const qCount = evalObj.questionCount || (evalObj.questions ? evalObj.questions.length : 1);
   wizardEvalType = isOMR ? (qCount === 2 ? 'mc2' : 'mc1') : 'free';
   wizardEval = evalObj;
-  if (isOMR) {
-    promptMCCorrectionMode();
-  } else {
-    showSummary();
+  const isRama1 = !evalObj.branch || evalObj.branch === 'rama1';
+  if (isOMR && isRama1 && typeof updateCorrectionModeUI === 'function') {
+    updateCorrectionModeUI('full');
   }
+  showSummary();
 }
 
 /* ── RÚBRICA DE CORRECCIÓN (IA) ──────────────────────────────────────
@@ -2205,11 +2206,11 @@ function saveAndProceedUnified(prompt, optionsMap, correctKey, g, rubric) {
 
   wizardEvalType = isMC ? 'mc1' : 'free';
   wizardEval = saved;
-  if (isMC) {
-    promptMCCorrectionMode();
-  } else {
-    showSummary();
+  const isRama1 = !saved.branch || saved.branch === 'rama1';
+  if (isMC && isRama1 && typeof updateCorrectionModeUI === 'function') {
+    updateCorrectionModeUI('full');
   }
+  showSummary();
 }
 
 function confirmNewEvalMC1() {
@@ -2841,7 +2842,8 @@ function finalizeMC2(q1, q2, g) {
 
   wizardEvalType = 'mc2';
   wizardEval = saved;
-  promptMCCorrectionMode();
+  if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('full');
+  showSummary();
 }
 
 function confirmNewEvalFree() {
@@ -2943,9 +2945,13 @@ function selectBranchMode(branch) {
     if (fMC2) fMC2.style.display = 'none';
   }
 
-  if (branch === 'rama2') {
+  if (branch === 'rama1') {
+    if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('full');
+  } else if (branch === 'rama2') {
+    if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('quick');
     initRama2Builder();
   } else if (branch === 'rama3') {
+    if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('quick');
     initRama3Builder();
   }
 }
