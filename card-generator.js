@@ -361,12 +361,13 @@ function createA6Card(student, classroom, evaluation) {
           </div>
         </div>
         <div class="a6-qr-block">
-          <div class="a6-qr-meta">
-            <span class="a6-qr-code-text">${orderNumber}</span>
-            <span class="a6-qr-hint">Rellena: <b>●</b></span>
-          </div>
+          <span class="a6-qr-code-text">${orderNumber}</span>
           <div class="a6-qr-box" id="qr-box-${student.id}"></div>
         </div>
+      </div>
+
+      <div class="a6-fill-hint-row">
+        <span class="a6-fill-hint">Rellena: <b>●</b></span>
       </div>
 
       <div class="a6-b3-body">
@@ -474,12 +475,13 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
           </div>
         </div>
         <div class="v-qr-block">
-          <div class="v-qr-meta">
-            <span class="v-qr-code-text">${orderNumber}</span>
-            <span class="v-qr-hint">Rellena: <b>●</b></span>
-          </div>
+          <span class="v-qr-code-text">${orderNumber}</span>
           <div class="v-qr-box" id="qr-box-${student.id}"></div>
         </div>
+      </div>
+
+      <div class="v-fill-hint-row">
+        <span class="v-fill-hint">Rellena: <b>●</b></span>
       </div>
 
       <div class="v-b3-body">

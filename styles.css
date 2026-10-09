@@ -514,7 +514,7 @@
 
     .a6-card-header {
       height: 18.5mm;
-      padding: 2.2mm 16mm 1.8mm 16mm;
+      padding: 2.2mm 20mm 1.8mm 16mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -534,13 +534,13 @@
     }
 
     .a6-header-top-title {
-      font-size: 7.2pt;
+      font-size: 8.8pt;
       font-weight: 800;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
       text-align: left;
       color: #000000;
-      line-height: 1;
+      line-height: 1.1;
       margin: 0;
       padding: 0;
     }
@@ -584,38 +584,16 @@
     .a6-qr-block {
       display: flex;
       align-items: center;
-      gap: 2.5mm;
+      gap: 3.5mm;
       flex-shrink: 0;
       height: 13.5mm;
     }
 
-    .a6-qr-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      justify-content: space-between;
-      height: 13.5mm;
-      padding: 0.5mm 0;
-      box-sizing: border-box;
-    }
-
     .a6-qr-code-text {
-      font-size: 8pt;
+      font-size: 9pt;
       font-weight: 800;
       color: #000000;
       line-height: 1;
-    }
-
-    .a6-qr-hint {
-      font-size: 6.2pt;
-      color: #475569;
-      white-space: nowrap;
-      line-height: 1;
-    }
-
-    .a6-qr-hint b {
-      color: #000000;
-      font-size: 6.8pt;
     }
 
     .a6-qr-box {
@@ -626,6 +604,25 @@
       justify-content: center;
     }
     .a6-qr-box svg { width: 100%; height: 100%; display: block; }
+
+    .a6-fill-hint-row {
+      padding: 1.2mm 16mm 0.8mm 16mm;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .a6-fill-hint {
+      font-size: 6.8pt;
+      color: #475569;
+      line-height: 1;
+    }
+
+    .a6-fill-hint b {
+      color: #000000;
+      font-size: 7.5pt;
+    }
 
     .a6-b3-title {
       font-size: 6.5pt;
@@ -803,7 +800,7 @@
 
     .v-card-header {
       height: 20mm;
-      padding: 2.5mm 16mm 2mm 16mm;
+      padding: 2.5mm 20mm 2mm 16mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -823,13 +820,13 @@
     }
 
     .v-header-top-title {
-      font-size: 7.8pt;
+      font-size: 9.5pt;
       font-weight: 800;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
       text-align: left;
       color: #000000;
-      line-height: 1;
+      line-height: 1.1;
       margin: 0;
       padding: 0;
     }
@@ -873,38 +870,16 @@
     .v-qr-block {
       display: flex;
       align-items: center;
-      gap: 2.5mm;
+      gap: 3.5mm;
       flex-shrink: 0;
       height: 14.5mm;
     }
 
-    .v-qr-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      justify-content: space-between;
-      height: 14.5mm;
-      padding: 0.5mm 0;
-      box-sizing: border-box;
-    }
-
     .v-qr-code-text {
-      font-size: 8pt;
+      font-size: 9.5pt;
       font-weight: 800;
       color: #000000;
       line-height: 1;
-    }
-
-    .v-qr-hint {
-      font-size: 6.2pt;
-      color: #475569;
-      white-space: nowrap;
-      line-height: 1;
-    }
-
-    .v-qr-hint b {
-      color: #000000;
-      font-size: 6.8pt;
     }
 
     .v-qr-box {
@@ -915,6 +890,25 @@
       justify-content: center;
     }
     .v-qr-box svg { width: 100%; height: 100%; display: block; }
+
+    .v-fill-hint-row {
+      padding: 1.2mm 16mm 0.8mm 16mm;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    .v-fill-hint {
+      font-size: 6.8pt;
+      color: #475569;
+      line-height: 1;
+    }
+
+    .v-fill-hint b {
+      color: #000000;
+      font-size: 7.5pt;
+    }
 
     .v-b3-body {
       flex: 1;
