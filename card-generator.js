@@ -800,21 +800,136 @@ function fitProblemText() {
   });
 }
 
-// ── CUADERNILLO DE PREGUNTAS (COMPAÑERO DE CARTILLAS OMR) ──────────────────────
+// // ── CUADERNILLO DE PREGUNTAS (COMPAÑERO DE CARTILLAS OMR) ──────────────────────
 
 /**
- * Determina si el cuadernillo de preguntas entra en formato A5 (para imprimir 2 exámenes por hoja A4 horizontal).
- * Criterio: 5 o menos preguntas y que los enunciados no excedan los 240 caracteres.
+ * Estima la altura en milímetros que ocupará una pregunta según el ancho de columna.
+ */
+function estimateBookletQuestionHeight(q, colWidthMm, isCompact) {
+  const prompt = String(q.prompt || '');
+  const charsPerLine = Math.max(20, Math.floor(colWidthMm * (isCompact ? 0.95 : 0.85)));
+  const promptLines = Math.max(1, Math.ceil(prompt.length / charsPerLine));
+  const promptH = promptLines * (isCompact ? 3.0 : 3.6);
+
+  const opts = q.options || {};
+  const maxOptLen = Math.max(
+    String(opts.A || '').length,
+    String(opts.B || '').length,
+    String(opts.C || '').length,
+    String(opts.D || '').length
+  );
+  const isGrid2x2 = maxOptLen <= (colWidthMm > 90 ? 28 : 16);
+  const optLines = isGrid2x2 ? 2 : 4;
+  const optH = optLines * (isCompact ? 3.0 : 3.6);
+  const gap = isCompact ? 1.5 : 2.5;
+
+  return promptH + optH + gap;
+}
+
+/**
+ * Cascada adaptativa de distribución del cuadernillo:
+ * - 'quad': A4 Horizontal en 4 cuadrantes iguales (4 exámenes por hoja).
+ * - 'half': A4 Horizontal en 2 mitades iguales (2 exámenes por hoja).
+ * - 'portrait': A4 Vertical en 2 columnas continuas (1 o más páginas).
+ */
+function determineBookletLayout(evaluation) {
+  const questions = (evaluation && evaluation.questions) ? evaluation.questions : [];
+  if (questions.length === 0) return { level: 'quad', pages: [] };
+
+  // ── NIVEL 1: ¿Cabe en 1 cuadrante (A4 Horizontal en 4 partes)? ──
+  // Ancho útil ~124mm, alto disponible para preguntas = 68mm.
+  if (questions.length <= 4) {
+    let quadH = 0;
+    for (const q of questions) {
+      quadH += estimateBookletQuestionHeight(q, 124, true);
+    }
+    if (quadH <= 68) {
+      return { level: 'quad', pages: [{ questions }] };
+    }
+  }
+
+  // ── NIVEL 2: ¿Cabe en media hoja (A4 Horizontal en 2 mitades)? ──
+  // En media hoja: ancho útil ~124mm, alto disponible para preguntas = 158mm.
+  // Para 5 o más preguntas, disponer preferentemente en 2 sub-columnas (equilibrio visual)
+  if (questions.length >= 5 && questions.length <= 10) {
+    const mid = Math.ceil(questions.length / 2);
+    let col1H = 0;
+    for (let i = 0; i < mid; i++) {
+      col1H += estimateBookletQuestionHeight(questions[i], 58, true);
+    }
+    let col2H = 0;
+    for (let i = mid; i < questions.length; i++) {
+      col2H += estimateBookletQuestionHeight(questions[i], 58, true);
+    }
+    if (Math.max(col1H, col2H) <= 158) {
+      return {
+        level: 'half',
+        subColumns: 2,
+        pages: [{ col1: questions.slice(0, mid), col2: questions.slice(mid) }]
+      };
+    }
+  }
+
+  // Si son menos de 5 preguntas (o 2 sub-columnas no cupieron), probar 1 columna completa
+  let half1ColH = 0;
+  for (const q of questions) {
+    half1ColH += estimateBookletQuestionHeight(q, 124, false);
+  }
+  if (half1ColH <= 158) {
+    return { level: 'half', subColumns: 1, pages: [{ questions }] };
+  }
+
+  // ── NIVEL 3: A4 Vertical en 2 columnas continuas (1 o más páginas) ──
+  // Ancho por columna en vertical: ~82mm.
+  // Alto disponible en Pág 1: ~234mm. En Pág 2+: ~248mm.
+  const pages = [];
+  let currentQIdx = 0;
+  let pageNum = 1;
+
+  while (currentQIdx < questions.length) {
+    const maxColH = pageNum === 1 ? 234 : 248;
+    const col1 = [];
+    const col2 = [];
+    let currentH1 = 0;
+    let currentH2 = 0;
+
+    // Llenar columna 1 completamente primero
+    while (currentQIdx < questions.length) {
+      const q = questions[currentQIdx];
+      const qH = estimateBookletQuestionHeight(q, 82, false);
+      if (col1.length > 0 && (currentH1 + qH > maxColH)) {
+        break;
+      }
+      col1.push(q);
+      currentH1 += qH;
+      currentQIdx++;
+    }
+
+    // Llenar columna 2 a continuación
+    while (currentQIdx < questions.length) {
+      const q = questions[currentQIdx];
+      const qH = estimateBookletQuestionHeight(q, 82, false);
+      if (col2.length > 0 && (currentH2 + qH > maxColH)) {
+        break;
+      }
+      col2.push(q);
+      currentH2 += qH;
+      currentQIdx++;
+    }
+
+    pages.push({ col1, col2, pageNum });
+    pageNum++;
+  }
+
+  return { level: 'portrait', pages };
+}
+
+/**
+ * Función de compatibilidad
  */
 function checkIfBookletFitsA5(evaluation) {
-  if (!evaluation) return false;
-  const questions = evaluation.questions || [];
-  const qCount = evaluation.questionCount || questions.length || 1;
-  if (qCount <= 5) {
-    const hasLongPrompt = questions.some(q => (q.prompt || '').length > 240);
-    return !hasLongPrompt;
-  }
-  return false;
+  const layout = determineBookletLayout(evaluation);
+  return layout.level === 'half' || layout.level === 'quad';
 }
 
 /**
@@ -846,8 +961,7 @@ function getBookletPdfExportTitle(classroom, evaluation) {
 }
 
 /**
- * Configura la regla @page dinámica en el DOM antes de imprimir para que el navegador
- * abra el diálogo de impresión directamente en Horizontal (Landscape) o Vertical (Portrait).
+ * Configura la regla @page dinámica en el DOM antes de imprimir.
  */
 function setPrintPageOrientation(orientation) {
   if (typeof document === 'undefined') return;
@@ -858,16 +972,16 @@ function setPrintPageOrientation(orientation) {
     document.head.appendChild(styleEl);
   }
   if (orientation === 'landscape') {
-    styleEl.textContent = '@page { size: A4 landscape; margin: 6mm; }';
+    styleEl.textContent = '@page { size: A4 landscape; margin: 3mm; }';
   } else {
-    styleEl.textContent = '@page { size: A4 portrait; margin: 6mm; }';
+    styleEl.textContent = '@page { size: A4 portrait; margin: 5mm; }';
   }
 }
 
 /**
- * Renderiza el HTML de una sola pregunta con sus 4 alternativas para el cuadernillo.
+ * Renderiza el HTML de una sola pregunta para el cuadernillo.
  */
-function renderBookletQuestionHTML(q, idx) {
+function renderBookletQuestionHTML(q, idx, isCompact = false) {
   const escape = (typeof escaparHtml === 'function')
     ? escaparHtml
     : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -876,17 +990,17 @@ function renderBookletQuestionHTML(q, idx) {
   const prompt = escape(q.prompt || `Pregunta ${num}`);
   const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
 
-  // Detectar si alguna alternativa es larga para usar 1 columna o 2 columnas en las alternativas
   const maxOptLen = Math.max(
     String(opts.A || '').length,
     String(opts.B || '').length,
     String(opts.C || '').length,
     String(opts.D || '').length
   );
-  const gridClass = maxOptLen > 30 ? 'booklet-options-list' : 'booklet-options-grid';
+  const gridClass = maxOptLen > 28 ? 'booklet-options-list' : 'booklet-options-grid';
+  const compactClass = isCompact ? ' booklet-q-compact' : '';
 
   return `
-    <div class="booklet-q-item">
+    <div class="booklet-q-item${compactClass}">
       <div class="booklet-q-prompt">
         <span class="booklet-q-num">${num}.</span> ${prompt}
       </div>
@@ -902,8 +1016,10 @@ function renderBookletQuestionHTML(q, idx) {
 
 /**
  * Construye y renderiza el Cuadernillo de Preguntas en el contenedor #booklet-container.
- * Caso A: Si cabe en A5 -> 1 hoja A4 Landscape con 2 exámenes idénticos lado a lado.
- * Caso B: Si excede A5 -> Hojas A4 Portrait con 2 columnas de preguntas.
+ * Cascada Adaptativa:
+ * - Nivel 1: Cuadrantes A6 en A4 Horizontal (4 exámenes por hoja).
+ * - Nivel 2: Mitades A5 en A4 Horizontal (2 exámenes por hoja).
+ * - Nivel 3: A4 Vertical en 2 columnas continuas (1 o más páginas).
  */
 function renderQuestionBooklet(classId, evaluation) {
   if (typeof document === 'undefined') return;
@@ -915,102 +1031,159 @@ function renderQuestionBooklet(classId, evaluation) {
     return;
   }
 
-  const escape = (typeof escaparHtml === 'function')
-    ? escaparHtml
-    : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-  let classroom = null;
-  if (classId && typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
-    classroom = ClassroomData.getClassroom(classId);
-  }
-  const gradeText = classroom ? (ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel) || classroom.name) : (evaluation.gradeText || '');
-  const titleText = evaluation.title || 'Cuadernillo de Preguntas';
-
   const questions = evaluation.questions;
-  const fitsA5 = checkIfBookletFitsA5(evaluation);
-
+  const layout = determineBookletLayout(evaluation);
   container.innerHTML = '';
 
-  if (fitsA5) {
-    // ── CASO A: A4 HORIZONTAL (LANDSCAPE) CON 2 EXÁMENES A5 IDÉNTICOS ──
-    const examA5HTML = `
+  // Actualizar texto del botón de descarga si existe
+  const printBtn = document.getElementById('btn-print-booklet');
+  if (printBtn) {
+    if (layout.level === 'quad') {
+      printBtn.innerHTML = `📄 Descargar Cuadernillo (PDF) [A4 Horizontal · 4 por hoja]`;
+    } else if (layout.level === 'half') {
+      printBtn.innerHTML = `📄 Descargar Cuadernillo (PDF) [A4 Horizontal · 2 por hoja]`;
+    } else {
+      const pCount = layout.pages.length;
+      printBtn.innerHTML = `📄 Descargar Cuadernillo (PDF) [A4 Vertical · ${pCount} ${pCount === 1 ? 'página' : 'páginas'}]`;
+    }
+  }
+
+  if (layout.level === 'quad') {
+    // ── NIVEL 1: A4 HORIZONTAL EN 4 CUADRANTES IGUALES (4 EXÁMENES POR HOJA) ──
+    const examQuadHTML = `
+      <div class="booklet-quad-item">
+        <div class="booklet-header booklet-header-quad">
+          <div class="booklet-title-compact">EVALUACIÓN ESCOLAR</div>
+          <div class="booklet-student-line-compact">
+            <span>Estudiante: __________________________________________________</span>
+          </div>
+          <div class="booklet-instructions-compact">
+            * Lee con atención cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.
+          </div>
+        </div>
+        <div class="booklet-body-quad">
+          ${questions.map((q, idx) => renderBookletQuestionHTML(q, idx, true)).join('')}
+        </div>
+      </div>
+    `;
+
+    const sheetEl = document.createElement('div');
+    sheetEl.className = 'sheet-booklet-quad';
+    sheetEl.innerHTML = `
+      <div class="quad-row">
+        ${examQuadHTML}
+        <div class="quad-vcut">
+          <div class="quad-vcut-line"></div>
+          <span class="quad-vcut-text">✂️</span>
+          <div class="quad-vcut-line"></div>
+        </div>
+        ${examQuadHTML}
+      </div>
+      <div class="quad-hcut">
+        <span>✂️ cortar por aquí ✂️</span>
+      </div>
+      <div class="quad-row">
+        ${examQuadHTML}
+        <div class="quad-vcut">
+          <div class="quad-vcut-line"></div>
+          <span class="quad-vcut-text">✂️</span>
+          <div class="quad-vcut-line"></div>
+        </div>
+        ${examQuadHTML}
+      </div>
+    `;
+    container.appendChild(sheetEl);
+
+  } else if (layout.level === 'half') {
+    // ── NIVEL 2: A4 HORIZONTAL EN 2 MITADES IGUALES (2 EXÁMENES POR HOJA) ──
+    let examHalfBodyHTML = '';
+    if (layout.subColumns === 2) {
+      examHalfBodyHTML = `
+        <div class="booklet-2subcol-wrap">
+          <div class="booklet-subcol">
+            ${layout.pages[0].col1.map((q, idx) => renderBookletQuestionHTML(q, idx, true)).join('')}
+          </div>
+          <div class="booklet-subcol-divider"></div>
+          <div class="booklet-subcol">
+            ${layout.pages[0].col2.map((q, idx) => renderBookletQuestionHTML(q, layout.pages[0].col1.length + idx, true)).join('')}
+          </div>
+        </div>
+      `;
+    } else {
+      examHalfBodyHTML = `
+        <div class="booklet-body-a5">
+          ${questions.map((q, idx) => renderBookletQuestionHTML(q, idx, false)).join('')}
+        </div>
+      `;
+    }
+
+    const examHalfHTML = `
       <div class="booklet-half">
         <div class="booklet-header">
-          <div class="booklet-header-top">
-            <span class="booklet-institution">EVALUACIÓN ESCOLAR</span>
-            <span class="booklet-grade">${escape(gradeText)}</span>
-          </div>
-          <div class="booklet-title">${escape(titleText)}</div>
+          <div class="booklet-title">EVALUACIÓN ESCOLAR</div>
           <div class="booklet-student-line">
-            <span>Estudiante: _________________________________</span>
-            <span>Fecha: ___/___/____</span>
+            <span>Estudiante: __________________________________________________</span>
           </div>
           <div class="booklet-instructions">
-            * Lee con atención cada enunciado y marca tu respuesta en la Cartilla de Respuestas OMR.
+            * Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.
           </div>
         </div>
-        <div class="booklet-body-a5">
-          ${questions.map((q, idx) => renderBookletQuestionHTML(q, idx)).join('')}
-        </div>
+        ${examHalfBodyHTML}
       </div>
     `;
 
     const sheetEl = document.createElement('div');
     sheetEl.className = 'sheet-booklet-landscape';
     sheetEl.innerHTML = `
-      ${examA5HTML}
+      ${examHalfHTML}
       <div class="booklet-divider">
         <div class="booklet-divider-line"></div>
         <span class="booklet-divider-scissors">✂️ cortar aquí</span>
         <div class="booklet-divider-line"></div>
       </div>
-      ${examA5HTML}
+      ${examHalfHTML}
     `;
     container.appendChild(sheetEl);
+
   } else {
-    // ── CASO B: A4 VERTICAL (PORTRAIT) EN 2 COLUMNAS ──
-    const perPage = 10; // Hasta 10 preguntas por página A4 (5 por columna)
-    const pageCount = Math.ceil(questions.length / perPage);
+    // ── NIVEL 3: A4 VERTICAL EN 2 COLUMNAS CONTINUAS (1 O MÁS PÁGINAS) ──
+    const totalPages = layout.pages.length;
 
-    for (let p = 0; p < pageCount; p++) {
-      const pageQuestions = questions.slice(p * perPage, (p + 1) * perPage);
-      const mid = Math.ceil(pageQuestions.length / 2);
-      const col1 = pageQuestions.slice(0, mid);
-      const col2 = pageQuestions.slice(mid);
-
+    for (const p of layout.pages) {
       const sheetEl = document.createElement('div');
       sheetEl.className = 'sheet-booklet-portrait';
       sheetEl.innerHTML = `
-        <div class="booklet-header">
-          <div class="booklet-header-top">
-            <span class="booklet-institution">EVALUACIÓN ESCOLAR</span>
-            <span class="booklet-grade">${escape(gradeText)}</span>
-          </div>
-          <div class="booklet-title">${escape(titleText)}${pageCount > 1 ? ` — Parte ${p + 1}` : ''}</div>
-          ${p === 0 ? `
+        <div class="booklet-header ${p.pageNum > 1 ? 'booklet-header-p2' : ''}">
+          <div class="booklet-title">EVALUACIÓN ESCOLAR ${totalPages > 1 ? ` — Página ${p.pageNum}` : ''}</div>
+          ${p.pageNum === 1 ? `
           <div class="booklet-student-line">
             <span>Estudiante: __________________________________________________</span>
-            <span>Fecha: ___/___/____</span>
           </div>
           <div class="booklet-instructions">
-            * Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas OMR asignada.
+            * Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.
           </div>
           ` : ''}
         </div>
 
         <div class="booklet-columns">
           <div class="booklet-col">
-            ${col1.map((q, idx) => renderBookletQuestionHTML(q, p * perPage + idx)).join('')}
+            ${p.col1.map((q) => {
+              const globalIdx = questions.indexOf(q);
+              return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
+            }).join('')}
           </div>
           <div class="booklet-col-divider"></div>
           <div class="booklet-col">
-            ${col2.map((q, idx) => renderBookletQuestionHTML(q, p * perPage + mid + idx)).join('')}
+            ${p.col2.map((q) => {
+              const globalIdx = questions.indexOf(q);
+              return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
+            }).join('')}
           </div>
         </div>
 
         <div class="booklet-footer">
-          <span>Microevaluación Formativa — Cuadernillo de Preguntas</span>
-          <span>Página ${p + 1} de ${pageCount}</span>
+          <span>Cuadernillo de Preguntas</span>
+          <span>Página ${p.pageNum} de ${totalPages}</span>
         </div>
       `;
       container.appendChild(sheetEl);
@@ -1047,14 +1220,15 @@ function printQuestionBooklet() {
   }
 
   const evalObj = (typeof wizardEval !== 'undefined') ? wizardEval : null;
-  const isA5 = checkIfBookletFitsA5(evalObj);
+  const layout = determineBookletLayout(evalObj);
+  const isLandscape = (layout.level === 'quad' || layout.level === 'half');
 
   // Activar modo de impresión de cuadernillo en body
   document.body.classList.remove('print-mode-sheets');
   document.body.classList.add('print-mode-booklet');
 
   // Ajustar tamaño/orientación de página en el diálogo del navegador
-  setPrintPageOrientation(isA5 ? 'landscape' : 'portrait');
+  setPrintPageOrientation(isLandscape ? 'landscape' : 'portrait');
 
   const originalTitle = document.title;
   const pdfTitle = getBookletPdfExportTitle(classroom, evalObj);
@@ -1093,6 +1267,7 @@ if (typeof window !== 'undefined') {
   window.getBookletPdfExportTitle = getBookletPdfExportTitle;
   window.setPrintPageOrientation = setPrintPageOrientation;
   window.renderBookletQuestionHTML = renderBookletQuestionHTML;
+  window.determineBookletLayout = determineBookletLayout;
   window.renderQuestionBooklet = renderQuestionBooklet;
   window.printQuestionBooklet = printQuestionBooklet;
 }

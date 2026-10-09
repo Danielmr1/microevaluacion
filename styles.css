@@ -1012,6 +1012,90 @@
       gap: 20px;
     }
 
+    /* ── NIVEL 1: HOJA A4 HORIZONTAL EN 4 CUADRANTES IGUALES ── */
+    .sheet-booklet-quad {
+      background: #ffffff;
+      width: 275mm;
+      height: 188mm;
+      margin: 6mm auto;
+      padding: 3mm 4mm;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      color: #000000;
+    }
+
+    .booklet-quad-item {
+      width: 132mm;
+      height: 88mm;
+      padding: 2.5mm 3.5mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .booklet-header-quad {
+      border-bottom: 1px solid #000000 !important;
+      padding-bottom: 1mm !important;
+      margin-bottom: 1.5mm !important;
+      gap: 0.8mm !important;
+    }
+
+    .booklet-title-compact {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #000000;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .booklet-student-line-compact {
+      display: flex;
+      font-size: 7.2pt;
+      color: #000000;
+      margin-top: 0.5mm;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .booklet-instructions-compact {
+      font-size: 6.2pt;
+      color: #475569;
+      font-style: italic;
+      line-height: 1.1;
+    }
+
+    .booklet-body-quad {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      gap: 1.5mm;
+      overflow: hidden;
+    }
+
+    .booklet-q-item.booklet-q-compact {
+      gap: 1mm;
+    }
+
+    .booklet-q-item.booklet-q-compact .booklet-q-prompt {
+      font-size: 7.5pt;
+      line-height: 1.2;
+    }
+
+    .booklet-q-item.booklet-q-compact .booklet-opt-item {
+      font-size: 7.2pt;
+    }
+
+    /* ── NIVEL 2: HOJA A4 HORIZONTAL EN 2 MITADES IGUALES ── */
     .sheet-booklet-landscape {
       background: #ffffff;
       width: 275mm;
@@ -1029,7 +1113,7 @@
     .booklet-half {
       width: 135mm;
       height: 100%;
-      padding: 6mm 8mm;
+      padding: 5mm 7mm;
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
@@ -1061,6 +1145,29 @@
       letter-spacing: 1px;
     }
 
+    .booklet-2subcol-wrap {
+      flex: 1;
+      display: flex;
+      gap: 4mm;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .booklet-subcol {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      gap: 2mm;
+      overflow: hidden;
+    }
+
+    .booklet-subcol-divider {
+      width: 0;
+      border-left: 1px dashed #cbd5e1;
+    }
+
+    /* ── NIVEL 3: HOJA A4 VERTICAL EN 2 COLUMNAS CONTINUAS ── */
     .sheet-booklet-portrait {
       background: #ffffff;
       width: 188mm;
@@ -1078,33 +1185,30 @@
 
     .booklet-header {
       border-bottom: 1.5px solid #000000;
-      padding-bottom: 2.5mm;
-      margin-bottom: 3.5mm;
+      padding-bottom: 2mm;
+      margin-bottom: 3mm;
       display: flex;
       flex-direction: column;
       gap: 1.5mm;
     }
 
-    .booklet-header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 8pt;
-      font-weight: 700;
-      color: #334155;
-      text-transform: uppercase;
+    .booklet-header-p2 {
+      padding-bottom: 1.5mm;
+      margin-bottom: 2.5mm;
     }
 
     .booklet-title {
-      font-size: 11pt;
+      font-size: 10.5pt;
       font-weight: 800;
       color: #000000;
       line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .booklet-student-line {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       font-size: 8pt;
       color: #000000;
       margin-top: 1mm;
@@ -2446,6 +2550,25 @@
         margin: 0 auto !important;
         padding: 0 !important;
       }
+      body.print-mode-booklet .sheet-booklet-quad {
+        box-shadow: none !important;
+        width: 275mm !important;
+        height: 188mm !important;
+        min-height: 0 !important;
+        max-height: 188mm !important;
+        margin: 0 auto !important;
+        padding: 3mm 4mm !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
       body.print-mode-booklet .sheet-booklet-landscape {
         box-shadow: none !important;
         width: 275mm !important;
@@ -2482,6 +2605,7 @@
         display: flex !important;
         flex-direction: column !important;
       }
+      body.print-mode-booklet .sheet-booklet-quad:last-child,
       body.print-mode-booklet .sheet-booklet-landscape:last-child,
       body.print-mode-booklet .sheet-booklet-portrait:last-child {
         page-break-after: auto !important;
