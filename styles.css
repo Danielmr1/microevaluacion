@@ -1719,6 +1719,18 @@
       border-color: #818cf8;
       background: #1e293b linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
     }
+    .hub-card-branch1:hover {
+      border-color: #818cf8;
+      background: #1e293b linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, transparent 100%);
+    }
+    .hub-card-branch2:hover {
+      border-color: #38bdf8;
+      background: #1e293b linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, transparent 100%);
+    }
+    .hub-card-branch3:hover {
+      border-color: #34d399;
+      background: #1e293b linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, transparent 100%);
+    }
     .hub-card-classrooms:hover {
       border-color: #34d399;
       background: #1e293b linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, transparent 100%);
