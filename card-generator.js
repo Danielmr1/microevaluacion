@@ -485,6 +485,132 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
   `;
 }
 
+/**
+ * Genera la Ficha A5 Vertical (132 x 182 mm) de Respuesta Libre (Formativa con IA / Focalizada).
+ * Dos alumnos por pliego A4 en orientación HORIZONTAL (Alumno 1 Izquierda | Alumno 2 Derecha).
+ * Al escanearla en el celular vertical, el cuadrilátero calza directamente sin necesidad de girar el teléfono.
+ */
+function createA5VerticalCard(student, classroom, evaluation) {
+  const gradeText = ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel)
+    || classroom.name;
+
+  const fiducialsHTML = `
+    <div class="fiducial fiducial-tl" title="ArUco 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/></svg></div>
+    <div class="fiducial fiducial-tr" title="ArUco 1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+    <div class="fiducial fiducial-br" title="ArUco 2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
+    <div class="fiducial fiducial-bl" title="ArUco 3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/></svg></div>
+  `;
+
+  const escape = (typeof escaparHtml === 'function')
+    ? escaparHtml
+    : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  const safeStudentName = escape(student.name.toUpperCase());
+  const safeGradeText = escape(gradeText);
+  const orderMatch = String(student.id || '').match(/\d+/);
+  const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
+
+  const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
+
+  // Cuadrícula vertical de 13 columnas x 10 filas
+  const V_GRID_COLS = 13;
+  const V_GRID_ROWS = 10;
+  const GRID_CELLS_V_FREE = new Array(V_GRID_COLS * V_GRID_ROWS).fill('<i></i>').join('');
+
+  if (qCount === 2) {
+    const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '' };
+    const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '' };
+    const GRID_CELLS_V_2Q = new Array(13 * 4).fill('<i></i>').join('');
+
+    return `
+      <div class="card-a5-v-free">
+        ${fiducialsHTML}
+        <div class="v-card-header">
+          <div class="v-header-left">
+            <div class="v-header-top-title">EVALUACIÓN FORMATIVA</div>
+            <div class="v-student-block">
+              <span class="v-student-label">Nombre:</span>
+              <span class="v-student-name">${safeStudentName}</span>
+              <span class="v-student-grade">(${safeGradeText})</span>
+            </div>
+          </div>
+          <div class="v-qr-block">
+            <span class="v-qr-code-text">${orderNumber}</span>
+            <div class="v-qr-box" id="qr-box-${student.id}"></div>
+          </div>
+        </div>
+
+        <!-- Pregunta 1 -->
+        <div class="v-free-2q-block">
+          <div class="v-free-problem-2q">
+            <div class="problem-text"><strong>1.</strong> ${escape(q1.prompt)}</div>
+          </div>
+          <div class="v-free-grid-2q">
+            <div class="notebook-grid notebook-grid-v2q">${GRID_CELLS_V_2Q}</div>
+          </div>
+          <div class="v-free-answer-strip-2q">
+            <span class="answer-tag">Rpta:</span>
+            <div class="answer-box-open"></div>
+          </div>
+        </div>
+
+        <div class="v-free-divider"></div>
+
+        <!-- Pregunta 2 -->
+        <div class="v-free-2q-block">
+          <div class="v-free-problem-2q">
+            <div class="problem-text"><strong>2.</strong> ${escape(q2.prompt)}</div>
+          </div>
+          <div class="v-free-grid-2q">
+            <div class="notebook-grid notebook-grid-v2q">${GRID_CELLS_V_2Q}</div>
+          </div>
+          <div class="v-free-answer-strip-2q">
+            <span class="answer-tag">Rpta:</span>
+            <div class="answer-box-open"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 1 Pregunta (Tradicional Formativa / Focalizada)
+  return `
+    <div class="card-a5-v-free">
+      ${fiducialsHTML}
+      <div class="v-card-header">
+        <div class="v-header-left">
+          <div class="v-header-top-title">EVALUACIÓN FORMATIVA</div>
+          <div class="v-student-block">
+            <span class="v-student-label">Nombre:</span>
+            <span class="v-student-name">${safeStudentName}</span>
+            <span class="v-student-grade">(${safeGradeText})</span>
+          </div>
+        </div>
+        <div class="v-qr-block">
+          <span class="v-qr-code-text">${orderNumber}</span>
+          <div class="v-qr-box" id="qr-box-${student.id}"></div>
+        </div>
+      </div>
+
+      <div class="v-free-problem">
+        <div class="problem-text">${escape(evaluation.prompt)}</div>
+      </div>
+
+      <div class="v-free-grid">
+        <div class="notebook-grid notebook-grid-v">${GRID_CELLS_V_FREE}</div>
+      </div>
+
+      <div class="v-free-answer-strip">
+        <span class="answer-tag">Rpta:</span>
+        <div class="answer-box-open"></div>
+        <div class="answer-line">
+          <span class="answer-line-hint">${escape(evaluation.unitHint || '(unidades)')}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderAllPrintPages(classId, evaluation) {
   const container = document.getElementById('pages-container');
   if (!container) return;
@@ -608,6 +734,54 @@ function renderAllPrintPages(classId, evaluation) {
         });
       }
     }
+    return;
+  }
+
+  // ── CASO RESPUESTA LIBRE VERTICAL (2 FICHAS A5 VERTICALES EN HOJA A4 HORIZONTAL) ──
+  const isVerticalFree = evaluation && evaluation.cardOrientation === 'vertical' && !isR3;
+  if (isVerticalFree) {
+    const sheetCount = Math.ceil(students.length / 2);
+    const printBtn = document.getElementById('btn-print-sheets');
+    if (printBtn) {
+      const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
+      printBtn.innerHTML = `🖨️ Descargar / Imprimir (${sheetCount} ${pageWord}) [2 por hoja · Vertical]`;
+      printBtn.onclick = () => printEvaluationSheets(classId);
+    }
+
+    try {
+      document.title = getPdfExportTitle(classroom);
+    } catch (e) {}
+
+    for (let i = 0; i < students.length; i += 2) {
+      const sLeft = students[i];
+      const sRight = students[i + 1] || null;
+
+      const sheetEl = document.createElement('div');
+      sheetEl.className = 'sheet-a4-split';
+      sheetEl.innerHTML = `
+        ${createA5VerticalCard(sLeft, classroom, evaluation)}
+        <div class="dual-vcut">
+          <div class="dual-vcut-line"></div>
+          <span class="dual-vcut-text">✂️ cortar por aquí</span>
+          <div class="dual-vcut-line"></div>
+        </div>
+        ${sRight ? createA5VerticalCard(sRight, classroom, evaluation) : '<div class="card-a5-v-empty"></div>'}
+      `;
+      container.appendChild(sheetEl);
+
+      // Generar códigos QR para los alumnos presentes en esta hoja
+      if (typeof QRCode !== 'undefined' && QRCode.toString) {
+        [sLeft, sRight].filter(Boolean).forEach(st => {
+          QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+            if (err) return;
+            const el = document.getElementById('qr-box-' + st.id);
+            if (el) el.innerHTML = svg;
+          });
+        });
+      }
+    }
+
+    fitProblemText();
     return;
   }
 
@@ -1534,5 +1708,6 @@ if (typeof window !== 'undefined') {
   window.renderQuestionBooklet = renderQuestionBooklet;
   window.generateBookletWithJsPDF = generateBookletWithJsPDF;
   window.printQuestionBooklet = printQuestionBooklet;
+  window.createA5VerticalCard = createA5VerticalCard;
 }
 

@@ -40,14 +40,14 @@
   </script>
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
-  <script src="roi-processor.js?v=3.1.56"></script>
-  <script src="scanner.js?v=3.1.56"></script>
+  <script src="roi-processor.js?v=3.1.64"></script>
+  <script src="scanner.js?v=3.1.64"></script>
   <script src="results-manager.js?v=3.1.45"></script>
   <script src="classroom-manager.js?v=3.1.45"></script>
   <script src="question-bank.js?v=3.1.57"></script>
-  <script src="card-generator.js?v=3.1.62"></script>
+  <script src="card-generator.js?v=3.1.64"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.1.62">
+  <link rel="stylesheet" href="styles.css?v=3.1.64">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -59,7 +59,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.1.62</span>
+          <span class="version-tag">v3.1.64</span>
         </div>
       </div>
     </div>
@@ -942,6 +942,22 @@
 
           <!-- Configuración de corrección seleccionada -->
           <div id="summary-config-badge" style="padding:12px 14px; border-radius:10px; font-size:0.8rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1e293b; border:1px solid #334155;">
+          </div>
+
+          <!-- Selector de Orientación de Ficha (Horizontal clásica vs Vertical moderna) -->
+          <div id="orientation-selector-container" style="margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1e293b; border:1px solid #334155; padding:10px 14px; border-radius:10px;">
+            <div>
+              <div style="font-size:0.78rem; font-weight:700; color:#f1f5f9;">Orientación de las Fichas:</div>
+              <div style="font-size:0.7rem; color:#94a3b8; margin-top:1px;">Disposición de los 2 alumnos por pliego A4</div>
+            </div>
+            <div style="display:inline-flex; background:#0f172a; padding:3px; border-radius:8px; border:1px solid #334155; gap:2px;">
+              <button type="button" id="btn-orient-horizontal" onclick="setCardOrientation('horizontal')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:#3b82f6; color:#ffffff; transition:all 0.15s;">
+                ↔️ Horizontal
+              </button>
+              <button type="button" id="btn-orient-vertical" onclick="setCardOrientation('vertical')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.15s;">
+                ↕️ Vertical
+              </button>
+            </div>
           </div>
 
           <!-- Selector de Modo de Corrección (Compatibilidad con toggle directo) -->
@@ -2705,6 +2721,18 @@
           }
         }
 
+        // Mostrar u ocultar selector de orientación según corresponda
+        const orientContainer = document.getElementById('orientation-selector-container');
+        if (orientContainer) {
+          if (isBranch3) {
+            orientContainer.style.display = 'none';
+          } else {
+            orientContainer.style.display = 'flex';
+            const curOrient = (wizardEval && wizardEval.cardOrientation) || 'horizontal';
+            setCardOrientation(curOrient, false);
+          }
+        }
+
         // ── Generar fichas automáticamente ──
         const pagesContainer = document.getElementById('pages-container');
         if (pagesContainer) pagesContainer.style.display = 'flex';
@@ -2891,6 +2919,7 @@
         type: (wizardEval && wizardEval.type) || undefined,
         questionCount: (wizardEval && wizardEval.questionCount) || undefined,
         questions: (wizardEval && wizardEval.questions) || undefined,
+        cardOrientation: (wizardEval && wizardEval.cardOrientation) || 'horizontal',
         gradeStage: (wizardEval && wizardEval.gradeStage) || (g && g.stage) || undefined,
         gradeLevel: (wizardEval && wizardEval.gradeLevel) || (g && g.level) || undefined,
         gradeText: (wizardEval && wizardEval.gradeText) || (g && g.texto) || undefined
@@ -2918,6 +2947,7 @@
         type: (savedEval.type === 'mc') ? 'mc' : 'free',
         questionCount: savedEval.questionCount || 1,
         questions: savedEval.questions || [],
+        cardOrientation: (wizardEval && wizardEval.cardOrientation) || 'horizontal',
         correctionMode: correctionMode,
         timestamp: Date.now()
       };
@@ -2967,6 +2997,36 @@
         ClassroomData.setActiveSession(session);
       }
     }
+
+    function setCardOrientation(orientation, doRender = true) {
+      if (typeof wizardEval !== 'undefined' && wizardEval) {
+        wizardEval.cardOrientation = orientation;
+      }
+      const session = ClassroomData.getActiveSession();
+      if (session) {
+        session.cardOrientation = orientation;
+        ClassroomData.setActiveSession(session);
+      }
+      const btnH = document.getElementById('btn-orient-horizontal');
+      const btnV = document.getElementById('btn-orient-vertical');
+      if (btnH && btnV) {
+        if (orientation === 'vertical') {
+          btnV.style.background = '#3b82f6';
+          btnV.style.color = '#ffffff';
+          btnH.style.background = 'transparent';
+          btnH.style.color = '#94a3b8';
+        } else {
+          btnH.style.background = '#3b82f6';
+          btnH.style.color = '#ffffff';
+          btnV.style.background = 'transparent';
+          btnV.style.color = '#94a3b8';
+        }
+      }
+      if (doRender && typeof wizardClassroomId !== 'undefined' && wizardClassroomId && typeof wizardEval !== 'undefined' && wizardEval) {
+        renderAllPrintPages(wizardClassroomId, wizardEval);
+      }
+    }
+    window.setCardOrientation = setCardOrientation;
 
     function goToScannerWithSession() {
       generateAndActivateSession();

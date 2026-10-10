@@ -1636,7 +1636,10 @@
 
         // Intento 3 (Respaldo): Extraer ROI de QR específica y aplicar contraste si no se leyó
         if (!qrText && typeof ROIProcessor !== 'undefined') {
-          const qrRoi = ROIProcessor.extractROI(fullWarpCanvas, ROIProcessor.CONFIG.QR);
+          const qrRoiConfig = (isCardPortrait && ROIProcessor.CONFIG_VERTICAL)
+            ? ROIProcessor.CONFIG_VERTICAL.QR
+            : ROIProcessor.CONFIG.QR;
+          const qrRoi = ROIProcessor.extractROI(fullWarpCanvas, qrRoiConfig);
           if (qrRoi.success && typeof jsQR !== 'undefined') {
             ROIProcessor.enhanceHandwritingContrast(qrRoi.canvas, { blackCutoff: 100, whiteCutoff: 160 });
             const qrDataImg = qrRoi.canvas.getContext('2d').getImageData(0, 0, qrRoi.canvas.width, qrRoi.canvas.height);

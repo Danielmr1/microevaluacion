@@ -119,6 +119,38 @@
   };
 
   /**
+   * Escala para ficha vertical A5 (134 mm ancho x 186 mm alto en lienzo rectificado de 1441 x 2000 px).
+   */
+  function mmToPxVertical(xMm, yMm, wMm, hMm) {
+    const scaleX = 1441 / 134; // 10.7537 px/mm
+    const scaleY = 2000 / 186; // 10.7527 px/mm
+    return {
+      x: Math.round(xMm * scaleX),
+      y: Math.round(yMm * scaleY),
+      width: Math.round(wMm * scaleX),
+      height: Math.round(hMm * scaleY)
+    };
+  }
+
+  // Definición de Coordenadas Fijas de ROIs para Ficha A5 Vertical.
+  const ROI_CONFIG_VERTICAL = {
+    // Código QR (esquina superior derecha de la cabecera vertical de 134 mm)
+    QR: Object.assign(mmToPxVertical(94, 3.5, 24, 20), {
+      label: 'Código QR (Vertical)'
+    }),
+
+    // Cuadrícula de cálculo vertical (13 columnas x 10 filas)
+    RESOLUTION: Object.assign(mmToPxVertical(11, 47, 112, 114), {
+      label: 'Cuadrícula de cálculo (Vertical)'
+    }),
+
+    // Caja de respuesta manuscrita
+    ANSWER_BOX: Object.assign(mmToPxVertical(23, 164, 50, 16), {
+      label: 'Caja de Respuesta (Vertical)'
+    })
+  };
+
+  /**
    * Ajustes de contraste pensados para el modelo de visión (pendiente de uso
    * en la Edge Function de corrección). Son más suaves que los del realce que
    * ve el docente: aquí NO interesa saturar a negro puro, porque eso borra los
@@ -393,17 +425,22 @@
       return { success: false, resolutionCanvas: null, answerCanvas: null, strokeInfo: null, error: 'Lienzo de hoja inválido' };
     }
 
+    const isPortrait = sheetCanvas.height > sheetCanvas.width;
+    const cfg = isPortrait ? ROI_CONFIG_VERTICAL : ROI_CONFIG;
+
     // 1. Extraer ROI de la Cuadrícula de cálculo (los pasos del alumno)
-    const extResult = extractROI(sheetCanvas, ROI_CONFIG.RESOLUTION);
+    const extResult = extractROI(sheetCanvas, cfg.RESOLUTION);
     if (!extResult.success) {
       return extResult;
     }
     const resolutionCanvas = extResult.canvas;
-    const strokeInfo = preprocessCalculationGridStrokes(resolutionCanvas, { cols: 16, rows: 7 });
+    const gridCols = isPortrait ? 13 : 16;
+    const gridRows = isPortrait ? 10 : 7;
+    const strokeInfo = preprocessCalculationGridStrokes(resolutionCanvas, { cols: gridCols, rows: gridRows });
 
     // 2. Extraer ROI de la Caja de Respuesta (el resultado final)
     let answerCanvas = null;
-    const ansResult = extractROI(sheetCanvas, ROI_CONFIG.ANSWER_BOX);
+    const ansResult = extractROI(sheetCanvas, cfg.ANSWER_BOX);
     if (ansResult.success) {
       answerCanvas = ansResult.canvas;
       enhanceHandwritingContrast(answerCanvas);
@@ -911,6 +948,7 @@
     mmToPx,
     AI_CONTRAST_OPTIONS,
     CONFIG: ROI_CONFIG,
+    CONFIG_VERTICAL: ROI_CONFIG_VERTICAL,
     OMR_CONFIG: ROI_OMR_CONFIG,
     isValidCanvas,
     clampROI,

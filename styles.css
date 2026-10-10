@@ -997,6 +997,142 @@
       margin: 0 1.5mm;
     }
 
+    /* ── FICHA A5 VERTICAL (132 x 182 mm) DE RESPUESTA LIBRE ───────── */
+    .card-a5-v-free {
+      width: 132mm;
+      height: 182mm;
+      flex: 0 0 132mm;
+      border: 1mm solid #000000;
+      padding: 2.5mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #000000;
+    }
+
+    .card-a5-v-free .fiducial {
+      position: absolute;
+      width: 8mm;
+      height: 8mm;
+      z-index: 10;
+    }
+    .card-a5-v-free .fiducial svg { width: 100%; height: 100%; display: block; }
+    .card-a5-v-free .fiducial-tl { top: 3.5mm; left: 3.5mm; }
+    .card-a5-v-free .fiducial-tr { top: 3.5mm; right: 3.5mm; }
+    .card-a5-v-free .fiducial-bl { bottom: 3.5mm; left: 3.5mm; }
+    .card-a5-v-free .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
+
+    .v-free-problem {
+      height: 22mm;
+      min-height: 22mm;
+      max-height: 22mm;
+      padding: 2mm 3mm;
+      border-bottom: 1.5px solid #000000;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      font-size: 8.5pt;
+      line-height: 1.35;
+    }
+
+    .v-free-grid {
+      flex: 1 1 auto;
+      margin: 2mm 0;
+      border: 1px solid #cbd5e1;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .notebook-grid-v {
+      display: grid !important;
+      grid-template-columns: repeat(13, 1fr) !important;
+      grid-template-rows: repeat(10, 1fr) !important;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+    }
+
+    .notebook-grid-v i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+    }
+
+    .v-free-answer-strip {
+      height: 18mm;
+      min-height: 18mm;
+      max-height: 18mm;
+      border-top: 1.5px solid #000000;
+      padding: 2mm 4mm;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+
+    .v-free-2q-block {
+      flex: 1 1 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 1.5mm 0;
+    }
+
+    .v-free-problem-2q {
+      height: 16mm;
+      padding: 1mm 2mm;
+      border-bottom: 1px solid #000000;
+      box-sizing: border-box;
+      overflow: hidden;
+      font-size: 8pt;
+      line-height: 1.3;
+    }
+
+    .v-free-grid-2q {
+      flex: 1 1 auto;
+      margin: 1.5mm 0;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .notebook-grid-v2q {
+      display: grid !important;
+      grid-template-columns: repeat(13, 1fr) !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+      width: 100%;
+      height: 100%;
+    }
+
+    .notebook-grid-v2q i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+    }
+
+    .v-free-answer-strip-2q {
+      height: 12mm;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid #000000;
+      padding: 1mm 2mm;
+      box-sizing: border-box;
+    }
+
+    .v-free-divider {
+      height: 0;
+      border-top: 1px dashed #64748b;
+      margin: 1mm 0;
+    }
+
     /* ── CUADERNILLO DE PREGUNTAS (EXAMEN PARA ESTUDIANTES) ─────────
        No lleva QR ni fiducials ArUco. Genérico para todos los alumnos.
        - A5 (Landscape): 2 copias por hoja A4 cortadas por la mitad.
@@ -2735,6 +2871,7 @@
       }
       .card-a5,
       .card-a5-v-r3,
+      .card-a5-v-free,
       .card-a6-r3 {
         border: 1mm solid #000000 !important;
       }
