@@ -59,7 +59,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.1.64</span>
+          <span class="version-tag">v3.1.65</span>
         </div>
       </div>
     </div>
@@ -2739,10 +2739,10 @@
         renderAllPrintPages(wizardClassroomId, wizardEval);
 
         // ── Renderizar cuadernillo de preguntas si corresponde ──
+        // EXCLUSIVO: Solo en Cartilla OMR (Rama 3) en Modo B (Preguntas del Banco)
         const btnBooklet = document.getElementById('btn-print-booklet');
         const hasBookletQuestions = wizardEval && (
-          (wizardEval.branch === 'rama3' && (wizardEval.hasQuestionnaire || wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))) ||
-          (wizardEval.type === 'mc' && wizardEval.questions && wizardEval.questions.length > 0 && wizardEval.questions.some(q => q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())))
+          wizardEval.branch === 'rama3' && (wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))
         );
         if (btnBooklet) {
           if (hasBookletQuestions && typeof renderQuestionBooklet === 'function') {
