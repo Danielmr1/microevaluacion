@@ -896,12 +896,18 @@ function renderAllPrintPages(classId, evaluation) {
     (evaluation.branch === 'rama2' && evaluation.withGrid === false && qCount <= 2 && evaluation.cardFormat !== 'a5')
   );
   if ((isR3 && qCount <= 8) || isA6Quad) {
+    const isA6V = isA6Quad && (
+      evaluation.orientation === 'vertical' ||
+      evaluation.isPortrait === true ||
+      evaluation.cardOrientation === 'vertical'
+    );
     const sheetCount = Math.ceil(students.length / 4);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
       const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-      const labelText = isR3 ? 'Cartillas OMR' : 'Fichas Focalizadas';
-      printBtn.innerHTML = `🖨️ Descargar ${labelText} (${sheetCount} ${pageWord}) [4 por hoja]`;
+      const labelText = isR3 ? 'Cartillas OMR' : (isA6V ? 'Fichas A6' : 'Fichas Focalizadas');
+      const orientWord = isA6V ? ' [4 por hoja · Vertical]' : ' [4 por hoja]';
+      printBtn.innerHTML = `🖨️ Descargar ${labelText} (${sheetCount} ${pageWord})${orientWord}`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -916,7 +922,7 @@ function renderAllPrintPages(classId, evaluation) {
       const sBR = students[i + 3] || null;
 
       const sheetEl = document.createElement('div');
-      sheetEl.className = 'sheet-a4-quad';
+      sheetEl.className = isA6V ? 'sheet-a4-quad-v' : 'sheet-a4-quad';
       sheetEl.innerHTML = `
         <div class="quad-row">
           ${sTL ? createA6Card(sTL, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
@@ -1154,7 +1160,7 @@ function printEvaluationSheets(classId) {
     document.body.classList.remove('print-mode-booklet');
     document.body.classList.add('print-mode-sheets');
     const container = document.getElementById('pages-container');
-    const isLandscape = container && (container.querySelector('.sheet-a4-quad') || container.querySelector('.sheet-a4-split'));
+    const isLandscape = container && (container.querySelector('.sheet-a4-quad:not(.sheet-a4-quad-v)') || container.querySelector('.sheet-a4-split'));
     setPrintPageOrientation(isLandscape ? 'landscape' : 'portrait');
   }
 
@@ -1185,7 +1191,7 @@ if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('beforeprint', () => {
     const container = document.getElementById('pages-container');
     if (container && container.style.display !== 'none' && container.children.length > 0) {
-      const isLandscape = container.querySelector('.sheet-a4-quad') || container.querySelector('.sheet-a4-split');
+      const isLandscape = container.querySelector('.sheet-a4-quad:not(.sheet-a4-quad-v)') || container.querySelector('.sheet-a4-split');
       setPrintPageOrientation(isLandscape ? 'landscape' : 'portrait');
 
       let classroom = null;
