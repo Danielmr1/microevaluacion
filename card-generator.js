@@ -288,6 +288,7 @@ function createA6Card(student, classroom, evaluation) {
   `;
 
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 5);
+  const isOMR = (evaluation.type === 'mc');
 
   const escape = (typeof escaparHtml === 'function')
     ? escaparHtml
@@ -456,7 +457,6 @@ function createA6Card(student, classroom, evaluation) {
 
   // Si es Focalizada en la respuesta (Rama 2 sin cuadrícula, 1 a 2 preguntas)
   const isBranch2A6 = evaluation.branch === 'rama2' && evaluation.withGrid === false && totalQ <= 2;
-  const isOMR = (evaluation.type === 'mc');
 
   if (isBranch2A6) {
     const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
