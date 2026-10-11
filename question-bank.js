@@ -3006,7 +3006,7 @@ function initSimulator(branch, classId) {
 function updateSimToolbar() {
   const isRama1 = simState.branch === 'rama1';
 
-  // 1. Botones de cantidad de preguntas
+  // 1. Selector de Cantidad de Preguntas (ARRIBA: 1P..2P en Formativa; 1P..5P en Focalizada)
   const countContainer = document.getElementById('sim-qcount-group');
   if (countContainer) {
     const maxQ = isRama1 ? 2 : 5;
@@ -3018,7 +3018,7 @@ function updateSimToolbar() {
     countContainer.innerHTML = html;
   }
 
-  // 2. Tipo de respuesta
+  // 2. Selector de Tipo de Respuesta (Alternativas OMR vs Escribir respuesta)
   const btnTypeMC = document.getElementById('sim-btn-type-mc');
   const btnTypeFree = document.getElementById('sim-btn-type-free');
   if (btnTypeMC && btnTypeFree) {
@@ -3026,29 +3026,30 @@ function updateSimToolbar() {
     btnTypeFree.className = 'sim-pill-btn' + (simState.type === 'free' ? (isRama1 ? ' active' : ' active-emerald') : '');
   }
 
-  // 3. Borrador / Cuadrícula
+  // 3. Selector de Cuadrícula / Borrador (Exclusivo Focalizada; en Formativa NO existe)
+  const gridGroup = document.getElementById('sim-grid-group');
   const btnGridYes = document.getElementById('sim-btn-grid-yes');
   const btnGridNo = document.getElementById('sim-btn-grid-no');
   const gridHint = document.getElementById('sim-grid-lock-hint');
-  if (btnGridYes && btnGridNo) {
-    if (isRama1) {
-      btnGridYes.disabled = false;
-      btnGridYes.className = 'sim-pill-btn active';
-      btnGridNo.disabled = true;
-      btnGridNo.className = 'sim-pill-btn';
-      if (gridHint) {
-        gridHint.style.display = 'inline';
-        gridHint.textContent = '(Obligatorio con IA)';
-      }
-    } else {
+
+  if (isRama1) {
+    // En Formativa con IA la cuadrícula es obligatoria y el selector NO existe arriba
+    if (gridGroup) gridGroup.style.display = 'none';
+    simState.withGrid = true;
+  } else {
+    // En Focalizada sí se muestra el selector
+    if (gridGroup) gridGroup.style.display = 'flex';
+    if (btnGridYes && btnGridNo) {
       if (simState.count > 2) {
+        // Bloqueo inteligente: con 3 o más preguntas no cabe cuadrícula
+        simState.withGrid = false;
         btnGridYes.disabled = true;
         btnGridYes.className = 'sim-pill-btn';
         btnGridNo.disabled = false;
         btnGridNo.className = 'sim-pill-btn active-emerald';
         if (gridHint) {
           gridHint.style.display = 'inline';
-          gridHint.textContent = '(Máx 2P con borrador)';
+          gridHint.textContent = '(Máx 2P con cuadrícula)';
         }
       } else {
         btnGridYes.disabled = false;
@@ -3059,27 +3060,54 @@ function updateSimToolbar() {
       }
     }
   }
+}
 
-  // 4. Orientación
-  const btnOrientH = document.getElementById('sim-btn-orient-h');
-  const btnOrientV = document.getElementById('sim-btn-orient-v');
-  if (btnOrientH && btnOrientV) {
-    btnOrientH.className = 'sim-pill-btn' + (simState.orientation === 'horizontal' ? (isRama1 ? ' active' : ' active-emerald') : '');
-    btnOrientV.className = 'sim-pill-btn' + (simState.orientation === 'vertical' ? (isRama1 ? ' active' : ' active-emerald') : '');
+/**
+ * Determina el formato y la orientación de la ficha de forma 100% automática
+ * según la tabla de mutación inmutable de ESPECIFICACION_FICHA_INTERACTIVA.md:
+ * - 1P sin cuadrícula                                  -> A6 Horizontal (4 alumnos por A4)
+ * - 2P sin cuadrícula                                  -> A6 Vertical   (4 alumnos por A4)
+ * - Con cuadrícula (1 o 2 preguntas normal o ampliada) -> A5 Horizontal (2 alumnos por A4)
+ * - 3 a 5 preguntas (sin cuadrícula)                   -> A5 Vertical   (2 alumnos por A4)
+ */
+function determineCardLayout(state) {
+  const withGrid = (state.branch === 'rama1') ? true : !!state.withGrid;
+  const count = state.count || 1;
+
+  if (withGrid) {
+    return {
+      format: 'a5',
+      orientation: 'horizontal',
+      generator: 'createA5Card',
+      label: `Ficha A5 Horizontal (${count}P con cuadrícula ${state.gridSize === 'expanded' ? 'ampliada' : 'normal'})`
+    };
   }
 
-  // 5. Tamaño de cuadrícula
-  const gridsizeWrap = document.getElementById('sim-gridsize-wrap');
-  const btnGridNorm = document.getElementById('sim-btn-gridsize-normal');
-  const btnGridExp = document.getElementById('sim-btn-gridsize-expanded');
-  if (gridsizeWrap && btnGridNorm && btnGridExp) {
-    const showGridSize = simState.withGrid && simState.count === 1;
-    gridsizeWrap.style.display = showGridSize ? 'flex' : 'none';
-    if (showGridSize) {
-      btnGridNorm.className = 'sim-pill-btn' + (simState.gridSize === 'normal' ? (isRama1 ? ' active' : ' active-emerald') : '');
-      btnGridExp.className = 'sim-pill-btn' + (simState.gridSize === 'expanded' ? (isRama1 ? ' active' : ' active-emerald') : '');
-    }
+  if (count === 1) {
+    return {
+      format: 'a6',
+      orientation: 'horizontal',
+      generator: 'createA6Card',
+      label: 'Ficha A6 Horizontal (4 alumnos por hoja A4)'
+    };
   }
+
+  if (count === 2) {
+    return {
+      format: 'a6',
+      orientation: 'vertical',
+      generator: 'createA6Card',
+      label: 'Ficha A6 Vertical (4 alumnos por hoja A4)'
+    };
+  }
+
+  // 3 a 5 preguntas (sin cuadrícula)
+  return {
+    format: 'a5',
+    orientation: 'vertical',
+    generator: 'createA5VerticalCard',
+    label: `Ficha A5 Vertical (${count} preguntas)`
+  };
 }
 
 function setSimCount(count) {
@@ -3090,7 +3118,7 @@ function setSimCount(count) {
   if (simState.count > 2 && simState.withGrid) {
     simState.withGrid = false;
     if (typeof showToast === 'function') {
-      showToast('ℹ️ Con 3 o más preguntas no cabe el borrador.');
+      showToast('ℹ️ Con 3 o más preguntas la ficha se optimiza sin cuadrícula.');
     }
   }
   updateSimToolbar();
@@ -3105,16 +3133,12 @@ function setSimType(type) {
 
 function setSimGrid(withGrid) {
   if (simState.branch === 'rama1') {
-    if (!withGrid) {
-      if (typeof showToast === 'function') {
-        showToast('ℹ️ En Formativa con IA el borrador de cálculo es obligatorio para analizar el procedimiento.');
-      }
-      return;
-    }
+    simState.withGrid = true;
+    return;
   }
   if (withGrid && simState.count > 2) {
     if (typeof showToast === 'function') {
-      showToast('ℹ️ Con borrador el máximo es 2 preguntas.');
+      showToast('ℹ️ Con cuadrícula el máximo es 2 preguntas.');
     }
     return;
   }
@@ -3123,15 +3147,8 @@ function setSimGrid(withGrid) {
   renderSimulatedCard();
 }
 
-function setSimOrientation(orientation) {
-  simState.orientation = (orientation === 'vertical') ? 'vertical' : 'horizontal';
-  updateSimToolbar();
-  renderSimulatedCard();
-}
-
 function setSimGridSize(size) {
   simState.gridSize = (size === 'expanded') ? 'expanded' : 'normal';
-  updateSimToolbar();
   renderSimulatedCard();
 }
 
@@ -3156,8 +3173,9 @@ function renderSimulatedCard() {
     : { id: '1', name: 'ESTUDIANTE EJEMPLO' };
 
   const isOMR = simState.type === 'mc';
-  const isVertical = simState.orientation === 'vertical';
-  const isA6 = (simState.branch === 'rama2' && !simState.withGrid && simState.count <= 2 && !isVertical);
+  const layout = determineCardLayout(simState);
+  simState.cardFormat = layout.format;
+  simState.orientation = layout.orientation;
 
   const previewQuestions = [];
   for (let i = 0; i < simState.count; i++) {
@@ -3176,10 +3194,12 @@ function renderSimulatedCard() {
     id: 'sim_eval_preview',
     branch: simState.branch,
     type: isOMR ? 'mc' : 'free',
-    withGrid: simState.withGrid,
+    withGrid: (simState.branch === 'rama1') ? true : !!simState.withGrid,
     questionCount: simState.count,
     questions: previewQuestions,
-    isPortrait: isVertical,
+    cardFormat: layout.format,
+    isPortrait: layout.orientation === 'vertical',
+    orientation: layout.orientation,
     gridSize: simState.gridSize,
     prompt: previewQuestions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join(' | '),
     expectedAnswer: isOMR
@@ -3188,14 +3208,14 @@ function renderSimulatedCard() {
   };
 
   let cardHTML = '';
-  if (isVertical) {
-    cardHTML = (typeof createA5VerticalCard === 'function')
-      ? createA5VerticalCard(sampleStudent, defaultCls, simEval)
-      : '<div style="padding:20px; color:#000;">A5 Vertical Preview</div>';
-  } else if (isA6) {
+  if (layout.generator === 'createA6Card') {
     cardHTML = (typeof createA6Card === 'function')
       ? createA6Card(sampleStudent, defaultCls, simEval)
       : '<div style="padding:20px; color:#000;">A6 Preview</div>';
+  } else if (layout.generator === 'createA5VerticalCard') {
+    cardHTML = (typeof createA5VerticalCard === 'function')
+      ? createA5VerticalCard(sampleStudent, defaultCls, simEval)
+      : '<div style="padding:20px; color:#000;">A5 Vertical Preview</div>';
   } else {
     cardHTML = (typeof createA5Card === 'function')
       ? createA5Card(sampleStudent, defaultCls, simEval)
@@ -3213,15 +3233,13 @@ function renderSimulatedCard() {
     });
   }
 
-  // Hacer interactivos los bloques de preguntas
+  // Hacer interactivos los bloques de preguntas y añadir control de cuadrícula sobre el borrador
   attachSimSlotInteractivity(host, previewQuestions);
 
   // Actualizar etiqueta del formato
   const formatTag = document.getElementById('sim-card-format-tag');
   if (formatTag) {
-    if (isA6) formatTag.textContent = 'Ficha A6 (4 por hoja A4)';
-    else if (isVertical) formatTag.textContent = `Ficha A5 Vertical (${simState.count}P ${simState.withGrid ? 'con borrador' : 'sin borrador'})`;
-    else formatTag.textContent = `Ficha A5 Horizontal (${simState.count}P ${simState.withGrid ? 'con borrador' : 'sin borrador'})`;
+    formatTag.textContent = layout.label;
   }
 }
 
@@ -3239,22 +3257,22 @@ function attachSimSlotInteractivity(host, previewQuestions) {
     }
   }
 
-  // 2. Caso Ficha Horizontal 2P (columnas p2)
-  const cols2P = host.querySelectorAll('.problem-col, .p2-prompt-row');
+  // 2. Caso Ficha Horizontal 2P (columnas mc o libres)
+  const cols2P = host.querySelectorAll('.problem-col, .mc-problem-2q, .p2-prompt-row');
   if (cols2P && cols2P.length >= 2 && simState.orientation !== 'vertical') {
     cols2P.forEach((col, idx) => {
       col.classList.add('sim-interactive-slot');
       col.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
       col.onclick = () => openSimQuestionPicker(idx);
       if (previewQuestions[idx]?.isEmptySlot) {
-        const textEl = col.querySelector('.p2-prompt-text') || col;
+        const textEl = col.querySelector('.problem-text, .p2-prompt-text') || col;
         textEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
       }
     });
   }
 
-  // 3. Caso Ficha Vertical
-  const vItems = host.querySelectorAll('.v-nogrid-item, .v-free-2q-block, .v-free-problem');
+  // 3. Caso Ficha Vertical (A5 Vertical 1 a 5 preguntas)
+  const vItems = host.querySelectorAll('.v-nogrid-q, .v-nogrid-item, .v-free-2q-block, .v-free-problem');
   if (vItems && vItems.length > 0) {
     vItems.forEach((item, idx) => {
       if (idx < simState.count) {
@@ -3262,27 +3280,49 @@ function attachSimSlotInteractivity(host, previewQuestions) {
         item.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
         item.onclick = () => openSimQuestionPicker(idx);
         if (previewQuestions[idx]?.isEmptySlot) {
-          const pEl = item.querySelector('.v-nogrid-prompt, .problem-text') || item;
+          const pEl = item.querySelector('.v-nogrid-q-prompt, .v-nogrid-prompt, .problem-text') || item;
           pEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
         }
       }
     });
   }
 
-  // 4. Caso Ficha A6 o Sin Borrador (b2-q-item o a6-nogrid-item)
-  const b2Items = host.querySelectorAll('.b2-q-item, .a6-nogrid-item');
-  if (b2Items && b2Items.length > 0) {
-    b2Items.forEach((item, idx) => {
+  // 4. Caso Ficha A6 o Sin Borrador (a6-nogrid-q, b2-q-item o a6-nogrid-item)
+  const a6Items = host.querySelectorAll('.a6-nogrid-q, .b2-q-item, .a6-nogrid-item');
+  if (a6Items && a6Items.length > 0) {
+    a6Items.forEach((item, idx) => {
       if (idx < simState.count) {
         item.classList.add('sim-interactive-slot');
         item.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
         item.onclick = () => openSimQuestionPicker(idx);
         if (previewQuestions[idx]?.isEmptySlot) {
-          const pEl = item.querySelector('.b2-q-prompt, .a6-nogrid-prompt') || item;
+          const pEl = item.querySelector('.a6-nogrid-q-prompt, .b2-q-prompt, .a6-nogrid-prompt') || item;
           pEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
         }
       }
     });
+  }
+
+  // 5. Control Interactivo sobre la Cuadrícula de Cálculo (Borrador):
+  // El docente agranda o disminuye la cuadrícula DIRECTAMENTE sobre el borrador de la ficha interactiva.
+  const effectiveGrid = (simState.branch === 'rama1') ? true : !!simState.withGrid;
+  if (effectiveGrid && simState.count === 1) {
+    const gridWrap = host.querySelector('.grid-wrapper, .v-free-grid');
+    if (gridWrap) {
+      gridWrap.style.position = 'relative';
+      const existingBar = gridWrap.querySelector('.sim-grid-resize-bar');
+      if (existingBar) existingBar.remove();
+
+      const bar = document.createElement('div');
+      bar.className = 'sim-grid-resize-bar';
+      const isExpanded = simState.gridSize === 'expanded';
+      bar.innerHTML = `
+        <span class="sim-grid-resize-label">📐 Cuadrícula:</span>
+        <button type="button" class="sim-grid-size-btn ${!isExpanded ? 'active' : ''}" onclick="event.stopPropagation(); setSimGridSize('normal')">Normal</button>
+        <button type="button" class="sim-grid-size-btn ${isExpanded ? 'active' : ''}" onclick="event.stopPropagation(); setSimGridSize('expanded')">➕ Agrandar</button>
+      `;
+      gridWrap.appendChild(bar);
+    }
   }
 }
 
@@ -3645,19 +3685,19 @@ function buildSimulatorEvaluation() {
 
   const g = gradoDelSalonSeleccionado();
   const isOMR = simState.type === 'mc';
-  const isVertical = simState.orientation === 'vertical';
-  const isA6 = (simState.branch === 'rama2' && !simState.withGrid && simState.count <= 2 && !isVertical);
+  const layout = determineCardLayout(simState);
   const activeQuestions = simState.questions.slice(0, simState.count);
 
   const evalObj = {
     id: 'eval_sim_' + Date.now(),
     branch: simState.branch,
     type: isOMR ? 'mc' : 'free',
-    withGrid: simState.withGrid,
+    withGrid: (simState.branch === 'rama1') ? true : !!simState.withGrid,
     questionCount: simState.count,
     questions: activeQuestions,
-    cardFormat: isA6 ? 'a6' : 'a5',
-    isPortrait: isVertical,
+    cardFormat: layout.format,
+    isPortrait: layout.orientation === 'vertical',
+    orientation: layout.orientation,
     gridSize: simState.gridSize,
     title: simState.branch === 'rama1'
       ? (isOMR ? `Formativa con IA (${simState.count}P)` : 'Formativa Respuesta Libre')

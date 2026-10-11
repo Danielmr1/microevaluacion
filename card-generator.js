@@ -133,7 +133,7 @@ function createA5Card(student, classroom, evaluation) {
           <div class="problem-text">${escape(q1.prompt)}</div>
         </div>
 
-        <div class="grid-wrapper mc-grid-1q">
+        <div class="grid-wrapper mc-grid-1q ${evaluation.gridSize === 'expanded' ? 'grid-wrapper-expanded' : ''}">
           <div class="notebook-grid">${GRID_CELLS_HTML}</div>
         </div>
 
@@ -249,7 +249,7 @@ function createA5Card(student, classroom, evaluation) {
         </div>
       </div>
 
-      <div class="grid-wrapper">
+      <div class="grid-wrapper ${evaluation.gridSize === 'expanded' ? 'grid-wrapper-expanded' : ''}">
         <div class="notebook-grid">${GRID_CELLS_HTML}</div>
       </div>
 
@@ -885,8 +885,8 @@ function renderAllPrintPages(classId, evaluation) {
     return;
   }
 
-  // ── CASO RESPUESTA LIBRE VERTICAL (2 FICHAS A5 VERTICALES EN HOJA A4 HORIZONTAL) ──
-  const isVerticalFree = evaluation && evaluation.cardOrientation === 'vertical' && !isR3;
+  // ── CASO RESPUESTA LIBRE / FOCALIZADA VERTICAL (2 FICHAS A5 VERTICALES EN HOJA A4 HORIZONTAL) ──
+  const isVerticalFree = evaluation && (evaluation.cardOrientation === 'vertical' || evaluation.isPortrait === true || evaluation.orientation === 'vertical') && !isR3;
   if (isVerticalFree) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
