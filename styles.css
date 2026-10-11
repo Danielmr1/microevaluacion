@@ -2171,7 +2171,8 @@
     }
 
     /* Modo 2 Preguntas */
-    .card-a5.mc-2q {
+    .card-a5.mc-2q,
+    .card-a5.free-card-2q {
       padding: 2.5mm 3mm;
     }
     /* El encabezado NO se achica: mantiene sus 20mm y márgenes limpios */
@@ -2196,28 +2197,39 @@
       font-size: 8.5pt !important;
       line-height: 1.25 !important;
     }
-    .mc-grid-2q {
+    .card-a5.mc-2q .mc-grid-2q {
       width: 156mm;
-      height: 21.5mm !important;
-      flex: 0 0 21.5mm !important;
+      height: 24.5mm !important;
+      flex: 0 0 24.5mm !important;
       margin: 1.2mm auto 0 auto !important;
       align-self: center;
     }
-    .mc-grid-2q .notebook-grid {
-      height: 21.5mm !important;
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid {
+      height: 24.5mm !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
+    .card-a5.free-card-2q .mc-grid-2q {
+      width: 156mm;
+      height: 23mm !important;
+      flex: 0 0 23mm !important;
+      margin: 1.2mm auto 0 auto !important;
+      align-self: center;
+    }
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid {
+      height: 23mm !important;
       grid-template-rows: repeat(4, 1fr) !important;
     }
     .card-a5.mc-2q .omr-row-2q-1 {
-      margin: 1.5mm auto 0 auto !important;
+      margin: 1.8mm auto 0 auto !important;
     }
     .mc-divider {
       width: 156mm;
       height: 1px;
       background: #cbd5e1;
-      margin: 1.5mm auto 1mm auto;
+      margin: 2mm auto 1.5mm auto;
     }
     .card-a5.mc-2q .omr-row-2q-2 {
-      margin: 1.8mm auto 0 auto !important;
+      margin: 3mm auto 0 auto !important;
     }
 
     /* ── RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS EN 2 COLUMNAS) ── */
@@ -3530,8 +3542,8 @@
 
     .a6-v-grid-wrapper {
       width: 72mm;
-      height: 68mm;
-      flex: 0 0 68mm;
+      height: 70mm;
+      flex: 0 0 70mm;
       margin: 1.5mm auto;
       align-self: center;
       position: relative;
@@ -3539,7 +3551,7 @@
 
     .notebook-grid-a6-v {
       width: 72mm;
-      height: 68mm;
+      height: 70mm;
       box-sizing: border-box;
       display: grid;
       grid-template-columns: repeat(9, 1fr);
@@ -3565,12 +3577,33 @@
       box-sizing: border-box;
     }
 
+    .card-a6-v .a6-omr-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4.5mm;
+      padding: 0 12mm;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .card-a6-v .a6-omr-row .v-omr-option {
+      width: auto;
+      gap: 1.5mm;
+    }
+
     .a6-free-answer-strip {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 3mm;
       margin-top: 1.5mm;
+    }
+    .card-a6-v .a6-free-answer-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3mm;
+      margin-top: 4.5mm;
     }
 
     /* Badge compacto de formato junto al número de preguntas */
