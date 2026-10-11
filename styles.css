@@ -1226,14 +1226,17 @@
     .notebook-grid-v > i:nth-child(n+157) { border-bottom: none; }
 
     .v-free-answer-strip {
-      height: 18mm;
-      min-height: 18mm;
-      max-height: 18mm;
-      border-top: 1.5px solid #000000;
-      padding: 2mm 14mm;
+      width: 104mm;
+      height: 12mm;
+      min-height: 12mm;
+      max-height: 12mm;
+      margin: 1.5mm auto 0 auto;
+      border: none !important;
+      padding: 0 1mm;
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: flex-start;
+      gap: 8px;
       box-sizing: border-box;
     }
 
@@ -1281,12 +1284,15 @@
     }
 
     .v-free-answer-strip-2q {
-      height: 12mm;
+      width: 104mm;
+      height: 10mm;
+      margin: 1mm auto 0 auto;
       display: flex;
       align-items: center;
+      justify-content: flex-start;
       gap: 8px;
-      border-top: 1px solid #000000;
-      padding: 1mm 2mm;
+      border: none !important;
+      padding: 0 1mm;
       box-sizing: border-box;
     }
 
@@ -2069,16 +2075,16 @@
        lo que espera ROI_CONFIG.ANSWER_BOX. */
     .answer-strip {
       width: 156mm;
-      height: 12mm;
-      flex: 0 0 12mm;
-      margin: 3mm 0 0 0;
+      height: 10mm;
+      flex: 0 0 10mm;
+      margin: 2.5mm 0 0 0;
       align-self: center;
-      border: 0.8mm solid #0f172a;
-      background: #ffffff;
-      border-radius: 1mm;
+      border: none !important;
+      background: transparent !important;
       display: flex;
       align-items: center;
-      padding: 0 4mm;
+      justify-content: flex-start;
+      padding: 0 0 0 3mm;
       gap: 3mm;
       box-sizing: border-box;
       overflow: hidden;
@@ -2104,14 +2110,7 @@
     }
 
     .answer-line {
-      flex: 1 1 auto;
-      min-width: 0;
-      height: 7mm;
-      border-bottom: 1.5px dashed #64748b;
-      display: flex;
-      align-items: flex-end;
-      padding-bottom: 1px;
-      overflow: hidden;
+      display: none !important;
     }
 
     .answer-line-hint {
@@ -2236,7 +2235,7 @@
     .card-a5.free-card-2q .answer-strip {
       border: none !important;
       background: transparent !important;
-      padding: 0 1mm !important;
+      padding: 0 0 0 3mm !important;
       width: 156mm !important;
       height: 9.5mm !important;
       flex: 0 0 9.5mm !important;
@@ -3619,19 +3618,22 @@
     .a6-free-answer-strip {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
       gap: 3mm;
       margin: 1.5mm auto 0 auto;
       width: 104mm;
+      padding: 0 1mm;
       box-sizing: border-box;
     }
     .card-a6-v .a6-free-answer-strip {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 3mm;
-      margin-top: 4.5mm;
-      width: 100%;
+      margin: 3.5mm auto 0 auto;
+      width: 72mm;
+      padding-left: 5mm;
+      box-sizing: border-box;
     }
 
     /* Badge compacto de formato junto al número de preguntas */
