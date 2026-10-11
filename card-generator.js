@@ -24,6 +24,14 @@ const A5_GRID_COLS = 16;
 const A5_GRID_ROWS = 7;
 const GRID_CELLS_HTML = new Array(A5_GRID_COLS * A5_GRID_ROWS).fill('<i></i>').join('');
 
+const A6_GRID_COLS = 13;
+const A6_GRID_ROWS = 5;
+const GRID_CELLS_A6 = new Array(A6_GRID_COLS * A6_GRID_ROWS).fill('<i></i>').join('');
+
+const A6_V_GRID_COLS = 9;
+const A6_V_GRID_ROWS = 9;
+const GRID_CELLS_A6_V = new Array(A6_V_GRID_COLS * A6_V_GRID_ROWS).fill('<i></i>').join('');
+
 function createA5Card(student, classroom, evaluation) {
   const gradeText = ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel)
     || classroom.name;
@@ -346,6 +354,104 @@ function createA6Card(student, classroom, evaluation) {
       `);
     }
     bodyHTML = qRows.join('');
+  }
+
+  // ── CASO A6 CON CUADRÍCULA (1 Pregunta en Formativa A6 H o A6 V) ──
+  const isA6WithGrid = (evaluation.withGrid === true || evaluation.branch === 'rama1') && totalQ === 1;
+  const isA6Vertical = evaluation.isPortrait === true || evaluation.orientation === 'vertical' || evaluation.cardOrientation === 'vertical';
+
+  if (isA6WithGrid) {
+    const q1 = (evaluation.questions && evaluation.questions[0]) || {
+      prompt: evaluation.prompt,
+      options: evaluation.options || { A: '', B: '', C: '', D: '' }
+    };
+
+    if (isA6Vertical) {
+      return `
+        <div class="card-a6-v">
+          ${fiducialsHTML}
+          <div class="a6-v-card-header">
+            <div class="a6-header-left">
+              <div class="a6-header-top-title">EVALUACIÓN FORMATIVA</div>
+              <div class="a6-student-block">
+                <span class="a6-student-label">Nombre:</span>
+                <span class="a6-student-name">${safeStudentName}</span>
+                <span class="a6-student-grade">(${safeGradeText})</span>
+              </div>
+            </div>
+            <div class="a6-qr-block">
+              <span class="a6-qr-code-text">${orderNumber}</span>
+              <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+            </div>
+          </div>
+
+          <div class="a6-v-problem">
+            <div class="problem-text">${escape(q1.prompt)}</div>
+          </div>
+
+          <div class="grid-wrapper a6-v-grid-wrapper">
+            <div class="notebook-grid notebook-grid-a6-v">${GRID_CELLS_A6_V}</div>
+          </div>
+
+          ${isOMR ? `
+            <div class="a6-omr-row">
+              <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q1.options?.D || '')}</span></div>
+            </div>
+          ` : `
+            <div class="a6-free-answer-strip">
+              <span class="v-nogrid-free-tag">Rpta:</span>
+              <div class="a6-nogrid-free-box"></div>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // A6 Horizontal con Cuadrícula
+    return `
+      <div class="card-a6-r3">
+        ${fiducialsHTML}
+        <div class="a6-card-header">
+          <div class="a6-header-left">
+            <div class="a6-header-top-title">EVALUACIÓN FORMATIVA</div>
+            <div class="a6-student-block">
+              <span class="a6-student-label">Nombre:</span>
+              <span class="a6-student-name">${safeStudentName}</span>
+              <span class="a6-student-grade">(${safeGradeText})</span>
+            </div>
+          </div>
+          <div class="a6-qr-block">
+            <span class="a6-qr-code-text">${orderNumber}</span>
+            <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+          </div>
+        </div>
+
+        <div class="a6-problem">
+          <div class="problem-text">${escape(q1.prompt)}</div>
+        </div>
+
+        <div class="grid-wrapper a6-grid-wrapper">
+          <div class="notebook-grid notebook-grid-a6">${GRID_CELLS_A6}</div>
+        </div>
+
+        ${isOMR ? `
+          <div class="a6-omr-row">
+            <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
+            <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
+            <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
+            <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q1.options?.D || '')}</span></div>
+          </div>
+        ` : `
+          <div class="a6-free-answer-strip">
+            <span class="v-nogrid-free-tag">Rpta:</span>
+            <div class="a6-nogrid-free-box"></div>
+          </div>
+        `}
+      </div>
+    `;
   }
 
   // Si es Focalizada en la respuesta (Rama 2 sin cuadrícula, 1 a 2 preguntas)
@@ -777,9 +883,12 @@ function renderAllPrintPages(classId, evaluation) {
     (evaluation.type === 'mc' && qCount > 2)
   );
 
-  // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS O FOCALIZADA SIN BORRADOR <= 2P: 4 ALUMNOS POR HOJA A4 (2x2) ──
-  const isBranch2Quad = evaluation && evaluation.branch === 'rama2' && evaluation.withGrid === false && qCount <= 2 && evaluation.cardFormat !== 'a5';
-  if ((isR3 && qCount <= 8) || isBranch2Quad) {
+  // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS O CUALQUIER FICHA A6 (4 ALUMNOS POR HOJA A4: 2x2) ──
+  const isA6Quad = evaluation && (
+    evaluation.cardFormat === 'a6' ||
+    (evaluation.branch === 'rama2' && evaluation.withGrid === false && qCount <= 2 && evaluation.cardFormat !== 'a5')
+  );
+  if ((isR3 && qCount <= 8) || isA6Quad) {
     const sheetCount = Math.ceil(students.length / 4);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
