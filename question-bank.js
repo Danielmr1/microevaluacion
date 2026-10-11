@@ -2960,8 +2960,10 @@ function selectBranchMode(branch) {
 let r2State = {
   withGrid: true,
   responseType: 'mc', // 'mc' | 'free'
-  count: 1, // 1, 2, 3
+  count: 1, // 1, 2, 3, 4, 5
   questions: [
+    { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' },
+    { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' },
     { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' },
     { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' },
     { mode: 'new', prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '' }
@@ -2975,8 +2977,12 @@ function initRama2Builder() {
 
 function setRama2Grid(withGrid) {
   r2State.withGrid = !!withGrid;
+  // Guardarraíl: si activa cuadrícula, no pueden ser más de 2 preguntas
   if (r2State.withGrid && r2State.count > 2) {
     r2State.count = 2;
+    if (typeof showToast === 'function') {
+      showToast('ℹ️ Con cuadrícula de borrador el máximo es 2 preguntas.');
+    }
   }
   updateRama2ControlsUI();
   renderRama2Questions();
@@ -2989,8 +2995,14 @@ function setRama2Type(type) {
 }
 
 function setRama2Count(count) {
-  const max = r2State.withGrid ? 2 : 3;
-  r2State.count = Math.min(Math.max(1, count), max);
+  r2State.count = Math.min(Math.max(1, count), 5);
+  // Guardarraíl reactivo: si elige 3 o más preguntas, se desactiva la cuadrícula automáticamente
+  if (r2State.count > 2 && r2State.withGrid) {
+    r2State.withGrid = false;
+    if (typeof showToast === 'function') {
+      showToast('ℹ️ A partir de 3 preguntas no cabe la cuadrícula de borrador.');
+    }
+  }
   updateRama2ControlsUI();
   renderRama2Questions();
 }
@@ -2999,20 +3011,44 @@ function updateRama2ControlsUI() {
   const btnGridYes = document.getElementById('btn-r2-grid-yes');
   const btnGridNo = document.getElementById('btn-r2-grid-no');
   if (btnGridYes && btnGridNo) {
-    if (r2State.withGrid) {
-      btnGridYes.style.borderColor = '#10b981';
-      btnGridYes.style.background = 'rgba(16,185,129,0.18)';
-      btnGridYes.style.color = '#a7f3d0';
-      btnGridNo.style.borderColor = '#334155';
-      btnGridNo.style.background = '#1e293b';
-      btnGridNo.style.color = '#94a3b8';
-    } else {
+    if (r2State.count > 2) {
+      // Bloquear botón de cuadrícula
+      btnGridYes.disabled = true;
+      btnGridYes.style.opacity = '0.4';
+      btnGridYes.style.cursor = 'not-allowed';
+      btnGridYes.style.borderColor = '#334155';
+      btnGridYes.style.background = '#1e293b';
+      btnGridYes.style.color = '#64748b';
+
+      btnGridNo.disabled = false;
+      btnGridNo.style.opacity = '1';
+      btnGridNo.style.cursor = 'pointer';
       btnGridNo.style.borderColor = '#10b981';
       btnGridNo.style.background = 'rgba(16,185,129,0.18)';
       btnGridNo.style.color = '#a7f3d0';
-      btnGridYes.style.borderColor = '#334155';
-      btnGridYes.style.background = '#1e293b';
-      btnGridYes.style.color = '#94a3b8';
+    } else {
+      btnGridYes.disabled = false;
+      btnGridYes.style.opacity = '1';
+      btnGridYes.style.cursor = 'pointer';
+      btnGridNo.disabled = false;
+      btnGridNo.style.opacity = '1';
+      btnGridNo.style.cursor = 'pointer';
+
+      if (r2State.withGrid) {
+        btnGridYes.style.borderColor = '#10b981';
+        btnGridYes.style.background = 'rgba(16,185,129,0.18)';
+        btnGridYes.style.color = '#a7f3d0';
+        btnGridNo.style.borderColor = '#334155';
+        btnGridNo.style.background = '#1e293b';
+        btnGridNo.style.color = '#94a3b8';
+      } else {
+        btnGridNo.style.borderColor = '#10b981';
+        btnGridNo.style.background = 'rgba(16,185,129,0.18)';
+        btnGridNo.style.color = '#a7f3d0';
+        btnGridYes.style.borderColor = '#334155';
+        btnGridYes.style.background = '#1e293b';
+        btnGridYes.style.color = '#94a3b8';
+      }
     }
   }
 
@@ -3036,10 +3072,15 @@ function updateRama2ControlsUI() {
     }
   }
 
-  const btnC1 = document.getElementById('btn-r2-count-1');
-  const btnC2 = document.getElementById('btn-r2-count-2');
-  const btnC3 = document.getElementById('btn-r2-count-3');
-  [btnC1, btnC2, btnC3].forEach((b, idx) => {
+  const buttonsCount = [
+    document.getElementById('btn-r2-count-1'),
+    document.getElementById('btn-r2-count-2'),
+    document.getElementById('btn-r2-count-3'),
+    document.getElementById('btn-r2-count-4'),
+    document.getElementById('btn-r2-count-5')
+  ];
+
+  buttonsCount.forEach((b, idx) => {
     if (!b) return;
     const qNum = idx + 1;
     if (r2State.count === qNum) {
@@ -3052,10 +3093,6 @@ function updateRama2ControlsUI() {
       b.style.color = '#94a3b8';
     }
   });
-
-  if (btnC3) {
-    btnC3.style.display = r2State.withGrid ? 'none' : 'inline-block';
-  }
 }
 
 function setRama2QMode(qIdx, mode) {

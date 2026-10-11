@@ -59,7 +59,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.1.65</span>
+          <span class="version-tag">v3.1.70</span>
         </div>
       </div>
     </div>
@@ -519,7 +519,11 @@
               <button type="button" id="btn-r2-count-2" onclick="setRama2Count(2)"
                 style="padding:5px 10px; border-radius:6px; border:1.5px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.72rem; font-weight:800; cursor:pointer;">2P</button>
               <button type="button" id="btn-r2-count-3" onclick="setRama2Count(3)"
-                style="padding:5px 10px; border-radius:6px; border:1.5px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.72rem; font-weight:800; cursor:pointer; display:none;">3P</button>
+                style="padding:5px 10px; border-radius:6px; border:1.5px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.72rem; font-weight:800; cursor:pointer;">3P</button>
+              <button type="button" id="btn-r2-count-4" onclick="setRama2Count(4)"
+                style="padding:5px 10px; border-radius:6px; border:1.5px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.72rem; font-weight:800; cursor:pointer;">4P</button>
+              <button type="button" id="btn-r2-count-5" onclick="setRama2Count(5)"
+                style="padding:5px 10px; border-radius:6px; border:1.5px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.72rem; font-weight:800; cursor:pointer;">5P</button>
             </div>
           </div>
 
@@ -956,6 +960,22 @@
               </button>
               <button type="button" id="btn-orient-vertical" onclick="setCardOrientation('vertical')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.15s;">
                 ↕️ Vertical
+              </button>
+            </div>
+          </div>
+
+          <!-- Selector de Tamaño de Cuadrícula (1 Pregunta en A5) -->
+          <div id="grid-size-selector-container" style="display:none; margin-top:10px; align-items:center; justify-content:space-between; gap:10px; background:#1e293b; border:1px solid #334155; padding:10px 14px; border-radius:10px;">
+            <div>
+              <div style="font-size:0.78rem; font-weight:700; color:#f1f5f9;">Tamaño del Borrador:</div>
+              <div style="font-size:0.7rem; color:#94a3b8; margin-top:1px;">Área para operaciones y desarrollo</div>
+            </div>
+            <div style="display:inline-flex; background:#0f172a; padding:3px; border-radius:8px; border:1px solid #334155; gap:2px;">
+              <button type="button" id="btn-grid-normal" onclick="setCardGridSize('normal')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:#10b981; color:#ffffff; transition:all 0.15s;">
+                Normal
+              </button>
+              <button type="button" id="btn-grid-expanded" onclick="setCardGridSize('expanded')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.15s;">
+                ➕ Ampliada
               </button>
             </div>
           </div>
@@ -2733,6 +2753,19 @@
           }
         }
 
+        // Mostrar selector de tamaño de borrador solo para 1 pregunta con cuadrícula
+        const gridSizeContainer = document.getElementById('grid-size-selector-container');
+        if (gridSizeContainer) {
+          const hasGrid1Q = wizardEval && wizardEval.withGrid !== false && (!wizardEval.questionCount || wizardEval.questionCount === 1);
+          if (hasGrid1Q && !isBranch3) {
+            gridSizeContainer.style.display = 'flex';
+            const curGrid = (wizardEval && wizardEval.gridSize) || 'normal';
+            setCardGridSize(curGrid, false);
+          } else {
+            gridSizeContainer.style.display = 'none';
+          }
+        }
+
         // ── Generar fichas automáticamente ──
         const pagesContainer = document.getElementById('pages-container');
         if (pagesContainer) pagesContainer.style.display = 'flex';
@@ -3027,6 +3060,36 @@
       }
     }
     window.setCardOrientation = setCardOrientation;
+
+    function setCardGridSize(gridSize, doRender = true) {
+      if (typeof wizardEval !== 'undefined' && wizardEval) {
+        wizardEval.gridSize = gridSize;
+      }
+      const session = ClassroomData.getActiveSession();
+      if (session) {
+        session.gridSize = gridSize;
+        ClassroomData.setActiveSession(session);
+      }
+      const btnNorm = document.getElementById('btn-grid-normal');
+      const btnExp = document.getElementById('btn-grid-expanded');
+      if (btnNorm && btnExp) {
+        if (gridSize === 'expanded') {
+          btnExp.style.background = '#10b981';
+          btnExp.style.color = '#ffffff';
+          btnNorm.style.background = 'transparent';
+          btnNorm.style.color = '#94a3b8';
+        } else {
+          btnNorm.style.background = '#10b981';
+          btnNorm.style.color = '#ffffff';
+          btnExp.style.background = 'transparent';
+          btnExp.style.color = '#94a3b8';
+        }
+      }
+      if (doRender && typeof wizardClassroomId !== 'undefined' && wizardClassroomId && typeof wizardEval !== 'undefined' && wizardEval) {
+        renderAllPrintPages(wizardClassroomId, wizardEval);
+      }
+    }
+    window.setCardGridSize = setCardGridSize;
 
     function goToScannerWithSession() {
       generateAndActivateSession();

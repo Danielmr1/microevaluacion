@@ -74,7 +74,7 @@ function createA5Card(student, classroom, evaluation) {
       : createA5VerticalR3Card(student, classroom, evaluation);
   }
 
-  // ── CASO RAMA 2: EVALUACIÓN FOCALIZADA SIN BORRADOR (1 A 3 PREGUNTAS) ──
+  // ── CASO RAMA 2: EVALUACIÓN FOCALIZADA SIN BORRADOR (1 A 5 PREGUNTAS) ──
   const isBranch2NoGrid = (evaluation.branch === 'rama2' || evaluation.withGrid === false) && evaluation.withGrid === false;
   if (isBranch2NoGrid) {
     const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
@@ -348,6 +348,62 @@ function createA6Card(student, classroom, evaluation) {
     bodyHTML = qRows.join('');
   }
 
+  // Si es Focalizada en la respuesta (Rama 2 sin cuadrícula, 1 a 2 preguntas)
+  const isBranch2A6 = evaluation.branch === 'rama2' && evaluation.withGrid === false && totalQ <= 2;
+  const isOMR = (evaluation.type === 'mc');
+
+  if (isBranch2A6) {
+    const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
+      ? evaluation.questions.slice(0, totalQ)
+      : [{
+          prompt: evaluation.prompt,
+          options: evaluation.options || { A: '', B: '', C: '', D: '' }
+        }];
+
+    return `
+      <div class="card-a6-r3">
+        ${fiducialsHTML}
+        <div class="a6-card-header">
+          <div class="a6-header-left">
+            <div class="a6-header-top-title">EVALUACIÓN FOCALIZADA</div>
+            <div class="a6-student-block">
+              <span class="a6-student-label">Nombre:</span>
+              <span class="a6-student-name">${safeStudentName}</span>
+              <span class="a6-student-grade">(${safeGradeText})</span>
+            </div>
+          </div>
+          <div class="a6-qr-block">
+            <span class="a6-qr-code-text">${orderNumber}</span>
+            <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+          </div>
+        </div>
+
+        <div class="a6-nogrid-body">
+          ${activeQuestions.map((q, idx) => `
+            <div class="a6-nogrid-q">
+              <div class="a6-nogrid-q-prompt">
+                <strong>${idx + 1}.</strong> ${escape(q.prompt)}
+              </div>
+              ${isOMR ? `
+                <div class="a6-nogrid-omr">
+                  <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q.options?.A || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q.options?.B || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q.options?.C || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q.options?.D || '')}</span></div>
+                </div>
+              ` : `
+                <div class="a6-nogrid-free">
+                  <span class="v-nogrid-free-tag">Rpta:</span>
+                  <div class="a6-nogrid-free-box"></div>
+                </div>
+              `}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="card-a6-r3">
       ${fiducialsHTML}
@@ -511,6 +567,7 @@ function createA5VerticalCard(student, classroom, evaluation) {
   const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
 
   const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
+  const isOMR = (evaluation.type === 'mc');
 
   // Cuadrícula vertical de 13 columnas x 10 filas
   const V_GRID_COLS = 13;
@@ -518,8 +575,8 @@ function createA5VerticalCard(student, classroom, evaluation) {
   const GRID_CELLS_V_FREE = new Array(V_GRID_COLS * V_GRID_ROWS).fill('<i></i>').join('');
 
   if (qCount === 2) {
-    const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '' };
-    const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '' };
+    const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '', options: {} };
+    const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '', options: {} };
     const GRID_CELLS_V_2Q = new Array(13 * 4).fill('<i></i>').join('');
 
     return `
@@ -548,10 +605,19 @@ function createA5VerticalCard(student, classroom, evaluation) {
           <div class="v-free-grid-2q">
             <div class="notebook-grid notebook-grid-v2q">${GRID_CELLS_V_2Q}</div>
           </div>
-          <div class="v-free-answer-strip-2q">
-            <span class="answer-tag">Rpta:</span>
-            <div class="answer-box-open"></div>
-          </div>
+          ${isOMR ? `
+            <div class="v-omr-row v-omr-row-2q">
+              <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q1.options?.D || '')}</span></div>
+            </div>
+          ` : `
+            <div class="v-free-answer-strip-2q">
+              <span class="answer-tag">Rpta:</span>
+              <div class="answer-box-open"></div>
+            </div>
+          `}
         </div>
 
         <div class="v-free-divider"></div>
@@ -564,16 +630,87 @@ function createA5VerticalCard(student, classroom, evaluation) {
           <div class="v-free-grid-2q">
             <div class="notebook-grid notebook-grid-v2q">${GRID_CELLS_V_2Q}</div>
           </div>
-          <div class="v-free-answer-strip-2q">
-            <span class="answer-tag">Rpta:</span>
-            <div class="answer-box-open"></div>
-          </div>
+          ${isOMR ? `
+            <div class="v-omr-row v-omr-row-2q">
+              <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q2.options?.A || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q2.options?.B || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q2.options?.C || '')}</span></div>
+              <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q2.options?.D || '')}</span></div>
+            </div>
+          ` : `
+            <div class="v-free-answer-strip-2q">
+              <span class="answer-tag">Rpta:</span>
+              <div class="answer-box-open"></div>
+            </div>
+          `}
         </div>
       </div>
     `;
   }
 
-  // 1 Pregunta (Tradicional Formativa / Focalizada)
+  // ── CASO A5 VERTICAL SIN CUADRÍCULA (1 A 5 PREGUNTAS) ──
+  const isVerticalNoGrid = evaluation.withGrid === false;
+  if (isVerticalNoGrid) {
+    const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
+      ? evaluation.questions
+      : [{
+          prompt: evaluation.prompt,
+          options: evaluation.options || { A: '', B: '', C: '', D: '' },
+          expectedAnswer: evaluation.expectedAnswer || ''
+        }];
+
+    return `
+      <div class="card-a5-v-free">
+        ${fiducialsHTML}
+        <div class="v-card-header">
+          <div class="v-header-left">
+            <div class="v-header-top-title">EVALUACIÓN FOCALIZADA</div>
+            <div class="v-student-block">
+              <span class="v-student-label">Nombre:</span>
+              <span class="v-student-name">${safeStudentName}</span>
+              <span class="v-student-grade">(${safeGradeText})</span>
+            </div>
+          </div>
+          <div class="v-qr-block">
+            <span class="v-qr-code-text">${orderNumber}</span>
+            <div class="v-qr-box" id="qr-box-${student.id}"></div>
+          </div>
+        </div>
+
+        <div class="v-nogrid-body">
+          ${activeQuestions.map((q, idx) => `
+            <div class="v-nogrid-q">
+              <div class="v-nogrid-q-header">
+                <strong class="v-nogrid-q-num">${idx + 1}.</strong>
+                <span class="v-nogrid-q-prompt">${escape(q.prompt)}</span>
+              </div>
+              ${isOMR ? `
+                <div class="v-omr-row v-omr-row-2q" style="margin-top:2px;">
+                  <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q.options?.A || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q.options?.B || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q.options?.C || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q.options?.D || '')}</span></div>
+                </div>
+              ` : `
+                <div class="v-nogrid-free-row">
+                  <span class="v-nogrid-free-tag">Rpta:</span>
+                  <div class="v-nogrid-free-box"></div>
+                </div>
+              `}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 1 Pregunta (Alternativas OMR o Respuesta Libre con Cuadrícula)
+  const q1 = (evaluation.questions && evaluation.questions[0]) || {
+    prompt: evaluation.prompt,
+    options: evaluation.options || { A: '', B: '', C: '', D: '' }
+  };
+  const isGridExpanded = evaluation.gridSize === 'expanded';
+
   return `
     <div class="card-a5-v-free">
       ${fiducialsHTML}
@@ -593,20 +730,29 @@ function createA5VerticalCard(student, classroom, evaluation) {
       </div>
 
       <div class="v-free-problem">
-        <div class="problem-text">${escape(evaluation.prompt)}</div>
+        <div class="problem-text">${escape(q1.prompt || evaluation.prompt)}</div>
       </div>
 
-      <div class="v-free-grid">
+      <div class="v-free-grid ${isGridExpanded ? 'v-free-grid-expanded' : ''}">
         <div class="notebook-grid notebook-grid-v">${GRID_CELLS_V_FREE}</div>
       </div>
 
-      <div class="v-free-answer-strip">
-        <span class="answer-tag">Rpta:</span>
-        <div class="answer-box-open"></div>
-        <div class="answer-line">
-          <span class="answer-line-hint">${escape(evaluation.unitHint || '(unidades)')}</span>
+      ${isOMR ? `
+        <div class="v-omr-row">
+          <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
+          <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
+          <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
+          <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q1.options?.D || '')}</span></div>
         </div>
-      </div>
+      ` : `
+        <div class="v-free-answer-strip">
+          <span class="answer-tag">Rpta:</span>
+          <div class="answer-box-open"></div>
+          <div class="answer-line">
+            <span class="answer-line-hint">${escape(evaluation.unitHint || '(unidades)')}</span>
+          </div>
+        </div>
+      `}
     </div>
   `;
 }
@@ -631,13 +777,15 @@ function renderAllPrintPages(classId, evaluation) {
     (evaluation.type === 'mc' && qCount > 2)
   );
 
-  // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS: 4 ALUMNOS POR HOJA A4 (HORIZONTAL 2x2) ──
-  if (isR3 && qCount <= 8) {
+  // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS O FOCALIZADA SIN BORRADOR <= 2P: 4 ALUMNOS POR HOJA A4 (2x2) ──
+  const isBranch2Quad = evaluation && evaluation.branch === 'rama2' && evaluation.withGrid === false && qCount <= 2 && evaluation.cardFormat !== 'a5';
+  if ((isR3 && qCount <= 8) || isBranch2Quad) {
     const sheetCount = Math.ceil(students.length / 4);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
       const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-      printBtn.innerHTML = `🖨️ Descargar Cartillas OMR (${sheetCount} ${pageWord}) [4 por hoja]`;
+      const labelText = isR3 ? 'Cartillas OMR' : 'Fichas Focalizadas';
+      printBtn.innerHTML = `🖨️ Descargar ${labelText} (${sheetCount} ${pageWord}) [4 por hoja]`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 

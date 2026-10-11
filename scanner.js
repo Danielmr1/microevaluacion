@@ -1131,15 +1131,29 @@
       const leftH = Math.hypot(quad.pBL.x - quad.pTL.x, quad.pBL.y - quad.pTL.y);
       const isPortrait = leftH > topW * 1.15;
 
-      if (isPortrait) {
-        marginX = 0.062;
-        marginY = 0.043;
-      } else {
-        const gm = (typeof ROIProcessor !== 'undefined' && ROIProcessor.getExpansionMargins)
-          ? ROIProcessor.getExpansionMargins()
-          : { marginX: 0.0595238095, marginY: 0.0847457627 };
+      const isCardA6 = (typeof ClassroomData !== 'undefined') && (() => {
+        const sess = ClassroomData.getActiveSession();
+        if (!sess) return false;
+        const qC = sess.questionCount || (sess.questions ? sess.questions.length : 1);
+        return (sess.branch === 'rama3' && qC <= 8) || (sess.branch === 'rama2' && sess.withGrid === false && qC <= 2 && sess.cardFormat !== 'a5');
+      })();
+
+      const cardType = isPortrait ? 'a5_vertical' : (isCardA6 ? 'a6' : 'a5');
+      if (typeof ROIProcessor !== 'undefined' && ROIProcessor.getExpansionMargins) {
+        const gm = ROIProcessor.getExpansionMargins(cardType);
         marginX = gm.marginX;
         marginY = gm.marginY;
+      } else {
+        if (isPortrait) {
+          marginX = 0.0877;
+          marginY = 0.0602;
+        } else if (isCardA6) {
+          marginX = 0.0641;
+          marginY = 0.1014;
+        } else {
+          marginX = 0.06024;
+          marginY = 0.08772;
+        }
       }
     }
 
@@ -1634,11 +1648,48 @@
           } catch (e) {}
         }
 
+        // Determinar si la evaluación activa corresponde a ficha A6
+        let qCount = 1;
+        const branch = (activeSession && activeSession.branch) || (activeEval && activeEval.branch) || 'rama1';
+        const withGrid = (activeSession && activeSession.withGrid !== undefined)
+          ? activeSession.withGrid
+          : ((activeEval && activeEval.withGrid !== undefined) ? activeEval.withGrid : true);
+
+        if (activeEval && activeEval.questionCount) {
+          qCount = activeEval.questionCount;
+        } else if (activeSession && activeSession.questionCount) {
+          qCount = activeSession.questionCount;
+        } else if (activeEval && (activeEval.questions && activeEval.questions.length)) {
+          qCount = activeEval.questions.length;
+        } else if (activeSession && (activeSession.questions && activeSession.questions.length)) {
+          qCount = activeSession.questions.length;
+        } else if (activeEval && activeEval.prompt && activeEval.prompt.includes('1.') && activeEval.prompt.includes('2.')) {
+          qCount = 2;
+        } else if (activeSession && activeSession.prompt && activeSession.prompt.includes('1.') && activeSession.prompt.includes('2.')) {
+          qCount = 2;
+        }
+
+        const isA6Card = (activeSession && activeSession.cardFormat === 'a6') || (activeEval && activeEval.cardFormat === 'a6') ||
+          (branch === 'rama3' && qCount <= 8) || (branch === 'rama2' && !withGrid && qCount <= 2 && (activeSession?.cardFormat !== 'a5' && activeEval?.cardFormat !== 'a5'));
+        const gridSize = (activeSession && activeSession.gridSize) || (activeEval && activeEval.gridSize) || 'normal';
+        const cardOrientation = (activeSession && activeSession.cardOrientation) || (activeEval && activeEval.cardOrientation) || (isCardPortrait ? 'vertical' : 'horizontal');
+
+        const procOptions = {
+          branch,
+          withGrid,
+          gridSize,
+          isA6: isA6Card,
+          cardFormat: isA6Card ? 'a6' : 'a5',
+          cardOrientation,
+          isPortrait: isCardPortrait,
+          questionCount: qCount
+        };
+
         // Intento 3 (Respaldo): Extraer ROI de QR específica y aplicar contraste si no se leyó
         if (!qrText && typeof ROIProcessor !== 'undefined') {
           const qrRoiConfig = (isCardPortrait && ROIProcessor.CONFIG_VERTICAL)
             ? ROIProcessor.CONFIG_VERTICAL.QR
-            : ROIProcessor.CONFIG.QR;
+            : (isA6Card && ROIProcessor.CONFIG_A6 ? ROIProcessor.CONFIG_A6.QR : ROIProcessor.CONFIG.QR);
           const qrRoi = ROIProcessor.extractROI(fullWarpCanvas, qrRoiConfig);
           if (qrRoi.success && typeof jsQR !== 'undefined') {
             ROIProcessor.enhanceHandwritingContrast(qrRoi.canvas, { blackCutoff: 100, whiteCutoff: 160 });
@@ -1651,35 +1702,22 @@
 
       // GUARDRAIL 3 & 5: EXTRACCIÓN DE ROI DE RESOLUCIÓN + CONTRASTE DE GRAFITO / EVALUACIÓN OMR
       if (fullWarpCanvas && typeof ROIProcessor !== 'undefined') {
+        const procOpts = (typeof procOptions !== 'undefined') ? procOptions : {
+          branch: (activeSession && activeSession.branch) || (activeEval && activeEval.branch) || 'rama1',
+          withGrid: true,
+          questionCount: 1
+        };
+
         if (isOMR && ROIProcessor.evaluateOMRSheet) {
-          let qCount = 1;
-          const branch = (activeSession && activeSession.branch) || (activeEval && activeEval.branch) || 'rama1';
-          const withGrid = (activeSession && activeSession.withGrid !== undefined)
-            ? activeSession.withGrid
-            : ((activeEval && activeEval.withGrid !== undefined) ? activeEval.withGrid : true);
-
-          if (activeEval && activeEval.questionCount) {
-            qCount = activeEval.questionCount;
-          } else if (activeSession && activeSession.questionCount) {
-            qCount = activeSession.questionCount;
-          } else if (activeEval && (activeEval.questions && activeEval.questions.length)) {
-            qCount = activeEval.questions.length;
-          } else if (activeSession && (activeSession.questions && activeSession.questions.length)) {
-            qCount = activeSession.questions.length;
-          } else if (activeEval && activeEval.prompt && activeEval.prompt.includes('1.') && activeEval.prompt.includes('2.')) {
-            qCount = 2;
-          } else if (activeSession && activeSession.prompt && activeSession.prompt.includes('1.') && activeSession.prompt.includes('2.')) {
-            qCount = 2;
-          }
-
-          omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qCount, { branch, withGrid });
+          const qC = procOpts.questionCount || 1;
+          omrResults = ROIProcessor.evaluateOMRSheet(fullWarpCanvas, qC, procOpts);
           if (ROIProcessor.extractOMRCrops) {
-            omrCrops = ROIProcessor.extractOMRCrops(fullWarpCanvas, qCount, { branch, withGrid });
+            omrCrops = ROIProcessor.extractOMRCrops(fullWarpCanvas, qC, procOpts);
           }
           console.log('[Scanner] OMR Results detectados:', omrResults);
           resolutionPreviewUrl = fullWarpCanvas.toDataURL('image/jpeg', 0.90);
         } else {
-          const procResult = ROIProcessor.processCapturedSheet(fullWarpCanvas);
+          const procResult = ROIProcessor.processCapturedSheet(fullWarpCanvas, procOpts);
           if (procResult.success && procResult.resolutionCanvas) {
             resolutionPreviewUrl = procResult.resolutionCanvas.toDataURL('image/jpeg', 0.92);
           }

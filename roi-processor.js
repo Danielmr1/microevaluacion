@@ -71,9 +71,23 @@
    * marcador para que coincida con el borde de la ficha.
    * Son fracciones de los vectores del propio cuadrilátero, así que funcionan
    * igual a cualquier distancia o ángulo de captura.
+   * @param {string} [cardType='a5'] - 'a5', 'a5_vertical' o 'a6'
    * @returns {{marginX: number, marginY: number}}
    */
-  function getExpansionMargins() {
+  function getExpansionMargins(cardType = 'a5') {
+    if (cardType === 'a6') {
+      // Ficha A6: 132 x 89 mm, inset 3.5 mm, marcador 8 mm -> offset = 7.5 mm
+      const quadW = 132 - 15; // 117 mm
+      const quadH = 89 - 15;  // 74 mm
+      return { marginX: 7.5 / quadW, marginY: 7.5 / quadH }; // 0.06410 / 0.10135
+    }
+    if (cardType === 'a5_vertical' || cardType === 'vertical') {
+      // Ficha A5 Vertical: 134 x 186 mm, inset 5 mm, marcador 10 mm -> offset = 10 mm
+      const quadW = 134 - 20; // 114 mm
+      const quadH = 186 - 20; // 166 mm
+      return { marginX: 10 / quadW, marginY: 10 / quadH }; // 0.08772 / 0.06024
+    }
+    // Ficha A5 Horizontal (por defecto - CERO REGRESIÓN)
     const offset = GEOMETRY.markerInsetMm + GEOMETRY.markerSizeMm / 2;      // 10 mm
     const quadW = GEOMETRY.cardWidthMm - 2 * offset;                        // 166 mm
     const quadH = GEOMETRY.cardHeightMm - 2 * offset;                       // 114 mm
@@ -148,6 +162,33 @@
     ANSWER_BOX: Object.assign(mmToPxVertical(23, 164, 50, 16), {
       label: 'Caja de Respuesta (Vertical)'
     })
+  };
+
+  // Definición de Coordenadas Fijas de ROIs para Ficha A6 (132 x 89 mm en lienzo 2000 x 1441 px).
+  const ROI_CONFIG_A6 = {
+    // Código QR (esquina superior derecha de la cabecera A6)
+    QR: Object.assign(mmToPx(138, 3.0, 24, 21), {
+      label: 'Código QR (A6)'
+    }),
+    // Caja de respuesta manuscrita en A6
+    ANSWER_BOX: Object.assign(mmToPx(40, 70, 60, 20), {
+      label: 'Caja de Respuesta (A6)'
+    })
+  };
+
+  // Coordenadas Fijas de ROIs para OMR en Ficha A5 Vertical (1441 x 2000 px).
+  const ROI_OMR_CONFIG_VERTICAL = {
+    MC2: {
+      Q1_GRID: mmToPxVertical(11.0, 38.0, 112.0, 48.0),
+      Q1_BUBBLES: mmToPxVertical(11.0, 87.0, 112.0, 18.0),
+      Q2_GRID: mmToPxVertical(11.0, 112.0, 112.0, 48.0),
+      Q2_BUBBLES: mmToPxVertical(11.0, 161.0, 112.0, 18.0)
+    },
+    MC1: {
+      Q1_GRID: mmToPxVertical(11.0, 47.0, 112.0, 114.0),
+      Q1_GRID_EXPANDED: mmToPxVertical(11.0, 47.0, 112.0, 126.0),
+      Q1_BUBBLES: mmToPxVertical(11.0, 162.0, 112.0, 18.0)
+    }
   };
 
   /**
@@ -420,27 +461,46 @@
    * @param {HTMLCanvasElement} sheetCanvas - Canvas aplanado de la ficha (2000x1441)
    * @returns {Object} { success, resolutionCanvas, answerCanvas, strokeInfo, error }
    */
-  function processCapturedSheet(sheetCanvas) {
+  function processCapturedSheet(sheetCanvas, options = {}) {
     if (!isValidCanvas(sheetCanvas)) {
       return { success: false, resolutionCanvas: null, answerCanvas: null, strokeInfo: null, error: 'Lienzo de hoja inválido' };
     }
 
     const isPortrait = sheetCanvas.height > sheetCanvas.width;
-    const cfg = isPortrait ? ROI_CONFIG_VERTICAL : ROI_CONFIG;
+    const isA6 = options.isA6 || options.cardFormat === 'a6';
+    const cfg = isPortrait ? ROI_CONFIG_VERTICAL : (isA6 ? ROI_CONFIG_A6 : ROI_CONFIG);
 
     // 1. Extraer ROI de la Cuadrícula de cálculo (los pasos del alumno)
-    const extResult = extractROI(sheetCanvas, cfg.RESOLUTION);
-    if (!extResult.success) {
-      return extResult;
+    let resolutionCanvas = null;
+    let strokeInfo = null;
+
+    if (options.withGrid !== false) {
+      let resRoi = cfg.RESOLUTION || ROI_CONFIG.RESOLUTION;
+      if (isPortrait && options.gridSize === 'expanded') {
+        resRoi = Object.assign(mmToPxVertical(11, 47, 112, 126), {
+          label: 'Cuadrícula de cálculo ampliada (Vertical)'
+        });
+      } else if (!isPortrait && options.gridSize === 'expanded' && !isA6) {
+        resRoi = Object.assign(mmToPx(14, 46, 158, 73), {
+          label: 'Cuadrícula de cálculo ampliada (Horizontal)'
+        });
+      }
+
+      const extResult = extractROI(sheetCanvas, resRoi);
+      if (extResult.success && extResult.canvas) {
+        resolutionCanvas = extResult.canvas;
+        const gridCols = isPortrait ? 13 : 16;
+        const gridRows = isPortrait
+          ? (options.gridSize === 'expanded' ? 12 : 10)
+          : (options.gridSize === 'expanded' ? 8 : 7);
+        strokeInfo = preprocessCalculationGridStrokes(resolutionCanvas, { cols: gridCols, rows: gridRows });
+      }
     }
-    const resolutionCanvas = extResult.canvas;
-    const gridCols = isPortrait ? 13 : 16;
-    const gridRows = isPortrait ? 10 : 7;
-    const strokeInfo = preprocessCalculationGridStrokes(resolutionCanvas, { cols: gridCols, rows: gridRows });
 
     // 2. Extraer ROI de la Caja de Respuesta (el resultado final)
     let answerCanvas = null;
-    const ansResult = extractROI(sheetCanvas, cfg.ANSWER_BOX);
+    const ansRoi = cfg.ANSWER_BOX || ROI_CONFIG.ANSWER_BOX;
+    const ansResult = extractROI(sheetCanvas, ansRoi);
     if (ansResult.success) {
       answerCanvas = ansResult.canvas;
       enhanceHandwritingContrast(answerCanvas);
@@ -809,9 +869,73 @@
       return results;
     }
 
-    // ── RAMA 2: FOCALIZADA SIN BORRADOR (1 A 3 PREGUNTAS) ──
+    // ── RAMA 2: FOCALIZADA SIN BORRADOR (1 A 5 PREGUNTAS) ──
     if (branch === 'rama2' && !withGrid) {
-      if (questionCount === 3) {
+      const isPortrait = sheetCanvas.height > sheetCanvas.width;
+      if (isPortrait) {
+        // En A5 Vertical (134x186 mm), las preguntas se distribuyen equitativamente entre Y=24mm y Y=178mm
+        const vBubbles = [
+          { key: 'A', xMm: 17.5 },
+          { key: 'B', xMm: 46.0 },
+          { key: 'C', xMm: 74.5 },
+          { key: 'D', xMm: 103.0 }
+        ];
+        const startY = 24.0;
+        const totalHeight = 154.0; // 178 - 24
+        const stepY = totalHeight / questionCount;
+        const results = [];
+        for (let i = 0; i < questionCount; i++) {
+          const yCenter = startY + (i + 0.5) * stepY;
+          const res = evaluateCompactRow(sheetCanvas, vBubbles, yCenter);
+          results.push(Object.assign({ qIndex: i + 1 }, res));
+        }
+        return results;
+      }
+
+      // Detectar si es ficha A6 (1 o 2 preguntas en pliego 4 por hoja)
+      const isA6 = options.isA6 || options.cardFormat === 'a6' || (questionCount <= 2 && options.cardFormat !== 'a5');
+      if (isA6) {
+        // En A6 (132 x 89 mm), mapeado a lienzo normalizado (2000 x 1441 px / 186 x 134 mm)
+        const a6BubblesNorm = [
+          { key: 'A', xMm: 10.6 },
+          { key: 'B', xMm: 55.7 },
+          { key: 'C', xMm: 100.8 },
+          { key: 'D', xMm: 145.8 }
+        ];
+        if (questionCount === 1) {
+          const q1Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 78.3);
+          return [Object.assign({ qIndex: 1 }, q1Result)];
+        } else {
+          // 2 Preguntas
+          const q1Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 63.2);
+          const q2Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 111.4);
+          return [
+            Object.assign({ qIndex: 1 }, q1Result),
+            Object.assign({ qIndex: 2 }, q2Result)
+          ];
+        }
+      }
+
+      // Disposición Horizontal A5 (186x134 mm)
+      if (questionCount === 5) {
+        const stepY = 100.0 / 5;
+        const results = [];
+        for (let i = 0; i < 5; i++) {
+          const yCenter = 28.0 + (i + 0.5) * stepY;
+          const res = evaluateAlternativeRow(sheetCanvas, yCenter);
+          results.push(Object.assign({ qIndex: i + 1 }, res));
+        }
+        return results;
+      } else if (questionCount === 4) {
+        const stepY = 100.0 / 4;
+        const results = [];
+        for (let i = 0; i < 4; i++) {
+          const yCenter = 28.0 + (i + 0.5) * stepY;
+          const res = evaluateAlternativeRow(sheetCanvas, yCenter);
+          results.push(Object.assign({ qIndex: i + 1 }, res));
+        }
+        return results;
+      } else if (questionCount === 3) {
         const q1Result = evaluateAlternativeRow(sheetCanvas, 54.0);
         const q2Result = evaluateAlternativeRow(sheetCanvas, 89.0);
         const q3Result = evaluateAlternativeRow(sheetCanvas, 124.0);
@@ -835,9 +959,35 @@
       }
     }
 
-    // ── RAMA 1: CASO ESTÁNDAR CLÁSICO (1 O 2 PREGUNTAS CON BORRADOR) ──
+    // ── RAMA 1: CASO ESTÁNDAR (1 O 2 PREGUNTAS CON BORRADOR) ──
+    const isPortraitSheet = sheetCanvas.height > sheetCanvas.width;
+    if (isPortraitSheet) {
+      // Coordenadas para Ficha A5 Vertical (134 mm ancho x 186 mm alto)
+      const vBubbles = [
+        { key: 'A', xMm: 17.5 },
+        { key: 'B', xMm: 46.0 },
+        { key: 'C', xMm: 74.5 },
+        { key: 'D', xMm: 103.0 }
+      ];
+      if (questionCount === 2) {
+        // P1 en Y=97 mm y P2 en Y=169 mm
+        const q1Result = evaluateCompactRow(sheetCanvas, vBubbles, 97.0);
+        const q2Result = evaluateCompactRow(sheetCanvas, vBubbles, 169.0);
+        return [
+          Object.assign({ qIndex: 1 }, q1Result),
+          Object.assign({ qIndex: 2 }, q2Result)
+        ];
+      } else {
+        // 1 Pregunta vertical: burbujas OMR al pie en Y=169 mm
+        const q1Result = evaluateCompactRow(sheetCanvas, vBubbles, 169.0);
+        return [
+          Object.assign({ qIndex: 1 }, q1Result)
+        ];
+      }
+    }
+
     if (questionCount === 2) {
-      // 2 Preguntas: P1 tiene alternativas a Y=71.5mm y P2 a Y=125.5mm
+      // 2 Preguntas Horizontal: P1 tiene alternativas a Y=71.5mm y P2 a Y=125.5mm
       const q1Result = evaluateAlternativeRow(sheetCanvas, 71.5);
       const q2Result = evaluateAlternativeRow(sheetCanvas, 125.5);
       return [
@@ -845,7 +995,7 @@
         Object.assign({ qIndex: 2 }, q2Result)
       ];
     } else {
-      // 1 Pregunta: Alternativas al pie en Y=124.0mm (misma altura que franja Rpta en libre)
+      // 1 Pregunta Horizontal: Alternativas al pie en Y=124.0mm
       const q1Result = evaluateAlternativeRow(sheetCanvas, 124.0);
       return [
         Object.assign({ qIndex: 1 }, q1Result)
@@ -869,68 +1019,143 @@
   /**
    * Extrae los recortes visuales individuales de cada pregunta para el modal:
    * Cuadrícula de cálculo (con realce de grafito) y franja de alternativas marcadas.
-   * Realce adaptativo según el brillo real de la toma.
+   * Soporta A5 Horizontal, A5 Vertical, A6 y modo sin borrador.
    * @param {HTMLCanvasElement} sheetCanvas
-   * @param {number} questionCount 1 o 2 preguntas
-   * @param {Object} options Opciones { branch, withGrid }
-   * @returns {Array<{ qIndex: number, bubblesCanvas: HTMLCanvasElement|null, gridCanvas: HTMLCanvasElement|null }>}
+   * @param {number} questionCount 1 a 5 preguntas
+   * @param {Object} options Opciones { branch, withGrid, gridSize, cardFormat, isPortrait }
+   * @returns {Array<{ qIndex: number, bubblesCanvas: HTMLCanvasElement|null, gridCanvas: HTMLCanvasElement|null, strokeInfo: Object|null }>}
    */
   function extractOMRCrops(sheetCanvas, questionCount = 1, options = {}) {
     if (!isValidCanvas(sheetCanvas)) return [];
 
     const branch = options.branch || (questionCount > 3 ? 'rama3' : 'rama1');
     const withGrid = options.withGrid !== undefined ? options.withGrid : true;
-    // Para Rama 3 no hay recortes de cuadrícula individuales (es cartilla pura) ni para fichas sin borrador
-    if (branch === 'rama3' || questionCount > 3 || !withGrid) {
+    const isPortrait = sheetCanvas.height > sheetCanvas.width || options.isPortrait;
+    const isA6 = options.isA6 || options.cardFormat === 'a6' || (branch === 'rama2' && !withGrid && questionCount <= 2 && options.cardFormat !== 'a5');
+
+    // Para Rama 3 pura no hay recortes individuales
+    if (branch === 'rama3' || questionCount > 5) {
       return [];
     }
 
-    const is2Q = questionCount === 2;
-    const cfg = is2Q ? ROI_OMR_CONFIG.MC2 : ROI_OMR_CONFIG.MC1;
     const list = [];
 
-    // Brillo base del papel para Pregunta 1
-    const pLum1 = samplePaperLuminance(sheetCanvas, is2Q ? 71.5 : 124.0);
-    const whiteCutoff1 = Math.max(90, Math.min(235, Math.round(pLum1 * 0.98)));
-    const blackCutoff1 = Math.max(25, Math.round(pLum1 * 0.40));
+    // ── MODO CON CUADRÍCULA (FORMATIVA / FOCALIZADA CON BORRADOR, 1 o 2 PREGUNTAS) ──
+    if (withGrid) {
+      if (isPortrait) {
+        // A5 Vertical con cuadrícula
+        const is2Q = questionCount === 2;
+        const vCfg = is2Q ? ROI_OMR_CONFIG_VERTICAL.MC2 : ROI_OMR_CONFIG_VERTICAL.MC1;
 
-    // Pregunta 1
-    const b1 = extractROI(sheetCanvas, cfg.Q1_BUBBLES);
-    const g1 = extractROI(sheetCanvas, cfg.Q1_GRID);
-    let strokeInfo1 = null;
-    if (b1.success && b1.canvas) {
-      enhanceHandwritingContrast(b1.canvas, { blackCutoff: blackCutoff1, whiteCutoff: whiteCutoff1 });
-    }
-    if (g1.success && g1.canvas) {
-      strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 16, rows: is2Q ? 4 : 7 });
-    }
-    list.push({
-      qIndex: 1,
-      bubblesCanvas: b1.success ? b1.canvas : null,
-      gridCanvas: g1.success ? g1.canvas : null,
-      strokeInfo: strokeInfo1
-    });
+        // Q1
+        const b1 = extractROI(sheetCanvas, vCfg.Q1_BUBBLES);
+        const gridRoi1 = (!is2Q && options.gridSize === 'expanded') ? vCfg.Q1_GRID_EXPANDED : vCfg.Q1_GRID;
+        const g1 = extractROI(sheetCanvas, gridRoi1);
+        let strokeInfo1 = null;
+        if (b1.success && b1.canvas) enhanceHandwritingContrast(b1.canvas);
+        if (g1.success && g1.canvas) {
+          strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 13, rows: is2Q ? 4 : (options.gridSize === 'expanded' ? 12 : 10) });
+        }
+        list.push({
+          qIndex: 1,
+          bubblesCanvas: b1.success ? b1.canvas : null,
+          gridCanvas: g1.success ? g1.canvas : null,
+          strokeInfo: strokeInfo1
+        });
 
-    // Pregunta 2 si corresponde
-    if (is2Q) {
-      const pLum2 = samplePaperLuminance(sheetCanvas, 125.5);
-      const whiteCutoff2 = Math.max(90, Math.min(235, Math.round(pLum2 * 0.98)));
-      const blackCutoff2 = Math.max(25, Math.round(pLum2 * 0.40));
-
-      const b2 = extractROI(sheetCanvas, cfg.Q2_BUBBLES);
-      const g2 = extractROI(sheetCanvas, cfg.Q2_GRID);
-      let strokeInfo2 = null;
-      if (b2.success && b2.canvas) {
-        enhanceHandwritingContrast(b2.canvas, { blackCutoff: blackCutoff2, whiteCutoff: whiteCutoff2 });
+        // Q2 si corresponde
+        if (is2Q) {
+          const b2 = extractROI(sheetCanvas, vCfg.Q2_BUBBLES);
+          const g2 = extractROI(sheetCanvas, vCfg.Q2_GRID);
+          let strokeInfo2 = null;
+          if (b2.success && b2.canvas) enhanceHandwritingContrast(b2.canvas);
+          if (g2.success && g2.canvas) {
+            strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 13, rows: 4 });
+          }
+          list.push({
+            qIndex: 2,
+            bubblesCanvas: b2.success ? b2.canvas : null,
+            gridCanvas: g2.success ? g2.canvas : null,
+            strokeInfo: strokeInfo2
+          });
+        }
+        return list;
       }
-      if (g2.success && g2.canvas) {
-        strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 16, rows: 4 });
+
+      // A5 Horizontal con cuadrícula (Comportamiento probado estándar)
+      const is2Q = questionCount === 2;
+      const cfg = is2Q ? ROI_OMR_CONFIG.MC2 : ROI_OMR_CONFIG.MC1;
+
+      const pLum1 = samplePaperLuminance(sheetCanvas, is2Q ? 71.5 : 124.0);
+      const whiteCutoff1 = Math.max(90, Math.min(235, Math.round(pLum1 * 0.98)));
+      const blackCutoff1 = Math.max(25, Math.round(pLum1 * 0.40));
+
+      const b1 = extractROI(sheetCanvas, cfg.Q1_BUBBLES);
+      const g1 = extractROI(sheetCanvas, cfg.Q1_GRID);
+      let strokeInfo1 = null;
+      if (b1.success && b1.canvas) {
+        enhanceHandwritingContrast(b1.canvas, { blackCutoff: blackCutoff1, whiteCutoff: whiteCutoff1 });
+      }
+      if (g1.success && g1.canvas) {
+        strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 16, rows: is2Q ? 4 : (options.gridSize === 'expanded' ? 8 : 7) });
       }
       list.push({
-        qIndex: 2,
-        bubblesCanvas: b2.success ? b2.canvas : null,
-        gridCanvas: g2.success ? g2.canvas : null,
-        strokeInfo: strokeInfo2
+        qIndex: 1,
+        bubblesCanvas: b1.success ? b1.canvas : null,
+        gridCanvas: g1.success ? g1.canvas : null,
+        strokeInfo: strokeInfo1
+      });
+
+      if (is2Q) {
+        const pLum2 = samplePaperLuminance(sheetCanvas, 125.5);
+        const whiteCutoff2 = Math.max(90, Math.min(235, Math.round(pLum2 * 0.98)));
+        const blackCutoff2 = Math.max(25, Math.round(pLum2 * 0.40));
+
+        const b2 = extractROI(sheetCanvas, cfg.Q2_BUBBLES);
+        const g2 = extractROI(sheetCanvas, cfg.Q2_GRID);
+        let strokeInfo2 = null;
+        if (b2.success && b2.canvas) {
+          enhanceHandwritingContrast(b2.canvas, { blackCutoff: blackCutoff2, whiteCutoff: whiteCutoff2 });
+        }
+        if (g2.success && g2.canvas) {
+          strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 16, rows: 4 });
+        }
+        list.push({
+          qIndex: 2,
+          bubblesCanvas: b2.success ? b2.canvas : null,
+          gridCanvas: g2.success ? g2.canvas : null,
+          strokeInfo: strokeInfo2
+        });
+      }
+      return list;
+    }
+
+    // ── MODO SIN CUADRÍCULA (FOCALIZADA, 1 A 5 PREGUNTAS): EXTRAER FRANJA DE BURBUJAS ──
+    for (let i = 0; i < questionCount; i++) {
+      let bubbleRoi = null;
+      if (isPortrait) {
+        const stepY = 154.0 / questionCount;
+        const yCenter = 24.0 + (i + 0.5) * stepY;
+        bubbleRoi = mmToPxVertical(11, yCenter - 7, 112, 14);
+      } else if (isA6) {
+        const yCenter = questionCount === 1 ? 78.3 : (i === 0 ? 63.2 : 111.4);
+        bubbleRoi = mmToPx(8, yCenter - 8, 170, 16);
+      } else {
+        let yCenter = 124.0;
+        if (questionCount === 5) yCenter = 28.0 + (i + 0.5) * 20.0;
+        else if (questionCount === 4) yCenter = 28.0 + (i + 0.5) * 25.0;
+        else if (questionCount === 3) yCenter = [54.0, 89.0, 124.0][i];
+        else if (questionCount === 2) yCenter = [70.0, 122.0][i];
+        bubbleRoi = mmToPx(15, yCenter - 6.5, 156, 13);
+      }
+
+      const b = extractROI(sheetCanvas, bubbleRoi);
+      if (b.success && b.canvas) enhanceHandwritingContrast(b.canvas);
+      list.push({
+        qIndex: i + 1,
+        bubblesCanvas: b.success ? b.canvas : null,
+        gridCanvas: null,
+        strokeInfo: null
       });
     }
 
@@ -949,7 +1174,9 @@
     AI_CONTRAST_OPTIONS,
     CONFIG: ROI_CONFIG,
     CONFIG_VERTICAL: ROI_CONFIG_VERTICAL,
+    CONFIG_A6: ROI_CONFIG_A6,
     OMR_CONFIG: ROI_OMR_CONFIG,
+    OMR_CONFIG_VERTICAL: ROI_OMR_CONFIG_VERTICAL,
     isValidCanvas,
     clampROI,
     extractROI,
