@@ -3202,7 +3202,11 @@ function stepSimGridStage(delta) {
 function setSimCount(count) {
   const isRama1 = simState.branch === 'rama1';
   const c = parseInt(count, 10);
-  simState.count = isRama1 ? Math.min(Math.max(1, c), 2) : Math.min(Math.max(1, c), 5);
+  const targetCount = isRama1 ? Math.min(Math.max(1, c), 2) : Math.min(Math.max(1, c), 5);
+  if (simState.count !== targetCount) {
+    simState.count = targetCount;
+    simState.gridStage = 0;
+  }
 
   if (simState.count > 2 && simState.withGrid) {
     simState.withGrid = false;
@@ -3432,7 +3436,8 @@ function attachSimSlotInteractivity(host, previewQuestions) {
   // Botón ajustable en la esquina inferior derecha con límites min y max (nunca sobrepasa A5).
   const effectiveGrid = (simState.branch === 'rama1') ? true : !!simState.withGrid;
   if (effectiveGrid) {
-    const gridWrap = host.querySelector('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid');
+    const allGrids = host.querySelectorAll('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q');
+    const gridWrap = allGrids.length > 0 ? allGrids[allGrids.length - 1] : null;
     if (gridWrap) {
       gridWrap.style.position = 'relative';
       const existingStepper = gridWrap.querySelector('.sim-grid-stepper');

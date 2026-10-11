@@ -1653,6 +1653,7 @@
     .card-a5 {
       width: 186mm;
       height: 134mm;
+      max-height: 134mm;
       flex: 0 0 134mm;
       padding: 3mm;
       border: 1mm solid #000000;
@@ -1954,9 +1955,9 @@
     /* ── FORMATO OPCIÓN MÚLTIPLE (OMR) ── */
     .omr-row {
       width: 156mm;
-      height: 10mm;
-      flex: 0 0 10mm;
-      margin: 1.5mm 0 0 0;
+      height: 8.5mm;
+      flex: 0 0 8.5mm;
+      margin: 1mm auto 0 auto;
       align-self: center;
       display: grid;
       grid-template-columns: repeat(4, 39mm);
@@ -1970,7 +1971,7 @@
     .omr-row.omr-row-1 {
       height: 12mm;
       flex: 0 0 12mm;
-      margin: 3mm 0 0 0;
+      margin: 3mm auto 0 auto;
     }
     .omr-option {
       display: flex;
@@ -2013,28 +2014,33 @@
     .mc-q-block {
       display: flex;
       flex-direction: column;
+      align-items: center;
+      width: 100%;
       flex: 0 0 auto;
     }
     .mc-problem-2q {
-      height: 15mm !important;
-      min-height: 15mm !important;
-      max-height: 15mm !important;
-      margin: 1mm 0 0 0 !important;
-      padding: 1mm 3mm !important;
+      width: 156mm !important;
+      height: 11mm !important;
+      min-height: 11mm !important;
+      max-height: 11mm !important;
+      margin: 0.8mm auto 0 auto !important;
+      padding: 0.8mm 2mm !important;
+      box-sizing: border-box !important;
+      align-self: center;
     }
     .mc-problem-2q .problem-text {
-      font-size: 8.5pt !important;
-      line-height: 1.25 !important;
+      font-size: 8pt !important;
+      line-height: 1.2 !important;
     }
     .mc-grid-2q {
       width: 156mm;
-      height: 24mm !important;
-      flex: 0 0 24mm !important;
-      margin: 1.5mm 0 0 0 !important;
+      height: 20mm !important;
+      flex: 0 0 20mm !important;
+      margin: 1mm auto 0 auto !important;
       align-self: center;
     }
     .mc-grid-2q .notebook-grid {
-      height: 24mm !important;
+      height: 20mm !important;
       grid-template-rows: repeat(4, 1fr) !important;
     }
     .mc-divider {
@@ -3366,7 +3372,8 @@
       justify-content: space-evenly;
       align-items: center;
       margin-top: 1mm;
-      padding: 0 2mm;
+      padding: 0 18mm;
+      box-sizing: border-box;
     }
 
     .a6-free-answer-strip {

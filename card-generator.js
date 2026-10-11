@@ -202,8 +202,8 @@ function createA5Card(student, classroom, evaluation) {
     `;
   }
 
-  // CASO RAMA 2: 2 Preguntas Escritas con Borrador (Cuadrícula)
-  if (!isOMR && qCount === 2 && evaluation.branch === 'rama2') {
+  // CASO: 2 Preguntas Escritas con Borrador (Cuadrícula)
+  if (!isOMR && qCount === 2) {
     const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '' };
     const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '' };
     const GRID_CELLS_2Q = new Array(16 * 4).fill('<i></i>').join('');
