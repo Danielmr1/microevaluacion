@@ -1193,8 +1193,10 @@
     }
 
     .v-free-grid {
-      flex: 1 1 auto;
-      margin: 2mm 0;
+      width: 104mm;
+      height: 104mm;
+      flex: 0 0 104mm;
+      margin: 2mm auto;
       border: 1px solid #cbd5e1;
       box-sizing: border-box;
       overflow: hidden;
@@ -1206,10 +1208,10 @@
       display: grid !important;
       grid-template-columns: repeat(13, 1fr) !important;
       grid-template-rows: repeat(13, 1fr) !important;
-      width: 100% !important;
-      height: 100% !important;
-      min-height: 100% !important;
-      flex: 1 1 auto !important;
+      width: 104mm !important;
+      height: 104mm !important;
+      min-height: 104mm !important;
+      flex: 0 0 104mm !important;
       border: none !important;
       background: #ffffff;
     }
@@ -1255,8 +1257,10 @@
     }
 
     .v-free-grid-2q {
-      flex: 1 1 auto;
-      margin: 1.5mm 0;
+      width: 104mm;
+      height: 32mm;
+      flex: 0 0 32mm;
+      margin: 1.5mm auto;
       border: 1px solid #cbd5e1;
       overflow: hidden;
       display: flex;
@@ -1266,8 +1270,8 @@
       display: grid !important;
       grid-template-columns: repeat(13, 1fr) !important;
       grid-template-rows: repeat(4, 1fr) !important;
-      width: 100%;
-      height: 100%;
+      width: 104mm !important;
+      height: 32mm !important;
     }
 
     .notebook-grid-v2q i {
@@ -2026,8 +2030,8 @@
        de marcadores (ver ROI_CONFIG.RESOLUTION en roi-processor.js). */
     .grid-wrapper {
       width: 156mm;
-      height: 65mm;
-      flex: 0 0 65mm;
+      height: 68.25mm;
+      flex: 0 0 68.25mm;
       margin: 3mm 0 0 0;
       align-self: center;
       overflow: hidden;
@@ -2035,7 +2039,7 @@
 
     .notebook-grid {
       width: 156mm;
-      height: 65mm;
+      height: 68.25mm;
       box-sizing: border-box;
       display: grid;
       grid-template-columns: repeat(16, 1fr);
@@ -2199,25 +2203,46 @@
     }
     .card-a5.mc-2q .mc-grid-2q {
       width: 156mm;
-      height: 24.5mm !important;
-      flex: 0 0 24.5mm !important;
+      height: 24mm !important;
+      flex: 0 0 24mm !important;
       margin: 1.2mm auto 0 auto !important;
       align-self: center;
     }
-    .card-a5.mc-2q .mc-grid-2q .notebook-grid {
-      height: 24.5mm !important;
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid,
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid {
+      height: 24mm !important;
+      grid-template-columns: repeat(26, 1fr) !important;
       grid-template-rows: repeat(4, 1fr) !important;
     }
     .card-a5.free-card-2q .mc-grid-2q {
       width: 156mm;
-      height: 23mm !important;
-      flex: 0 0 23mm !important;
+      height: 24mm !important;
+      flex: 0 0 24mm !important;
       margin: 1.2mm auto 0 auto !important;
       align-self: center;
     }
-    .card-a5.free-card-2q .mc-grid-2q .notebook-grid {
-      height: 23mm !important;
-      grid-template-rows: repeat(4, 1fr) !important;
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid > i:nth-child(16n),
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid > i:nth-child(16n) {
+      border-right: 0.75pt solid #e4e4e7;
+    }
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid > i:nth-child(26n),
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid > i:nth-child(26n) {
+      border-right: none !important;
+    }
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid > i:nth-child(n+79),
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid > i:nth-child(n+79) {
+      border-bottom: none !important;
+    }
+    .card-a5.free-card-2q .answer-strip {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 1mm !important;
+      width: 156mm !important;
+      height: 9.5mm !important;
+      flex: 0 0 9.5mm !important;
+      justify-content: flex-start !important;
+      align-self: center;
+      box-shadow: none !important;
     }
     .card-a5.mc-2q .omr-row-2q-1 {
       margin: 1.8mm auto 0 auto !important;
@@ -3514,8 +3539,8 @@
 
     .a6-grid-wrapper {
       width: 104mm;
-      height: 38mm;
-      flex: 0 0 38mm;
+      height: 40mm;
+      flex: 0 0 40mm;
       margin: 1mm auto;
       align-self: center;
       position: relative;
@@ -3523,7 +3548,7 @@
 
     .notebook-grid-a6 {
       width: 104mm;
-      height: 38mm;
+      height: 40mm;
       box-sizing: border-box;
       display: grid;
       grid-template-columns: repeat(13, 1fr);
@@ -3542,8 +3567,8 @@
 
     .a6-v-grid-wrapper {
       width: 72mm;
-      height: 70mm;
-      flex: 0 0 70mm;
+      height: 72mm;
+      flex: 0 0 72mm;
       margin: 1.5mm auto;
       align-self: center;
       position: relative;
@@ -3551,7 +3576,7 @@
 
     .notebook-grid-a6-v {
       width: 72mm;
-      height: 70mm;
+      height: 72mm;
       box-sizing: border-box;
       display: grid;
       grid-template-columns: repeat(9, 1fr);
@@ -3594,9 +3619,11 @@
     .a6-free-answer-strip {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
       gap: 3mm;
-      margin-top: 1.5mm;
+      margin: 1.5mm auto 0 auto;
+      width: 104mm;
+      box-sizing: border-box;
     }
     .card-a6-v .a6-free-answer-strip {
       display: flex;
@@ -3604,6 +3631,7 @@
       justify-content: center;
       gap: 3mm;
       margin-top: 4.5mm;
+      width: 100%;
     }
 
     /* Badge compacto de formato junto al número de preguntas */

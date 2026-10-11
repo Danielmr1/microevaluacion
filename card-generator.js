@@ -159,7 +159,7 @@ function createA5Card(student, classroom, evaluation) {
   if (isOMR && qCount === 2) {
     const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '', options: {} };
     const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '', options: {} };
-    const GRID_CELLS_2Q = new Array(16 * 4).fill('<i></i>').join('');
+    const GRID_CELLS_2Q = new Array(26 * 4).fill('<i></i>').join('');
     return `
       <div class="card-a5 mc-card mc-2q">
         ${fiducialsHTML}
@@ -171,7 +171,7 @@ function createA5Card(student, classroom, evaluation) {
             <div class="problem-text"><strong>1.</strong> ${escape(q1.prompt)}</div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
-            <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+            <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
           </div>
           <div class="omr-row omr-row-2q-1">
             <div class="omr-option"><span class="omr-bubble">A</span> <span class="omr-text">${escape(q1.options.A || '')}</span></div>
@@ -189,7 +189,7 @@ function createA5Card(student, classroom, evaluation) {
             <div class="problem-text"><strong>2.</strong> ${escape(q2.prompt)}</div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
-            <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+            <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
           </div>
           <div class="omr-row omr-row-2q-2">
             <div class="omr-option"><span class="omr-bubble">A</span> <span class="omr-text">${escape(q2.options.A || '')}</span></div>
@@ -206,7 +206,7 @@ function createA5Card(student, classroom, evaluation) {
   if (!isOMR && qCount === 2) {
     const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '' };
     const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '' };
-    const GRID_CELLS_2Q = new Array(16 * 4).fill('<i></i>').join('');
+    const GRID_CELLS_2Q = new Array(26 * 4).fill('<i></i>').join('');
     return `
       <div class="card-a5 free-card-2q">
         ${fiducialsHTML}
@@ -218,7 +218,7 @@ function createA5Card(student, classroom, evaluation) {
             <div class="problem-text"><strong>1.</strong> ${escape(q1.prompt)}</div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
-            <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+            <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
           </div>
           <div class="answer-strip" style="margin-top:4px;">
             <span class="answer-tag">Rpta:</span>
@@ -234,7 +234,7 @@ function createA5Card(student, classroom, evaluation) {
             <div class="problem-text"><strong>2.</strong> ${escape(q2.prompt)}</div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
-            <div class="notebook-grid">${GRID_CELLS_2Q}</div>
+            <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
           </div>
           <div class="answer-strip" style="margin-top:4px;">
             <span class="answer-tag">Rpta:</span>

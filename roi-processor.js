@@ -1097,7 +1097,7 @@
         enhanceHandwritingContrast(b1.canvas, { blackCutoff: blackCutoff1, whiteCutoff: whiteCutoff1 });
       }
       if (g1.success && g1.canvas) {
-        strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 16, rows: is2Q ? 4 : (options.gridSize === 'expanded' ? 8 : 7) });
+        strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: is2Q ? 26 : 16, rows: is2Q ? 4 : (options.gridSize === 'expanded' ? 8 : 7) });
       }
       list.push({
         qIndex: 1,
@@ -1118,7 +1118,7 @@
           enhanceHandwritingContrast(b2.canvas, { blackCutoff: blackCutoff2, whiteCutoff: whiteCutoff2 });
         }
         if (g2.success && g2.canvas) {
-          strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 16, rows: 4 });
+          strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 26, rows: 4 });
         }
         list.push({
           qIndex: 2,
