@@ -486,7 +486,11 @@
     /* ── CARTILLA A6 (132 x 89 mm) ────────────────────────────────── */
     .card-a6-r3 {
       width: 132mm;
+      min-width: 132mm;
+      max-width: 132mm;
       height: 89mm;
+      min-height: 89mm;
+      max-height: 89mm;
       flex: 0 0 132mm;
       border: 1mm solid #000000;
       padding: 2.5mm;
@@ -3232,6 +3236,12 @@
       flex-shrink: 0;
     }
 
+    /* Guardrail 14: Los hijos directos del visor del simulador nunca heredan flex-basis */
+    .sim-card-host > div {
+      flex: 0 0 auto !important;
+      box-sizing: border-box !important;
+    }
+
     /* Ranura interactiva sobre la ficha del simulador */
     .sim-interactive-slot {
       cursor: pointer !important;
@@ -3269,7 +3279,11 @@
     /* ── FORMATO A6 CON CUADRÍCULA (HORIZONTAL Y VERTICAL) ── */
     .card-a6-v {
       width: 89mm;
+      min-width: 89mm;
+      max-width: 89mm;
       height: 132mm;
+      min-height: 132mm;
+      max-height: 132mm;
       flex: 0 0 89mm;
       border: 1mm solid #000000;
       padding: 2.5mm;
