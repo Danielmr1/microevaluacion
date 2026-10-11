@@ -40,14 +40,14 @@
   </script>
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
-  <script src="roi-processor.js?v=3.1.72"></script>
-  <script src="scanner.js?v=3.1.72"></script>
-  <script src="results-manager.js?v=3.1.72"></script>
-  <script src="classroom-manager.js?v=3.1.72"></script>
-  <script src="question-bank.js?v=3.1.72"></script>
-  <script src="card-generator.js?v=3.1.72"></script>
+  <script src="roi-processor.js?v=3.1.73"></script>
+  <script src="scanner.js?v=3.1.73"></script>
+  <script src="results-manager.js?v=3.1.73"></script>
+  <script src="classroom-manager.js?v=3.1.73"></script>
+  <script src="question-bank.js?v=3.1.73"></script>
+  <script src="card-generator.js?v=3.1.73"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.1.72">
+  <link rel="stylesheet" href="styles.css?v=3.1.73">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -451,12 +451,13 @@
         <div id="sheet-simulator-container" style="display:flex; flex-direction:column; gap:14px;">
           <!-- TOOLBAR SUPERIOR DEL SIMULADOR (ESTRICTAMENTE 3 SELECTORES MÁXIMO) -->
           <div class="sim-toolbar" style="background:#0f172a; border:1px solid #334155; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-            <!-- Selector de Cantidad de Preguntas -->
+            <!-- Selector de Cantidad de Preguntas con Indicador Compacto (A6 H, A6 V, A5 H, A5 V) -->
             <div style="display:flex; align-items:center; gap:8px;">
               <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;">Preguntas:</span>
               <div id="sim-qcount-group" style="display:flex; gap:4px;">
                 <!-- Rellenado dinámicamente por updateSimToolbar() -->
               </div>
+              <span id="sim-card-format-tag" class="sim-format-badge">A6 H</span>
             </div>
 
             <!-- Selector de Tipo de Respuesta -->
@@ -489,15 +490,6 @@
 
           <!-- VIEWPORT DE SIMULACIÓN EN VIVO (LA FICHA REAL EN PANTALLA) -->
           <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">
-            <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:0 4px; flex-wrap:wrap; gap:6px;">
-              <span style="font-size:0.75rem; color:#cbd5e1; font-weight:700; display:flex; align-items:center; gap:6px;">
-                <span>🔍</span> Vista Previa en Vivo · <strong id="sim-card-format-tag" style="color:#38bdf8;">Ficha A5 Horizontal</strong>
-              </span>
-              <span style="font-size:0.72rem; color:#a78bfa; font-weight:600;">
-                💡 Haz clic directamente en cualquier pregunta de la ficha para elegirla o editarla
-              </span>
-            </div>
-
             <!-- Contenedor del Canvas de la Ficha -->
             <div id="sim-card-viewport" class="sim-card-viewport">
               <div id="sim-card-render-host" class="sim-card-host"></div>
