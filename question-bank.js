@@ -3359,6 +3359,7 @@ function renderSimulatedCard() {
   // Generar QR para el estudiante de muestra en la vista previa
   const qrBox = host.querySelector('[id^="qr-box-"]');
   if (qrBox && typeof QRCode !== 'undefined') {
+    qrBox.id = 'sim-qr-box-' + sampleStudent.id;
     const qrData = JSON.stringify({ s: sampleStudent.id, c: defaultCls.id });
     QRCode.toString(qrData, { type: 'svg', margin: 0 }, (err, svg) => {
       if (!err && svg) qrBox.innerHTML = svg;
@@ -3879,8 +3880,13 @@ function confirmSimAndPrint() {
     // Scroll suave hacia las hojas de impresión
     pagesContainer.scrollIntoView({ behavior: 'smooth' });
     if (typeof showToast === 'function') {
-      showToast('🖨️ Fichas listas para imprimir en la parte inferior.');
+      showToast('🖨️ Fichas listas para imprimir / guardar como PDF.');
     }
+  }
+
+  // Disparar inmediatamente el diálogo de impresión / descarga en PDF
+  if (typeof printEvaluationSheets === 'function') {
+    printEvaluationSheets(wizardClassroomId);
   } else {
     window.print();
   }

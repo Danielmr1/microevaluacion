@@ -53,7 +53,7 @@ function createA5Card(student, classroom, evaluation) {
   const safeStudentName = escape(student.name.toUpperCase());
   const safeGradeText = escape(gradeText);
   const orderMatch = String(student.id || '').match(/\d+/);
-  const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
+  const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
 
   const headerHTML = `
         <div class="card-header">
@@ -67,10 +67,10 @@ function createA5Card(student, classroom, evaluation) {
             </div>
           </div>
           <div class="qr-block">
-            <span class="qr-code-text">${orderNumber}</span>
-            <div class="qr-box" id="qr-box-${student.id}"></div>
+            <div class="qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
           </div>
-        </div>`;
+        </div>
+        <div class="aruco-tr-number">${orderNumber}</div>`;
 
   // ── CASO RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS) ──
   const isBranch3 = evaluation.branch === 'rama3' ||
@@ -297,7 +297,7 @@ function createA6Card(student, classroom, evaluation) {
   const safeStudentName = escape(student.name.toUpperCase());
   const safeGradeText = escape(gradeText);
   const orderMatch = String(student.id || '').match(/\d+/);
-  const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
+  const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
 
   let bodyHTML = '';
   if (totalQ === 8) {
@@ -372,19 +372,20 @@ function createA6Card(student, classroom, evaluation) {
         <div class="card-a6-v">
           ${fiducialsHTML}
           <div class="a6-v-card-header">
-            <div class="a6-header-left">
-              <div class="a6-header-top-title">EVALUACIÓN FORMATIVA</div>
-              <div class="a6-student-block">
+            <div class="a6-student-block">
+              <div class="a6-student-name-row">
                 <span class="a6-student-label">Nombre:</span>
                 <span class="a6-student-name">${safeStudentName}</span>
+              </div>
+              <div class="a6-student-grade-row">
                 <span class="a6-student-grade">(${safeGradeText})</span>
               </div>
             </div>
             <div class="a6-qr-block">
-              <span class="a6-qr-code-text">${orderNumber}</span>
-              <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+              <div class="a6-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
             </div>
           </div>
+          <div class="aruco-tr-number">${orderNumber}</div>
 
           <div class="a6-v-problem">
             <div class="problem-text">${escape(q1.prompt)}</div>
@@ -416,19 +417,20 @@ function createA6Card(student, classroom, evaluation) {
       <div class="card-a6-r3">
         ${fiducialsHTML}
         <div class="a6-card-header">
-          <div class="a6-header-left">
-            <div class="a6-header-top-title">EVALUACIÓN FORMATIVA</div>
-            <div class="a6-student-block">
+          <div class="a6-student-block">
+            <div class="a6-student-name-row">
               <span class="a6-student-label">Nombre:</span>
               <span class="a6-student-name">${safeStudentName}</span>
+            </div>
+            <div class="a6-student-grade-row">
               <span class="a6-student-grade">(${safeGradeText})</span>
             </div>
           </div>
           <div class="a6-qr-block">
-            <span class="a6-qr-code-text">${orderNumber}</span>
-            <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+            <div class="a6-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
           </div>
         </div>
+        <div class="aruco-tr-number">${orderNumber}</div>
 
         <div class="a6-problem">
           <div class="problem-text">${escape(q1.prompt)}</div>
@@ -514,19 +516,20 @@ function createA6Card(student, classroom, evaluation) {
     <div class="card-a6-r3">
       ${fiducialsHTML}
       <div class="a6-card-header">
-        <div class="a6-header-left">
-          <div class="a6-header-top-title">CARTILLA DE RESPUESTAS</div>
-          <div class="a6-student-block">
+        <div class="a6-student-block">
+          <div class="a6-student-name-row">
             <span class="a6-student-label">Nombre:</span>
             <span class="a6-student-name">${safeStudentName}</span>
+          </div>
+          <div class="a6-student-grade-row">
             <span class="a6-student-grade">(${safeGradeText})</span>
           </div>
         </div>
         <div class="a6-qr-block">
-          <span class="a6-qr-code-text">${orderNumber}</span>
-          <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+          <div class="a6-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
         </div>
       </div>
+      <div class="aruco-tr-number">${orderNumber}</div>
 
       <span class="a6-fill-hint-side">Rellena: <b>●</b></span>
       <div class="a6-b3-body">
@@ -561,7 +564,7 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
   const safeStudentName = escape(student.name.toUpperCase());
   const safeGradeText = escape(gradeText);
   const orderMatch = String(student.id || '').match(/\d+/);
-  const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
+  const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
 
   let bodyHTML = '';
   if (totalQ === 20) {
@@ -625,19 +628,20 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
     <div class="card-a5-v-r3">
       ${fiducialsHTML}
       <div class="v-card-header">
-        <div class="v-header-left">
-          <div class="v-header-top-title">CARTILLA DE RESPUESTAS</div>
-          <div class="v-student-block">
+        <div class="v-student-block">
+          <div class="v-student-name-row">
             <span class="v-student-label">Nombre:</span>
             <span class="v-student-name">${safeStudentName}</span>
+          </div>
+          <div class="v-student-grade-row">
             <span class="v-student-grade">(${safeGradeText})</span>
           </div>
         </div>
         <div class="v-qr-block">
-          <span class="v-qr-code-text">${orderNumber}</span>
-          <div class="v-qr-box" id="qr-box-${student.id}"></div>
+          <div class="v-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
         </div>
       </div>
+      <div class="aruco-tr-number">${orderNumber}</div>
 
       <span class="v-fill-hint-side">Rellena: <b>●</b></span>
       <div class="v-b3-body">
@@ -670,7 +674,7 @@ function createA5VerticalCard(student, classroom, evaluation) {
   const safeStudentName = escape(student.name.toUpperCase());
   const safeGradeText = escape(gradeText);
   const orderMatch = String(student.id || '').match(/\d+/);
-  const orderNumber = orderMatch ? '#' + orderMatch[0] : escape(student.id || '');
+  const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
 
   const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
   const isOMR = (evaluation.type === 'mc');
@@ -689,19 +693,20 @@ function createA5VerticalCard(student, classroom, evaluation) {
       <div class="card-a5-v-free">
         ${fiducialsHTML}
         <div class="v-card-header">
-          <div class="v-header-left">
-            <div class="v-header-top-title">EVALUACIÓN FORMATIVA</div>
-            <div class="v-student-block">
+          <div class="v-student-block">
+            <div class="v-student-name-row">
               <span class="v-student-label">Nombre:</span>
               <span class="v-student-name">${safeStudentName}</span>
+            </div>
+            <div class="v-student-grade-row">
               <span class="v-student-grade">(${safeGradeText})</span>
             </div>
           </div>
           <div class="v-qr-block">
-            <span class="v-qr-code-text">${orderNumber}</span>
-            <div class="v-qr-box" id="qr-box-${student.id}"></div>
+            <div class="v-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
           </div>
         </div>
+        <div class="aruco-tr-number">${orderNumber}</div>
 
         <!-- Pregunta 1 -->
         <div class="v-free-2q-block">
@@ -769,19 +774,20 @@ function createA5VerticalCard(student, classroom, evaluation) {
       <div class="card-a5-v-free">
         ${fiducialsHTML}
         <div class="v-card-header">
-          <div class="v-header-left">
-            <div class="v-header-top-title">EVALUACIÓN FOCALIZADA</div>
-            <div class="v-student-block">
+          <div class="v-student-block">
+            <div class="v-student-name-row">
               <span class="v-student-label">Nombre:</span>
               <span class="v-student-name">${safeStudentName}</span>
+            </div>
+            <div class="v-student-grade-row">
               <span class="v-student-grade">(${safeGradeText})</span>
             </div>
           </div>
           <div class="v-qr-block">
-            <span class="v-qr-code-text">${orderNumber}</span>
-            <div class="v-qr-box" id="qr-box-${student.id}"></div>
+            <div class="v-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
           </div>
         </div>
+        <div class="aruco-tr-number">${orderNumber}</div>
 
         <div class="v-nogrid-body">
           ${activeQuestions.map((q, idx) => `
@@ -821,19 +827,20 @@ function createA5VerticalCard(student, classroom, evaluation) {
     <div class="card-a5-v-free">
       ${fiducialsHTML}
       <div class="v-card-header">
-        <div class="v-header-left">
-          <div class="v-header-top-title">EVALUACIÓN FORMATIVA</div>
-          <div class="v-student-block">
+        <div class="v-student-block">
+          <div class="v-student-name-row">
             <span class="v-student-label">Nombre:</span>
             <span class="v-student-name">${safeStudentName}</span>
+          </div>
+          <div class="v-student-grade-row">
             <span class="v-student-grade">(${safeGradeText})</span>
           </div>
         </div>
         <div class="v-qr-block">
-          <span class="v-qr-code-text">${orderNumber}</span>
-          <div class="v-qr-box" id="qr-box-${student.id}"></div>
+          <div class="v-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
         </div>
       </div>
+      <div class="aruco-tr-number">${orderNumber}</div>
 
       <div class="v-free-problem">
         <div class="problem-text">${escape(q1.prompt || evaluation.prompt)}</div>
@@ -940,7 +947,7 @@ function renderAllPrintPages(classId, evaluation) {
         [sTL, sTR, sBL, sBR].filter(Boolean).forEach(st => {
           QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
-            const el = document.getElementById('qr-box-' + st.id);
+            const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
             if (el) el.innerHTML = svg;
           });
         });
@@ -985,7 +992,7 @@ function renderAllPrintPages(classId, evaluation) {
         [sLeft, sRight].filter(Boolean).forEach(st => {
           QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
-            const el = document.getElementById('qr-box-' + st.id);
+            const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
             if (el) el.innerHTML = svg;
           });
         });
@@ -1031,7 +1038,7 @@ function renderAllPrintPages(classId, evaluation) {
         [sLeft, sRight].filter(Boolean).forEach(st => {
           QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
-            const el = document.getElementById('qr-box-' + st.id);
+            const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
             if (el) el.innerHTML = svg;
           });
         });
@@ -1069,15 +1076,13 @@ function renderAllPrintPages(classId, evaluation) {
 
     const sheetEl = document.createElement('div');
     sheetEl.className = 'sheet-a4';
-    sheetEl.innerHTML = sBot
-      ? `
+    sheetEl.innerHTML = `
       ${createA5Card(sTop, classroom, evaluation)}
       <div class="cut-line">
         <span>✂️ cortar por aquí ✂️</span>
       </div>
-      ${createA5Card(sBot, classroom, evaluation)}
-    `
-      : createA5Card(sTop, classroom, evaluation);
+      ${sBot ? createA5Card(sBot, classroom, evaluation) : '<div class="card-a5-placeholder"></div>'}
+    `;
     container.appendChild(sheetEl);
 
     // Generar el QR (ALUM_01) de cada alumno que va en esta hoja
@@ -1085,7 +1090,7 @@ function renderAllPrintPages(classId, evaluation) {
       [sTop, sBot].filter(Boolean).forEach(st => {
         QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
           if (err) return;
-          const el = document.getElementById('qr-box-' + st.id);
+          const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
           if (el) el.innerHTML = svg;
         });
       });
