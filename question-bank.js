@@ -2894,7 +2894,7 @@ function selectBranchMode(branch) {
       badgeLabel.style.borderColor = '#10b981';
       badgeLabel.style.color = '#a7f3d0';
     } else if (branch === 'rama2') {
-      badgeLabel.innerHTML = '⚡ Focalizada en la Respuesta (1–3 Preguntas)';
+      badgeLabel.innerHTML = '⚡ Focalizada en la Respuesta (1–5 Preguntas)';
       badgeLabel.style.background = '#082f49';
       badgeLabel.style.borderColor = '#38bdf8';
       badgeLabel.style.color = '#bae6fd';
@@ -2910,49 +2910,817 @@ function selectBranchMode(branch) {
   const card2 = document.getElementById('card-branch-2');
   const card3 = document.getElementById('card-branch-3');
 
-  const b1Opts = document.getElementById('branch-1-options');
-  const b2Opts = document.getElementById('branch-2-options');
+  const simContainer = document.getElementById('sheet-simulator-container');
   const b3Opts = document.getElementById('branch-3-options');
 
-  // Reset visual cards si estuvieran presentes
-  if (card1) {
-    card1.style.borderColor = branch === 'rama1' ? '#7c3aed' : '#334155';
-    card1.style.background = branch === 'rama1' ? 'rgba(124,58,237,0.12)' : '#1e293b';
-  }
-  if (card2) {
-    card2.style.borderColor = branch === 'rama2' ? '#10b981' : '#334155';
-    card2.style.background = branch === 'rama2' ? 'rgba(16,185,129,0.12)' : '#1e293b';
-  }
-  if (card3) {
-    card3.style.borderColor = branch === 'rama3' ? '#0284c7' : '#334155';
-    card3.style.background = branch === 'rama3' ? 'rgba(2,132,199,0.12)' : '#1e293b';
-  }
-
-  // Toggle subpanels
-  if (b1Opts) b1Opts.style.display = branch === 'rama1' ? 'block' : 'none';
-  if (b2Opts) b2Opts.style.display = branch === 'rama2' ? 'block' : 'none';
+  if (simContainer) simContainer.style.display = (branch === 'rama1' || branch === 'rama2') ? 'flex' : 'none';
   if (b3Opts) b3Opts.style.display = branch === 'rama3' ? 'block' : 'none';
 
-  // Si se cambia de rama, ocultar formularios secundarios de Rama 1
-  if (branch !== 'rama1') {
-    const stepSrc = document.getElementById('step-source');
-    const stepBank = document.getElementById('step-bank-list');
-    const fNew = document.getElementById('step-new-form');
-    const fMC2 = document.getElementById('step-mc2-builder');
-    if (stepSrc) stepSrc.style.display = 'none';
-    if (stepBank) stepBank.style.display = 'none';
-    if (fNew) fNew.style.display = 'none';
-    if (fMC2) fMC2.style.display = 'none';
-  }
+  // Ocultar formularios secundarios antiguos
+  const stepSrc = document.getElementById('step-source');
+  const stepBank = document.getElementById('step-bank-list');
+  const fNew = document.getElementById('step-new-form');
+  const fMC2 = document.getElementById('step-mc2-builder');
+  if (stepSrc) stepSrc.style.display = 'none';
+  if (stepBank) stepBank.style.display = 'none';
+  if (fNew) fNew.style.display = 'none';
+  if (fMC2) fMC2.style.display = 'none';
 
   if (branch === 'rama1') {
     if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('full');
+    initSimulator('rama1', wizardClassroomId);
   } else if (branch === 'rama2') {
     if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('quick');
-    initRama2Builder();
+    initSimulator('rama2', wizardClassroomId);
   } else if (branch === 'rama3') {
     if (typeof updateCorrectionModeUI === 'function') updateCorrectionModeUI('quick');
     initRama3Builder();
+  }
+}
+
+// =============================================================================
+// SIMULADOR INTERACTIVO DE FICHAS WYSIWYG (RAMA 1 Y RAMA 2)
+// =============================================================================
+let simState = {
+  branch: 'rama1', // 'rama1' | 'rama2'
+  count: 1, // 1..2 en rama1; 1..5 en rama2
+  type: 'mc', // 'mc' | 'free'
+  withGrid: true, // boolean
+  orientation: 'horizontal', // 'horizontal' | 'vertical'
+  gridSize: 'normal', // 'normal' | 'expanded'
+  questions: [
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false }
+  ]
+};
+
+let currentSimSlot = 0;
+let simCurrentRubric = null;
+let simPickerActiveTab = 'bank';
+
+function initSimulator(branch, classId) {
+  simState.branch = branch || 'rama1';
+
+  // Si es Rama 1, cuadrícula es obligatoria y máximo 2 preguntas
+  if (simState.branch === 'rama1') {
+    simState.withGrid = true;
+    if (simState.count > 2) simState.count = 2;
+  } else {
+    // Rama 2: si son más de 2 preguntas, sin cuadrícula
+    if (simState.count > 2) {
+      simState.withGrid = false;
+    }
+  }
+
+  // Pre-cargar primera pregunta si está vacía y hay en el banco para este grado
+  const g = gradoDelSalonSeleccionado();
+  if (g && g.stage && g.level && (!simState.questions[0].prompt || simState.questions[0].prompt.trim() === '')) {
+    const bankList = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
+      ? ClassroomData.getIndividualMCQuestions(g.stage, g.level)
+      : [];
+    if (bankList.length > 0) {
+      const candidate = (simState.branch === 'rama1')
+        ? (bankList.find(q => q.hasRubric || q.rubric) || bankList[0])
+        : bankList[0];
+      if (candidate) {
+        simState.questions[0] = {
+          id: candidate.id,
+          prompt: candidate.prompt || '',
+          options: candidate.options ? { ...candidate.options } : { A: '', B: '', C: '', D: '' },
+          correct: candidate.correct || 'A',
+          expectedAnswer: candidate.expectedAnswer || candidate.correct || 'A',
+          rubric: candidate.rubric || null,
+          hasRubric: !!(candidate.rubric || candidate.hasRubric)
+        };
+      }
+    }
+  }
+
+  updateSimToolbar();
+  renderSimulatedCard();
+}
+
+function updateSimToolbar() {
+  const isRama1 = simState.branch === 'rama1';
+
+  // 1. Botones de cantidad de preguntas
+  const countContainer = document.getElementById('sim-qcount-group');
+  if (countContainer) {
+    const maxQ = isRama1 ? 2 : 5;
+    let html = '';
+    for (let i = 1; i <= maxQ; i++) {
+      const activeCls = (simState.count === i) ? (isRama1 ? 'active' : 'active-emerald') : '';
+      html += `<button type="button" onclick="setSimCount(${i})" class="sim-pill-btn ${activeCls}">${i}P</button>`;
+    }
+    countContainer.innerHTML = html;
+  }
+
+  // 2. Tipo de respuesta
+  const btnTypeMC = document.getElementById('sim-btn-type-mc');
+  const btnTypeFree = document.getElementById('sim-btn-type-free');
+  if (btnTypeMC && btnTypeFree) {
+    btnTypeMC.className = 'sim-pill-btn' + (simState.type === 'mc' ? (isRama1 ? ' active' : ' active-emerald') : '');
+    btnTypeFree.className = 'sim-pill-btn' + (simState.type === 'free' ? (isRama1 ? ' active' : ' active-emerald') : '');
+  }
+
+  // 3. Borrador / Cuadrícula
+  const btnGridYes = document.getElementById('sim-btn-grid-yes');
+  const btnGridNo = document.getElementById('sim-btn-grid-no');
+  const gridHint = document.getElementById('sim-grid-lock-hint');
+  if (btnGridYes && btnGridNo) {
+    if (isRama1) {
+      btnGridYes.disabled = false;
+      btnGridYes.className = 'sim-pill-btn active';
+      btnGridNo.disabled = true;
+      btnGridNo.className = 'sim-pill-btn';
+      if (gridHint) {
+        gridHint.style.display = 'inline';
+        gridHint.textContent = '(Obligatorio con IA)';
+      }
+    } else {
+      if (simState.count > 2) {
+        btnGridYes.disabled = true;
+        btnGridYes.className = 'sim-pill-btn';
+        btnGridNo.disabled = false;
+        btnGridNo.className = 'sim-pill-btn active-emerald';
+        if (gridHint) {
+          gridHint.style.display = 'inline';
+          gridHint.textContent = '(Máx 2P con borrador)';
+        }
+      } else {
+        btnGridYes.disabled = false;
+        btnGridNo.disabled = false;
+        btnGridYes.className = 'sim-pill-btn' + (simState.withGrid ? ' active-emerald' : '');
+        btnGridNo.className = 'sim-pill-btn' + (!simState.withGrid ? ' active-emerald' : '');
+        if (gridHint) gridHint.style.display = 'none';
+      }
+    }
+  }
+
+  // 4. Orientación
+  const btnOrientH = document.getElementById('sim-btn-orient-h');
+  const btnOrientV = document.getElementById('sim-btn-orient-v');
+  if (btnOrientH && btnOrientV) {
+    btnOrientH.className = 'sim-pill-btn' + (simState.orientation === 'horizontal' ? (isRama1 ? ' active' : ' active-emerald') : '');
+    btnOrientV.className = 'sim-pill-btn' + (simState.orientation === 'vertical' ? (isRama1 ? ' active' : ' active-emerald') : '');
+  }
+
+  // 5. Tamaño de cuadrícula
+  const gridsizeWrap = document.getElementById('sim-gridsize-wrap');
+  const btnGridNorm = document.getElementById('sim-btn-gridsize-normal');
+  const btnGridExp = document.getElementById('sim-btn-gridsize-expanded');
+  if (gridsizeWrap && btnGridNorm && btnGridExp) {
+    const showGridSize = simState.withGrid && simState.count === 1;
+    gridsizeWrap.style.display = showGridSize ? 'flex' : 'none';
+    if (showGridSize) {
+      btnGridNorm.className = 'sim-pill-btn' + (simState.gridSize === 'normal' ? (isRama1 ? ' active' : ' active-emerald') : '');
+      btnGridExp.className = 'sim-pill-btn' + (simState.gridSize === 'expanded' ? (isRama1 ? ' active' : ' active-emerald') : '');
+    }
+  }
+}
+
+function setSimCount(count) {
+  const isRama1 = simState.branch === 'rama1';
+  const c = parseInt(count, 10);
+  simState.count = isRama1 ? Math.min(Math.max(1, c), 2) : Math.min(Math.max(1, c), 5);
+
+  if (simState.count > 2 && simState.withGrid) {
+    simState.withGrid = false;
+    if (typeof showToast === 'function') {
+      showToast('ℹ️ Con 3 o más preguntas no cabe el borrador.');
+    }
+  }
+  updateSimToolbar();
+  renderSimulatedCard();
+}
+
+function setSimType(type) {
+  simState.type = (type === 'free') ? 'free' : 'mc';
+  updateSimToolbar();
+  renderSimulatedCard();
+}
+
+function setSimGrid(withGrid) {
+  if (simState.branch === 'rama1') {
+    if (!withGrid) {
+      if (typeof showToast === 'function') {
+        showToast('ℹ️ En Formativa con IA el borrador de cálculo es obligatorio para analizar el procedimiento.');
+      }
+      return;
+    }
+  }
+  if (withGrid && simState.count > 2) {
+    if (typeof showToast === 'function') {
+      showToast('ℹ️ Con borrador el máximo es 2 preguntas.');
+    }
+    return;
+  }
+  simState.withGrid = !!withGrid;
+  updateSimToolbar();
+  renderSimulatedCard();
+}
+
+function setSimOrientation(orientation) {
+  simState.orientation = (orientation === 'vertical') ? 'vertical' : 'horizontal';
+  updateSimToolbar();
+  renderSimulatedCard();
+}
+
+function setSimGridSize(size) {
+  simState.gridSize = (size === 'expanded') ? 'expanded' : 'normal';
+  updateSimToolbar();
+  renderSimulatedCard();
+}
+
+function renderSimulatedCard() {
+  const host = document.getElementById('sim-card-render-host');
+  if (!host) return;
+
+  const classroom = (typeof ClassroomData !== 'undefined' && wizardClassroomId)
+    ? ClassroomData.getClassroom(wizardClassroomId)
+    : null;
+
+  const defaultCls = classroom || {
+    id: 'cls_sim',
+    name: '4to Grado Primaria',
+    gradeStage: 'primaria',
+    gradeLevel: 4,
+    students: [{ id: '1', name: 'ESTUDIANTE EJEMPLO' }]
+  };
+
+  const sampleStudent = (defaultCls.students && defaultCls.students.length > 0)
+    ? defaultCls.students[0]
+    : { id: '1', name: 'ESTUDIANTE EJEMPLO' };
+
+  const isOMR = simState.type === 'mc';
+  const isVertical = simState.orientation === 'vertical';
+  const isA6 = (simState.branch === 'rama2' && !simState.withGrid && simState.count <= 2 && !isVertical);
+
+  const previewQuestions = [];
+  for (let i = 0; i < simState.count; i++) {
+    const q = simState.questions[i];
+    const hasPrompt = !!(q && q.prompt && q.prompt.trim().length > 0);
+    previewQuestions.push({
+      prompt: hasPrompt ? q.prompt : `[Pregunta ${i + 1}: Haz clic aquí para elegirla o redactarla]`,
+      options: (q && q.options) || { A: 'A', B: 'B', C: 'C', D: 'D' },
+      correct: (q && q.correct) || 'A',
+      expectedAnswer: (q && q.expectedAnswer) || (q && q.correct) || 'A',
+      isEmptySlot: !hasPrompt
+    });
+  }
+
+  const simEval = {
+    id: 'sim_eval_preview',
+    branch: simState.branch,
+    type: isOMR ? 'mc' : 'free',
+    withGrid: simState.withGrid,
+    questionCount: simState.count,
+    questions: previewQuestions,
+    isPortrait: isVertical,
+    gridSize: simState.gridSize,
+    prompt: previewQuestions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join(' | '),
+    expectedAnswer: isOMR
+      ? previewQuestions.map(q => q.correct).join(' ')
+      : previewQuestions.map(q => q.expectedAnswer).join(' ; ')
+  };
+
+  let cardHTML = '';
+  if (isVertical) {
+    cardHTML = (typeof createA5VerticalCard === 'function')
+      ? createA5VerticalCard(sampleStudent, defaultCls, simEval)
+      : '<div style="padding:20px; color:#000;">A5 Vertical Preview</div>';
+  } else if (isA6) {
+    cardHTML = (typeof createA6Card === 'function')
+      ? createA6Card(sampleStudent, defaultCls, simEval)
+      : '<div style="padding:20px; color:#000;">A6 Preview</div>';
+  } else {
+    cardHTML = (typeof createA5Card === 'function')
+      ? createA5Card(sampleStudent, defaultCls, simEval)
+      : '<div style="padding:20px; color:#000;">A5 Horizontal Preview</div>';
+  }
+
+  host.innerHTML = cardHTML;
+
+  // Generar QR para el estudiante de muestra en la vista previa
+  const qrBox = host.querySelector('[id^="qr-box-"]');
+  if (qrBox && typeof QRCode !== 'undefined') {
+    const qrData = JSON.stringify({ s: sampleStudent.id, c: defaultCls.id });
+    QRCode.toString(qrData, { type: 'svg', margin: 0 }, (err, svg) => {
+      if (!err && svg) qrBox.innerHTML = svg;
+    });
+  }
+
+  // Hacer interactivos los bloques de preguntas
+  attachSimSlotInteractivity(host, previewQuestions);
+
+  // Actualizar etiqueta del formato
+  const formatTag = document.getElementById('sim-card-format-tag');
+  if (formatTag) {
+    if (isA6) formatTag.textContent = 'Ficha A6 (4 por hoja A4)';
+    else if (isVertical) formatTag.textContent = `Ficha A5 Vertical (${simState.count}P ${simState.withGrid ? 'con borrador' : 'sin borrador'})`;
+    else formatTag.textContent = `Ficha A5 Horizontal (${simState.count}P ${simState.withGrid ? 'con borrador' : 'sin borrador'})`;
+  }
+}
+
+function attachSimSlotInteractivity(host, previewQuestions) {
+  if (!host) return;
+
+  // 1. Caso Ficha Horizontal 1P
+  const prob1P = host.querySelector('.problem-wide, .problem-text');
+  if (prob1P && simState.count === 1 && simState.orientation !== 'vertical') {
+    prob1P.classList.add('sim-interactive-slot');
+    prob1P.title = 'Haz clic para elegir o redactar la Pregunta 1';
+    prob1P.onclick = () => openSimQuestionPicker(0);
+    if (previewQuestions[0]?.isEmptySlot) {
+      prob1P.innerHTML = `<div class="sim-slot-empty">➕ Clic aquí para elegir del banco o redactar la Pregunta 1</div>`;
+    }
+  }
+
+  // 2. Caso Ficha Horizontal 2P (columnas p2)
+  const cols2P = host.querySelectorAll('.problem-col, .p2-prompt-row');
+  if (cols2P && cols2P.length >= 2 && simState.orientation !== 'vertical') {
+    cols2P.forEach((col, idx) => {
+      col.classList.add('sim-interactive-slot');
+      col.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
+      col.onclick = () => openSimQuestionPicker(idx);
+      if (previewQuestions[idx]?.isEmptySlot) {
+        const textEl = col.querySelector('.p2-prompt-text') || col;
+        textEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
+      }
+    });
+  }
+
+  // 3. Caso Ficha Vertical
+  const vItems = host.querySelectorAll('.v-nogrid-item, .v-free-2q-block, .v-free-problem');
+  if (vItems && vItems.length > 0) {
+    vItems.forEach((item, idx) => {
+      if (idx < simState.count) {
+        item.classList.add('sim-interactive-slot');
+        item.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
+        item.onclick = () => openSimQuestionPicker(idx);
+        if (previewQuestions[idx]?.isEmptySlot) {
+          const pEl = item.querySelector('.v-nogrid-prompt, .problem-text') || item;
+          pEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
+        }
+      }
+    });
+  }
+
+  // 4. Caso Ficha A6 o Sin Borrador (b2-q-item o a6-nogrid-item)
+  const b2Items = host.querySelectorAll('.b2-q-item, .a6-nogrid-item');
+  if (b2Items && b2Items.length > 0) {
+    b2Items.forEach((item, idx) => {
+      if (idx < simState.count) {
+        item.classList.add('sim-interactive-slot');
+        item.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
+        item.onclick = () => openSimQuestionPicker(idx);
+        if (previewQuestions[idx]?.isEmptySlot) {
+          const pEl = item.querySelector('.b2-q-prompt, .a6-nogrid-prompt') || item;
+          pEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
+        }
+      }
+    });
+  }
+}
+
+// ── CONTROLADOR DEL MODAL DE SELECCIÓN / REDACCIÓN ──
+function openSimQuestionPicker(slotIdx) {
+  currentSimSlot = slotIdx;
+  const modal = document.getElementById('modal-sim-picker');
+  const title = document.getElementById('sim-picker-title');
+  const gradeTag = document.getElementById('sim-picker-grade-tag');
+  if (!modal) return;
+
+  const g = gradoDelSalonSeleccionado();
+  if (title) title.textContent = `Configurar Pregunta ${slotIdx + 1}`;
+  if (gradeTag) gradeTag.textContent = g.texto || 'Sin grado asignado';
+
+  // Mostrar u ocultar sección IA según la rama
+  const aiSection = document.getElementById('sim-new-ai-section');
+  if (aiSection) {
+    aiSection.style.display = (simState.branch === 'rama1') ? 'block' : 'none';
+  }
+
+  // Alternativas vs respuesta escrita
+  const optWrap = document.getElementById('sim-new-options-wrap');
+  const freeWrap = document.getElementById('sim-new-free-wrap');
+  if (optWrap && freeWrap) {
+    optWrap.style.display = (simState.type === 'mc') ? 'block' : 'none';
+    freeWrap.style.display = (simState.type === 'free') ? 'block' : 'none';
+  }
+
+  // Pre-cargar valores si el slot ya tenía contenido
+  const curQ = simState.questions[slotIdx];
+  const taPrompt = document.getElementById('sim-new-prompt');
+  if (taPrompt) taPrompt.value = curQ?.prompt || '';
+  ['a', 'b', 'c', 'd'].forEach(lettr => {
+    const inp = document.getElementById('sim-opt-' + lettr);
+    if (inp) inp.value = (curQ?.options && curQ.options[lettr.toUpperCase()]) || '';
+  });
+  if (curQ?.correct) {
+    const rad = document.getElementById('sim-rad-' + curQ.correct.toLowerCase());
+    if (rad) rad.checked = true;
+  }
+  const inpFree = document.getElementById('sim-new-free-ans');
+  if (inpFree) inpFree.value = curQ?.expectedAnswer || '';
+
+  simCurrentRubric = curQ?.rubric || null;
+  const aiStatus = document.getElementById('sim-ai-status');
+  if (aiStatus) {
+    aiStatus.textContent = simCurrentRubric ? '✅ Rúbrica de IA lista' : '';
+    aiStatus.style.color = simCurrentRubric ? '#4ade80' : '#a5b4fc';
+  }
+
+  setSimPickerTab('bank');
+  renderSimBankList();
+
+  modal.style.display = 'flex';
+}
+
+function closeSimPicker() {
+  const modal = document.getElementById('modal-sim-picker');
+  if (modal) modal.style.display = 'none';
+}
+
+function setSimPickerTab(tab) {
+  simPickerActiveTab = tab;
+  const tabBank = document.getElementById('sim-tab-bank');
+  const tabNew = document.getElementById('sim-tab-new');
+  const paneBank = document.getElementById('sim-pane-bank');
+  const paneNew = document.getElementById('sim-pane-new');
+
+  if (tab === 'bank') {
+    if (tabBank) {
+      tabBank.style.color = '#38bdf8';
+      tabBank.style.borderBottomColor = '#38bdf8';
+    }
+    if (tabNew) {
+      tabNew.style.color = '#94a3b8';
+      tabNew.style.borderBottomColor = 'transparent';
+    }
+    if (paneBank) paneBank.style.display = 'flex';
+    if (paneNew) paneNew.style.display = 'none';
+  } else {
+    if (tabNew) {
+      tabNew.style.color = '#38bdf8';
+      tabNew.style.borderBottomColor = '#38bdf8';
+    }
+    if (tabBank) {
+      tabBank.style.color = '#94a3b8';
+      tabBank.style.borderBottomColor = 'transparent';
+    }
+    if (paneBank) paneBank.style.display = 'none';
+    if (paneNew) paneNew.style.display = 'flex';
+  }
+}
+
+function renderSimBankList() {
+  const listEl = document.getElementById('sim-bank-list');
+  const emptyEl = document.getElementById('sim-bank-empty');
+  const countEl = document.getElementById('sim-bank-count');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+
+  const g = gradoDelSalonSeleccionado();
+  const bankList = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions && g?.stage && g?.level)
+    ? ClassroomData.getIndividualMCQuestions(g.stage, g.level)
+    : [];
+
+  if (countEl) countEl.textContent = bankList.length;
+
+  if (bankList.length === 0) {
+    if (emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  bankList.forEach((q, idx) => {
+    const item = document.createElement('div');
+    item.style.cssText = 'background:#1e293b; border:1.5px solid #334155; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px;';
+
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px;';
+
+    const hasRubric = !!(q.hasRubric || q.rubric);
+    const badgeHtml = hasRubric
+      ? '<span style="background:#4c1d95; color:#c4b5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;">🤖 Con Rúbrica IA</span>'
+      : '<span style="background:#065f46; color:#6ee7b7; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;">⚡ Pregunta Rápida</span>';
+
+    header.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        ${badgeHtml}
+        <span style="font-size:0.8rem; font-weight:700; color:#cbd5e1;">Opción ${idx + 1}</span>
+      </div>
+    `;
+
+    const btnSelect = document.createElement('button');
+    btnSelect.type = 'button';
+    btnSelect.textContent = '✓ Seleccionar';
+    btnSelect.style.cssText = 'background:#2563eb; border:none; color:#fff; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer;';
+    btnSelect.onclick = () => selectSimBankQuestion(q);
+    header.appendChild(btnSelect);
+
+    const promptText = document.createElement('div');
+    promptText.style.cssText = 'font-size:0.82rem; color:#f1f5f9; line-height:1.4;';
+    promptText.textContent = q.prompt;
+
+    const optsGrid = document.createElement('div');
+    optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.75rem;';
+    ['A', 'B', 'C', 'D'].forEach(letter => {
+      const isCorrect = (q.correct || 'A').toUpperCase() === letter;
+      const optVal = q.options ? q.options[letter] : '';
+      const optDiv = document.createElement('div');
+      optDiv.style.cssText = isCorrect
+        ? 'color:#4ade80; font-weight:800; background:rgba(34,197,94,0.1); padding:4px 8px; border-radius:6px; border:1px solid rgba(34,197,94,0.25);'
+        : 'color:#94a3b8; padding:4px 8px; background:#0f172a; border-radius:6px; border:1px solid #1e293b;';
+      optDiv.textContent = `${letter}) ${optVal || '—'}` + (isCorrect ? ' ✓' : '');
+      optsGrid.appendChild(optDiv);
+    });
+
+    item.appendChild(header);
+    item.appendChild(promptText);
+    item.appendChild(optsGrid);
+    listEl.appendChild(item);
+  });
+}
+
+function selectSimBankQuestion(q) {
+  if (simState.branch === 'rama1' && !q.hasRubric && !q.rubric) {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Para Formativa con IA la pregunta requiere análisis y rúbrica pedagógica.');
+    }
+  }
+
+  simState.questions[currentSimSlot] = {
+    id: q.id,
+    prompt: q.prompt,
+    options: q.options ? { ...q.options } : { A: '', B: '', C: '', D: '' },
+    correct: q.correct || 'A',
+    expectedAnswer: q.expectedAnswer || q.correct || 'A',
+    rubric: q.rubric || null,
+    hasRubric: !!(q.hasRubric || q.rubric)
+  };
+
+  closeSimPicker();
+  renderSimulatedCard();
+  if (typeof showToast === 'function') {
+    showToast(`✓ Pregunta ${currentSimSlot + 1} asignada.`);
+  }
+}
+
+async function handleSimAnalyzeAI() {
+  const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
+  if (!prompt) {
+    if (typeof showToast === 'function') showToast('⚠️ Escribe el enunciado primero.');
+    return;
+  }
+
+  const g = gradoDelSalonSeleccionado();
+  const btn = document.getElementById('sim-btn-analyze-ai');
+  const statusEl = document.getElementById('sim-ai-status');
+
+  const origText = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Analizando con Gemini (~20 seg)...';
+  }
+  if (statusEl) {
+    statusEl.textContent = 'Calculando solución canónica y rúbrica...';
+    statusEl.style.color = '#f59e0b';
+  }
+
+  try {
+    const res = await SupabaseClient.generateRubric({ prompt: prompt, grado: g.texto || '4° de primaria' });
+    if (res && res.ok && res.rubrica) {
+      simCurrentRubric = res.rubrica;
+      if (statusEl) {
+        statusEl.textContent = '✅ Análisis completado con éxito';
+        statusEl.style.color = '#4ade80';
+      }
+      if (typeof showToast === 'function') showToast('✓ Rúbrica pedagógica generada por IA');
+    } else {
+      const err = (res && res.error) || 'No se pudo generar la rúbrica.';
+      if (statusEl) {
+        statusEl.textContent = '❌ Error al analizar con IA';
+        statusEl.style.color = '#ef4444';
+      }
+      if (typeof showToast === 'function') showToast('⚠️ Error: ' + err);
+    }
+  } catch (e) {
+    if (statusEl) {
+      statusEl.textContent = '❌ Error de conexión';
+      statusEl.style.color = '#ef4444';
+    }
+    if (typeof showToast === 'function') showToast('⚠️ Error: ' + e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = origText;
+    }
+  }
+}
+
+function saveSimCustomQuestion() {
+  const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
+  if (!prompt) {
+    if (typeof showToast === 'function') showToast('⚠️ Escribe el enunciado de la pregunta.');
+    return;
+  }
+
+  const isFree = simState.type === 'free';
+  const optA = (document.getElementById('sim-opt-a')?.value || '').trim();
+  const optB = (document.getElementById('sim-opt-b')?.value || '').trim();
+  const optC = (document.getElementById('sim-opt-c')?.value || '').trim();
+  const optD = (document.getElementById('sim-opt-d')?.value || '').trim();
+
+  let correctKey = 'A';
+  const rad = document.querySelector('input[name="sim-new-correct"]:checked');
+  if (rad) correctKey = rad.value.toUpperCase();
+
+  let expectedAnswer = '';
+  if (isFree) {
+    expectedAnswer = (document.getElementById('sim-new-free-ans')?.value || '').trim() || optA || prompt;
+  } else {
+    if (!optA || !optB || !optC || !optD) {
+      if (typeof showToast === 'function') showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
+      return;
+    }
+    const map = { A: optA, B: optB, C: optC, D: optD };
+    expectedAnswer = map[correctKey] || '';
+  }
+
+  // Guardarraíl Regla 6: En Rama 1 es obligatorio tener rúbrica
+  if (simState.branch === 'rama1' && !simCurrentRubric) {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ GUARDARRAÍL: En Formativa con IA la pregunta debe ser analizada con Gemini antes de guardar.');
+    }
+    return;
+  }
+
+  const g = gradoDelSalonSeleccionado();
+
+  const newQ = {
+    id: 'q_custom_' + Date.now(),
+    prompt: prompt,
+    options: { A: optA, B: optB, C: optC, D: optD },
+    correct: correctKey,
+    expectedAnswer: expectedAnswer,
+    rubric: simCurrentRubric || null,
+    hasRubric: !!simCurrentRubric,
+    gradeStage: g?.stage || null,
+    gradeLevel: g?.level || null,
+    gradeText: g?.texto || null
+  };
+
+  // Guardar en el banco general para que perdure
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+    ClassroomData.saveCustomEvaluation({
+      title: 'Pregunta de evaluación',
+      type: isFree ? 'free' : 'mc',
+      questionCount: 1,
+      prompt: prompt,
+      expectedAnswer: expectedAnswer,
+      options: newQ.options,
+      correct: correctKey,
+      rubric: simCurrentRubric || null,
+      questions: [newQ],
+      gradeStage: g?.stage || null,
+      gradeLevel: g?.level || null,
+      gradeText: g?.texto || null
+    });
+  }
+
+  if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+    SupabaseClient.saveEvaluation({
+      prompt: prompt,
+      expectedAnswer: expectedAnswer,
+      title: 'Pregunta de evaluación',
+      rubric: simCurrentRubric || null,
+      gradeStage: g?.stage,
+      gradeLevel: g?.level,
+      gradeText: g?.texto,
+      type: isFree ? 'free' : 'mc',
+      questionCount: 1,
+      questions: [newQ]
+    }).catch(e => console.warn('[Sim] Error al sincronizar pregunta en Supabase:', e && e.message));
+  }
+
+  simState.questions[currentSimSlot] = newQ;
+  closeSimPicker();
+  renderSimulatedCard();
+  if (typeof showToast === 'function') {
+    showToast(`✓ Pregunta ${currentSimSlot + 1} guardada y asignada a la ficha.`);
+  }
+}
+
+// ── ACCIONES PRINCIPALES DEL SIMULADOR (IMPRIMIR Y ESCANEAR) ──
+function buildSimulatorEvaluation() {
+  if (!wizardClassroomId) {
+    if (typeof showToast === 'function') showToast('⚠️ Selecciona un salón de clases primero.');
+    return null;
+  }
+
+  // Validar que todas las preguntas activas tengan enunciado
+  for (let i = 0; i < simState.count; i++) {
+    const q = simState.questions[i];
+    if (!q || !q.prompt || q.prompt.trim() === '' || q.prompt.startsWith('[Pregunta')) {
+      if (typeof showToast === 'function') {
+        showToast(`⚠️ Falta configurar la Pregunta ${i + 1}. Haz clic sobre ella en la ficha.`);
+      }
+      openSimQuestionPicker(i);
+      return null;
+    }
+    // Guardarraíl Regla 6 en Rama 1
+    if (simState.branch === 'rama1' && !q.rubric) {
+      if (typeof showToast === 'function') {
+        showToast(`⚠️ GUARDARRAÍL: La Pregunta ${i + 1} requiere análisis pedagógico de IA.`);
+      }
+      openSimQuestionPicker(i);
+      return null;
+    }
+  }
+
+  const g = gradoDelSalonSeleccionado();
+  const isOMR = simState.type === 'mc';
+  const isVertical = simState.orientation === 'vertical';
+  const isA6 = (simState.branch === 'rama2' && !simState.withGrid && simState.count <= 2 && !isVertical);
+  const activeQuestions = simState.questions.slice(0, simState.count);
+
+  const evalObj = {
+    id: 'eval_sim_' + Date.now(),
+    branch: simState.branch,
+    type: isOMR ? 'mc' : 'free',
+    withGrid: simState.withGrid,
+    questionCount: simState.count,
+    questions: activeQuestions,
+    cardFormat: isA6 ? 'a6' : 'a5',
+    isPortrait: isVertical,
+    gridSize: simState.gridSize,
+    title: simState.branch === 'rama1'
+      ? (isOMR ? `Formativa con IA (${simState.count}P)` : 'Formativa Respuesta Libre')
+      : `Focalizada en la Respuesta (${simState.count}P)`,
+    prompt: activeQuestions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join(' | '),
+    expectedAnswer: isOMR
+      ? activeQuestions.map(q => q.correct).join(' ')
+      : activeQuestions.map(q => q.expectedAnswer || q.correct).join(' ; '),
+    options: (activeQuestions.length === 1 && activeQuestions[0].options) ? activeQuestions[0].options : null,
+    correct: (activeQuestions.length === 1 && activeQuestions[0].correct) ? activeQuestions[0].correct : null,
+    rubric: (activeQuestions.length === 1 && activeQuestions[0].rubric) ? activeQuestions[0].rubric : null,
+    correctionMode: simState.branch === 'rama1' ? 'full' : 'quick',
+    gradeStage: g?.stage,
+    gradeLevel: g?.level,
+    gradeText: g?.texto
+  };
+
+  wizardEvalType = isOMR ? (simState.count === 1 ? 'mc1' : 'mc2') : 'free';
+  wizardEval = ClassroomData.saveCustomEvaluation(evalObj);
+
+  // Registrar sesión activa
+  const session = ClassroomData.setActiveSession(wizardClassroomId, wizardEval.id, wizardEval.expectedAnswer);
+  if (session) {
+    session.branch = simState.branch;
+    session.withGrid = simState.withGrid;
+    session.cardFormat = wizardEval.cardFormat;
+    session.isPortrait = wizardEval.isPortrait;
+    session.questionCount = simState.count;
+    session.correctionMode = wizardEval.correctionMode;
+    session.type = wizardEval.type;
+    ClassroomData.saveActiveSession(session);
+  }
+
+  return wizardEval;
+}
+
+function confirmSimAndPrint() {
+  const ev = buildSimulatorEvaluation();
+  if (!ev) return;
+
+  const pagesContainer = document.getElementById('pages-container');
+  if (pagesContainer && typeof renderAllPrintPages === 'function') {
+    pagesContainer.style.display = 'flex';
+    renderAllPrintPages(wizardClassroomId, ev);
+
+    // Scroll suave hacia las hojas de impresión
+    pagesContainer.scrollIntoView({ behavior: 'smooth' });
+    if (typeof showToast === 'function') {
+      showToast('🖨️ Fichas listas para imprimir en la parte inferior.');
+    }
+  } else {
+    window.print();
+  }
+}
+
+function confirmSimAndScan() {
+  const ev = buildSimulatorEvaluation();
+  if (!ev) return;
+
+  if (typeof openFlow === 'function') {
+    openFlow('scanner');
+  } else {
+    window.location.href = 'scanner.html';
   }
 }
 

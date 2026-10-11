@@ -3128,3 +3128,119 @@
       border-color: #fb923c;
       background: #1e293b linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, transparent 100%);
     }
+
+    /* ========================================================= */
+    /* SIMULADOR INTERACTIVO DE FICHAS (WYSIWYG)                 */
+    /* ========================================================= */
+    #sheet-simulator-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .sim-toolbar {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sim-pill-btn {
+      padding: 5px 11px;
+      border-radius: 8px;
+      border: 1.5px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+    }
+
+    .sim-pill-btn:hover:not(:disabled) {
+      border-color: #64748b;
+      color: #f1f5f9;
+    }
+
+    .sim-pill-btn.active {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #6366f1;
+      color: #c7d2fe;
+    }
+
+    .sim-pill-btn.active-emerald {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+      color: #a7f3d0;
+    }
+
+    .sim-pill-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .sim-card-viewport {
+      width: 100%;
+      background: #0b0f19;
+      border: 1.5px solid #334155;
+      border-radius: 12px;
+      padding: 20px 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: auto;
+      overflow-y: hidden;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .sim-card-host {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      background: #ffffff;
+      border-radius: 2px;
+    }
+
+    /* Ranura interactiva sobre la ficha del simulador */
+    .sim-interactive-slot {
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      position: relative !important;
+      border-radius: 3px !important;
+    }
+
+    .sim-interactive-slot:hover {
+      outline: 2px dashed #6366f1 !important;
+      outline-offset: 1px !important;
+      background: rgba(99, 102, 241, 0.08) !important;
+    }
+
+    .sim-slot-empty {
+      border: 1.5px dashed #6366f1 !important;
+      background: rgba(99, 102, 241, 0.06) !important;
+      padding: 4px 8px !important;
+      border-radius: 4px !important;
+      color: #4f46e5 !important;
+      font-size: 0.75rem !important;
+      font-weight: 800 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      animation: simSlotPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes simSlotPulse {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 1; border-color: #818cf8; background: rgba(99, 102, 241, 0.12); }
+    }
+
