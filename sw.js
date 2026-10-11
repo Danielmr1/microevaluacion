@@ -55,6 +55,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Navegación principal (HTML): Network-First para reflejar actualizaciones de GitHub de inmediato
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('index.html') || url.pathname.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const resClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+        }
+        return networkResponse;
+      }).catch(() => {
+        return caches.match(event.request).then((cached) => cached || caches.match('./index.html'));
+      })
+    );
+    return;
+  }
+
   // Estrategia Cache-First con actualización en segundo plano para recursos estáticos locales
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
