@@ -3249,7 +3249,7 @@ function fitSimCardToViewport() {
   host.style.transform = 'none';
   host.style.marginBottom = '0px';
 
-  const availWidth = viewport.clientWidth - 20;
+  const availWidth = viewport.clientWidth - 28;
   const cardWidth = card.offsetWidth;
 
   if (cardWidth > 0 && availWidth > 0 && cardWidth > availWidth) {
