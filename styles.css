@@ -1051,14 +1051,18 @@
       box-sizing: border-box;
       overflow: hidden;
       display: flex;
+      flex-direction: column;
     }
 
     .notebook-grid-v {
       display: grid !important;
       grid-template-columns: repeat(13, 1fr) !important;
-      grid-template-rows: repeat(10, 1fr) !important;
-      width: 100%;
-      height: 100%;
+      grid-template-rows: repeat(13, 1fr) !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100% !important;
+      flex: 1 1 auto !important;
+      border: none !important;
       background: #ffffff;
     }
 
@@ -1066,14 +1070,17 @@
       border-right: 1px solid #e2e8f0;
       border-bottom: 1px solid #e2e8f0;
       display: block;
+      box-sizing: border-box;
     }
+    .notebook-grid-v > i:nth-child(13n) { border-right: none; }
+    .notebook-grid-v > i:nth-child(n+157) { border-bottom: none; }
 
     .v-free-answer-strip {
       height: 18mm;
       min-height: 18mm;
       max-height: 18mm;
       border-top: 1.5px solid #000000;
-      padding: 2mm 4mm;
+      padding: 2mm 14mm;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1145,13 +1152,13 @@
       max-height: 14mm;
       margin: 1mm auto 0 auto;
       display: grid;
-      grid-template-columns: repeat(4, 28.5mm);
+      grid-template-columns: repeat(4, 1fr);
       box-sizing: border-box;
       background: #f8fafc;
       border: 1px solid #cbd5e1;
       border-radius: 1.5mm;
       align-items: center;
-      padding: 0 1mm;
+      padding: 0 8mm;
     }
     .v-omr-row-2q {
       height: 11mm;
@@ -1162,7 +1169,7 @@
       display: flex;
       align-items: center;
       gap: 1.5mm;
-      width: 27mm;
+      width: 100%;
       overflow: hidden;
       box-sizing: border-box;
     }

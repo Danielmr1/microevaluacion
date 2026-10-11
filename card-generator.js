@@ -675,9 +675,9 @@ function createA5VerticalCard(student, classroom, evaluation) {
   const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
   const isOMR = (evaluation.type === 'mc');
 
-  // Cuadrícula vertical de 13 columnas x 10 filas
+  // Cuadrícula vertical de 13 columnas x 13 filas para llenar la altura
   const V_GRID_COLS = 13;
-  const V_GRID_ROWS = 10;
+  const V_GRID_ROWS = 13;
   const GRID_CELLS_V_FREE = new Array(V_GRID_COLS * V_GRID_ROWS).fill('<i></i>').join('');
 
   if (qCount === 2) {
