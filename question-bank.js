@@ -3133,31 +3133,127 @@ function determineCardLayout(state) {
   }
 
   // ── RAMA 2: FOCALIZADA EN LA RESPUESTA ──
-  const r2Stage = state.withGrid ? 1 : 0;
+  const stage = (typeof state.gridStage === 'number') ? state.gridStage : 0;
   if (count === 1) {
-    return {
-      format: 'a6',
-      orientation: 'horizontal',
-      generator: 'createA6Card',
-      badge: 'A6 H',
-      badgeFull: 'A6 Horizontal',
-      stage: r2Stage,
-      minStage: 0,
-      maxStage: 1
-    };
+    switch (stage) {
+      case 0:
+        return {
+          format: 'a6',
+          orientation: 'horizontal',
+          generator: 'createA6Card',
+          badge: 'A6 H',
+          badgeFull: 'A6 Horizontal',
+          withGrid: false,
+          stage: 0,
+          minStage: 0,
+          maxStage: 4
+        };
+      case 1:
+        return {
+          format: 'a6',
+          orientation: 'horizontal',
+          generator: 'createA6Card',
+          badge: 'A6 H',
+          badgeFull: 'A6 Horizontal',
+          withGrid: true,
+          stage: 1,
+          minStage: 0,
+          maxStage: 4
+        };
+      case 2:
+        return {
+          format: 'a6',
+          orientation: 'vertical',
+          generator: 'createA6Card',
+          badge: 'A6 V',
+          badgeFull: 'A6 Vertical',
+          withGrid: true,
+          stage: 2,
+          minStage: 0,
+          maxStage: 4
+        };
+      case 3:
+        return {
+          format: 'a5',
+          orientation: 'horizontal',
+          generator: 'createA5Card',
+          badge: 'A5 H',
+          badgeFull: 'A5 Horizontal',
+          withGrid: true,
+          stage: 3,
+          minStage: 0,
+          maxStage: 4
+        };
+      case 4:
+      default:
+        return {
+          format: 'a5',
+          orientation: 'vertical',
+          generator: 'createA5VerticalCard',
+          badge: 'A5 V',
+          badgeFull: 'A5 Vertical',
+          withGrid: true,
+          stage: 4,
+          minStage: 0,
+          maxStage: 4
+        };
+    }
   }
+
   if (count === 2) {
-    return {
-      format: 'a6',
-      orientation: 'vertical',
-      generator: 'createA6Card',
-      badge: 'A6 V',
-      badgeFull: 'A6 Vertical',
-      stage: r2Stage,
-      minStage: 0,
-      maxStage: 1
-    };
+    switch (stage) {
+      case 0:
+        return {
+          format: 'a6',
+          orientation: 'vertical',
+          generator: 'createA6Card',
+          badge: 'A6 V',
+          badgeFull: 'A6 Vertical',
+          withGrid: false,
+          stage: 0,
+          minStage: 0,
+          maxStage: 3
+        };
+      case 1:
+        return {
+          format: 'a6',
+          orientation: 'vertical',
+          generator: 'createA6Card',
+          badge: 'A6 V',
+          badgeFull: 'A6 Vertical',
+          withGrid: true,
+          stage: 1,
+          minStage: 0,
+          maxStage: 3
+        };
+      case 2:
+        return {
+          format: 'a5',
+          orientation: 'horizontal',
+          generator: 'createA5Card',
+          badge: 'A5 H',
+          badgeFull: 'A5 Horizontal',
+          withGrid: true,
+          stage: 2,
+          minStage: 0,
+          maxStage: 3
+        };
+      case 3:
+      default:
+        return {
+          format: 'a5',
+          orientation: 'vertical',
+          generator: 'createA5VerticalCard',
+          badge: 'A5 V',
+          badgeFull: 'A5 Vertical',
+          withGrid: true,
+          stage: 3,
+          minStage: 0,
+          maxStage: 3
+        };
+    }
   }
+
   return {
     format: 'a5',
     orientation: 'vertical',
@@ -3171,22 +3267,13 @@ function determineCardLayout(state) {
 }
 
 function stepSimGridStage(delta) {
-  if (simState.branch === 'rama2') {
-    const cur = simState.withGrid ? 1 : 0;
-    const next = Math.max(0, Math.min(1, cur + delta));
-    if (next !== cur) {
-      simState.withGrid = (next === 1);
-      simState.gridStage = next;
-      updateSimToolbar();
-      renderSimulatedCard();
-    }
-    return;
-  }
   const layout = determineCardLayout(simState);
   const cur = (typeof simState.gridStage === 'number') ? simState.gridStage : 0;
   const next = Math.max(layout.minStage, Math.min(layout.maxStage, cur + delta));
   if (next !== cur) {
     simState.gridStage = next;
+    const nextLayout = determineCardLayout(simState);
+    simState.withGrid = (simState.branch === 'rama1') ? true : !!nextLayout.withGrid;
     updateSimToolbar();
     renderSimulatedCard();
   }
@@ -3199,9 +3286,7 @@ function setSimCount(count) {
   if (simState.count !== targetCount) {
     simState.count = targetCount;
     simState.gridStage = 0;
-    if (!isRama1) {
-      simState.withGrid = false; // Al cambiar preguntas en Focalizada nace sin cuadrícula
-    }
+    simState.withGrid = isRama1 ? true : false;
   }
 
   updateSimToolbar();
@@ -3317,7 +3402,7 @@ function renderSimulatedCard() {
     id: 'sim_eval_preview',
     branch: simState.branch,
     type: isOMR ? 'mc' : 'free',
-    withGrid: (simState.branch === 'rama1') ? true : !!simState.withGrid,
+    withGrid: (simState.branch === 'rama1') ? true : (layout.withGrid !== undefined ? layout.withGrid : !!simState.withGrid),
     questionCount: simState.count,
     questions: previewQuestions,
     cardFormat: layout.format,
@@ -3448,51 +3533,42 @@ function attachSimSlotInteractivity(host, previewQuestions) {
       gridWrap.appendChild(stepper);
     }
   } else if (simState.branch === 'rama2') {
-    // Focalizada en la Respuesta: Control stepper idéntico a Formativa con IA
-    const isMin = !simState.withGrid;
-    const isMax = !!simState.withGrid;
+    const layout = determineCardLayout(simState);
+    const isMin = layout.stage <= layout.minStage;
+    const isMax = layout.stage >= layout.maxStage;
 
     const stepper = document.createElement('div');
     stepper.className = 'sim-grid-stepper';
     stepper.innerHTML = `
       <span class="sim-stepper-label">📐 Cuadrícula</span>
-      <button type="button" class="sim-stepper-btn" onclick="event.stopPropagation(); stepSimGridStage(-1)" ${isMin ? 'disabled' : ''} title="Quitar cuadrícula">▼</button>
-      <button type="button" class="sim-stepper-btn" onclick="event.stopPropagation(); stepSimGridStage(1)" ${isMax ? 'disabled' : ''} title="Mostrar cuadrícula">▲</button>
+      <button type="button" class="sim-stepper-btn" onclick="event.stopPropagation(); stepSimGridStage(-1)" ${isMin ? 'disabled' : ''} title="Reducir cuadrícula">▼</button>
+      <button type="button" class="sim-stepper-btn" onclick="event.stopPropagation(); stepSimGridStage(1)" ${isMax ? 'disabled' : ''} title="Agrandar cuadrícula">▲</button>
     `;
 
-    if (simState.count === 1) {
-      if (simState.withGrid) {
-        const gridWrap = host.querySelector('.a6-grid-wrapper, .focalizada-grid-area, .grid-wrapper');
-        if (gridWrap) {
-          gridWrap.style.position = 'relative';
-          const oldBtn = gridWrap.querySelector('.sim-grid-stepper');
-          if (oldBtn) oldBtn.remove();
-          gridWrap.appendChild(stepper);
-        }
-      } else {
+    if (layout.stage === 0) {
+      if (simState.count === 1) {
         const slot = host.querySelector('.focalizada-grid-slot-1p');
         if (slot) {
           const oldBtn = slot.querySelector('.sim-grid-stepper');
           if (oldBtn) oldBtn.remove();
           slot.appendChild(stepper);
         }
-      }
-    } else if (simState.count === 2) {
-      if (simState.withGrid) {
-        const gridWrap = host.querySelector('.focalizada-grid-2q-1, .a6-v-grid-wrapper:last-of-type') || host.querySelector('.a6-v-grid-wrapper');
-        if (gridWrap) {
-          gridWrap.style.position = 'relative';
-          const oldBtn = gridWrap.querySelector('.sim-grid-stepper');
-          if (oldBtn) oldBtn.remove();
-          gridWrap.appendChild(stepper);
-        }
-      } else {
+      } else if (simState.count === 2) {
         const slot = host.querySelector('.focalizada-grid-slot-2p');
         if (slot) {
           const oldBtn = slot.querySelector('.sim-grid-stepper');
           if (oldBtn) oldBtn.remove();
           slot.appendChild(stepper);
         }
+      }
+    } else {
+      const allGrids = host.querySelectorAll('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q, .focalizada-grid-area, .focalizada-grid-2q-1');
+      const gridWrap = allGrids.length > 0 ? allGrids[allGrids.length - 1] : null;
+      if (gridWrap) {
+        gridWrap.style.position = 'relative';
+        const oldBtn = gridWrap.querySelector('.sim-grid-stepper');
+        if (oldBtn) oldBtn.remove();
+        gridWrap.appendChild(stepper);
       }
     }
   }

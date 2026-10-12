@@ -176,6 +176,13 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
   const isA6Vertical = evaluation.isPortrait === true || evaluation.orientation === 'vertical' || evaluation.cardOrientation === 'vertical' || totalQ === 2;
 
+  // Si es 1 pregunta en A6 Vertical con cuadrícula (Stage 2), delegar a createFormativaA6Card
+  if (totalQ === 1 && isA6Vertical && evaluation.withGrid !== false) {
+    if (typeof createFormativaA6Card === 'function') {
+      return createFormativaA6Card(student, classroom, evaluation);
+    }
+  }
+
   const fiducialsHTML = FOCALIZADA_FIDUCIALS;
 
   // ── CASO 2 PREGUNTAS: A6 VERTICAL (89 x 132 mm) ──
