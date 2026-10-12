@@ -37,9 +37,8 @@ function createA5Card(student, classroom, evaluation) {
   const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
 
   // ── SUBMÓDULO 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS) ──
-  const isBranch3 = evaluation.branch === 'rama3' ||
-    (evaluation.id && String(evaluation.id).startsWith('eval_r3_')) ||
-    (isOMR && qCount > 2);
+  const isBranch3 = (evaluation.branch === 'rama3' || (evaluation.id && String(evaluation.id).startsWith('eval_r3_'))) ||
+    (evaluation.branch !== 'rama2' && evaluation.branch !== 'rama1' && isOMR && qCount > 2);
   if (isBranch3) {
     if (typeof createCartillaA5VerticalCard === 'function' && qCount > 8) {
       return createCartillaA5VerticalCard(student, classroom, evaluation);
@@ -62,6 +61,26 @@ function createA5Card(student, classroom, evaluation) {
 }
 
 /**
+ * Genera la Ficha A4 Horizontal (282 x 196 mm, 1 alumno por hoja entera).
+ */
+function createA4Card(student, classroom, evaluation) {
+  if (typeof createFocalizadaA4Card === 'function') {
+    return createFocalizadaA4Card(student, classroom, evaluation);
+  }
+  return createA5Card(student, classroom, evaluation);
+}
+
+/**
+ * Genera la Ficha A4 Vertical (196 x 282 mm, 1 alumno por hoja entera).
+ */
+function createA4VerticalCard(student, classroom, evaluation) {
+  if (typeof createFocalizadaA4VerticalCard === 'function') {
+    return createFocalizadaA4VerticalCard(student, classroom, evaluation);
+  }
+  return createA5VerticalCard(student, classroom, evaluation);
+}
+
+/**
  * Genera la Cartilla A6 individual (136 x 92 mm) para el modo de 4 alumnos por hoja A4 (Rama 3 <= 8 preguntas).
  * Cumple con la regla inmutable: ESTRICTAMENTE 1 SOLA COLUMNA VERTICAL de burbujas (01 al 0N hacia abajo).
  */
@@ -70,9 +89,8 @@ function createA6Card(student, classroom, evaluation) {
   const isOMR = (evaluation.type === 'mc');
 
   // ── SUBMÓDULO 3: CARTILLA DE RESPUESTAS OMR (RAMA 3 HASTA 8 PREGUNTAS) ──
-  const isBranch3 = evaluation.branch === 'rama3' ||
-    (evaluation.id && String(evaluation.id).startsWith('eval_r3_')) ||
-    (isOMR && totalQ > 2);
+  const isBranch3 = (evaluation.branch === 'rama3' || (evaluation.id && String(evaluation.id).startsWith('eval_r3_'))) ||
+    (evaluation.branch !== 'rama2' && evaluation.branch !== 'rama1' && isOMR && totalQ > 2);
   if (isBranch3) {
     if (typeof createCartillaA6Card === 'function') {
       return createCartillaA6Card(student, classroom, evaluation);
@@ -215,9 +233,8 @@ function createA5VerticalCard(student, classroom, evaluation) {
   const isOMR = (evaluation.type === 'mc');
 
   // ── SUBMÓDULO 3: CARTILLA OMR EN A5 VERTICAL (RAMA 3) ──
-  const isBranch3 = evaluation.branch === 'rama3' ||
-    (evaluation.id && String(evaluation.id).startsWith('eval_r3_')) ||
-    (isOMR && qCount > 2);
+  const isBranch3 = (evaluation.branch === 'rama3' || (evaluation.id && String(evaluation.id).startsWith('eval_r3_'))) ||
+    (evaluation.branch !== 'rama2' && evaluation.branch !== 'rama1' && isOMR && qCount > 2);
   if (isBranch3) {
     if (typeof createCartillaA5VerticalCard === 'function') {
       return createCartillaA5VerticalCard(student, classroom, evaluation);
@@ -258,6 +275,43 @@ function renderAllPrintPages(classId, evaluation) {
     (evaluation.id && String(evaluation.id).startsWith('eval_r3_')) ||
     (evaluation.type === 'mc' && qCount > 2)
   );
+
+  // ── CASO FICHA A4 COMPLETA (1 ALUMNO POR HOJA A4 ENTERA) ──
+  if (evaluation && evaluation.cardFormat === 'a4') {
+    const isA4V = evaluation.orientation === 'vertical' || evaluation.isPortrait === true;
+    const sheetCount = students.length;
+    const printBtn = document.getElementById('btn-print-sheets');
+    if (printBtn) {
+      const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
+      printBtn.innerHTML = `🖨️ Descargar Fichas A4 (${sheetCount} ${pageWord}) [1 por hoja]`;
+      printBtn.onclick = () => printEvaluationSheets(classId);
+    }
+
+    try {
+      document.title = getPdfExportTitle(classroom);
+    } catch (e) {}
+
+    for (let i = 0; i < students.length; i++) {
+      const st = students[i];
+      const sheetEl = document.createElement('div');
+      sheetEl.className = isA4V ? 'sheet-a4-v-single' : 'sheet-a4-h-single';
+      sheetEl.style.margin = '6mm auto';
+      sheetEl.style.display = 'flex';
+      sheetEl.style.justifyContent = 'center';
+      sheetEl.style.alignItems = 'center';
+      sheetEl.innerHTML = isA4V ? createA4VerticalCard(st, classroom, evaluation) : createA4Card(st, classroom, evaluation);
+      container.appendChild(sheetEl);
+
+      if (typeof QRCode !== 'undefined' && QRCode.toString) {
+        QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+          if (err) return;
+          const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
+          if (el) el.innerHTML = svg;
+        });
+      }
+    }
+    return;
+  }
 
   // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS O CUALQUIER FICHA A6 (4 ALUMNOS POR HOJA A4: 2x2) ──
   const isA6Quad = evaluation && (
@@ -1346,5 +1400,7 @@ if (typeof window !== 'undefined') {
   window.generateBookletWithJsPDF = generateBookletWithJsPDF;
   window.printQuestionBooklet = printQuestionBooklet;
   window.createA5VerticalCard = createA5VerticalCard;
+  window.createA4Card = createA4Card;
+  window.createA4VerticalCard = createA4VerticalCard;
 }
 

@@ -1386,6 +1386,7 @@
     /* ── CUERPO VERTICAL SIN CUADRÍCULA (1 A 5 PREGUNTAS EN A5 VERTICAL) ── */
     .v-nogrid-body {
       flex: 1 1 auto;
+      height: 148mm;
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
@@ -1396,6 +1397,8 @@
     .v-nogrid-q {
       display: flex;
       flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
       gap: 1.5mm;
       padding: 1mm 0;
       border-bottom: 1px dashed #cbd5e1;
@@ -2375,6 +2378,8 @@
     .b2-q-item {
       display: flex;
       flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
       gap: 1.5mm;
       padding: 1mm 0;
     }
@@ -2431,6 +2436,141 @@
       height: 1px;
       background: #cbd5e1;
       margin: 1mm 0;
+    }
+
+    /* ── HOJAS/FICHAS INDIVIDUALES A4 (1 ALUMNO POR HOJA ENTERA) ── */
+    .card-a4-h {
+      width: 282mm;
+      min-width: 282mm;
+      max-width: 282mm;
+      height: 196mm;
+      min-height: 196mm;
+      max-height: 196mm;
+      flex: 0 0 282mm;
+      border: 1mm solid #000000;
+      padding: 3mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+
+    .card-a4-v {
+      width: 196mm;
+      min-width: 196mm;
+      max-width: 196mm;
+      height: 282mm;
+      min-height: 282mm;
+      max-height: 282mm;
+      flex: 0 0 196mm;
+      border: 1mm solid #000000;
+      padding: 3mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+
+    .card-a4-h .card-header,
+    .card-a4-v .card-header {
+      width: 100%;
+      height: 20mm;
+      min-height: 20mm;
+      max-height: 20mm;
+      flex: 0 0 20mm;
+      padding: 0 16mm 1mm 16mm;
+      box-sizing: border-box;
+    }
+
+    .a4-h-body,
+    .a4-v-body {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 1.5mm 16mm;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .a4-q-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
+      gap: 1.5mm;
+      padding: 1mm 0;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .a4-q-item:last-child {
+      border-bottom: none;
+    }
+
+    .a4-q-header {
+      display: flex;
+      gap: 2mm;
+      font-size: 9pt;
+      color: #0f172a;
+      line-height: 1.25;
+    }
+    .a4-q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .a4-q-prompt {
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .a4-grid-wrapper {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 1mm 0;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .notebook-grid-a4-h {
+      display: grid !important;
+      grid-template-columns: repeat(26, 1fr) !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+      width: 100% !important;
+      height: 22mm !important;
+    }
+    .notebook-grid-a4-h i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+    }
+
+    .notebook-grid-a4-v {
+      display: grid !important;
+      grid-template-columns: repeat(20, 1fr) !important;
+      grid-template-rows: repeat(5, 1fr) !important;
+      width: 100% !important;
+      height: 38mm !important;
+    }
+    .notebook-grid-a4-v i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+    }
+
+    .a4-footer-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-top: 1mm;
     }
 
     /* ========================================================= */
@@ -3669,7 +3809,8 @@
     }
 
     .focalizada-grid-slot-1p,
-    .focalizada-grid-slot-2p {
+    .focalizada-grid-slot-2p,
+    .focalizada-grid-slot-3p {
       display: flex !important;
       justify-content: flex-end !important;
       align-items: center !important;
@@ -3681,7 +3822,8 @@
       box-sizing: border-box !important;
     }
     .focalizada-grid-slot-1p .sim-grid-stepper,
-    .focalizada-grid-slot-2p .sim-grid-stepper {
+    .focalizada-grid-slot-2p .sim-grid-stepper,
+    .focalizada-grid-slot-3p .sim-grid-stepper {
       position: static !important;
       margin-left: auto !important;
     }

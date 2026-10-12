@@ -3009,10 +3009,10 @@ function initSimulator(branch, classId) {
 function updateSimToolbar() {
   const isRama1 = simState.branch === 'rama1';
 
-  // 1. Selector de Cantidad de Preguntas (1P..2P)
+  // 1. Selector de Cantidad de Preguntas (1P..2P para Rama 1, 1P..3P para Rama 2)
   const countContainer = document.getElementById('sim-qcount-group');
   if (countContainer) {
-    const maxQ = 2;
+    const maxQ = (simState.branch === 'rama2') ? 3 : 2;
     let html = '';
     for (let i = 1; i <= maxQ; i++) {
       const activeCls = (simState.count === i) ? (isRama1 ? 'active' : 'active-emerald') : '';
@@ -3254,6 +3254,60 @@ function determineCardLayout(state) {
     }
   }
 
+  if (count === 3) {
+    switch (stage) {
+      case 0:
+        return {
+          format: 'a5',
+          orientation: 'horizontal',
+          generator: 'createA5Card',
+          badge: 'A5 H',
+          badgeFull: 'A5 Horizontal',
+          withGrid: false,
+          stage: 0,
+          minStage: 0,
+          maxStage: 3
+        };
+      case 1:
+        return {
+          format: 'a5',
+          orientation: 'vertical',
+          generator: 'createA5VerticalCard',
+          badge: 'A5 V',
+          badgeFull: 'A5 Vertical',
+          withGrid: false,
+          stage: 1,
+          minStage: 0,
+          maxStage: 3
+        };
+      case 2:
+        return {
+          format: 'a4',
+          orientation: 'horizontal',
+          generator: 'createA4Card',
+          badge: 'A4 H',
+          badgeFull: 'A4 Horizontal',
+          withGrid: true,
+          stage: 2,
+          minStage: 0,
+          maxStage: 3
+        };
+      case 3:
+      default:
+        return {
+          format: 'a4',
+          orientation: 'vertical',
+          generator: 'createA4VerticalCard',
+          badge: 'A4 V',
+          badgeFull: 'A4 Vertical',
+          withGrid: true,
+          stage: 3,
+          minStage: 0,
+          maxStage: 3
+        };
+    }
+  }
+
   return {
     format: 'a5',
     orientation: 'vertical',
@@ -3282,7 +3336,8 @@ function stepSimGridStage(delta) {
 function setSimCount(count) {
   const isRama1 = simState.branch === 'rama1';
   const c = parseInt(count, 10);
-  const targetCount = Math.min(Math.max(1, c), 2);
+  const maxAllowed = isRama1 ? 2 : 3;
+  const targetCount = Math.min(Math.max(1, c), maxAllowed);
   if (simState.count !== targetCount) {
     simState.count = targetCount;
     simState.gridStage = 0;
@@ -3424,6 +3479,14 @@ function renderSimulatedCard() {
     cardHTML = (typeof createA5VerticalCard === 'function')
       ? createA5VerticalCard(sampleStudent, defaultCls, simEval)
       : '<div style="padding:20px; color:#000;">A5 Vertical Preview</div>';
+  } else if (layout.generator === 'createA4Card') {
+    cardHTML = (typeof createA4Card === 'function')
+      ? createA4Card(sampleStudent, defaultCls, simEval)
+      : '<div style="padding:20px; color:#000;">A4 Horizontal Preview</div>';
+  } else if (layout.generator === 'createA4VerticalCard') {
+    cardHTML = (typeof createA4VerticalCard === 'function')
+      ? createA4VerticalCard(sampleStudent, defaultCls, simEval)
+      : '<div style="padding:20px; color:#000;">A4 Vertical Preview</div>';
   } else {
     cardHTML = (typeof createA5Card === 'function')
       ? createA5Card(sampleStudent, defaultCls, simEval)
@@ -3493,8 +3556,8 @@ function attachSimSlotInteractivity(host, previewQuestions) {
     });
   }
 
-  // 4. Caso Ficha A6 o Sin Borrador (a6-nogrid-q, b2-q-item o a6-nogrid-item)
-  const a6Items = host.querySelectorAll('.a6-nogrid-q, .b2-q-item, .a6-nogrid-item');
+  // 4. Caso Ficha A6 o Sin Borrador o Ficha A4 (a6-nogrid-q, b2-q-item, a6-nogrid-item, a4-q-item)
+  const a6Items = host.querySelectorAll('.a6-nogrid-q, .b2-q-item, .a6-nogrid-item, .a4-q-item');
   if (a6Items && a6Items.length > 0) {
     a6Items.forEach((item, idx) => {
       if (idx < simState.count) {
@@ -3502,7 +3565,7 @@ function attachSimSlotInteractivity(host, previewQuestions) {
         item.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
         item.onclick = () => openSimQuestionPicker(idx);
         if (previewQuestions[idx]?.isEmptySlot) {
-          const pEl = item.querySelector('.a6-nogrid-q-prompt, .b2-q-prompt, .a6-nogrid-prompt') || item;
+          const pEl = item.querySelector('.a6-nogrid-q-prompt, .b2-q-prompt, .a6-nogrid-prompt, .a4-q-prompt') || item;
           pEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
         }
       }
@@ -3560,15 +3623,32 @@ function attachSimSlotInteractivity(host, previewQuestions) {
           if (oldBtn) oldBtn.remove();
           slot.appendChild(stepper);
         }
+      } else if (simState.count === 3) {
+        const slot = host.querySelector('.focalizada-grid-slot-3p');
+        if (slot) {
+          const oldBtn = slot.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          slot.appendChild(stepper);
+        }
       }
     } else {
-      const allGrids = host.querySelectorAll('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q, .focalizada-grid-area, .focalizada-grid-2q-1');
-      const gridWrap = allGrids.length > 0 ? allGrids[allGrids.length - 1] : null;
-      if (gridWrap) {
-        gridWrap.style.position = 'relative';
-        const oldBtn = gridWrap.querySelector('.sim-grid-stepper');
-        if (oldBtn) oldBtn.remove();
-        gridWrap.appendChild(stepper);
+      if (simState.count === 3 && (layout.stage === 0 || layout.stage === 1)) {
+        // En 3P Stage 1 (A5 V sin cuadrícula), el stepper va en el slot de la última pregunta
+        const slot = host.querySelector('.focalizada-grid-slot-3p');
+        if (slot) {
+          const oldBtn = slot.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          slot.appendChild(stepper);
+        }
+      } else {
+        const allGrids = host.querySelectorAll('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q, .focalizada-grid-area, .focalizada-grid-2q-1, .a4-grid-wrapper, .focalizada-grid-3q-2');
+        const gridWrap = allGrids.length > 0 ? allGrids[allGrids.length - 1] : null;
+        if (gridWrap) {
+          gridWrap.style.position = 'relative';
+          const oldBtn = gridWrap.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          gridWrap.appendChild(stepper);
+        }
       }
     }
   }
