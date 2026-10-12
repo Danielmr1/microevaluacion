@@ -2978,29 +2978,14 @@ function initSimulator(branch, classId) {
     if (simState.count > 5) simState.count = 1;
   }
 
-  // Pre-cargar primera pregunta si está vacía y hay en el banco para este grado
-  const g = gradoDelSalonSeleccionado();
-  if (g && g.stage && g.level && (!simState.questions[0].prompt || simState.questions[0].prompt.trim() === '')) {
-    const bankList = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
-      ? ClassroomData.getIndividualMCQuestions(g.stage, g.level)
-      : [];
-    if (bankList.length > 0) {
-      const candidate = (simState.branch === 'rama1')
-        ? (bankList.find(q => q.hasRubric || q.rubric) || bankList[0])
-        : bankList[0];
-      if (candidate) {
-        simState.questions[0] = {
-          id: candidate.id,
-          prompt: candidate.prompt || '',
-          options: candidate.options ? { ...candidate.options } : { A: '', B: '', C: '', D: '' },
-          correct: candidate.correct || 'A',
-          expectedAnswer: candidate.expectedAnswer || candidate.correct || 'A',
-          rubric: candidate.rubric || null,
-          hasRubric: !!(candidate.rubric || candidate.hasRubric)
-        };
-      }
-    }
-  }
+  // Todas las ranuras de preguntas arrancan limpias y vacías para que el docente elija cada una conscientemente
+  simState.questions = [
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false },
+    { prompt: '', options: { A: '', B: '', C: '', D: '' }, correct: 'A', expectedAnswer: '', rubric: null, hasRubric: false }
+  ];
 
   updateSimToolbar();
   renderSimulatedCard();
@@ -3612,8 +3597,8 @@ function attachSimSlotInteractivity(host, previewQuestions) {
     });
   }
 
-  // 4. Caso Ficha A6 o Sin Borrador o Ficha A4 (a6-nogrid-q, b2-q-item, a6-nogrid-item, a4-q-item)
-  const a6Items = host.querySelectorAll('.a6-nogrid-q, .b2-q-item, .a6-nogrid-item, .a4-q-item');
+  // 4. Caso Ficha A6 o Sin Borrador o Ficha A4 (a6-nogrid-q, b2-q-item, a6-nogrid-item, a4-q-item, a6-h-2q-item)
+  const a6Items = host.querySelectorAll('.a6-nogrid-q, .b2-q-item, .a6-nogrid-item, .a4-q-item, .a6-h-2q-item');
   if (a6Items && a6Items.length > 0) {
     a6Items.forEach((item, idx) => {
       if (idx < simState.count) {
@@ -3621,7 +3606,7 @@ function attachSimSlotInteractivity(host, previewQuestions) {
         item.title = `Haz clic para elegir o redactar la Pregunta ${idx + 1}`;
         item.onclick = () => openSimQuestionPicker(idx);
         if (previewQuestions[idx]?.isEmptySlot) {
-          const pEl = item.querySelector('.a6-nogrid-q-prompt, .b2-q-prompt, .a6-nogrid-prompt, .a4-q-prompt') || item;
+          const pEl = item.querySelector('.a6-nogrid-q-prompt, .b2-q-prompt, .a6-nogrid-prompt, .a4-q-prompt, .a6-h-2q-prompt') || item;
           pEl.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta ${idx + 1}</div>`;
         }
       }
