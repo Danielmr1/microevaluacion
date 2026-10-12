@@ -2259,6 +2259,168 @@
       width: 100%;
       margin-top: 1mm;
     }
+
+    /* ── HOJA DEL EXAMEN LIMPIA (RAMA 3 MODO B: SIN ARUCO NI BORDE) ── */
+    .r3-exam-sheet {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .r3-exam-sheet-a5-v {
+      width: 132mm;
+      min-height: 182mm;
+      padding: 6mm 10mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .r3-exam-sheet-a5-h {
+      width: 186mm;
+      min-height: 134mm;
+      padding: 6mm 10mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .r3-exam-sheet-a4-v {
+      width: 196mm;
+      min-height: 282mm;
+      padding: 8mm 14mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .r3-exam-header {
+      padding-bottom: 3mm;
+      margin-bottom: 3mm;
+      border-bottom: 1.5px solid #0f172a;
+    }
+    .r3-exam-header-p2 {
+      padding-bottom: 2mm;
+      margin-bottom: 2mm;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .r3-exam-header-title {
+      font-size: 11pt;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #0f172a;
+      text-align: center;
+      margin-bottom: 2mm;
+    }
+    .r3-exam-student-line {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 1.5mm;
+    }
+    .r3-exam-instructions {
+      font-size: 7.2pt;
+      color: #64748b;
+      font-style: italic;
+    }
+    .r3-exam-body-1col {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      flex: 1 1 auto;
+      gap: 2mm;
+    }
+    .r3-exam-body-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8mm;
+      row-gap: 2mm;
+      flex: 1 1 auto;
+      align-content: space-evenly;
+    }
+    .r3-exam-subcol {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5mm;
+      justify-content: space-evenly;
+    }
+    .r3-exam-q-item {
+      padding: 1.5mm 2mm;
+      border-bottom: 1px dashed #cbd5e1;
+      border-radius: 4px;
+      transition: background 0.15s ease;
+      cursor: pointer;
+    }
+    .r3-exam-q-item:hover {
+      background: rgba(2, 132, 199, 0.05);
+    }
+    .r3-exam-q-item:last-child {
+      border-bottom: none;
+    }
+    .r3-exam-empty-slot {
+      padding: 4px 6px;
+      border: 1.5px dashed #0284c7;
+      border-radius: 4px;
+      background: rgba(2, 132, 199, 0.04);
+      font-size: 8pt;
+      margin-bottom: 2mm;
+      cursor: pointer;
+    }
+    .r3-exam-empty-slot:hover {
+      background: rgba(2, 132, 199, 0.1);
+    }
+    .r3-exam-q-prompt {
+      display: flex;
+      gap: 2mm;
+      font-size: 8.2pt;
+      line-height: 1.25;
+      color: #0f172a;
+      margin-bottom: 1.5mm;
+    }
+    .r3-exam-q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .r3-exam-prompt-text {
+      font-weight: 600;
+      flex: 1;
+    }
+    .r3-exam-opt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5mm;
+      font-size: 7.5pt;
+    }
+    .r3-exam-opt-item {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+    }
+    .r3-exam-opt-bubble {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid #64748b;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6.8pt;
+      font-weight: 700;
+      color: #0f172a;
+      flex: 0 0 14px;
+    }
+    .r3-exam-opt-bubble.is-correct {
+      border-color: #059669;
+      background: #ecfdf5;
+      color: #047857;
+      font-weight: 800;
+    }
+    .r3-exam-opt-row {
+      display: flex;
+      gap: 4mm;
+      margin-top: 1mm;
+    }
     .card-a5.mc-2q .mc-grid-2q {
       width: 156mm;
       height: 24mm !important;

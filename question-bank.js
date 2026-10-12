@@ -2960,6 +2960,7 @@ let simState = {
 };
 
 let currentSimSlot = 0;
+let currentSimSlotScope = 'sim'; // 'sim' | 'rama3'
 let simCurrentRubric = null;
 let simPickerActiveTab = 'bank';
 
@@ -3705,6 +3706,7 @@ function attachSimSlotInteractivity(host, previewQuestions) {
 
 // ── CONTROLADOR DEL MODAL DE SELECCIÓN / REDACCIÓN ──
 function openSimQuestionPicker(slotIdx) {
+  currentSimSlotScope = 'sim';
   currentSimSlot = slotIdx;
   const modal = document.getElementById('modal-sim-picker');
   const title = document.getElementById('sim-picker-title');
@@ -3865,6 +3867,26 @@ function renderSimBankList() {
 }
 
 function selectSimBankQuestion(q) {
+  if (currentSimSlotScope === 'rama3') {
+    r3State.bankQuestions[currentSimSlot] = {
+      id: q.id,
+      prompt: q.prompt,
+      options: q.options ? { ...q.options } : { A: '', B: '', C: '', D: '' },
+      correct: q.correct || 'A',
+      expectedAnswer: q.expectedAnswer || q.correct || 'A',
+      rubric: null,
+      hasRubric: false
+    };
+    r3State.keys[currentSimSlot] = q.correct || 'A';
+    closeSimPicker();
+    renderRama3Exam();
+    renderRama3CartillaPreview();
+    if (typeof showToast === 'function') {
+      showToast(`✓ Pregunta ${currentSimSlot + 1} asignada al examen.`);
+    }
+    return;
+  }
+
   if (simState.branch === 'rama1' && !q.hasRubric && !q.rubric) {
     if (typeof showToast === 'function') {
       showToast('⚠️ Para Formativa con IA la pregunta requiere análisis y rúbrica pedagógica.');
@@ -3944,6 +3966,84 @@ function saveSimCustomQuestion() {
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
   if (!prompt) {
     if (typeof showToast === 'function') showToast('⚠️ Escribe el enunciado de la pregunta.');
+    return;
+  }
+
+  // ── MODO B (RAMA 3: CARTILLA OMR CON PREGUNTAS) ──
+  if (currentSimSlotScope === 'rama3') {
+    const optA = (document.getElementById('sim-opt-a')?.value || '').trim();
+    const optB = (document.getElementById('sim-opt-b')?.value || '').trim();
+    const optC = (document.getElementById('sim-opt-c')?.value || '').trim();
+    const optD = (document.getElementById('sim-opt-d')?.value || '').trim();
+
+    if (!optA || !optB || !optC || !optD) {
+      if (typeof showToast === 'function') showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
+      return;
+    }
+
+    let correctKey = 'A';
+    const rad = document.querySelector('input[name="sim-new-correct"]:checked');
+    if (rad) correctKey = rad.value.toUpperCase();
+
+    const map = { A: optA, B: optB, C: optC, D: optD };
+    const expectedAnswer = map[correctKey] || '';
+    const g = gradoDelSalonSeleccionado();
+
+    const newQ = {
+      id: 'q_custom_' + Date.now(),
+      prompt: prompt,
+      options: { A: optA, B: optB, C: optC, D: optD },
+      correct: correctKey,
+      expectedAnswer: expectedAnswer,
+      rubric: null,
+      hasRubric: false,
+      gradeStage: g?.stage || null,
+      gradeLevel: g?.level || null,
+      gradeText: g?.texto || null
+    };
+
+    if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+      ClassroomData.saveCustomEvaluation({
+        title: 'Pregunta de alternativa',
+        type: 'mc',
+        questionCount: 1,
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        options: newQ.options,
+        correct: correctKey,
+        rubric: null,
+        questions: [newQ],
+        gradeStage: g?.stage || null,
+        gradeLevel: g?.level || null,
+        gradeText: g?.texto || null
+      });
+    }
+
+    if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+      SupabaseClient.saveEvaluation({
+        prompt: prompt,
+        expectedAnswer: expectedAnswer,
+        title: 'Pregunta de alternativa',
+        type: 'mc',
+        questionCount: 1,
+        options: newQ.options,
+        correct: correctKey,
+        rubric: null,
+        gradeStage: g?.stage,
+        gradeLevel: g?.level,
+        gradeText: g?.texto,
+        questions: [newQ]
+      }).catch(e => console.warn('[R3 Cloud Save]', e));
+    }
+
+    r3State.bankQuestions[currentSimSlot] = newQ;
+    r3State.keys[currentSimSlot] = correctKey;
+    closeSimPicker();
+    renderRama3Exam();
+    renderRama3CartillaPreview();
+    if (typeof showToast === 'function') {
+      showToast(`✓ Pregunta ${currentSimSlot + 1} guardada y asignada al examen.`);
+    }
     return;
   }
 
@@ -4526,7 +4626,8 @@ function confirmRama2() {
 // ── CONTROLADOR RAMA 3: CARTILLA DE RESPUESTAS OMR ──
 let r3State = {
   count: 10,
-  mode: 'keys', // 'keys' | 'bank'
+  mode: 'bank', // 'bank' | 'keys'
+  activePage: 1, // 1 | 2
   keys: Array(20).fill('A'),
   bankQuestions: Array(20).fill(null)
 };
@@ -4536,19 +4637,20 @@ function initRama3Builder() {
   if (r3State.mode === 'keys') {
     renderRama3Matrix();
   } else {
-    renderRama3BankList();
+    renderRama3Exam();
+    renderRama3CartillaPreview();
   }
 }
 
 function setRama3Count(count) {
   r3State.count = parseInt(count, 10) || 10;
+  r3State.activePage = 1;
   updateRama3ControlsUI();
   if (r3State.mode === 'keys') {
     renderRama3Matrix();
   } else {
-    // Si faltan preguntas en los nuevos casilleros, intentar autocompletar silenciosamente
-    rama3AutofillFromBank(true);
-    renderRama3BankList();
+    renderRama3Exam();
+    renderRama3CartillaPreview();
   }
 }
 
@@ -4558,13 +4660,14 @@ function setRama3Mode(mode) {
   if (r3State.mode === 'keys') {
     renderRama3Matrix();
   } else {
-    // Si no hay preguntas asignadas aún, autocompletar silenciosamente con las del banco
-    const hasAny = r3State.bankQuestions.some(q => q !== null);
-    if (!hasAny) {
-      rama3AutofillFromBank(true);
-    }
-    renderRama3BankList();
+    renderRama3Exam();
+    renderRama3CartillaPreview();
   }
+}
+
+function setRama3Page(pageNum) {
+  r3State.activePage = parseInt(pageNum, 10) || 1;
+  renderRama3Exam();
 }
 
 function updateRama3ControlsUI() {
@@ -4584,17 +4687,18 @@ function updateRama3ControlsUI() {
 
   const layoutBadge = document.getElementById('r3-layout-badge');
   if (layoutBadge) {
-    if (r3State.count <= 8) {
-      layoutBadge.innerHTML = '⚡ <b>4 alumnos por hoja A4</b> (Horizontal · 1 columna vertical por alumno)';
-      layoutBadge.style.color = '#38bdf8';
-      layoutBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
-      layoutBadge.style.background = 'rgba(2, 132, 199, 0.12)';
+    if (r3State.count <= 4) {
+      layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (1 col) + Cartilla A6 (4 alumnos por A4)';
+    } else if (r3State.count <= 6) {
+      layoutBadge.innerHTML = '📄 <b>Examen A5 Horizontal</b> (2 col) + Cartilla A6 (4 alumnos por A4)';
+    } else if (r3State.count <= 10) {
+      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     } else {
-      layoutBadge.innerHTML = '📄 <b>2 alumnos por hoja A4</b> (Horizontal: Izquierda y Derecha · 1 columna vertical por alumno)';
-      layoutBadge.style.color = '#38bdf8';
-      layoutBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
-      layoutBadge.style.background = 'rgba(2, 132, 199, 0.12)';
+      layoutBadge.innerHTML = `📄 <b>Examen A4 Vertical</b> (2 págs · 2 col) + Cartilla A5 (2 alumnos por A4)`;
     }
+    layoutBadge.style.color = '#38bdf8';
+    layoutBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+    layoutBadge.style.background = 'rgba(2, 132, 199, 0.12)';
   }
 
   const btnKeys = document.getElementById('btn-r3-mode-keys');
@@ -4629,6 +4733,10 @@ function setRama3Key(qIdx, key) {
   if (qIdx >= 0 && qIdx < 20) {
     r3State.keys[qIdx] = key;
     renderRama3Matrix();
+    if (r3State.mode === 'bank') {
+      renderRama3Exam();
+      renderRama3CartillaPreview();
+    }
   }
 }
 
@@ -4659,199 +4767,340 @@ function renderRama3Matrix() {
   container.innerHTML = html;
 }
 
-function renderRama3BankList() {
-  const container = document.getElementById('rama3-bank-list');
-  if (!container) return;
-
-  const g = (typeof evaluacionesDelGradoActual === 'function')
-    ? evaluacionesDelGradoActual()
-    : { lista: [] };
-  const bankList = g.lista || [];
-
-  if (bankList.length === 0) {
-    container.innerHTML = `
-      <div style="padding:14px; background:#1e293b; border-radius:8px; font-size:0.78rem; color:#cbd5e1; text-align:center;">
-        <p style="color:#f59e0b; font-weight:700; margin-bottom:6px;">⚠️ No hay preguntas guardadas para este grado en el banco.</p>
-        <p style="margin-bottom:10px;">Puedes redactar preguntas nuevas con el botón verde de arriba o usar el <strong>Modo A (Solo Claves)</strong> para ingresar la pauta directamente.</p>
-        <button type="button" onclick="rama3OpenAddQuickModal(0)" style="background:#059669; border:none; color:#fff; border-radius:6px; padding:6px 14px; font-size:0.75rem; font-weight:800; cursor:pointer;">
-          ✏️ Redactar primera pregunta
-        </button>
-      </div>
-    `;
-    return;
-  }
-
-  let html = '';
-  for (let i = 0; i < r3State.count; i++) {
-    const selQ = r3State.bankQuestions[i];
-    html += `
-      <div style="background:#090d16; border:1px solid #334155; border-radius:8px; padding:6px 10px; display:flex; align-items:center; gap:8px;">
-        <span style="font-size:0.75rem; font-weight:800; color:#38bdf8; width:30px;">P${(i + 1).toString().padStart(2, '0')}</span>
-        <select class="form-control" onchange="onRama3BankSelect(${i}, this.value)" style="flex:1; padding:5px 8px; font-size:0.75rem;">
-          <option value="">— Seleccionar pregunta —</option>
-          ${bankList.map(item => `
-            <option value="${item.id}" ${selQ && selQ.id === item.id ? 'selected' : ''}>
-              ${escaparHtml((item.prompt || '').substring(0, 50))}${item.prompt && item.prompt.length > 50 ? '...' : ''} (Clave: ${item.correct || 'A'})
-            </option>
-          `).join('')}
-        </select>
-        <button type="button" onclick="rama3OpenAddQuickModal(${i})" title="Redactar nueva pregunta para este espacio"
-          style="background:#1e293b; border:1px solid #475569; color:#94a3b8; border-radius:4px; padding:3px 6px; font-size:0.7rem; cursor:pointer;">
-          ✏️
-        </button>
-        <span style="font-size:0.75rem; font-weight:800; color:#4ade80; background:#064e3b; padding:2px 8px; border-radius:4px; border:1px solid #10b981;">
-          ${r3State.keys[i] || 'A'}
-        </span>
-      </div>
-    `;
-  }
-  container.innerHTML = html;
-}
-
-function onRama3BankSelect(qIdx, qId) {
-  const g = (typeof evaluacionesDelGradoActual === 'function')
-    ? evaluacionesDelGradoActual()
-    : { lista: [] };
-  const found = g.lista.find(q => q.id === qId);
-  if (found) {
-    r3State.bankQuestions[qIdx] = found;
-    r3State.keys[qIdx] = found.correct || 'A';
+// ── LAYOUT Y GEOMETRÍA DEL EXAMEN ESCOLAR (MODO B) ──
+function determineRama3ExamLayout(count) {
+  if (count <= 4) {
+    return {
+      sheetClass: 'r3-exam-sheet-a5-v',
+      bodyClass: 'r3-exam-body-1col',
+      columns: 1,
+      totalPages: 1
+    };
+  } else if (count <= 6) {
+    return {
+      sheetClass: 'r3-exam-sheet-a5-h',
+      bodyClass: 'r3-exam-body-2col',
+      columns: 2,
+      totalPages: 1,
+      col1Count: 3,
+      col2Count: count - 3
+    };
+  } else if (count <= 10) {
+    return {
+      sheetClass: 'r3-exam-sheet-a4-v',
+      bodyClass: 'r3-exam-body-2col',
+      columns: 2,
+      totalPages: 1,
+      col1Count: 5,
+      col2Count: count - 5
+    };
+  } else if (count <= 15) {
+    return {
+      sheetClass: 'r3-exam-sheet-a4-v',
+      bodyClass: 'r3-exam-body-2col',
+      columns: 2,
+      totalPages: 2,
+      p1Col1: 4,
+      p1Col2: 4,
+      p2Col1: 4,
+      p2Col2: count - 12
+    };
   } else {
-    r3State.bankQuestions[qIdx] = null;
+    // 20 preguntas
+    return {
+      sheetClass: 'r3-exam-sheet-a4-v',
+      bodyClass: 'r3-exam-body-2col',
+      columns: 2,
+      totalPages: 2,
+      p1Col1: 5,
+      p1Col2: 5,
+      p2Col1: 5,
+      p2Col2: 5
+    };
   }
-  renderRama3BankList();
 }
 
-function rama3AutofillFromBank(silent = false) {
-  const g = (typeof evaluacionesDelGradoActual === 'function')
-    ? evaluacionesDelGradoActual()
-    : { lista: [] };
-  const bankList = g.lista || [];
+function openRama3QuestionPicker(slotIdx) {
+  currentSimSlotScope = 'rama3';
+  currentSimSlot = slotIdx;
+  const modal = document.getElementById('modal-sim-picker');
+  const title = document.getElementById('sim-picker-title');
+  const gradeTag = document.getElementById('sim-picker-grade-tag');
+  if (!modal) return;
 
-  if (bankList.length === 0) {
-    if (!silent) showToast('⚠️ No hay preguntas en el banco para este grado.');
-    return;
+  const g = gradoDelSalonSeleccionado();
+  if (title) title.textContent = `Configurar Pregunta ${slotIdx + 1} (Examen OMR)`;
+  if (gradeTag) gradeTag.textContent = g.texto || 'Sin grado asignado';
+
+  // En Rama 3 Modo B: NO hay sección IA, SIEMPRE son alternativas A, B, C, D
+  const aiSection = document.getElementById('sim-new-ai-section');
+  if (aiSection) aiSection.style.display = 'none';
+
+  const optWrap = document.getElementById('sim-new-options-wrap');
+  const freeWrap = document.getElementById('sim-new-free-wrap');
+  if (optWrap) optWrap.style.display = 'block';
+  if (freeWrap) freeWrap.style.display = 'none';
+
+  // Pre-cargar valores si el slot de rama 3 ya tenía contenido
+  const curQ = r3State.bankQuestions[slotIdx];
+  const taPrompt = document.getElementById('sim-new-prompt');
+  if (taPrompt) taPrompt.value = curQ?.prompt || '';
+  ['a', 'b', 'c', 'd'].forEach(lettr => {
+    const inp = document.getElementById('sim-opt-' + lettr);
+    if (inp) inp.value = (curQ?.options && curQ.options[lettr.toUpperCase()]) || '';
+  });
+  const curKey = (curQ?.correct || r3State.keys[slotIdx] || 'A').toLowerCase();
+  const rad = document.getElementById('sim-rad-' + curKey);
+  if (rad) rad.checked = true;
+
+  simCurrentRubric = null;
+  const aiStatus = document.getElementById('sim-ai-status');
+  if (aiStatus) aiStatus.textContent = '';
+
+  setSimPickerTab('bank');
+  renderSimBankList();
+
+  modal.style.display = 'flex';
+}
+
+function renderRama3ExamQuestionHTML(idx) {
+  const q = r3State.bankQuestions[idx];
+  const qNum = idx + 1;
+  const isFilled = !!(q && q.prompt && q.prompt.trim() !== '');
+
+  if (!isFilled) {
+    return `
+      <div class="r3-exam-q-item r3-exam-empty-slot" onclick="openRama3QuestionPicker(${idx})" title="Clic para seleccionar o redactar pregunta">
+        <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+          <span style="font-size:0.78rem; font-weight:800; color:#0284c7; display:flex; align-items:center; gap:5px;">
+            <span style="background:rgba(2,132,199,0.12); border:1px solid #0284c7; border-radius:4px; padding:1px 5px;">P${qNum}</span>
+            ➕ Clic para configurar Pregunta ${qNum}
+          </span>
+          <span style="font-size:0.68rem; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:4px; border:1px solid #cbd5e1;">Del banco o nueva</span>
+        </div>
+      </div>
+    `;
   }
 
-  let assignedCount = 0;
-  for (let i = 0; i < r3State.count; i++) {
-    if (i < bankList.length) {
-      // Si el slot está vacío o si no es silencioso, asignar
-      if (!r3State.bankQuestions[i] || !silent) {
-        r3State.bankQuestions[i] = bankList[i];
-        r3State.keys[i] = bankList[i].correct || 'A';
-        assignedCount++;
+  const promptText = escaparHtml(q.prompt);
+  const opts = q.options || { A: '—', B: '—', C: '—', D: '—' };
+  const correctKey = (r3State.keys[idx] || q.correct || 'A').toUpperCase();
+
+  return `
+    <div class="r3-exam-q-item" onclick="openRama3QuestionPicker(${idx})" title="Clic para editar o cambiar pregunta">
+      <div class="r3-exam-q-prompt">
+        <span class="r3-exam-q-num">${qNum}.</span>
+        <span class="r3-exam-prompt-text">${promptText}</span>
+        <button type="button" onclick="event.stopPropagation(); openRama3QuestionPicker(${idx})"
+          style="background:transparent; border:none; cursor:pointer; font-size:0.75rem; padding:0 2px; color:#64748b;" title="Editar">✏️</button>
+      </div>
+      <div class="r3-exam-opt-grid">
+        <div class="r3-exam-opt-item">
+          <span class="r3-exam-opt-bubble ${correctKey === 'A' ? 'is-correct' : ''}">A</span>
+          <span>${escaparHtml(opts.A || '—')}</span>
+        </div>
+        <div class="r3-exam-opt-item">
+          <span class="r3-exam-opt-bubble ${correctKey === 'B' ? 'is-correct' : ''}">B</span>
+          <span>${escaparHtml(opts.B || '—')}</span>
+        </div>
+        <div class="r3-exam-opt-item">
+          <span class="r3-exam-opt-bubble ${correctKey === 'C' ? 'is-correct' : ''}">C</span>
+          <span>${escaparHtml(opts.C || '—')}</span>
+        </div>
+        <div class="r3-exam-opt-item">
+          <span class="r3-exam-opt-bubble ${correctKey === 'D' ? 'is-correct' : ''}">D</span>
+          <span>${escaparHtml(opts.D || '—')}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderRama3Exam() {
+  const host = document.getElementById('r3-exam-render-host');
+  if (!host) return;
+
+  const layout = determineRama3ExamLayout(r3State.count);
+  const totalPages = layout.totalPages;
+  const activePage = Math.min(r3State.activePage || 1, totalPages);
+  r3State.activePage = activePage;
+
+  // Actualizar selector de páginas (#r3-page-switcher)
+  const pageSwitcher = document.getElementById('r3-page-switcher');
+  if (pageSwitcher) {
+    if (totalPages > 1) {
+      pageSwitcher.style.display = 'flex';
+      const btnP1 = document.getElementById('btn-r3-page-1');
+      const btnP2 = document.getElementById('btn-r3-page-2');
+      if (btnP1 && btnP2) {
+        if (activePage === 1) {
+          btnP1.style.background = '#0284c7';
+          btnP1.style.color = '#fff';
+          btnP1.style.borderColor = '#0284c7';
+          btnP2.style.background = '#1e293b';
+          btnP2.style.color = '#94a3b8';
+          btnP2.style.borderColor = '#334155';
+        } else {
+          btnP2.style.background = '#0284c7';
+          btnP2.style.color = '#fff';
+          btnP2.style.borderColor = '#0284c7';
+          btnP1.style.background = '#1e293b';
+          btnP1.style.color = '#94a3b8';
+          btnP1.style.borderColor = '#334155';
+        }
       }
+    } else {
+      pageSwitcher.style.display = 'none';
     }
   }
-  renderRama3BankList();
-  if (!silent) showToast(`⚡ Se autocompletaron las preguntas disponibles.`);
-}
 
-function rama3OpenAddQuickModal(targetIdx = null) {
-  const form = document.getElementById('rama3-quick-form');
-  const targetSelect = document.getElementById('r3-qform-target');
-  if (!form || !targetSelect) return;
-
-  targetSelect.innerHTML = '';
-  for (let i = 0; i < r3State.count; i++) {
-    const isSel = (targetIdx !== null) ? (targetIdx === i) : (!r3State.bankQuestions[i]);
-    targetSelect.innerHTML += `
-      <option value="${i}" ${isSel ? 'selected' : ''}>P${(i + 1).toString().padStart(2, '0')}${r3State.bankQuestions[i] ? ' (Reemplazar)' : ''}</option>
+  // Identificar preguntas para la página activa
+  let bodyHTML = '';
+  if (layout.columns === 1) {
+    // 4P: A5 Vertical 1 columna
+    let qHTML = '';
+    for (let i = 0; i < r3State.count; i++) {
+      qHTML += renderRama3ExamQuestionHTML(i);
+    }
+    bodyHTML = `<div class="r3-exam-body-1col">${qHTML}</div>`;
+  } else if (totalPages === 1) {
+    // 5P, 6P o 10P: 2 columnas en 1 página
+    let col1HTML = '';
+    let col2HTML = '';
+    const col1End = layout.col1Count;
+    for (let i = 0; i < col1End; i++) {
+      col1HTML += renderRama3ExamQuestionHTML(i);
+    }
+    for (let i = col1End; i < r3State.count; i++) {
+      col2HTML += renderRama3ExamQuestionHTML(i);
+    }
+    bodyHTML = `
+      <div class="r3-exam-body-2col">
+        <div class="r3-exam-subcol">${col1HTML}</div>
+        <div class="r3-exam-subcol">${col2HTML}</div>
+      </div>
+    `;
+  } else {
+    // 15P o 20P: 2 páginas
+    let col1HTML = '';
+    let col2HTML = '';
+    if (activePage === 1) {
+      const p1Col1End = layout.p1Col1;
+      const p1Col2End = p1Col1End + layout.p1Col2;
+      for (let i = 0; i < p1Col1End; i++) {
+        col1HTML += renderRama3ExamQuestionHTML(i);
+      }
+      for (let i = p1Col1End; i < p1Col2End; i++) {
+        col2HTML += renderRama3ExamQuestionHTML(i);
+      }
+    } else {
+      const p1Total = layout.p1Col1 + layout.p1Col2;
+      const p2Col1End = p1Total + layout.p2Col1;
+      for (let i = p1Total; i < p2Col1End; i++) {
+        col1HTML += renderRama3ExamQuestionHTML(i);
+      }
+      for (let i = p2Col1End; i < r3State.count; i++) {
+        col2HTML += renderRama3ExamQuestionHTML(i);
+      }
+    }
+    bodyHTML = `
+      <div class="r3-exam-body-2col">
+        <div class="r3-exam-subcol">${col1HTML}</div>
+        <div class="r3-exam-subcol">${col2HTML}</div>
+      </div>
     `;
   }
 
-  // Limpiar campos
-  const promptEl = document.getElementById('r3-qform-prompt');
-  if (promptEl) promptEl.value = '';
-  ['a', 'b', 'c', 'd'].forEach(k => {
-    const el = document.getElementById('r3-qform-' + k);
-    if (el) el.value = '';
-  });
-  const radA = document.getElementById('r3-rad-a');
-  if (radA) radA.checked = true;
+  const examHTML = `
+    <div class="r3-exam-sheet ${layout.sheetClass}">
+      <div class="r3-exam-header ${activePage > 1 ? 'r3-exam-header-p2' : ''}">
+        <div class="r3-exam-header-title">EVALUACIÓN ESCOLAR ${totalPages > 1 ? ` — PÁGINA ${activePage}` : ''}</div>
+        ${activePage === 1 ? `
+        <div class="r3-exam-student-line">
+          <span>Estudiante: __________________________________________________</span>
+        </div>
+        <div class="r3-exam-instructions">
+          * Lee atentamente cada pregunta y registra tus respuestas rellenando la burbuja en tu Cartilla de Respuestas.
+        </div>
+        ` : ''}
+      </div>
+      ${bodyHTML}
+    </div>
+  `;
 
-  form.style.display = 'block';
-  if (promptEl) promptEl.focus();
+  host.innerHTML = examHTML;
 }
 
-function rama3CloseQuickModal() {
-  const form = document.getElementById('rama3-quick-form');
-  if (form) form.style.display = 'none';
-}
+function renderRama3CartillaPreview() {
+  const host = document.getElementById('r3-cartilla-render-host');
+  if (!host) return;
+  host.innerHTML = '';
 
-function rama3SaveQuickQuestion() {
-  if (!wizardClassroomId) {
-    showToast('⚠️ Selecciona un salón primero.');
-    return;
+  const clsId = wizardClassroomId || (document.getElementById('builder-classroom')?.value);
+  let classroom = null;
+  if (clsId && typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
+    classroom = ClassroomData.getClassroom(clsId);
   }
-  const prompt = (document.getElementById('r3-qform-prompt')?.value || '').trim();
-  if (!prompt) {
-    showToast('⚠️ Escribe el enunciado de la pregunta.');
-    return;
-  }
-  const optA = (document.getElementById('r3-qform-a')?.value || '').trim();
-  const optB = (document.getElementById('r3-qform-b')?.value || '').trim();
-  const optC = (document.getElementById('r3-qform-c')?.value || '').trim();
-  const optD = (document.getElementById('r3-qform-d')?.value || '').trim();
-  if (!optA || !optB || !optC || !optD) {
-    showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
-    return;
+  if (!classroom) {
+    classroom = {
+      id: 'demo_class',
+      name: 'Salón Demostración',
+      gradeStage: 'primary',
+      gradeLevel: 4,
+      students: []
+    };
   }
 
-  const rad = document.querySelector('input[name="r3-qform-correct"]:checked');
-  const correctKey = (rad ? rad.value : 'A').toUpperCase();
+  const sampleStudent = (classroom.students && classroom.students.length > 0)
+    ? classroom.students[0]
+    : { id: 'est_01', name: 'ESTUDIANTE EJEMPLO' };
 
-  const targetIdx = parseInt(document.getElementById('r3-qform-target')?.value || '0', 10);
-  const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
-
-  const evalObj = {
-    title: 'Pregunta de alternativa',
+  const evalMock = {
+    id: 'eval_mock_r3',
+    branch: 'rama3',
+    mode: r3State.mode,
     type: 'mc',
-    questionCount: 1,
-    prompt: prompt,
-    expectedAnswer: `Clave: ${correctKey}`,
-    options: { A: optA, B: optB, C: optC, D: optD },
-    correct: correctKey,
-    questions: [{
-      prompt: prompt,
-      options: { A: optA, B: optB, C: optC, D: optD },
-      correct: correctKey,
-      gradeStage: g?.stage,
-      gradeLevel: Number(g?.level),
-      gradeText: g?.texto
-    }],
-    gradeStage: g?.stage,
-    gradeLevel: Number(g?.level),
-    gradeText: g?.texto
+    withGrid: false,
+    questionCount: r3State.count,
+    questions: Array.from({ length: r3State.count }, (_, i) => ({
+      num: i + 1,
+      correct: r3State.keys[i] || 'A'
+    }))
   };
 
-  let savedEval = null;
-  if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
-    savedEval = ClassroomData.saveCustomEvaluation(evalObj);
-  }
-  if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
-    SupabaseClient.saveEvaluation(savedEval || evalObj).catch(e => console.warn('[R3 Quick Save Cloud]', e));
+  let cardHTML = '';
+  if (r3State.count <= 8) {
+    if (typeof createCartillaA6Card === 'function') {
+      cardHTML = createCartillaA6Card(sampleStudent, classroom, evalMock);
+    }
+  } else {
+    if (typeof createCartillaA5VerticalCard === 'function') {
+      cardHTML = createCartillaA5VerticalCard(sampleStudent, classroom, evalMock);
+    }
   }
 
-  const qAssigned = savedEval || evalObj;
-  r3State.bankQuestions[targetIdx] = qAssigned;
-  r3State.keys[targetIdx] = correctKey;
-
-  renderRama3BankList();
-  rama3CloseQuickModal();
-  showToast(`✅ Pregunta guardada en el banco y asignada a P${(targetIdx + 1).toString().padStart(2, '0')}`);
+  if (cardHTML) {
+    host.innerHTML = cardHTML;
+    // Generar código QR para la muestra
+    if (typeof QRCode !== 'undefined' && QRCode.toString) {
+      QRCode.toString(sampleStudent.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+        if (!err && svg) {
+          const qrBox = host.querySelector('[data-qr-id="' + sampleStudent.id + '"]') || host.querySelector('#qr-box-' + sampleStudent.id);
+          if (qrBox) qrBox.innerHTML = svg;
+        }
+      });
+    }
+  }
 }
 
-function confirmRama3() {
+function prepareRama3Evaluation() {
   if (!wizardClassroomId) {
-    showToast('⚠️ Por favor selecciona un salón primero.');
-    return;
+    const sel = document.getElementById('builder-classroom');
+    if (sel && sel.value) wizardClassroomId = sel.value;
   }
-
-  // Si está en Modo B y no se ha asignado ninguna, intentar autocompletar silencioso
-  if (r3State.mode === 'bank' && !r3State.bankQuestions.some(q => q !== null)) {
-    rama3AutofillFromBank(true);
+  if (!wizardClassroomId) {
+    if (typeof showToast === 'function') showToast('⚠️ Por favor selecciona un salón primero.');
+    return null;
   }
 
   const questions = [];
@@ -4892,6 +5141,42 @@ function confirmRama3() {
   };
 
   wizardEvalType = 'mc';
+  return wizardEval;
+}
+
+function confirmRama3AndPrintExam() {
+  const ev = prepareRama3Evaluation();
+  if (!ev) return;
+
+  if (typeof renderQuestionBooklet === 'function') {
+    renderQuestionBooklet(wizardClassroomId, ev);
+  }
+  if (typeof printQuestionBooklet === 'function') {
+    printQuestionBooklet();
+  } else {
+    showSummary();
+  }
+}
+
+function confirmRama3AndPrintCartillas() {
+  const ev = prepareRama3Evaluation();
+  if (!ev) return;
+  showSummary();
+}
+
+function confirmRama3AndScan() {
+  const ev = prepareRama3Evaluation();
+  if (!ev) return;
+  showSummary();
+  const startBtn = document.getElementById('btn-start-evaluation');
+  if (startBtn) {
+    startBtn.click();
+  }
+}
+
+function confirmRama3() {
+  const ev = prepareRama3Evaluation();
+  if (!ev) return;
   showSummary();
 }
 
@@ -4899,52 +5184,11 @@ function confirmRama3() {
  * Dispara directamente la visualización/impresión del Cuadernillo de Preguntas desde Rama 3 (Modo B).
  */
 function rama3PrintBookletDirect() {
-  if (!wizardClassroomId) {
-    showToast('⚠️ Por favor selecciona un salón primero.');
-    return;
-  }
-
-  // Si no hay preguntas asignadas aún en Modo B, autocompletar silenciosamente con el banco
-  const hasAssigned = r3State.bankQuestions.some(q => q !== null);
-  if (!hasAssigned) {
-    rama3AutofillFromBank(true);
-  }
-
-  const questions = [];
-  for (let i = 0; i < r3State.count; i++) {
-    const qObj = r3State.bankQuestions[i];
-    questions.push({
-      id: qObj?.id || ('r3_q' + (i + 1)),
-      num: i + 1,
-      prompt: qObj?.prompt || `Pregunta ${i + 1}`,
-      options: qObj?.options || { A: 'A', B: 'B', C: 'C', D: 'D' },
-      correct: r3State.keys[i] || qObj?.correct || 'A'
-    });
-  }
-
-  const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
-
-  wizardEval = {
-    id: 'eval_r3_' + Date.now(),
-    branch: 'rama3',
-    mode: 'bank',
-    type: 'mc',
-    withGrid: false,
-    questionCount: r3State.count,
-    questions: questions,
-    hasQuestionnaire: true,
-    title: `Cuadernillo de Preguntas (${r3State.count} Preguntas)`,
-    prompt: `Cartilla de respuestas de ${r3State.count} preguntas`,
-    expectedAnswer: r3State.keys.slice(0, r3State.count).join(' '),
-    correctionMode: 'quick',
-    gradeStage: g?.stage,
-    gradeLevel: g?.level,
-    gradeText: g?.texto
-  };
-  wizardEvalType = 'mc';
+  const ev = prepareRama3Evaluation();
+  if (!ev) return;
 
   if (typeof renderQuestionBooklet === 'function') {
-    renderQuestionBooklet(wizardClassroomId, wizardEval);
+    renderQuestionBooklet(wizardClassroomId, ev);
   }
   if (typeof printQuestionBooklet === 'function') {
     printQuestionBooklet();
@@ -5013,16 +5257,18 @@ if (typeof window !== 'undefined') {
 
   window.setRama3Count = setRama3Count;
   window.setRama3Mode = setRama3Mode;
+  window.setRama3Page = setRama3Page;
   window.setRama3Key = setRama3Key;
+  window.openRama3QuestionPicker = openRama3QuestionPicker;
+  window.renderRama3Exam = renderRama3Exam;
+  window.renderRama3CartillaPreview = renderRama3CartillaPreview;
   window.renderRama3Matrix = renderRama3Matrix;
-  window.renderRama3BankList = renderRama3BankList;
-  window.onRama3BankSelect = onRama3BankSelect;
-  window.rama3AutofillFromBank = rama3AutofillFromBank;
-  window.rama3OpenAddQuickModal = rama3OpenAddQuickModal;
-  window.rama3CloseQuickModal = rama3CloseQuickModal;
-  window.rama3SaveQuickQuestion = rama3SaveQuickQuestion;
   window.rama3PrintBookletDirect = rama3PrintBookletDirect;
   window.confirmRama3 = confirmRama3;
+  window.confirmRama3AndPrintExam = confirmRama3AndPrintExam;
+  window.confirmRama3AndPrintCartillas = confirmRama3AndPrintCartillas;
+  window.confirmRama3AndScan = confirmRama3AndScan;
+  window.prepareRama3Evaluation = prepareRama3Evaluation;
   window.toggleSimGrid = toggleSimGrid;
   window.r2State = r2State;
   window.r3State = r3State;
