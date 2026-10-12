@@ -1442,8 +1442,9 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
-      padding: 2mm 3mm 13mm 3mm;
+      justify-content: flex-start;
+      padding: 2.5mm 3mm 14mm 3mm;
+      gap: 4mm;
       box-sizing: border-box;
       overflow: hidden;
     }
@@ -3665,6 +3666,24 @@
       z-index: 50 !important;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
       pointer-events: auto !important;
+    }
+
+    .focalizada-grid-slot-1p,
+    .focalizada-grid-slot-2p {
+      display: flex !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 20px !important;
+      margin-top: 2.5mm !important;
+      padding-right: 1mm !important;
+      box-sizing: border-box !important;
+    }
+    .focalizada-grid-slot-1p .sim-grid-stepper,
+    .focalizada-grid-slot-2p .sim-grid-stepper {
+      position: static !important;
+      margin-left: auto !important;
     }
 
     .sim-stepper-label {

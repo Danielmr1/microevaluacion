@@ -3133,6 +3133,7 @@ function determineCardLayout(state) {
   }
 
   // ── RAMA 2: FOCALIZADA EN LA RESPUESTA ──
+  const r2Stage = state.withGrid ? 1 : 0;
   if (count === 1) {
     return {
       format: 'a6',
@@ -3140,9 +3141,9 @@ function determineCardLayout(state) {
       generator: 'createA6Card',
       badge: 'A6 H',
       badgeFull: 'A6 Horizontal',
-      stage: 0,
+      stage: r2Stage,
       minStage: 0,
-      maxStage: 0
+      maxStage: 1
     };
   }
   if (count === 2) {
@@ -3152,9 +3153,9 @@ function determineCardLayout(state) {
       generator: 'createA6Card',
       badge: 'A6 V',
       badgeFull: 'A6 Vertical',
-      stage: 0,
+      stage: r2Stage,
       minStage: 0,
-      maxStage: 0
+      maxStage: 1
     };
   }
   return {
@@ -3170,6 +3171,17 @@ function determineCardLayout(state) {
 }
 
 function stepSimGridStage(delta) {
+  if (simState.branch === 'rama2') {
+    const cur = simState.withGrid ? 1 : 0;
+    const next = Math.max(0, Math.min(1, cur + delta));
+    if (next !== cur) {
+      simState.withGrid = (next === 1);
+      simState.gridStage = next;
+      updateSimToolbar();
+      renderSimulatedCard();
+    }
+    return;
+  }
   const layout = determineCardLayout(simState);
   const cur = (typeof simState.gridStage === 'number') ? simState.gridStage : 0;
   const next = Math.max(layout.minStage, Math.min(layout.maxStage, cur + delta));
@@ -3436,25 +3448,51 @@ function attachSimSlotInteractivity(host, previewQuestions) {
       gridWrap.appendChild(stepper);
     }
   } else if (simState.branch === 'rama2') {
-    // Focalizada en la Respuesta:
-    // Botón en la derecha inferior de la cuadrícula / zona de cálculo para alternar cuadrícula
-    if (simState.count === 1) {
-      const gridWrap = host.querySelector('.a6-grid-wrapper, .focalizada-grid-area, .grid-wrapper');
-      if (gridWrap) {
-        gridWrap.style.position = 'relative';
-        const oldBtn = gridWrap.querySelector('.sim-grid-toggle-btn, .sim-grid-stepper');
-        if (oldBtn) oldBtn.remove();
+    // Focalizada en la Respuesta: Control stepper idéntico a Formativa con IA
+    const isMin = !simState.withGrid;
+    const isMax = !!simState.withGrid;
 
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'sim-grid-toggle-btn' + (simState.withGrid ? ' active' : '');
-        btn.title = simState.withGrid ? 'Ocultar cuadrícula de cálculo' : 'Mostrar 5 filas de cuadrícula';
-        btn.innerHTML = simState.withGrid ? '✕ Quitar cuadrícula' : '📐 Cuadrícula';
-        btn.onclick = (e) => {
-          e.stopPropagation();
-          toggleSimGrid();
-        };
-        gridWrap.appendChild(btn);
+    const stepper = document.createElement('div');
+    stepper.className = 'sim-grid-stepper';
+    stepper.innerHTML = `
+      <span class="sim-stepper-label">📐 Cuadrícula</span>
+      <button type="button" class="sim-stepper-btn" onclick="event.stopPropagation(); stepSimGridStage(-1)" ${isMin ? 'disabled' : ''} title="Quitar cuadrícula">▼</button>
+      <button type="button" class="sim-stepper-btn" onclick="event.stopPropagation(); stepSimGridStage(1)" ${isMax ? 'disabled' : ''} title="Mostrar cuadrícula">▲</button>
+    `;
+
+    if (simState.count === 1) {
+      if (simState.withGrid) {
+        const gridWrap = host.querySelector('.a6-grid-wrapper, .focalizada-grid-area, .grid-wrapper');
+        if (gridWrap) {
+          gridWrap.style.position = 'relative';
+          const oldBtn = gridWrap.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          gridWrap.appendChild(stepper);
+        }
+      } else {
+        const slot = host.querySelector('.focalizada-grid-slot-1p');
+        if (slot) {
+          const oldBtn = slot.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          slot.appendChild(stepper);
+        }
+      }
+    } else if (simState.count === 2) {
+      if (simState.withGrid) {
+        const gridWrap = host.querySelector('.focalizada-grid-2q-1, .a6-v-grid-wrapper:last-of-type') || host.querySelector('.a6-v-grid-wrapper');
+        if (gridWrap) {
+          gridWrap.style.position = 'relative';
+          const oldBtn = gridWrap.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          gridWrap.appendChild(stepper);
+        }
+      } else {
+        const slot = host.querySelector('.focalizada-grid-slot-2p');
+        if (slot) {
+          const oldBtn = slot.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          slot.appendChild(stepper);
+        }
       }
     }
   }
