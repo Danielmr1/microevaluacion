@@ -3009,10 +3009,10 @@ function initSimulator(branch, classId) {
 function updateSimToolbar() {
   const isRama1 = simState.branch === 'rama1';
 
-  // 1. Selector de Cantidad de Preguntas (1P..2P para Rama 1, 1P..3P para Rama 2)
+  // 1. Selector de Cantidad de Preguntas (1P..2P para Rama 1, 1P..4P para Rama 2)
   const countContainer = document.getElementById('sim-qcount-group');
   if (countContainer) {
-    const maxQ = (simState.branch === 'rama2') ? 3 : 2;
+    const maxQ = (simState.branch === 'rama2') ? 4 : 2;
     let html = '';
     for (let i = 1; i <= maxQ; i++) {
       const activeCls = (simState.count === i) ? (isRama1 ? 'active' : 'active-emerald') : '';
@@ -3308,6 +3308,48 @@ function determineCardLayout(state) {
     }
   }
 
+  if (count === 4) {
+    switch (stage) {
+      case 0:
+        return {
+          format: 'a5',
+          orientation: 'vertical',
+          generator: 'createA5VerticalCard',
+          badge: 'A5 V',
+          badgeFull: 'A5 Vertical',
+          withGrid: false,
+          stage: 0,
+          minStage: 0,
+          maxStage: 2
+        };
+      case 1:
+        return {
+          format: 'a4',
+          orientation: 'horizontal',
+          generator: 'createA4Card',
+          badge: 'A4 H',
+          badgeFull: 'A4 Horizontal',
+          withGrid: false,
+          stage: 1,
+          minStage: 0,
+          maxStage: 2
+        };
+      case 2:
+      default:
+        return {
+          format: 'a4',
+          orientation: 'vertical',
+          generator: 'createA4VerticalCard',
+          badge: 'A4 V',
+          badgeFull: 'A4 Vertical',
+          withGrid: true,
+          stage: 2,
+          minStage: 0,
+          maxStage: 2
+        };
+    }
+  }
+
   return {
     format: 'a5',
     orientation: 'vertical',
@@ -3336,7 +3378,7 @@ function stepSimGridStage(delta) {
 function setSimCount(count) {
   const isRama1 = simState.branch === 'rama1';
   const c = parseInt(count, 10);
-  const maxAllowed = isRama1 ? 2 : 3;
+  const maxAllowed = isRama1 ? 2 : 4;
   const targetCount = Math.min(Math.max(1, c), maxAllowed);
   if (simState.count !== targetCount) {
     simState.count = targetCount;
@@ -3630,18 +3672,25 @@ function attachSimSlotInteractivity(host, previewQuestions) {
           if (oldBtn) oldBtn.remove();
           slot.appendChild(stepper);
         }
+      } else if (simState.count === 4) {
+        const slot = host.querySelector('.focalizada-grid-slot-4p');
+        if (slot) {
+          const oldBtn = slot.querySelector('.sim-grid-stepper');
+          if (oldBtn) oldBtn.remove();
+          slot.appendChild(stepper);
+        }
       }
     } else {
-      if (simState.count === 3 && (layout.stage === 0 || layout.stage === 1)) {
-        // En 3P Stage 1 (A5 V sin cuadrícula), el stepper va en el slot de la última pregunta
-        const slot = host.querySelector('.focalizada-grid-slot-3p');
+      if ((simState.count === 3 && layout.stage === 1) || (simState.count === 4 && layout.stage === 1)) {
+        // En 3P/4P cuando no hay cuadrícula en stage 1, el stepper va en el slot de la última pregunta
+        const slot = host.querySelector(`.focalizada-grid-slot-${simState.count}p`);
         if (slot) {
           const oldBtn = slot.querySelector('.sim-grid-stepper');
           if (oldBtn) oldBtn.remove();
           slot.appendChild(stepper);
         }
       } else {
-        const allGrids = host.querySelectorAll('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q, .focalizada-grid-area, .focalizada-grid-2q-1, .a4-grid-wrapper, .focalizada-grid-3q-2');
+        const allGrids = host.querySelectorAll('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q, .focalizada-grid-area, .focalizada-grid-2q-1, .a4-grid-wrapper, .focalizada-grid-3q-2, .focalizada-grid-4q-3');
         const gridWrap = allGrids.length > 0 ? allGrids[allGrids.length - 1] : null;
         if (gridWrap) {
           gridWrap.style.position = 'relative';

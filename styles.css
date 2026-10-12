@@ -2560,6 +2560,10 @@
       width: 100% !important;
       height: 38mm !important;
     }
+    .card-a4-v-4q .notebook-grid-a4-v {
+      height: 28mm !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
     .notebook-grid-a4-v i {
       border-right: 1px solid #e2e8f0;
       border-bottom: 1px solid #e2e8f0;
@@ -3810,7 +3814,8 @@
 
     .focalizada-grid-slot-1p,
     .focalizada-grid-slot-2p,
-    .focalizada-grid-slot-3p {
+    .focalizada-grid-slot-3p,
+    .focalizada-grid-slot-4p {
       display: flex !important;
       justify-content: flex-end !important;
       align-items: center !important;
@@ -3823,7 +3828,8 @@
     }
     .focalizada-grid-slot-1p .sim-grid-stepper,
     .focalizada-grid-slot-2p .sim-grid-stepper,
-    .focalizada-grid-slot-3p .sim-grid-stepper {
+    .focalizada-grid-slot-3p .sim-grid-stepper,
+    .focalizada-grid-slot-4p .sim-grid-stepper {
       position: static !important;
       margin-left: auto !important;
     }
