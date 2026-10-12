@@ -160,7 +160,9 @@ function createFocalizadaA5VerticalCard(student, classroom, evaluation) {
 }
 
 /**
- * Renderiza la ficha Focalizada en A6 sin cuadrícula (1 o 2 preguntas)
+ * Renderiza la ficha Focalizada en A6:
+ * - 1 Pregunta: A6 Horizontal (132 x 89 mm) — Al inicio sin cuadrícula; al activar muestra 5 filas (13x5 celdas).
+ * - 2 Preguntas: A6 Vertical (89 x 132 mm) — Al inicio sin cuadrícula.
  */
 function createFocalizadaA6Card(student, classroom, evaluation) {
   const gradeText = ClassroomData.formatGrade(classroom.gradeStage, classroom.gradeLevel) || classroom.name;
@@ -172,54 +174,126 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
   const orderMatch = String(student.id || '').match(/\d+/);
   const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
+  const isA6Vertical = evaluation.isPortrait === true || evaluation.orientation === 'vertical' || evaluation.cardOrientation === 'vertical' || totalQ === 2;
 
-  const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
-    ? evaluation.questions.slice(0, totalQ)
-    : [{
-        prompt: evaluation.prompt,
-        options: evaluation.options || { A: '', B: '', C: '', D: '' }
-      }];
+  const fiducialsHTML = FOCALIZADA_FIDUCIALS;
+
+  // ── CASO 2 PREGUNTAS: A6 VERTICAL (89 x 132 mm) ──
+  if (isA6Vertical) {
+    const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
+      ? evaluation.questions.slice(0, 2)
+      : [
+          { prompt: evaluation.prompt || 'Pregunta 1', options: evaluation.options || { A: '', B: '', C: '', D: '' } },
+          { prompt: 'Pregunta 2', options: { A: '', B: '', C: '', D: '' } }
+        ];
+
+    const withGrid = !!evaluation.withGrid;
+    const GRID_CELLS_2Q = new Array(9 * 3).fill('<i></i>').join('');
+
+    return `
+      <div class="card-a6-v">
+        ${fiducialsHTML}
+        <div class="a6-v-card-header">
+          <div class="a6-student-block">
+            <div class="a6-student-name-row">
+              <span class="a6-student-label">Nombre:</span>
+              <span class="a6-student-name">${safeStudentName}</span>
+            </div>
+            <div class="a6-student-grade-row">
+              <span class="a6-student-grade">(${safeGradeText})</span>
+            </div>
+          </div>
+          <div class="a6-qr-block">
+            <div class="a6-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
+          </div>
+        </div>
+        <div class="aruco-tr-number">${orderNumber}</div>
+
+        <div class="a6-nogrid-body">
+          ${activeQuestions.map((q, idx) => `
+            <div class="a6-nogrid-q">
+              <div class="a6-nogrid-q-prompt">
+                <strong>${idx + 1}.</strong> ${escape(q.prompt)}
+              </div>
+              ${withGrid ? `
+                <div class="a6-v-grid-wrapper" style="height:22mm; flex:0 0 22mm; margin:1mm auto; width:72mm;">
+                  <div class="notebook-grid notebook-grid-a6-v" style="height:22mm; grid-template-rows:repeat(3, 1fr);">
+                    ${GRID_CELLS_2Q}
+                  </div>
+                </div>
+              ` : ''}
+              ${isOMR ? `
+                <div class="a6-nogrid-omr">
+                  <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q.options?.A || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q.options?.B || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q.options?.C || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q.options?.D || '')}</span></div>
+                </div>
+              ` : `
+                <div class="a6-nogrid-free">
+                  <span class="v-nogrid-free-tag">Rpta:</span>
+                  <div class="a6-nogrid-free-box"></div>
+                </div>
+              `}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── CASO 1 PREGUNTA: A6 HORIZONTAL (132 x 89 mm) ──
+  const q1 = (evaluation.questions && evaluation.questions[0]) || {
+    prompt: evaluation.prompt,
+    options: evaluation.options || { A: '', B: '', C: '', D: '' }
+  };
+
+  const withGrid = !!evaluation.withGrid;
+  const GRID_CELLS_A6 = new Array(13 * 5).fill('<i></i>').join('');
 
   return `
     <div class="card-a6-r3">
-      ${FOCALIZADA_FIDUCIALS}
+      ${fiducialsHTML}
       <div class="a6-card-header">
-        <div class="a6-header-left">
-          <div class="a6-header-top-title">EVALUACIÓN FOCALIZADA</div>
-          <div class="a6-student-block">
+        <div class="a6-student-block">
+          <div class="a6-student-name-row">
             <span class="a6-student-label">Nombre:</span>
             <span class="a6-student-name">${safeStudentName}</span>
+          </div>
+          <div class="a6-student-grade-row">
             <span class="a6-student-grade">(${safeGradeText})</span>
           </div>
         </div>
         <div class="a6-qr-block">
-          <span class="a6-qr-code-text">${orderNumber}</span>
           <div class="a6-qr-box" id="qr-box-${student.id}"></div>
         </div>
       </div>
+      <div class="aruco-tr-number">${orderNumber}</div>
 
-      <div class="a6-nogrid-body">
-        ${activeQuestions.map((q, idx) => `
-          <div class="a6-nogrid-q">
-            <div class="a6-nogrid-q-prompt">
-              <strong>${idx + 1}.</strong> ${escape(q.prompt)}
-            </div>
-            ${isOMR ? `
-              <div class="a6-nogrid-omr">
-                <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q.options?.A || '')}</span></div>
-                <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q.options?.B || '')}</span></div>
-                <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q.options?.C || '')}</span></div>
-                <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q.options?.D || '')}</span></div>
-              </div>
-            ` : `
-              <div class="a6-nogrid-free">
-                <span class="v-nogrid-free-tag">Rpta:</span>
-                <div class="a6-nogrid-free-box"></div>
-              </div>
-            `}
-          </div>
-        `).join('')}
+      <div class="a6-problem">
+        <div class="problem-text">${escape(q1.prompt)}</div>
       </div>
+
+      <div class="grid-wrapper a6-grid-wrapper focalizada-grid-area">
+        ${withGrid
+          ? `<div class="notebook-grid notebook-grid-a6">${GRID_CELLS_A6}</div>`
+          : `<div class="notebook-grid notebook-grid-a6 notebook-grid-empty" style="border:1.2px solid #cbd5e1; background:#ffffff;"></div>`
+        }
+      </div>
+
+      ${isOMR ? `
+        <div class="a6-omr-row">
+          <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
+          <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
+          <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
+          <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q1.options?.D || '')}</span></div>
+        </div>
+      ` : `
+        <div class="a6-free-answer-strip">
+          <span class="v-nogrid-free-tag">Rpta:</span>
+          <div class="a6-nogrid-free-box"></div>
+        </div>
+      `}
     </div>
   `;
 }

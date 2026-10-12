@@ -79,8 +79,8 @@ function createA6Card(student, classroom, evaluation) {
     }
   }
 
-  // ── SUBMÓDULO 2: FOCALIZADA EN LA RESPUESTA EN A6 (1 O 2 PREGUNTAS SIN CUADRÍCULA) ──
-  const isBranch2A6 = evaluation.branch === 'rama2' && evaluation.withGrid === false && totalQ <= 2;
+  // ── SUBMÓDULO 2: FOCALIZADA EN LA RESPUESTA EN A6 (1 O 2 PREGUNTAS) ──
+  const isBranch2A6 = evaluation.branch === 'rama2' && totalQ <= 2;
   if (isBranch2A6) {
     if (typeof createFocalizadaA6Card === 'function') {
       return createFocalizadaA6Card(student, classroom, evaluation);

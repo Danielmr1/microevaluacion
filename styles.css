@@ -1443,7 +1443,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
-      padding: 1mm 2mm;
+      padding: 2mm 3mm 13mm 3mm;
       box-sizing: border-box;
       overflow: hidden;
     }
@@ -3704,5 +3704,45 @@
       cursor: not-allowed !important;
       color: #64748b !important;
       border-color: #1e293b !important;
+    }
+
+    /* Botón interactivo para encender/apagar cuadrícula en Focalizada */
+    .sim-grid-toggle-btn {
+      position: absolute !important;
+      bottom: 4px !important;
+      right: 4px !important;
+      background: #0f172a !important;
+      border: 1.5px solid #0284c7 !important;
+      color: #38bdf8 !important;
+      font-size: 0.72rem !important;
+      font-weight: 800 !important;
+      padding: 3px 9px !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      z-index: 50 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      pointer-events: auto !important;
+      transition: all 0.15s ease !important;
+      user-select: none !important;
+    }
+    .sim-grid-toggle-btn:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+      color: #7dd3fc !important;
+    }
+    .sim-grid-toggle-btn.active {
+      background: #064e3b !important;
+      border-color: #10b981 !important;
+      color: #a7f3d0 !important;
+    }
+
+    @media print {
+      .sim-grid-toggle-btn,
+      .sim-grid-stepper {
+        display: none !important;
+      }
     }
 

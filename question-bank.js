@@ -2972,10 +2972,10 @@ function initSimulator(branch, classId) {
     if (simState.count > 2) simState.count = 2;
     if (typeof simState.gridStage !== 'number') simState.gridStage = 0;
   } else {
-    // Rama 2: si son más de 2 preguntas, sin cuadrícula
-    if (simState.count > 2) {
-      simState.withGrid = false;
-    }
+    // Rama 2 (Focalizada): Inicia sin cuadrícula por defecto
+    simState.withGrid = false;
+    simState.gridStage = 0;
+    if (simState.count > 2) simState.count = 1;
   }
 
   // Pre-cargar primera pregunta si está vacía y hay en el banco para este grado
@@ -3009,10 +3009,10 @@ function initSimulator(branch, classId) {
 function updateSimToolbar() {
   const isRama1 = simState.branch === 'rama1';
 
-  // 1. Selector de Cantidad de Preguntas (1P..2P en Formativa; 1P..5P en Focalizada)
+  // 1. Selector de Cantidad de Preguntas (1P..2P)
   const countContainer = document.getElementById('sim-qcount-group');
   if (countContainer) {
-    const maxQ = isRama1 ? 2 : 5;
+    const maxQ = 2;
     let html = '';
     for (let i = 1; i <= maxQ; i++) {
       const activeCls = (simState.count === i) ? (isRama1 ? 'active' : 'active-emerald') : '';
@@ -3021,14 +3021,14 @@ function updateSimToolbar() {
     countContainer.innerHTML = html;
   }
 
-  // Actualizar indicador compacto al lado de las preguntas (A6 H, A6 V, A5 H, A5 V)
+  // 2. Indicador Informativo de Tamaño y Orientación (De solo lectura)
   const layout = determineCardLayout(simState);
   const tagEl = document.getElementById('sim-card-format-tag');
   if (tagEl) {
-    tagEl.textContent = layout.badge;
+    tagEl.textContent = layout.badgeFull || layout.badge;
   }
 
-  // 2. Selector de Tipo de Respuesta (Alternativas OMR vs Escribir respuesta)
+  // 3. Selector de Tipo de Respuesta (Alternativas OMR vs Escribir respuesta)
   const btnTypeMC = document.getElementById('sim-btn-type-mc');
   const btnTypeFree = document.getElementById('sim-btn-type-free');
   if (btnTypeMC && btnTypeFree) {
@@ -3036,53 +3036,25 @@ function updateSimToolbar() {
     btnTypeFree.className = 'sim-pill-btn' + (simState.type === 'free' ? (isRama1 ? ' active' : ' active-emerald') : '');
   }
 
-  // 3. Selector de Cuadrícula / Borrador (Exclusivo Focalizada; en Formativa NO existe)
+  // 4. Selector de cuadrícula en el toolbar: Oculto en ambos modos (se maneja en la ficha)
   const gridGroup = document.getElementById('sim-grid-group');
-  const btnGridYes = document.getElementById('sim-btn-grid-yes');
-  const btnGridNo = document.getElementById('sim-btn-grid-no');
-  const gridHint = document.getElementById('sim-grid-lock-hint');
-
-  if (isRama1) {
-    if (gridGroup) gridGroup.style.display = 'none';
-    simState.withGrid = true;
-  } else {
-    if (gridGroup) gridGroup.style.display = 'flex';
-    if (btnGridYes && btnGridNo) {
-      if (simState.count > 2) {
-        simState.withGrid = false;
-        btnGridYes.disabled = true;
-        btnGridYes.className = 'sim-pill-btn';
-        btnGridNo.disabled = false;
-        btnGridNo.className = 'sim-pill-btn active-emerald';
-        if (gridHint) {
-          gridHint.style.display = 'inline';
-          gridHint.textContent = '(Máx 2P con cuadrícula)';
-        }
-      } else {
-        btnGridYes.disabled = false;
-        btnGridNo.disabled = false;
-        btnGridYes.className = 'sim-pill-btn' + (simState.withGrid ? ' active-emerald' : '');
-        btnGridNo.className = 'sim-pill-btn' + (!simState.withGrid ? ' active-emerald' : '');
-        if (gridHint) gridHint.style.display = 'none';
-      }
-    }
-  }
+  if (gridGroup) gridGroup.style.display = 'none';
 }
 
 /**
- * Determina el formato y orientación según la cuadrícula (de menor a mayor):
- * - Con 1 pregunta (con cuadrícula):
- *    Escalón 0 (defecto): A6 Horizontal (A6 H)
- *    Escalón 1:           A6 Vertical   (A6 V)
- *    Escalón 2:           A5 Horizontal (A5 H)
- *    Escalón 3 (máx):     A5 Vertical   (A5 V, nunca sobrepasa A5)
+ * Determina el formato y orientación:
+ * - Rama 1 (Formativa con IA):
+ *    1P: A6 H -> A6 V -> A5 H -> A5 V (con cuadrícula obligatoria)
+ *    2P: A5 H -> A5 V (con cuadrícula obligatoria)
+ * - Rama 2 (Focalizada en la Respuesta):
+ *    1P: A6 Horizontal (sin cuadrícula al inicio; botón inferior activa 5 filas 13x5)
+ *    2P: A6 Vertical   (sin cuadrícula al inicio; botón inferior activa cuadrícula)
  */
 function determineCardLayout(state) {
   const isRama1 = state.branch === 'rama1';
-  const withGrid = isRama1 ? true : !!state.withGrid;
   const count = state.count || 1;
 
-  if (withGrid) {
+  if (isRama1) {
     if (count === 1) {
       const stage = (typeof state.gridStage === 'number') ? state.gridStage : 0;
       switch (stage) {
@@ -3092,6 +3064,7 @@ function determineCardLayout(state) {
             orientation: 'horizontal',
             generator: 'createA6Card',
             badge: 'A6 H',
+            badgeFull: 'A6 Horizontal',
             stage: 0,
             minStage: 0,
             maxStage: 3
@@ -3102,6 +3075,7 @@ function determineCardLayout(state) {
             orientation: 'vertical',
             generator: 'createA6Card',
             badge: 'A6 V',
+            badgeFull: 'A6 Vertical',
             stage: 1,
             minStage: 0,
             maxStage: 3
@@ -3112,6 +3086,7 @@ function determineCardLayout(state) {
             orientation: 'horizontal',
             generator: 'createA5Card',
             badge: 'A5 H',
+            badgeFull: 'A5 Horizontal',
             stage: 2,
             minStage: 0,
             maxStage: 3
@@ -3123,13 +3098,14 @@ function determineCardLayout(state) {
             orientation: 'vertical',
             generator: 'createA5VerticalCard',
             badge: 'A5 V',
+            badgeFull: 'A5 Vertical',
             stage: 3,
             minStage: 0,
             maxStage: 3
           };
       }
     } else {
-      // 2 preguntas con cuadrícula
+      // 2 preguntas con cuadrícula (Formativa)
       const stage = (state.gridStage >= 1) ? 1 : 0;
       if (stage === 1) {
         return {
@@ -3137,6 +3113,7 @@ function determineCardLayout(state) {
           orientation: 'vertical',
           generator: 'createA5VerticalCard',
           badge: 'A5 V',
+          badgeFull: 'A5 Vertical',
           stage: 1,
           minStage: 0,
           maxStage: 1
@@ -3147,6 +3124,7 @@ function determineCardLayout(state) {
         orientation: 'horizontal',
         generator: 'createA5Card',
         badge: 'A5 H',
+        badgeFull: 'A5 Horizontal',
         stage: 0,
         minStage: 0,
         maxStage: 1
@@ -3154,13 +3132,14 @@ function determineCardLayout(state) {
     }
   }
 
-  // Sin cuadrícula (Focalizada)
+  // ── RAMA 2: FOCALIZADA EN LA RESPUESTA ──
   if (count === 1) {
     return {
       format: 'a6',
       orientation: 'horizontal',
       generator: 'createA6Card',
       badge: 'A6 H',
+      badgeFull: 'A6 Horizontal',
       stage: 0,
       minStage: 0,
       maxStage: 0
@@ -3172,6 +3151,7 @@ function determineCardLayout(state) {
       orientation: 'vertical',
       generator: 'createA6Card',
       badge: 'A6 V',
+      badgeFull: 'A6 Vertical',
       stage: 0,
       minStage: 0,
       maxStage: 0
@@ -3182,6 +3162,7 @@ function determineCardLayout(state) {
     orientation: 'vertical',
     generator: 'createA5VerticalCard',
     badge: 'A5 V',
+    badgeFull: 'A5 Vertical',
     stage: 0,
     minStage: 0,
     maxStage: 0
@@ -3202,18 +3183,15 @@ function stepSimGridStage(delta) {
 function setSimCount(count) {
   const isRama1 = simState.branch === 'rama1';
   const c = parseInt(count, 10);
-  const targetCount = isRama1 ? Math.min(Math.max(1, c), 2) : Math.min(Math.max(1, c), 5);
+  const targetCount = Math.min(Math.max(1, c), 2);
   if (simState.count !== targetCount) {
     simState.count = targetCount;
     simState.gridStage = 0;
-  }
-
-  if (simState.count > 2 && simState.withGrid) {
-    simState.withGrid = false;
-    if (typeof showToast === 'function') {
-      showToast('ℹ️ Con 3 o más preguntas la ficha se optimiza sin cuadrícula.');
+    if (!isRama1) {
+      simState.withGrid = false; // Al cambiar preguntas en Focalizada nace sin cuadrícula
     }
   }
+
   updateSimToolbar();
   renderSimulatedCard();
 }
@@ -3224,15 +3202,16 @@ function setSimType(type) {
   renderSimulatedCard();
 }
 
+function toggleSimGrid() {
+  if (simState.branch === 'rama1') return; // En Formativa la cuadrícula es fija y obligatoria
+  simState.withGrid = !simState.withGrid;
+  updateSimToolbar();
+  renderSimulatedCard();
+}
+
 function setSimGrid(withGrid) {
   if (simState.branch === 'rama1') {
     simState.withGrid = true;
-    return;
-  }
-  if (withGrid && simState.count > 2) {
-    if (typeof showToast === 'function') {
-      showToast('ℹ️ Con cuadrícula el máximo es 2 preguntas.');
-    }
     return;
   }
   simState.withGrid = !!withGrid;
@@ -3434,14 +3413,13 @@ function attachSimSlotInteractivity(host, previewQuestions) {
   }
 
   // 5. Control Interactivo sobre la Cuadrícula de Cálculo (Borrador):
-  // Botón ajustable en la esquina inferior derecha con límites min y max (nunca sobrepasa A5).
-  const effectiveGrid = (simState.branch === 'rama1') ? true : !!simState.withGrid;
-  if (effectiveGrid) {
+  if (simState.branch === 'rama1') {
+    // Formativa con IA: Stepper de redimensionamiento de cuadrícula
     const allGrids = host.querySelectorAll('.a6-grid-wrapper, .a6-v-grid-wrapper, .grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q');
     const gridWrap = allGrids.length > 0 ? allGrids[allGrids.length - 1] : null;
     if (gridWrap) {
       gridWrap.style.position = 'relative';
-      const existingStepper = gridWrap.querySelector('.sim-grid-stepper');
+      const existingStepper = gridWrap.querySelector('.sim-grid-stepper, .sim-grid-toggle-btn');
       if (existingStepper) existingStepper.remove();
 
       const layout = determineCardLayout(simState);
@@ -3456,6 +3434,28 @@ function attachSimSlotInteractivity(host, previewQuestions) {
         <button type="button" class="sim-stepper-btn" onclick="event.stopPropagation(); stepSimGridStage(1)" ${isMax ? 'disabled' : ''} title="Agrandar cuadrícula">▲</button>
       `;
       gridWrap.appendChild(stepper);
+    }
+  } else if (simState.branch === 'rama2') {
+    // Focalizada en la Respuesta:
+    // Botón en la derecha inferior de la cuadrícula / zona de cálculo para alternar cuadrícula
+    if (simState.count === 1) {
+      const gridWrap = host.querySelector('.a6-grid-wrapper, .focalizada-grid-area, .grid-wrapper');
+      if (gridWrap) {
+        gridWrap.style.position = 'relative';
+        const oldBtn = gridWrap.querySelector('.sim-grid-toggle-btn, .sim-grid-stepper');
+        if (oldBtn) oldBtn.remove();
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'sim-grid-toggle-btn' + (simState.withGrid ? ' active' : '');
+        btn.title = simState.withGrid ? 'Ocultar cuadrícula de cálculo' : 'Mostrar 5 filas de cuadrícula';
+        btn.innerHTML = simState.withGrid ? '✕ Quitar cuadrícula' : '📐 Cuadrícula';
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          toggleSimGrid();
+        };
+        gridWrap.appendChild(btn);
+      }
     }
   }
 }
@@ -4780,6 +4780,7 @@ if (typeof window !== 'undefined') {
   window.rama3SaveQuickQuestion = rama3SaveQuickQuestion;
   window.rama3PrintBookletDirect = rama3PrintBookletDirect;
   window.confirmRama3 = confirmRama3;
+  window.toggleSimGrid = toggleSimGrid;
   window.r2State = r2State;
   window.r3State = r3State;
 }
