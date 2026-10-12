@@ -2975,7 +2975,7 @@ function initSimulator(branch, classId) {
     // Rama 2 (Focalizada): Inicia sin cuadrícula por defecto
     simState.withGrid = false;
     simState.gridStage = 0;
-    if (simState.count > 2) simState.count = 1;
+    if (simState.count > 5) simState.count = 1;
   }
 
   // Pre-cargar primera pregunta si está vacía y hay en el banco para este grado
@@ -3009,10 +3009,10 @@ function initSimulator(branch, classId) {
 function updateSimToolbar() {
   const isRama1 = simState.branch === 'rama1';
 
-  // 1. Selector de Cantidad de Preguntas (1P..2P para Rama 1, 1P..4P para Rama 2)
+  // 1. Selector de Cantidad de Preguntas (1P..2P para Rama 1, 1P..5P para Rama 2)
   const countContainer = document.getElementById('sim-qcount-group');
   if (countContainer) {
-    const maxQ = (simState.branch === 'rama2') ? 4 : 2;
+    const maxQ = (simState.branch === 'rama2') ? 5 : 2;
     let html = '';
     for (let i = 1; i <= maxQ; i++) {
       const activeCls = (simState.count === i) ? (isRama1 ? 'active' : 'active-emerald') : '';
@@ -3350,6 +3350,20 @@ function determineCardLayout(state) {
     }
   }
 
+  if (count === 5) {
+    return {
+      format: 'a4',
+      orientation: 'vertical',
+      generator: 'createA4VerticalCard',
+      badge: 'A4 V',
+      badgeFull: 'A4 Vertical',
+      withGrid: false,
+      stage: 0,
+      minStage: 0,
+      maxStage: 0
+    };
+  }
+
   return {
     format: 'a5',
     orientation: 'vertical',
@@ -3378,7 +3392,7 @@ function stepSimGridStage(delta) {
 function setSimCount(count) {
   const isRama1 = simState.branch === 'rama1';
   const c = parseInt(count, 10);
-  const maxAllowed = isRama1 ? 2 : 4;
+  const maxAllowed = isRama1 ? 2 : 5;
   const targetCount = Math.min(Math.max(1, c), maxAllowed);
   if (simState.count !== targetCount) {
     simState.count = targetCount;
@@ -3638,6 +3652,7 @@ function attachSimSlotInteractivity(host, previewQuestions) {
       gridWrap.appendChild(stepper);
     }
   } else if (simState.branch === 'rama2') {
+    if (simState.count === 5) return; // 5P no requiere stepper de cuadrícula (solo 1 nivel fijo A4 V sin cuadrícula)
     const layout = determineCardLayout(simState);
     const isMin = layout.stage <= layout.minStage;
     const isMax = layout.stage >= layout.maxStage;

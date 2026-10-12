@@ -273,7 +273,7 @@ function renderAllPrintPages(classId, evaluation) {
   const isR3 = evaluation && (
     evaluation.branch === 'rama3' ||
     (evaluation.id && String(evaluation.id).startsWith('eval_r3_')) ||
-    (evaluation.type === 'mc' && qCount > 2)
+    (evaluation.branch !== 'rama2' && evaluation.branch !== 'rama1' && evaluation.type === 'mc' && qCount > 2)
   );
 
   // ── CASO FICHA A4 COMPLETA (1 ALUMNO POR HOJA A4 ENTERA) ──

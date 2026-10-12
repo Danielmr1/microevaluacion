@@ -435,7 +435,7 @@ function createFocalizadaA4VerticalCard(student, classroom, evaluation) {
     : new Array(20 * 5).fill('<i></i>').join('');
 
   return `
-    <div class="card-a4-v ${count === 4 ? 'card-a4-v-4q' : ''}">
+    <div class="card-a4-v ${count === 4 ? 'card-a4-v-4q' : (count === 5 ? 'card-a4-v-5q' : '')}">
       ${FOCALIZADA_FIDUCIALS}
       <div class="card-header">
         <div class="student-block">
@@ -487,7 +487,7 @@ function createFocalizadaA4VerticalCard(student, classroom, evaluation) {
               </div>
             `}
 
-            ${(!withGrid && idx === activeQuestions.length - 1) ? `
+            ${(!withGrid && idx === activeQuestions.length - 1 && count !== 5) ? `
               <div class="focalizada-grid-slot-${count}p" style="position:relative; width:100%; height:24px; margin-top:2mm;"></div>
             ` : ''}
           </div>
