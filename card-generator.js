@@ -687,7 +687,7 @@ function createA5VerticalCard(student, classroom, evaluation) {
   if (qCount === 2) {
     const q1 = (evaluation.questions && evaluation.questions[0]) || { prompt: '', options: {} };
     const q2 = (evaluation.questions && evaluation.questions[1]) || { prompt: '', options: {} };
-    const GRID_CELLS_V_2Q = new Array(13 * 4).fill('<i></i>').join('');
+    const GRID_CELLS_V_2Q = new Array(13 * 5).fill('<i></i>').join('');
 
     return `
       <div class="card-a5-v-free">

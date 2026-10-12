@@ -1054,7 +1054,7 @@
         let strokeInfo1 = null;
         if (b1.success && b1.canvas) enhanceHandwritingContrast(b1.canvas);
         if (g1.success && g1.canvas) {
-          strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 13, rows: is2Q ? 4 : (options.gridSize === 'expanded' ? 12 : 10) });
+          strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 13, rows: is2Q ? 5 : (options.gridSize === 'expanded' ? 12 : 10) });
         }
         list.push({
           qIndex: 1,
@@ -1070,7 +1070,7 @@
           let strokeInfo2 = null;
           if (b2.success && b2.canvas) enhanceHandwritingContrast(b2.canvas);
           if (g2.success && g2.canvas) {
-            strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 13, rows: 4 });
+            strokeInfo2 = preprocessCalculationGridStrokes(g2.canvas, { cols: 13, rows: 5 });
           }
           list.push({
             qIndex: 2,

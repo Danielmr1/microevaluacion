@@ -1261,8 +1261,8 @@
 
     .v-free-grid-2q {
       width: 104mm;
-      height: 32mm;
-      flex: 0 0 32mm;
+      height: 40mm;
+      flex: 0 0 40mm;
       margin: 1.5mm auto;
       border: 1px solid #cbd5e1;
       overflow: hidden;
@@ -1272,9 +1272,9 @@
     .notebook-grid-v2q {
       display: grid !important;
       grid-template-columns: repeat(13, 1fr) !important;
-      grid-template-rows: repeat(4, 1fr) !important;
+      grid-template-rows: repeat(5, 1fr) !important;
       width: 104mm !important;
-      height: 32mm !important;
+      height: 40mm !important;
     }
 
     .notebook-grid-v2q i {
@@ -2066,18 +2066,17 @@
     .notebook-grid > i:nth-child(n+97) { border-bottom: none; }
     .mc-grid-2q .notebook-grid > i:nth-child(n+49) { border-bottom: none; }
 
-    /* ── FRANJA DE RESPUESTA: 156 x 12 mm FIJAS ──
-       Ocupa x=15..171mm (libre de marcadores) e y=118..130mm de la ficha.
+    /* ── FRANJA DE RESPUESTA: 156 x 10 mm FIJAS ──
+       Ocupa x=15..171mm (libre de marcadores) e y=118..128mm de la ficha.
        El ancho de ".answer-tag" es FIJO a propósito: si dependiera del ancho
        del texto, la caja de respuesta se correría según la fuente y la ROI
        dejaría de caer sobre ella. Con tag fijo + gap fijo, la caja cae
-       siempre en x=36.8..80.8mm  e  y=119.5..128.5mm, que es exactamente
-       lo que espera ROI_CONFIG.ANSWER_BOX. */
+       centrada exactamente al nivel de los vértices ArUco inferiores. */
     .answer-strip {
       width: 156mm;
       height: 10mm;
       flex: 0 0 10mm;
-      margin: 2.5mm 0 0 0;
+      margin: 0.5mm 0 0 0;
       align-self: center;
       border: none !important;
       background: transparent !important;
@@ -3620,7 +3619,7 @@
       align-items: center;
       justify-content: flex-start;
       gap: 3mm;
-      margin: 1.5mm auto 0 auto;
+      margin: 5mm auto 0 auto;
       width: 104mm;
       padding: 0 1mm;
       box-sizing: border-box;
@@ -3630,7 +3629,7 @@
       align-items: center;
       justify-content: flex-start;
       gap: 3mm;
-      margin: 3.5mm auto 0 auto;
+      margin: 15mm auto 0 auto;
       width: 72mm;
       padding-left: 5mm;
       box-sizing: border-box;
