@@ -180,7 +180,7 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
   const orderMatch = String(student.id || '').match(/\d+/);
   const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
-  const isA6Vertical = evaluation.isPortrait === true || evaluation.orientation === 'vertical' || evaluation.cardOrientation === 'vertical' || totalQ === 2;
+  const isA6Vertical = evaluation.isPortrait === true || evaluation.orientation === 'vertical' || evaluation.cardOrientation === 'vertical';
 
   // Si es 1 pregunta en A6 Vertical con cuadrícula (Stage 2), delegar a createFormativaA6Card
   if (totalQ === 1 && isA6Vertical && evaluation.withGrid !== false) {
@@ -190,6 +190,64 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
   }
 
   const fiducialsHTML = FOCALIZADA_FIDUCIALS;
+
+  // ── CASO 2 PREGUNTAS: A6 HORIZONTAL (132 x 89 mm) ──
+  if (totalQ === 2 && !isA6Vertical) {
+    const activeQuestions = (evaluation.questions && evaluation.questions.length > 0)
+      ? evaluation.questions.slice(0, 2)
+      : [
+          { prompt: evaluation.prompt || 'Pregunta 1', options: evaluation.options || { A: '', B: '', C: '', D: '' }, expectedAnswer: '' },
+          { prompt: 'Pregunta 2', options: { A: '', B: '', C: '', D: '' }, expectedAnswer: '' }
+        ];
+
+    return `
+      <div class="card-a6-r3">
+        ${fiducialsHTML}
+        <div class="a6-card-header">
+          <div class="a6-student-block">
+            <div class="a6-student-name-row">
+              <span class="a6-student-label">Nombre:</span>
+              <span class="a6-student-name">${safeStudentName}</span>
+            </div>
+            <div class="a6-student-grade-row">
+              <span class="a6-student-grade">(${safeGradeText})</span>
+            </div>
+          </div>
+          <div class="a6-qr-block">
+            <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+          </div>
+        </div>
+        <div class="aruco-tr-number">${orderNumber}</div>
+
+        <div class="a6-h-2q-body">
+          ${activeQuestions.map((q, idx) => `
+            <div class="a6-h-2q-item">
+              <div class="a6-h-2q-header">
+                <strong class="a6-h-2q-num">${idx + 1}.</strong>
+                <span class="a6-h-2q-prompt">${escape(q.prompt)}</span>
+              </div>
+              ${isOMR ? `
+                <div class="a6-h-2q-omr">
+                  <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q.options?.A || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q.options?.B || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q.options?.C || '')}</span></div>
+                  <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q.options?.D || '')}</span></div>
+                </div>
+              ` : `
+                <div class="a6-h-2q-free">
+                  <span class="v-nogrid-free-tag">Rpta:</span>
+                  <div class="a6-nogrid-free-box"></div>
+                </div>
+              `}
+              ${(!evaluation.withGrid && idx === 1) ? `
+                <div class="focalizada-grid-slot-2p" style="position:relative; width:100%; height:20px; margin-top:1mm;"></div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
 
   // ── CASO 2 PREGUNTAS: A6 VERTICAL (89 x 132 mm) ──
   if (isA6Vertical) {

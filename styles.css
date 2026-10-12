@@ -2008,10 +2008,10 @@
       height: 20mm;
       flex: 0 0 20mm;
       margin: 3mm 0 0 0;
-      padding: 1.6mm 3mm;
-      background: #f8fafc;
-      border-left: 1.2mm solid #2563eb;
-      border-radius: 1mm;
+      padding: 1.6mm 0;
+      background: transparent;
+      border-left: none;
+      border-radius: 0;
       box-sizing: border-box;
       overflow: hidden;
       display: flex;
@@ -2195,13 +2195,69 @@
       min-height: 11mm !important;
       max-height: 11mm !important;
       margin: 1.2mm auto 0 auto !important;
-      padding: 1mm 2.5mm !important;
+      padding: 1mm 0 !important;
+      background: transparent !important;
+      border-left: none !important;
+      border-radius: 0 !important;
       box-sizing: border-box !important;
       align-self: center;
     }
     .mc-problem-2q .problem-text {
       font-size: 8.5pt !important;
       line-height: 1.25 !important;
+    }
+
+    /* ── 2 PREGUNTAS EN A6 HORIZONTAL (FOCALIZADA) ── */
+    .a6-h-2q-body {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 1mm 16mm;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .a6-h-2q-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
+      gap: 1mm;
+      padding: 1mm 0;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .a6-h-2q-item:last-child {
+      border-bottom: none;
+    }
+    .a6-h-2q-header {
+      display: flex;
+      gap: 1.5mm;
+      font-size: 8pt;
+      color: #0f172a;
+      line-height: 1.25;
+    }
+    .a6-h-2q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .a6-h-2q-prompt {
+      font-weight: 600;
+      flex: 1;
+    }
+    .a6-h-2q-omr {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 3mm;
+      width: 100%;
+      margin-top: 1mm;
+    }
+    .a6-h-2q-free {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      width: 100%;
+      margin-top: 1mm;
     }
     .card-a5.mc-2q .mc-grid-2q {
       width: 156mm;

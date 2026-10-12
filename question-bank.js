@@ -3205,10 +3205,10 @@ function determineCardLayout(state) {
       case 0:
         return {
           format: 'a6',
-          orientation: 'vertical',
+          orientation: 'horizontal',
           generator: 'createA6Card',
-          badge: 'A6 V',
-          badgeFull: 'A6 Vertical',
+          badge: 'A6 H',
+          badgeFull: 'A6 Horizontal',
           withGrid: false,
           stage: 0,
           minStage: 0,
