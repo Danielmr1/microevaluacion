@@ -327,10 +327,14 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = Math.ceil(students.length / 4);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-      const labelText = isR3 ? 'Cartillas OMR' : (isA6V ? 'Fichas A6' : 'Fichas Focalizadas');
-      const orientWord = isA6V ? ' [4 por hoja · Vertical]' : ' [4 por hoja]';
-      printBtn.innerHTML = `🖨️ Descargar ${labelText} (${sheetCount} ${pageWord})${orientWord}`;
+      if (isR3) {
+        printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
+      } else {
+        const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
+        const labelText = isA6V ? 'Fichas A6' : 'Fichas Focalizadas';
+        const orientWord = isA6V ? ' [4 por hoja · Vertical]' : ' [4 por hoja]';
+        printBtn.innerHTML = `🖨️ Descargar ${labelText} (${sheetCount} ${pageWord})${orientWord}`;
+      }
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -390,8 +394,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-      printBtn.innerHTML = `🖨️ Descargar Cartillas OMR (${sheetCount} ${pageWord}) [2 por hoja · Horizontal]`;
+      printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -485,7 +488,7 @@ function renderAllPrintPages(classId, evaluation) {
     const isR3 = evaluation && evaluation.branch === 'rama3';
     const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
     if (isR3) {
-      printBtn.innerHTML = `🖨️ Descargar Cartillas OMR (${sheetCount} ${pageWord})`;
+      printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
     } else {
       printBtn.innerHTML = `🖨️ Descargar / Imprimir ${sheetCount} ${pageWord}`;
     }
@@ -988,14 +991,7 @@ function renderQuestionBooklet(classId, evaluation) {
   // Actualizar texto del botón de descarga si existe
   const printBtn = document.getElementById('btn-print-booklet');
   if (printBtn) {
-    if (layout.level === 'quad') {
-      printBtn.innerHTML = `📄 Descargar Examen (PDF) [A4 Horizontal · 4 por hoja]`;
-    } else if (layout.level === 'half') {
-      printBtn.innerHTML = `📄 Descargar Examen (PDF) [A4 Horizontal · 2 por hoja]`;
-    } else {
-      const pCount = layout.pages.length;
-      printBtn.innerHTML = `📄 Descargar Examen (PDF) [A4 Vertical · ${pCount} ${pCount === 1 ? 'página' : 'páginas'}]`;
-    }
+    printBtn.innerHTML = `📄 Guardar o Imprimir Evaluación (PDF)`;
   }
 
   if (layout.level === 'quad') {
@@ -1473,6 +1469,23 @@ function printQuestionBooklet(evalParam) {
   }, 60);
 }
 
+/**
+ * Limpia y oculta completamente los contenedores de vista previa de PDF
+ * (tanto las cartillas de alumnos como el cuadernillo de preguntas de evaluación).
+ */
+function clearGeneratedPdfContainers() {
+  const pages = document.getElementById('pages-container');
+  if (pages) {
+    pages.innerHTML = '';
+    pages.style.display = 'none';
+  }
+  const booklet = document.getElementById('booklet-container');
+  if (booklet) {
+    booklet.innerHTML = '';
+    booklet.style.display = 'none';
+  }
+}
+
 // ── EXPOSICIÓN GLOBAL PARA RENDERIZADO EN EL ASISTENTE Y VISOR DE IMPRESIÓN ──
 if (typeof window !== 'undefined') {
   window.A5_GRID_COLS = A5_GRID_COLS;
@@ -1494,5 +1507,7 @@ if (typeof window !== 'undefined') {
   window.createA5VerticalCard = createA5VerticalCard;
   window.createA4Card = createA4Card;
   window.createA4VerticalCard = createA4VerticalCard;
+  window.clearGeneratedPdfContainers = clearGeneratedPdfContainers;
 }
+
 

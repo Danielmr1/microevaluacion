@@ -48,7 +48,7 @@
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
   <script src="card-cartilla.js?v=3.2.01"></script>
-  <script src="card-generator.js?v=3.2.07"></script>
+  <script src="card-generator.js?v=3.2.08"></script>
 
   <link rel="stylesheet" href="styles.css?v=3.2.07">
 </head>
@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.07</span>
+          <span class="version-tag">v3.2.08</span>
         </div>
       </div>
     </div>
@@ -930,11 +930,11 @@
         <div id="summary-main-actions" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
           <button id="btn-print-booklet" type="button" onclick="printQuestionBooklet()" class="btn-print-action"
             style="display:none; background:#0284c7; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #0284c740; align-items:center; justify-content:center; gap:8px;">
-            📄 Descargar Examen (PDF)
+            📄 Guardar o Imprimir Evaluación (PDF)
           </button>
           <button id="btn-print-sheets" type="button" onclick="printEvaluationSheets()" class="btn-print-action"
             style="background:#16a34a; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #16a34a40; display:flex; align-items:center; justify-content:center; gap:8px;">
-            🖨️ Descargar / Imprimir páginas A4
+            🖨️ Guardar o Imprimir Cartillas (PDF)
           </button>
           <button type="button" onclick="switchTab('scan')" class="btn-goto-scan"
             style="background:#4f46e5; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #4f46e540; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -2002,6 +2002,14 @@
       document.body.classList.remove('camera-active');
       document.title = 'Microevaluación';
       closeBankManagerModal();
+      if (typeof clearGeneratedPdfContainers === 'function') {
+        clearGeneratedPdfContainers();
+      } else {
+        const pages = document.getElementById('pages-container');
+        if (pages) { pages.innerHTML = ''; pages.style.display = 'none'; }
+        const booklet = document.getElementById('booklet-container');
+        if (booklet) { booklet.innerHTML = ''; booklet.style.display = 'none'; }
+      }
       showView('hub');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2460,6 +2468,11 @@
         pagesContainer.innerHTML = '';
         pagesContainer.style.display = 'none';
       }
+      const bookletContainer = document.getElementById('booklet-container');
+      if (bookletContainer) {
+        bookletContainer.innerHTML = '';
+        bookletContainer.style.display = 'none';
+      }
 
       if (typeof selectBranchMode === 'function') {
         selectBranchMode(curBranch);
@@ -2857,6 +2870,11 @@
       if (pagesContainer) {
         pagesContainer.innerHTML = '';
         pagesContainer.style.display = 'none';
+      }
+      const bookletContainer = document.getElementById('booklet-container');
+      if (bookletContainer) {
+        bookletContainer.innerHTML = '';
+        bookletContainer.style.display = 'none';
       }
       const stepClass = document.getElementById('step-classroom');
       if (stepClass) stepClass.style.display = 'block';
