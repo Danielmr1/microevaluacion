@@ -713,23 +713,28 @@ function determineBookletLayout(evaluation) {
         pages: [{ questions }]
       };
     } else if (questions.length <= 10) {
-      const mid = Math.ceil(questions.length / 2);
+      // 6 a 10 preguntas (1 página A4 Vertical): se llena primero Col 1 (hasta 7-8 preguntas) y el resto a Col 2
+      const maxCol1 = Math.min(questions.length, questions.length <= 7 ? questions.length : 6);
       return {
         level: 'portrait',
-        pages: [{ pageNum: 1, col1: questions.slice(0, mid), col2: questions.slice(mid) }]
+        pages: [{
+          pageNum: 1,
+          col1: questions.slice(0, maxCol1),
+          col2: questions.slice(maxCol1)
+        }]
       };
     } else {
-      // 15 o 20 preguntas: 2 páginas A4 Vertical holgadas
-      const p1Count = questions.length <= 15 ? 8 : 10;
-      const p1Questions = questions.slice(0, p1Count);
-      const p2Questions = questions.slice(p1Count);
-      const p1Mid = Math.ceil(p1Questions.length / 2);
-      const p2Mid = Math.ceil(p2Questions.length / 2);
+      // 15 o 20 preguntas: 2 páginas A4 Vertical en 2 columnas llenando secuencialmente
+      const p1Cap = questions.length <= 15 ? 8 : 10;
+      const p1Questions = questions.slice(0, p1Cap);
+      const p2Questions = questions.slice(p1Cap);
+      const p1Col1Count = Math.min(p1Questions.length, 5);
+      const p2Col1Count = Math.min(p2Questions.length, 5);
       return {
         level: 'portrait',
         pages: [
-          { pageNum: 1, col1: p1Questions.slice(0, p1Mid), col2: p1Questions.slice(p1Mid) },
-          { pageNum: 2, col1: p2Questions.slice(0, p2Mid), col2: p2Questions.slice(p2Mid) }
+          { pageNum: 1, col1: p1Questions.slice(0, p1Col1Count), col2: p1Questions.slice(p1Col1Count) },
+          { pageNum: 2, col1: p2Questions.slice(0, p2Col1Count), col2: p2Questions.slice(p2Col1Count) }
         ]
       };
     }
@@ -1141,12 +1146,12 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     const promptText = `${num}. ${q.prompt || ''}`;
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(isCompact ? 7.5 : 8.5);
+    doc.setFontSize(isCompact ? 8.5 : 10);
     doc.setTextColor(0, 0, 0);
 
     const lines = doc.splitTextToSize(promptText, colWidth);
     doc.text(lines, startX, curY);
-    curY += lines.length * (isCompact ? 3.0 : 3.6);
+    curY += lines.length * (isCompact ? 3.6 : 4.4);
 
     const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
     const maxOptLen = Math.max(
@@ -1158,7 +1163,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     const isGrid2x2 = maxOptLen <= (colWidth > 70 ? 24 : 14);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(isCompact ? 7 : 8);
+    doc.setFontSize(isCompact ? 8 : 9.5);
 
     if (isGrid2x2) {
       const halfW = colWidth / 2;
@@ -1166,37 +1171,37 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       doc.setFont('helvetica', 'bold');
       doc.text('A)', startX, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.A || '—'), startX + 4.5, curY);
+      doc.text(String(opts.A || '—'), startX + 5, curY);
 
       doc.setFont('helvetica', 'bold');
       doc.text('B)', startX + halfW, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.B || '—'), startX + halfW + 4.5, curY);
-      curY += (isCompact ? 3.0 : 3.6);
+      doc.text(String(opts.B || '—'), startX + halfW + 5, curY);
+      curY += (isCompact ? 3.6 : 4.4);
 
       // Fila 2: C y D
       doc.setFont('helvetica', 'bold');
       doc.text('C)', startX, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.C || '—'), startX + 4.5, curY);
+      doc.text(String(opts.C || '—'), startX + 5, curY);
 
       doc.setFont('helvetica', 'bold');
       doc.text('D)', startX + halfW, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.D || '—'), startX + halfW + 4.5, curY);
-      curY += (isCompact ? 3.0 : 3.6);
+      doc.text(String(opts.D || '—'), startX + halfW + 5, curY);
+      curY += (isCompact ? 3.6 : 4.4);
     } else {
       ['A', 'B', 'C', 'D'].forEach(optKey => {
         doc.setFont('helvetica', 'bold');
         doc.text(`${optKey})`, startX, curY);
         doc.setFont('helvetica', 'normal');
-        const optLines = doc.splitTextToSize(String(opts[optKey] || '—'), colWidth - 5);
-        doc.text(optLines, startX + 4.5, curY);
-        curY += optLines.length * (isCompact ? 2.8 : 3.4);
+        const optLines = doc.splitTextToSize(String(opts[optKey] || '—'), colWidth - 6);
+        doc.text(optLines, startX + 5, curY);
+        curY += optLines.length * (isCompact ? 3.2 : 4.0);
       });
     }
 
-    curY += (isCompact ? 1.5 : 2.5);
+    curY += (isCompact ? 2.5 : 3.5);
     return curY - startY;
   }
 
@@ -1204,26 +1209,26 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
   function renderHeader(originX, originY, width, isCompact) {
     let curY = originY + 4;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(isCompact ? 8.5 : 10.5);
+    doc.setFontSize(isCompact ? 10.5 : 12.5);
     doc.text('EVALUACIÓN ESCOLAR', originX, curY);
-    curY += (isCompact ? 3.5 : 4.5);
+    curY += (isCompact ? 4.5 : 5.5);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(isCompact ? 7 : 8);
+    doc.setFontSize(isCompact ? 8.5 : 10);
     doc.text('Estudiante: __________________________________________________', originX, curY);
-    curY += (isCompact ? 3.0 : 3.8);
+    curY += (isCompact ? 3.8 : 4.5);
 
     doc.setFont('helvetica', 'italic');
-    doc.setFontSize(isCompact ? 6 : 7);
+    doc.setFontSize(isCompact ? 7 : 8);
     doc.setTextColor(80, 80, 80);
     doc.text('* Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.', originX, curY);
     doc.setTextColor(0, 0, 0);
-    curY += 2;
+    curY += 2.5;
 
-    doc.setLineWidth(0.35);
+    doc.setLineWidth(0.4);
     doc.setDrawColor(0, 0, 0);
     doc.line(originX, curY, originX + width, curY);
-    curY += (isCompact ? 3 : 4);
+    curY += (isCompact ? 4.5 : 6);
     return curY;
   }
 
@@ -1275,9 +1280,26 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
           col2Y += renderQuestion(questions[i], i, h.startX + subColW + 6, col2Y, subColW, true);
         }
       } else {
+        // Para 5 preguntas en A5 vertical: estimar alturas para distribuir armónicamente en todo el alto disponible (hasta ~198mm)
+        const availableH = 196 - qStartY;
+        // Calcular altura total natural de las preguntas
+        let naturalTotalH = 0;
+        const heights = questions.map((q, idx) => {
+          const promptLines = doc.splitTextToSize(`${idx + 1}. ${q.prompt || ''}`, h.w).length;
+          const optLines = 2; // 2x2 grid
+          const hQ = (promptLines * 4.4) + (optLines * 4.4) + 2;
+          naturalTotalH += hQ;
+          return hQ;
+        });
+
+        const extraGap = questions.length > 1
+          ? Math.max(3.5, Math.min(13, (availableH - naturalTotalH) / (questions.length - 1)))
+          : 6;
+
         let qY = qStartY;
         questions.forEach((q, idx) => {
-          qY += renderQuestion(q, idx, h.startX, qY, h.w, false);
+          const usedH = renderQuestion(q, idx, h.startX, qY, h.w, false);
+          qY += usedH + extraGap;
         });
       }
     });

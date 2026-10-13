@@ -4778,22 +4778,25 @@ function determineRama3ExamLayout(count) {
       totalPages: 1
     };
   } else if (count <= 6) {
+    // 6 preguntas en A4 Vertical (2 columnas): Columna 1 llena primero (6 preguntas) o 6 en col1 y 0 en col2
+    // Pero si el usuario prefiere repartir a partir de 6 o llenar hasta 6-7 en col1:
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 1,
-      col1Count: 3,
-      col2Count: count - 3
+      col1Count: Math.min(count, 6),
+      col2Count: Math.max(0, count - 6)
     };
   } else if (count <= 10) {
+    // 10 preguntas: Columna 1 se llena primero (6 preguntas), y las restantes (4 preguntas) van a la Columna 2
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 1,
-      col1Count: 5,
-      col2Count: count - 5
+      col1Count: 6,
+      col2Count: count - 6
     };
   } else if (count <= 15) {
     return {
@@ -4801,22 +4804,22 @@ function determineRama3ExamLayout(count) {
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 2,
-      p1Col1: 4,
-      p1Col2: 4,
-      p2Col1: 4,
-      p2Col2: count - 12
+      p1Col1: 5,
+      p1Col2: 3,
+      p2Col1: 5,
+      p2Col2: count - 13
     };
   } else {
-    // 20 preguntas (2 hojas holgadas: 10 en pág 1, 10 en pág 2)
+    // 20 preguntas (2 hojas: 10 en pág 1, 10 en pág 2; en cada una se llenan 5 o 6 en col1 primero)
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 2,
-      p1Col1: 5,
-      p1Col2: 5,
-      p2Col1: 5,
-      p2Col2: 5
+      p1Col1: 6,
+      p1Col2: 4,
+      p2Col1: 6,
+      p2Col2: 4
     };
   }
 }
