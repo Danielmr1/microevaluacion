@@ -3564,7 +3564,7 @@ function attachSimSlotInteractivity(host, previewQuestions) {
     prob1P.title = 'Haz clic para elegir o redactar la Pregunta 1';
     prob1P.onclick = () => openSimQuestionPicker(0);
     if (previewQuestions[0]?.isEmptySlot) {
-      prob1P.innerHTML = `<div class="sim-slot-empty">➕ Clic aquí para elegir del banco o redactar la Pregunta 1</div>`;
+      prob1P.innerHTML = `<div class="sim-slot-empty">➕ Clic Pregunta 1</div>`;
     }
   }
 
@@ -4859,12 +4859,11 @@ function renderRama3ExamQuestionHTML(idx) {
   if (!isFilled) {
     return `
       <div class="r3-exam-q-item r3-exam-empty-slot" onclick="openRama3QuestionPicker(${idx})" title="Clic para seleccionar o redactar pregunta">
-        <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; align-items:center; width:100%;">
           <span style="font-size:0.78rem; font-weight:800; color:#0284c7; display:flex; align-items:center; gap:5px;">
             <span style="background:rgba(2,132,199,0.12); border:1px solid #0284c7; border-radius:4px; padding:1px 5px;">P${qNum}</span>
-            ➕ Clic para configurar Pregunta ${qNum}
+            ➕ Clic Pregunta ${qNum}
           </span>
-          <span style="font-size:0.68rem; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:4px; border:1px solid #cbd5e1;">Del banco o nueva</span>
         </div>
       </div>
     `;
