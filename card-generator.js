@@ -612,6 +612,13 @@ function printEvaluationSheets(classId) {
 // Escuchas reactivas para atajos de teclado (Ctrl+P) y opciones de impresión del navegador
 if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('beforeprint', () => {
+    if (document.body.classList.contains('print-mode-booklet')) {
+      const bookletContainer = document.getElementById('booklet-container');
+      const hasPortraitSheet = !!(bookletContainer && bookletContainer.querySelector('.sheet-booklet-portrait'));
+      setPrintPageOrientation(hasPortraitSheet ? 'portrait' : 'landscape');
+      return;
+    }
+
     const container = document.getElementById('pages-container');
     if (container && container.style.display !== 'none' && container.children.length > 0) {
       const isLandscape = container.querySelector('.sheet-a4-quad:not(.sheet-a4-quad-v)') || container.querySelector('.sheet-a4-split');
@@ -632,6 +639,8 @@ if (typeof window !== 'undefined' && window.addEventListener) {
 
   window.addEventListener('afterprint', () => {
     document.title = 'Microevaluación';
+    document.body.classList.remove('print-mode-booklet');
+    setPrintPageOrientation('portrait');
   });
 }
 
@@ -1413,27 +1422,7 @@ function printQuestionBooklet() {
   const evalObj = (typeof wizardEval !== 'undefined') ? wizardEval : null;
   const pdfTitle = getBookletPdfExportTitle(classroom, evalObj);
 
-  // ── DESCARGA DIRECTA EN PDF CON jsPDF (SI ESTÁ DISPONIBLE) ──
-  const jsPDFClass = (typeof window !== 'undefined' && window.jspdf && window.jspdf.jsPDF)
-    ? window.jspdf.jsPDF
-    : (typeof jsPDF !== 'undefined' ? jsPDF : null);
-
-  if (jsPDFClass && typeof generateBookletWithJsPDF === 'function') {
-    try {
-      const doc = generateBookletWithJsPDF(evalObj, classroom ? classroom.name : null, jsPDFClass);
-      if (doc) {
-        doc.save(`${pdfTitle}.pdf`);
-        if (typeof showToast === 'function') {
-          showToast('📥 Cuadernillo de preguntas descargado en PDF.');
-        }
-        return;
-      }
-    } catch (err) {
-      console.error('Error generando PDF con jsPDF:', err);
-    }
-  }
-
-  // ── FALLBACK A DIÁLOGO DE IMPRESIÓN DEL NAVEGADOR ──
+  // ── DIÁLOGO NATIVO DE IMPRESIÓN Y VISTA PREVIA (IGUAL A CARTILLAS OMR) ──
   const layout = determineBookletLayout(evalObj);
   const hasPortraitSheet = !!(container && container.querySelector('.sheet-booklet-portrait'));
   const isLandscape = !hasPortraitSheet && (layout.level === 'quad' || layout.level === 'half');
