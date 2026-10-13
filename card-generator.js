@@ -712,29 +712,28 @@ function determineBookletLayout(evaluation) {
         subColumns: 1,
         pages: [{ questions }]
       };
-    } else if (questions.length <= 10) {
-      // 10 preguntas (1 página A4 Vertical en 2 columnas): 5 preguntas en col1 y 5 en col2 (equilibradas de arriba a abajo)
-      const mid = Math.ceil(questions.length / 2);
+    } else if (questions.length <= 15) {
+      // 10 y 15 preguntas: 1 sola página A4 Vertical en 2 columnas (Col 1 llena primero con 8 preguntas, y Col 2 recibe el resto)
+      const col1Count = Math.min(questions.length, 8);
       return {
         level: 'portrait',
         pages: [{
           pageNum: 1,
-          col1: questions.slice(0, mid),
-          col2: questions.slice(mid)
+          col1: questions.slice(0, col1Count),
+          col2: questions.slice(col1Count)
         }]
       };
     } else {
-      // 15 o 20 preguntas: 2 páginas A4 Vertical en 2 columnas holgadas y equilibradas
-      const p1Cap = questions.length <= 15 ? 8 : 10;
-      const p1Questions = questions.slice(0, p1Cap);
-      const p2Questions = questions.slice(p1Cap);
-      const p1Mid = Math.ceil(p1Questions.length / 2);
-      const p2Mid = Math.ceil(p2Questions.length / 2);
+      // 20 preguntas: 2 páginas A4 Vertical (Página 1: 8 en col1 y 2 en col2; Página 2: 8 en col1 y 2 en col2)
+      const p1Questions = questions.slice(0, 10);
+      const p2Questions = questions.slice(10);
+      const p1Col1 = Math.min(p1Questions.length, 8);
+      const p2Col1 = Math.min(p2Questions.length, 8);
       return {
         level: 'portrait',
         pages: [
-          { pageNum: 1, col1: p1Questions.slice(0, p1Mid), col2: p1Questions.slice(p1Mid) },
-          { pageNum: 2, col1: p2Questions.slice(0, p2Mid), col2: p2Questions.slice(p2Mid) }
+          { pageNum: 1, col1: p1Questions.slice(0, p1Col1), col2: p1Questions.slice(p1Col1) },
+          { pageNum: 2, col1: p2Questions.slice(0, p2Col1), col2: p2Questions.slice(p2Col1) }
         ]
       };
     }
@@ -1321,6 +1320,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       ? layout.pages
       : [{ col1: questions.slice(0, Math.ceil(questions.length / 2)), col2: questions.slice(Math.ceil(questions.length / 2)), pageNum: 1 }];
 
+    let accumulatedQCount = 0;
     pages.forEach((p, pIdx) => {
       if (pIdx > 0) {
         doc.addPage('a4', 'portrait');
@@ -1329,11 +1329,9 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       let col1StartY = 14;
       let col2StartY = 14;
 
-      if (p.pageNum === 1) {
-        const headerEndY = renderHeader(12, 10, 186, false);
-        col1StartY = headerEndY;
-        col2StartY = headerEndY;
-      }
+      const headerEndY = renderHeader(12, 10, 186, false);
+      col1StartY = headerEndY;
+      col2StartY = headerEndY;
 
       // Distribución vertical proporcional dinámica para cada columna
       const pageBottomLimit = 282; // Límite inferior seguro de la hoja A4 antes del pie de página (290)
@@ -1342,7 +1340,8 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       // Calcular altura natural de Columna 1
       let natH1 = 0;
       p.col1.forEach((q, idx) => {
-        const pLines = doc.splitTextToSize(`${idx + 1}. ${q.prompt || ''}`, colW).length;
+        const globalIdx = accumulatedQCount + idx;
+        const pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW).length;
         const optL = 2; // cuadrícula 2x2
         natH1 += (pLines * 4.4) + (optL * 4.4) + 2;
       });
@@ -1353,7 +1352,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       // Calcular altura natural de Columna 2
       let natH2 = 0;
       p.col2.forEach((q, idx) => {
-        const globalIdx = p.col1.length + idx;
+        const globalIdx = accumulatedQCount + p.col1.length + idx;
         const pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW).length;
         const optL = 2;
         natH2 += (pLines * 4.4) + (optL * 4.4) + 2;
@@ -1369,17 +1368,20 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       // Render Col 1 con espaciado dinámico
       let curCol1Y = col1StartY;
       p.col1.forEach((q, idx) => {
-        const usedH = renderQuestion(q, idx, col1X, curCol1Y, colW, false);
+        const globalIdx = accumulatedQCount + idx;
+        const usedH = renderQuestion(q, globalIdx, col1X, curCol1Y, colW, false);
         curCol1Y += usedH + finalGap1;
       });
 
       // Render Col 2 con espaciado dinámico
       let curCol2Y = col2StartY;
       p.col2.forEach((q, idx) => {
-        const globalIdx = p.col1.length + idx;
+        const globalIdx = accumulatedQCount + p.col1.length + idx;
         const usedH = renderQuestion(q, globalIdx, col2X, curCol2Y, colW, false);
         curCol2Y += usedH + finalGap2;
       });
+
+      accumulatedQCount += p.col1.length + p.col2.length;
 
       // Footer
       doc.setFont('helvetica', 'normal');

@@ -4689,7 +4689,7 @@ function updateRama3ControlsUI() {
   if (layoutBadge) {
     if (r3State.count <= 6) {
       layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (2 alumnos por A4) + Cartilla A6 (4 alumnos por A4)';
-    } else if (r3State.count <= 10) {
+    } else if (r3State.count <= 15) {
       layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     } else {
       layoutBadge.innerHTML = `📄 <b>Examen A4 Vertical</b> (2 págs · 2 col) + Cartilla A5 (2 alumnos por A4)`;
@@ -4776,38 +4776,36 @@ function determineRama3ExamLayout(count) {
       totalPages: 1
     };
   } else if (count <= 10) {
-    // 10 preguntas: 2 columnas en A4 Vertical (5 en Columna 1 y 5 en Columna 2)
-    const mid = Math.ceil(count / 2);
+    // 10 preguntas (1 página A4 Vertical): 8 preguntas en Columna 1 y 2 en Columna 2
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 1,
-      col1Count: mid,
-      col2Count: count - mid
+      col1Count: Math.min(count, 8),
+      col2Count: Math.max(0, count - 8)
     };
   } else if (count <= 15) {
+    // 15 preguntas (1 sola página A4 Vertical): 8 preguntas en Columna 1 y 7 en Columna 2
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
-      totalPages: 2,
-      p1Col1: 5,
-      p1Col2: 3,
-      p2Col1: 5,
-      p2Col2: count - 13
+      totalPages: 1,
+      col1Count: 8,
+      col2Count: count - 8
     };
   } else {
-    // 20 preguntas (2 hojas: 10 en pág 1, 10 en pág 2; en cada una se llenan 5 o 6 en col1 primero)
+    // 20 preguntas (2 páginas A4 Vertical): Página 1 con 8 en col1 y 2 en col2; Página 2 con 8 en col1 y 2 en col2
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 2,
-      p1Col1: 6,
-      p1Col2: 4,
-      p2Col1: 6,
-      p2Col2: 4
+      p1Col1: 8,
+      p1Col2: 2,
+      p2Col1: 8,
+      p2Col2: 2
     };
   }
 }
