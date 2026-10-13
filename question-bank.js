@@ -4689,6 +4689,8 @@ function updateRama3ControlsUI() {
   if (layoutBadge) {
     if (r3State.count <= 6) {
       layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (2 alumnos por A4) + Cartilla A6 (4 alumnos por A4)';
+    } else if (r3State.count <= 10) {
+      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A6 (4 alumnos por A4)';
     } else {
       layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     }
@@ -5050,7 +5052,7 @@ function renderRama3CartillaPreview() {
   };
 
   let cardHTML = '';
-  if (r3State.count <= 8) {
+  if (r3State.count <= 10) {
     if (typeof createCartillaA6Card === 'function') {
       cardHTML = createCartillaA6Card(sampleStudent, classroom, evalMock);
     }

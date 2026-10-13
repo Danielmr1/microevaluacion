@@ -40,10 +40,10 @@ function createA5Card(student, classroom, evaluation) {
   const isBranch3 = (evaluation.branch === 'rama3' || (evaluation.id && String(evaluation.id).startsWith('eval_r3_'))) ||
     (evaluation.branch !== 'rama2' && evaluation.branch !== 'rama1' && isOMR && qCount > 2);
   if (isBranch3) {
-    if (typeof createCartillaA5VerticalCard === 'function' && qCount > 8) {
+    if (typeof createCartillaA5VerticalCard === 'function' && qCount > 10) {
       return createCartillaA5VerticalCard(student, classroom, evaluation);
     }
-    return qCount <= 8
+    return qCount <= 10
       ? createA6Card(student, classroom, evaluation)
       : createA5VerticalR3Card(student, classroom, evaluation);
   }
@@ -88,7 +88,7 @@ function createA6Card(student, classroom, evaluation) {
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 5);
   const isOMR = (evaluation.type === 'mc');
 
-  // ── SUBMÓDULO 3: CARTILLA DE RESPUESTAS OMR (RAMA 3 HASTA 8 PREGUNTAS) ──
+  // ── SUBMÓDULO 3: CARTILLA DE RESPUESTAS OMR (RAMA 3 HASTA 10 PREGUNTAS) ──
   const isBranch3 = (evaluation.branch === 'rama3' || (evaluation.id && String(evaluation.id).startsWith('eval_r3_'))) ||
     (evaluation.branch !== 'rama2' && evaluation.branch !== 'rama1' && isOMR && totalQ > 2);
   if (isBranch3) {
@@ -313,12 +313,12 @@ function renderAllPrintPages(classId, evaluation) {
     return;
   }
 
-  // ── CASO CARTILLA OMR HASTA 8 PREGUNTAS O CUALQUIER FICHA A6 (4 ALUMNOS POR HOJA A4: 2x2) ──
+  // ── CASO CARTILLA OMR HASTA 10 PREGUNTAS O CUALQUIER FICHA A6 (4 ALUMNOS POR HOJA A4: 2x2) ──
   const isA6Quad = evaluation && (
     evaluation.cardFormat === 'a6' ||
     (evaluation.branch === 'rama2' && evaluation.withGrid === false && qCount <= 2 && evaluation.cardFormat !== 'a5')
   );
-  if ((isR3 && qCount <= 8) || isA6Quad) {
+  if ((isR3 && qCount <= 10) || isA6Quad) {
     const isA6V = isA6Quad && (
       evaluation.orientation === 'vertical' ||
       evaluation.isPortrait === true ||
@@ -385,8 +385,8 @@ function renderAllPrintPages(classId, evaluation) {
     return;
   }
 
-  // ── CASO CARTILLA OMR 9 A 20 PREGUNTAS: 2 ALUMNOS POR HOJA A4 HORIZONTAL (IZQUIERDA Y DERECHA) ──
-  if (isR3 && qCount > 8) {
+  // ── CASO CARTILLA OMR MÁS DE 10 PREGUNTAS (11 A 20): 2 ALUMNOS POR HOJA A4 HORIZONTAL (IZQUIERDA Y DERECHA) ──
+  if (isR3 && qCount > 10) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {

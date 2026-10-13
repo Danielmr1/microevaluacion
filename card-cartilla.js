@@ -132,10 +132,11 @@ function createCartillaA6Card(student, classroom, evaluation) {
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 5);
 
   let bodyHTML = '';
-  if (totalQ === 8) {
+  if (totalQ === 8 || totalQ === 10) {
+    const half = totalQ / 2;
     const col1Rows = [];
     const col2Rows = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < half; i++) {
       const qNum = String(i + 1).padStart(2, '0');
       col1Rows.push(`
         <div class="a6-q-row">
@@ -149,7 +150,7 @@ function createCartillaA6Card(student, classroom, evaluation) {
         </div>
       `);
     }
-    for (let i = 4; i < 8; i++) {
+    for (let i = half; i < totalQ; i++) {
       const qNum = String(i + 1).padStart(2, '0');
       col2Rows.push(`
         <div class="a6-q-row">

@@ -732,9 +732,9 @@
       const totalQ = questionCount;
       const results = [];
 
-      // SUB-RAMA 3A: Cartilla A6 (4 alumnos por hoja A4, hasta 8 preguntas)
-      if (branch === 'rama3' && totalQ <= 8) {
-        if (totalQ === 8) {
+      // SUB-RAMA 3A: Cartilla A6 (4 alumnos por hoja A4, hasta 10 preguntas)
+      if (branch === 'rama3' && totalQ <= 10) {
+        if (totalQ === 8 || totalQ === 10) {
           const col1Bubbles = [
             { key: 'A', xMm: 43.8 },
             { key: 'B', xMm: 53.3 },
@@ -747,15 +747,16 @@
             { key: 'C', xMm: 139.5 },
             { key: 'D', xMm: 149.1 }
           ];
-          const stepY = 98.4 / 5;
-          for (let i = 0; i < 4; i++) {
+          const half = totalQ / 2;
+          const stepY = 98.4 / (half + 1);
+          for (let i = 0; i < half; i++) {
             const qNum = i + 1;
             const yMm = 32.0 + (i + 1) * stepY;
             const res = evaluateCompactRow(sheetCanvas, col1Bubbles, yMm);
             results.push(Object.assign({ qIndex: qNum }, res));
           }
-          for (let j = 0; j < 4; j++) {
-            const qNum = 4 + j + 1;
+          for (let j = 0; j < half; j++) {
+            const qNum = half + j + 1;
             const yMm = 32.0 + (j + 1) * stepY;
             const res = evaluateCompactRow(sheetCanvas, col2Bubbles, yMm);
             results.push(Object.assign({ qIndex: qNum }, res));
@@ -779,7 +780,7 @@
         return results;
       }
 
-      // SUB-RAMA 3B: Cartilla A5 Vertical (2 alumnos por hoja A4, 9 a 20 preguntas)
+      // SUB-RAMA 3B: Cartilla A5 Vertical (2 alumnos por hoja A4, 11 a 20 preguntas)
       if (branch === 'rama3') {
         const isVertical = sheetCanvas.height > sheetCanvas.width;
         if (totalQ === 20 && isVertical) {
