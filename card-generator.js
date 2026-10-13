@@ -703,12 +703,14 @@ function determineBookletLayout(evaluation) {
   const questions = (evaluation && evaluation.questions) ? evaluation.questions : [];
   if (questions.length === 0) return { level: 'quad', pages: [] };
 
-  // ── RAMA 3 (CARTILLA OMR): Siempre A4 Vertical según directiva de aula ──
+  // ── RAMA 3 (CARTILLA OMR): Adaptativo según directiva de aula ──
   if (evaluation && evaluation.branch === 'rama3') {
     if (questions.length <= 5) {
+      // 5 preguntas: A4 Horizontal en 2 mitades A5 (2 exámenes por hoja para ahorrar 50% de papel)
       return {
-        level: 'portrait_1col',
-        pages: [{ pageNum: 1, col1: questions, col2: [] }]
+        level: 'half',
+        subColumns: 1,
+        pages: [{ questions }]
       };
     } else if (questions.length <= 10) {
       const mid = Math.ceil(questions.length / 2);

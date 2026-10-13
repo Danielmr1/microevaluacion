@@ -4688,7 +4688,7 @@ function updateRama3ControlsUI() {
   const layoutBadge = document.getElementById('r3-layout-badge');
   if (layoutBadge) {
     if (r3State.count <= 5) {
-      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 col) + Cartilla A6 (4 alumnos por A4)';
+      layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (2 alumnos por A4) + Cartilla A6 (4 alumnos por A4)';
     } else if (r3State.count <= 6) {
       layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (2 col) + Cartilla A6 (4 alumnos por A4)';
     } else if (r3State.count <= 10) {
@@ -4770,8 +4770,9 @@ function renderRama3Matrix() {
 // ── LAYOUT Y GEOMETRÍA DEL EXAMEN ESCOLAR (MODO B) ──
 function determineRama3ExamLayout(count) {
   if (count <= 5) {
+    // 5 preguntas: Examen en A5 Vertical (1 columna, 2 exámenes caben en un pliego A4)
     return {
-      sheetClass: 'r3-exam-sheet-a4-v',
+      sheetClass: 'r3-exam-sheet-a5-v',
       bodyClass: 'r3-exam-body-1col',
       columns: 1,
       totalPages: 1
