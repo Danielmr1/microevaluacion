@@ -3435,8 +3435,55 @@ function fitSimCardToViewport() {
   }
 }
 
+function fitRama3ToViewport() {
+  // 1. Ajuste proporcional de la Hoja de Evaluación Escolar (Rama 3 Modo B)
+  const examViewport = document.getElementById('r3-exam-viewport');
+  const examHost = document.getElementById('r3-exam-render-host');
+  const examSheet = examHost ? examHost.querySelector('.r3-exam-sheet') : null;
+  if (examViewport && examHost && examSheet) {
+    examHost.style.transform = 'none';
+    examHost.style.marginBottom = '0px';
+
+    const availWidth = examViewport.clientWidth - 28;
+    const sheetWidth = examSheet.offsetWidth;
+
+    if (sheetWidth > 0 && availWidth > 0 && sheetWidth > availWidth) {
+      const scale = availWidth / sheetWidth;
+      examHost.style.transform = `scale(${scale})`;
+      examHost.style.transformOrigin = 'top center';
+      const sheetHeight = examSheet.offsetHeight;
+      const heightDiff = sheetHeight * (1 - scale);
+      examHost.style.marginBottom = `-${heightDiff}px`;
+    }
+  }
+
+  // 2. Ajuste proporcional de la Cartilla OMR (Rama 3 Modo B)
+  const cartViewport = document.getElementById('r3-cartilla-viewport');
+  const cartHost = document.getElementById('r3-cartilla-render-host');
+  const cartCard = cartHost ? cartHost.firstElementChild : null;
+  if (cartViewport && cartHost && cartCard) {
+    cartHost.style.transform = 'none';
+    cartHost.style.marginBottom = '0px';
+
+    const availWidth = cartViewport.clientWidth - 28;
+    const cardWidth = cartCard.offsetWidth;
+
+    if (cardWidth > 0 && availWidth > 0 && cardWidth > availWidth) {
+      const scale = availWidth / cardWidth;
+      cartHost.style.transform = `scale(${scale})`;
+      cartHost.style.transformOrigin = 'top center';
+      const cardHeight = cartCard.offsetHeight;
+      const heightDiff = cardHeight * (1 - scale);
+      cartHost.style.marginBottom = `-${heightDiff}px`;
+    }
+  }
+}
+
 if (typeof window !== 'undefined') {
-  window.addEventListener('resize', fitSimCardToViewport);
+  window.addEventListener('resize', () => {
+    fitSimCardToViewport();
+    fitRama3ToViewport();
+  });
 }
 
 function renderSimulatedCard() {
@@ -4662,6 +4709,11 @@ function setRama3Mode(mode) {
   } else {
     renderRama3Exam();
     renderRama3CartillaPreview();
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(fitRama3ToViewport);
+    } else {
+      fitRama3ToViewport();
+    }
   }
 }
 
@@ -4861,7 +4913,6 @@ function renderRama3ExamQuestionHTML(idx) {
       <div class="r3-exam-q-item r3-exam-empty-slot" onclick="openRama3QuestionPicker(${idx})" title="Clic para seleccionar o redactar pregunta">
         <div style="display:flex; align-items:center; width:100%;">
           <span style="font-size:0.78rem; font-weight:800; color:#0284c7; display:flex; align-items:center; gap:5px;">
-            <span style="background:rgba(2,132,199,0.12); border:1px solid #0284c7; border-radius:4px; padding:1px 5px;">P${qNum}</span>
             ➕ Clic Pregunta ${qNum}
           </span>
         </div>
@@ -5011,6 +5062,11 @@ function renderRama3Exam() {
   `;
 
   host.innerHTML = examHTML;
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(fitRama3ToViewport);
+  } else {
+    fitRama3ToViewport();
+  }
 }
 
 function renderRama3CartillaPreview() {
@@ -5072,6 +5128,12 @@ function renderRama3CartillaPreview() {
         }
       });
     }
+  }
+
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(fitRama3ToViewport);
+  } else {
+    fitRama3ToViewport();
   }
 }
 
@@ -5244,6 +5306,7 @@ if (typeof window !== 'undefined') {
   window.openRama3QuestionPicker = openRama3QuestionPicker;
   window.renderRama3Exam = renderRama3Exam;
   window.renderRama3CartillaPreview = renderRama3CartillaPreview;
+  window.fitRama3ToViewport = fitRama3ToViewport;
   window.renderRama3Matrix = renderRama3Matrix;
   window.rama3PrintBookletDirect = rama3PrintBookletDirect;
   window.confirmRama3 = confirmRama3;

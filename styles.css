@@ -2330,6 +2330,26 @@
     #r3-exam-viewport {
       align-items: flex-start !important;
       padding-top: 14px !important;
+      overflow-x: hidden !important;
+    }
+    #r3-exam-render-host {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      transform-origin: top center;
+      flex-shrink: 0;
+    }
+    #r3-cartilla-viewport {
+      overflow-x: hidden !important;
+    }
+    #r3-cartilla-render-host {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform-origin: top center;
+      flex-shrink: 0;
     }
     .r3-exam-header {
       padding-bottom: 3.5mm;

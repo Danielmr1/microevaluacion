@@ -44,13 +44,13 @@
   <script src="scanner.js?v=3.1.90"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.1.90"></script>
-  <script src="question-bank.js?v=3.2.03"></script>
+  <script src="question-bank.js?v=3.2.04"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
   <script src="card-cartilla.js?v=3.2.01"></script>
   <script src="card-generator.js?v=3.2.02"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.02">
+  <link rel="stylesheet" href="styles.css?v=3.2.04">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.03</span>
+          <span class="version-tag">v3.2.04</span>
         </div>
       </div>
     </div>
@@ -567,8 +567,8 @@
 
             <!-- 1. VIEWPORT DE LA HOJA DE EXAMEN (LIMPIA, SIN ARUCO NI MARCO EXTERIOR) -->
             <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">
-              <div id="r3-exam-viewport" class="sim-card-viewport" style="max-height:600px; overflow-y:auto; width:100%;">
-                <div id="r3-exam-render-host" style="display:flex; justify-content:center; width:100%;"></div>
+              <div id="r3-exam-viewport" class="sim-card-viewport" style="max-height:600px; overflow-y:auto; overflow-x:hidden; width:100%;">
+                <div id="r3-exam-render-host"></div>
               </div>
             </div>
 
@@ -581,7 +581,7 @@
                 <span style="font-size:0.7rem; color:#94a3b8;">Con ArUco, marco cerrado y QR</span>
               </div>
               <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">
-                <div id="r3-cartilla-viewport" class="sim-card-viewport" style="width:100%; display:flex; justify-content:center;">
+                <div id="r3-cartilla-viewport" class="sim-card-viewport" style="width:100%; display:flex; justify-content:center; overflow-x:hidden;">
                   <div id="r3-cartilla-render-host"></div>
                 </div>
               </div>
