@@ -724,17 +724,15 @@ function determineBookletLayout(evaluation) {
         }]
       };
     } else {
-      // 20 preguntas: 2 páginas A4 Vertical (Página 1: 8 en col1 y 2 en col2; Página 2: 8 en col1 y 2 en col2)
-      const p1Questions = questions.slice(0, 10);
-      const p2Questions = questions.slice(10);
-      const p1Col1 = Math.min(p1Questions.length, 8);
-      const p2Col1 = Math.min(p2Questions.length, 8);
+      // 20 preguntas: 1 sola página A4 Vertical en 2 columnas (Columna 1: 10 preguntas, Columna 2: 10 preguntas)
+      const col1Count = Math.min(questions.length, 10);
       return {
         level: 'portrait',
-        pages: [
-          { pageNum: 1, col1: p1Questions.slice(0, p1Col1), col2: p1Questions.slice(p1Col1) },
-          { pageNum: 2, col1: p2Questions.slice(0, p2Col1), col2: p2Questions.slice(p2Col1) }
-        ]
+        pages: [{
+          pageNum: 1,
+          col1: questions.slice(0, col1Count),
+          col2: questions.slice(col1Count)
+        }]
       };
     }
   }
@@ -1038,9 +1036,6 @@ function renderQuestionBooklet(classId, evaluation) {
           <div class="booklet-student-line">
             <span>Estudiante: __________________________________________________</span>
           </div>
-          <div class="booklet-instructions">
-            * Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.
-          </div>
         </div>
         ${examHalfBodyHTML}
       </div>
@@ -1068,9 +1063,6 @@ function renderQuestionBooklet(classId, evaluation) {
           <div class="booklet-title">EVALUACIÓN ESCOLAR ${totalPages > 1 ? ` — Página ${p.pageNum}` : ''}</div>
           <div class="booklet-student-line">
             <span>Estudiante: __________________________________________________</span>
-          </div>
-          <div class="booklet-instructions">
-            * Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.
           </div>
         </div>
 
@@ -1209,25 +1201,19 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     let curY = originY + 4;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(isCompact ? 10.5 : 12.5);
-    doc.text('EVALUACIÓN ESCOLAR', originX, curY);
+    const centerX = originX + (width / 2);
+    doc.text('EVALUACIÓN ESCOLAR', centerX, curY, { align: 'center' });
     curY += (isCompact ? 4.5 : 5.5);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(isCompact ? 8.5 : 10);
     doc.text('Estudiante: __________________________________________________', originX, curY);
-    curY += (isCompact ? 3.8 : 4.5);
-
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(isCompact ? 7 : 8);
-    doc.setTextColor(80, 80, 80);
-    doc.text('* Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.', originX, curY);
-    doc.setTextColor(0, 0, 0);
-    curY += 2.5;
+    curY += (isCompact ? 3.5 : 4.5);
 
     doc.setLineWidth(0.4);
     doc.setDrawColor(0, 0, 0);
     doc.line(originX, curY, originX + width, curY);
-    curY += (isCompact ? 4.5 : 6);
+    curY += (isCompact ? 4 : 5.5);
     return curY;
   }
 
@@ -1334,7 +1320,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       col2StartY = headerEndY;
 
       // Distribución vertical proporcional dinámica para cada columna
-      const pageBottomLimit = 282; // Límite inferior seguro de la hoja A4 antes del pie de página (290)
+      const pageBottomLimit = 278; // Límite inferior seguro para no pisar el pie de página
       const availableH = pageBottomLimit - col1StartY;
 
       // Calcular altura natural de Columna 1
@@ -1346,7 +1332,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
         natH1 += (pLines * 4.4) + (optL * 4.4) + 2;
       });
       const gapCol1 = p.col1.length > 1
-        ? Math.max(3.5, Math.min(18, (availableH - natH1) / (p.col1.length - 1)))
+        ? Math.max(2.5, Math.min(18, (availableH - natH1) / (p.col1.length - 1)))
         : 6;
 
       // Calcular altura natural de Columna 2
@@ -1358,7 +1344,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
         natH2 += (pLines * 4.4) + (optL * 4.4) + 2;
       });
       const gapCol2 = p.col2.length > 1
-        ? Math.max(3.5, Math.min(18, (availableH - natH2) / (p.col2.length - 1)))
+        ? Math.max(2.5, Math.min(18, (availableH - natH2) / (p.col2.length - 1)))
         : 6;
 
       // Si ambas columnas tienen la misma cantidad de preguntas, usar un gap uniforme simétrico
@@ -1387,8 +1373,8 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(120, 120, 120);
-      doc.text('Cuadernillo de Preguntas', 12, 290);
-      doc.text(`Página ${p.pageNum} de ${pages.length}`, 175, 290);
+      doc.text('Cuadernillo de Preguntas', 12, 292);
+      doc.text(`Página ${p.pageNum} de ${pages.length}`, 175, 292);
       doc.setTextColor(0, 0, 0);
     });
   }

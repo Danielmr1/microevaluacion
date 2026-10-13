@@ -4689,10 +4689,8 @@ function updateRama3ControlsUI() {
   if (layoutBadge) {
     if (r3State.count <= 6) {
       layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (2 alumnos por A4) + Cartilla A6 (4 alumnos por A4)';
-    } else if (r3State.count <= 15) {
-      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     } else {
-      layoutBadge.innerHTML = `📄 <b>Examen A4 Vertical</b> (2 págs · 2 col) + Cartilla A5 (2 alumnos por A4)`;
+      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     }
     layoutBadge.style.color = '#38bdf8';
     layoutBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
@@ -4796,16 +4794,14 @@ function determineRama3ExamLayout(count) {
       col2Count: count - 8
     };
   } else {
-    // 20 preguntas (2 páginas A4 Vertical): Página 1 con 8 en col1 y 2 en col2; Página 2 con 8 en col1 y 2 en col2
+    // 20 preguntas (1 sola página A4 Vertical): 10 en Columna 1 y 10 en Columna 2
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
-      totalPages: 2,
-      p1Col1: 8,
-      p1Col2: 2,
-      p2Col1: 8,
-      p2Col2: 2
+      totalPages: 1,
+      col1Count: 10,
+      col2Count: count - 10
     };
   }
 }
@@ -5007,9 +5003,6 @@ function renderRama3Exam() {
         <div class="r3-exam-header-title">EVALUACIÓN ESCOLAR ${totalPages > 1 ? ` — PÁGINA ${activePage}` : ''}</div>
         <div class="r3-exam-student-line">
           <span>Estudiante: __________________________________________________</span>
-        </div>
-        <div class="r3-exam-instructions">
-          * Lee atentamente cada pregunta y registra tus respuestas rellenando la burbuja en tu Cartilla de Respuestas.
         </div>
       </div>
       ${bodyHTML}

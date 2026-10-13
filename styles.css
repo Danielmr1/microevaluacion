@@ -1697,12 +1697,13 @@
     }
 
     .booklet-title {
-      font-size: 10.5pt;
+      font-size: 11pt;
       font-weight: 800;
       color: #000000;
       line-height: 1.2;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      text-align: center;
     }
 
     .booklet-student-line {
