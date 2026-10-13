@@ -705,36 +705,36 @@ function determineBookletLayout(evaluation) {
 
   // ── RAMA 3 (CARTILLA OMR): Adaptativo según directiva de aula ──
   if (evaluation && evaluation.branch === 'rama3') {
-    if (questions.length <= 5) {
-      // 5 preguntas: A4 Horizontal en 2 mitades A5 (2 exámenes por hoja para ahorrar 50% de papel)
+    if (questions.length <= 6) {
+      // 5 y 6 preguntas: A4 Horizontal en 2 mitades A5 Vertical (2 exámenes por hoja para ahorrar 50% de papel)
       return {
         level: 'half',
         subColumns: 1,
         pages: [{ questions }]
       };
     } else if (questions.length <= 10) {
-      // 6 a 10 preguntas (1 página A4 Vertical): se llena primero Col 1 (hasta 7-8 preguntas) y el resto a Col 2
-      const maxCol1 = Math.min(questions.length, questions.length <= 7 ? questions.length : 6);
+      // 10 preguntas (1 página A4 Vertical en 2 columnas): 5 preguntas en col1 y 5 en col2 (equilibradas de arriba a abajo)
+      const mid = Math.ceil(questions.length / 2);
       return {
         level: 'portrait',
         pages: [{
           pageNum: 1,
-          col1: questions.slice(0, maxCol1),
-          col2: questions.slice(maxCol1)
+          col1: questions.slice(0, mid),
+          col2: questions.slice(mid)
         }]
       };
     } else {
-      // 15 o 20 preguntas: 2 páginas A4 Vertical en 2 columnas llenando secuencialmente
+      // 15 o 20 preguntas: 2 páginas A4 Vertical en 2 columnas holgadas y equilibradas
       const p1Cap = questions.length <= 15 ? 8 : 10;
       const p1Questions = questions.slice(0, p1Cap);
       const p2Questions = questions.slice(p1Cap);
-      const p1Col1Count = Math.min(p1Questions.length, 5);
-      const p2Col1Count = Math.min(p2Questions.length, 5);
+      const p1Mid = Math.ceil(p1Questions.length / 2);
+      const p2Mid = Math.ceil(p2Questions.length / 2);
       return {
         level: 'portrait',
         pages: [
-          { pageNum: 1, col1: p1Questions.slice(0, p1Col1Count), col2: p1Questions.slice(p1Col1Count) },
-          { pageNum: 2, col1: p2Questions.slice(0, p2Col1Count), col2: p2Questions.slice(p2Col1Count) }
+          { pageNum: 1, col1: p1Questions.slice(0, p1Mid), col2: p1Questions.slice(p1Mid) },
+          { pageNum: 2, col1: p2Questions.slice(0, p2Mid), col2: p2Questions.slice(p2Mid) }
         ]
       };
     }
@@ -1265,7 +1265,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
 
     halves.forEach(h => {
       const qStartY = renderHeader(h.startX, 10, h.w, false);
-      const isSubCol = layout.subColumns === 2 || questions.length > 5;
+      const isSubCol = layout.subColumns === 2 || (layout.subColumns !== 1 && questions.length > 6);
       if (isSubCol) {
         const mid = Math.ceil(questions.length / 2);
         const subColW = (h.w - 6) / 2;
@@ -1280,7 +1280,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
           col2Y += renderQuestion(questions[i], i, h.startX + subColW + 6, col2Y, subColW, true);
         }
       } else {
-        // Para 5 preguntas en A5 vertical: estimar alturas para distribuir armónicamente en todo el alto disponible (hasta ~198mm)
+        // Para 5 o 6 preguntas en A5 vertical: estimar alturas para distribuir armónicamente en todo el alto disponible (hasta ~198mm)
         const availableH = 196 - qStartY;
         // Calcular altura total natural de las preguntas
         let naturalTotalH = 0;
@@ -1326,23 +1326,59 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
         doc.addPage('a4', 'portrait');
       }
 
-      let col1Y = 14;
-      let col2Y = 14;
+      let col1StartY = 14;
+      let col2StartY = 14;
 
       if (p.pageNum === 1) {
         const headerEndY = renderHeader(12, 10, 186, false);
-        col1Y = headerEndY;
-        col2Y = headerEndY;
+        col1StartY = headerEndY;
+        col2StartY = headerEndY;
       }
 
-      // Render Col 1
+      // Distribución vertical proporcional dinámica para cada columna
+      const pageBottomLimit = 282; // Límite inferior seguro de la hoja A4 antes del pie de página (290)
+      const availableH = pageBottomLimit - col1StartY;
+
+      // Calcular altura natural de Columna 1
+      let natH1 = 0;
       p.col1.forEach((q, idx) => {
-        col1Y += renderQuestion(q, idx, col1X, col1Y, colW, false);
+        const pLines = doc.splitTextToSize(`${idx + 1}. ${q.prompt || ''}`, colW).length;
+        const optL = 2; // cuadrícula 2x2
+        natH1 += (pLines * 4.4) + (optL * 4.4) + 2;
+      });
+      const gapCol1 = p.col1.length > 1
+        ? Math.max(3.5, Math.min(18, (availableH - natH1) / (p.col1.length - 1)))
+        : 6;
+
+      // Calcular altura natural de Columna 2
+      let natH2 = 0;
+      p.col2.forEach((q, idx) => {
+        const globalIdx = p.col1.length + idx;
+        const pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW).length;
+        const optL = 2;
+        natH2 += (pLines * 4.4) + (optL * 4.4) + 2;
+      });
+      const gapCol2 = p.col2.length > 1
+        ? Math.max(3.5, Math.min(18, (availableH - natH2) / (p.col2.length - 1)))
+        : 6;
+
+      // Si ambas columnas tienen la misma cantidad de preguntas, usar un gap uniforme simétrico
+      const finalGap1 = (p.col1.length === p.col2.length && p.col1.length > 0) ? Math.min(gapCol1, gapCol2) : gapCol1;
+      const finalGap2 = (p.col1.length === p.col2.length && p.col1.length > 0) ? Math.min(gapCol1, gapCol2) : gapCol2;
+
+      // Render Col 1 con espaciado dinámico
+      let curCol1Y = col1StartY;
+      p.col1.forEach((q, idx) => {
+        const usedH = renderQuestion(q, idx, col1X, curCol1Y, colW, false);
+        curCol1Y += usedH + finalGap1;
       });
 
-      // Render Col 2
+      // Render Col 2 con espaciado dinámico
+      let curCol2Y = col2StartY;
       p.col2.forEach((q, idx) => {
-        col2Y += renderQuestion(q, p.col1.length + idx, col2X, col2Y, colW, false);
+        const globalIdx = p.col1.length + idx;
+        const usedH = renderQuestion(q, globalIdx, col2X, curCol2Y, colW, false);
+        curCol2Y += usedH + finalGap2;
       });
 
       // Footer

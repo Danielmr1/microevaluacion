@@ -4687,10 +4687,8 @@ function updateRama3ControlsUI() {
 
   const layoutBadge = document.getElementById('r3-layout-badge');
   if (layoutBadge) {
-    if (r3State.count <= 5) {
+    if (r3State.count <= 6) {
       layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (2 alumnos por A4) + Cartilla A6 (4 alumnos por A4)';
-    } else if (r3State.count <= 6) {
-      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (2 col) + Cartilla A6 (4 alumnos por A4)';
     } else if (r3State.count <= 10) {
       layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     } else {
@@ -4769,34 +4767,24 @@ function renderRama3Matrix() {
 
 // ── LAYOUT Y GEOMETRÍA DEL EXAMEN ESCOLAR (MODO B) ──
 function determineRama3ExamLayout(count) {
-  if (count <= 5) {
-    // 5 preguntas: Examen en A5 Vertical (1 columna, 2 exámenes caben en un pliego A4)
+  if (count <= 6) {
+    // 5 y 6 preguntas: Examen en A5 Vertical (1 columna, 2 exámenes caben en un pliego A4)
     return {
       sheetClass: 'r3-exam-sheet-a5-v',
       bodyClass: 'r3-exam-body-1col',
       columns: 1,
       totalPages: 1
     };
-  } else if (count <= 6) {
-    // 6 preguntas en A4 Vertical (2 columnas): Columna 1 llena primero (6 preguntas) o 6 en col1 y 0 en col2
-    // Pero si el usuario prefiere repartir a partir de 6 o llenar hasta 6-7 en col1:
-    return {
-      sheetClass: 'r3-exam-sheet-a4-v',
-      bodyClass: 'r3-exam-body-2col',
-      columns: 2,
-      totalPages: 1,
-      col1Count: Math.min(count, 6),
-      col2Count: Math.max(0, count - 6)
-    };
   } else if (count <= 10) {
-    // 10 preguntas: Columna 1 se llena primero (6 preguntas), y las restantes (4 preguntas) van a la Columna 2
+    // 10 preguntas: 2 columnas en A4 Vertical (5 en Columna 1 y 5 en Columna 2)
+    const mid = Math.ceil(count / 2);
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 1,
-      col1Count: 6,
-      col2Count: count - 6
+      col1Count: mid,
+      col2Count: count - mid
     };
   } else if (count <= 15) {
     return {
