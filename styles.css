@@ -1833,13 +1833,7 @@
     }
 
     .booklet-footer {
-      border-top: 1px solid #cbd5e1;
-      padding-top: 2mm;
-      margin-top: 2mm;
-      display: flex;
-      justify-content: space-between;
-      font-size: 7pt;
-      color: #64748b;
+      display: none !important;
     }
 
     /* ── FICHA A5: 186 x 134 mm, RANURAS DE ALTO FIJO ───────────────

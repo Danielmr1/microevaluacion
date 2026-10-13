@@ -5196,7 +5196,7 @@ function confirmRama3AndPrintExam() {
     renderQuestionBooklet(wizardClassroomId, ev);
   }
   if (typeof printQuestionBooklet === 'function') {
-    printQuestionBooklet();
+    printQuestionBooklet(ev);
   } else {
     showSummary();
   }
@@ -5235,7 +5235,7 @@ function rama3PrintBookletDirect() {
     renderQuestionBooklet(wizardClassroomId, ev);
   }
   if (typeof printQuestionBooklet === 'function') {
-    printQuestionBooklet();
+    printQuestionBooklet(ev);
   }
 }
 

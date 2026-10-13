@@ -881,13 +881,30 @@ function getBookletPdfExportTitle(classroom, evaluation) {
         const d = new Date();
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
-        return `${day}-${month}`;
+        const hours = String(d.getHours()).padStart(2, '0');
+        const mins = String(d.getMinutes()).padStart(2, '0');
+        return `${day}-${month}_${hours}-${mins}`;
       };
 
-  const cleanClassroom = sanitizeFn(classroom ? classroom.name : 'Salon');
-  const cleanTitle = sanitizeFn(evaluation ? evaluation.title : 'Cuadernillo');
+  let cls = classroom;
+  if (!cls) {
+    const clsId = (typeof wizardClassroomId !== 'undefined' && wizardClassroomId)
+      || (typeof document !== 'undefined' && document.getElementById('builder-classroom')?.value);
+    if (clsId && typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
+      cls = ClassroomData.getClassroom(clsId);
+    }
+  }
+
+  const qCount = (evaluation && evaluation.questions && evaluation.questions.length)
+    ? evaluation.questions.length
+    : ((evaluation && evaluation.questionCount)
+      ? evaluation.questionCount
+      : ((typeof r3State !== 'undefined' && r3State.count) ? r3State.count : ''));
+
+  const cleanClassroom = sanitizeFn(cls ? cls.name : 'Salon');
+  const qPart = qCount ? `${qCount}_Preguntas_` : '';
   const timeStamp = timestampFn();
-  return `Cuadernillo_${cleanTitle}_${cleanClassroom}_${timeStamp}`;
+  return `Examen_${qPart}${cleanClassroom}_${timeStamp}`;
 }
 
 /**
@@ -1101,11 +1118,6 @@ function renderQuestionBooklet(classId, evaluation) {
           </div>
         </div>
         `}
-
-        <div class="booklet-footer">
-          <span>Cuadernillo de Preguntas</span>
-          <span>Página ${p.pageNum} de ${totalPages}</span>
-        </div>
       `;
       container.appendChild(sheetEl);
     }
@@ -1377,14 +1389,6 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       });
 
       accumulatedQCount += p.col1.length + p.col2.length;
-
-      // Footer
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120);
-      doc.text('Cuadernillo de Preguntas', 12, 292);
-      doc.text(`Página ${p.pageNum} de ${pages.length}`, 175, 292);
-      doc.setTextColor(0, 0, 0);
     });
   }
 
@@ -1394,11 +1398,16 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
 /**
  * Dispara la descarga directa en PDF o impresión del Cuadernillo de Preguntas.
  */
-function printQuestionBooklet() {
+function printQuestionBooklet(evalParam) {
+  let evalObj = evalParam || (typeof wizardEval !== 'undefined' ? wizardEval : null);
+  if (!evalObj && typeof prepareRama3Evaluation === 'function') {
+    evalObj = prepareRama3Evaluation();
+  }
+
   const container = document.getElementById('booklet-container');
   if (!container || container.children.length === 0) {
-    if (typeof wizardClassroomId !== 'undefined' && typeof wizardEval !== 'undefined') {
-      renderQuestionBooklet(wizardClassroomId, wizardEval);
+    if (typeof wizardClassroomId !== 'undefined' && evalObj) {
+      renderQuestionBooklet(wizardClassroomId, evalObj);
     }
   }
 
@@ -1418,8 +1427,14 @@ function printQuestionBooklet() {
       if (session && session.classroomId) classroom = ClassroomData.getClassroom(session.classroomId);
     }
   }
+  if (!classroom) {
+    const clsId = (typeof wizardClassroomId !== 'undefined' && wizardClassroomId)
+      || (typeof document !== 'undefined' && document.getElementById('builder-classroom')?.value);
+    if (clsId && typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
+      classroom = ClassroomData.getClassroom(clsId);
+    }
+  }
 
-  const evalObj = (typeof wizardEval !== 'undefined') ? wizardEval : null;
   const pdfTitle = getBookletPdfExportTitle(classroom, evalObj);
 
   // ── DIÁLOGO NATIVO DE IMPRESIÓN Y VISTA PREVIA (IGUAL A CARTILLAS OMR) ──
