@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.08</span>
+          <span class="version-tag">v3.2.09</span>
         </div>
       </div>
     </div>
@@ -444,9 +444,6 @@
             <span id="branch-badge-label" style="background:#1e1b4b; border:1.5px solid #6366f1; color:#c7d2fe; font-size:0.74rem; font-weight:800; padding:4px 10px; border-radius:8px;">
               🔬 Formativa con IA
             </span>
-            <button type="button" onclick="goHomeHub()" style="background:transparent; border:none; color:#94a3b8; font-size:0.72rem; font-weight:700; cursor:pointer; text-decoration:underline;">
-              Cambiar modalidad
-            </button>
           </div>
         </div>
 
@@ -530,11 +527,11 @@
           <div style="display:flex; gap:8px; margin-bottom:12px;">
             <button type="button" id="btn-r3-mode-keys" onclick="setRama3Mode('keys')"
               style="flex:1; padding:8px 10px; border-radius:8px; border:1.5px solid #0284c7; background:rgba(2,132,199,0.15); color:#38bdf8; font-size:0.75rem; font-weight:700; cursor:pointer;">
-              ⚡ Modo A: Solo Claves (Pauta Rápida)
+              ⚡ Solo Cartilla
             </button>
             <button type="button" id="btn-r3-mode-bank" onclick="setRama3Mode('bank')"
               style="flex:1; padding:8px 10px; border-radius:8px; border:1.5px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.75rem; font-weight:700; cursor:pointer;">
-              📚 Modo B: Preguntas del Banco
+              📚 Evaluación y Cartillas
             </button>
           </div>
 
@@ -2587,7 +2584,9 @@
               <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <strong style="color:#38bdf8; font-size:0.82rem; text-transform:uppercase;">📝 Pauta de Claves de la Cartilla (${qCount} Preguntas)</strong>
-                  <span style="background:rgba(2,132,199,0.2); color:#38bdf8; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #0284c7;">OMR Puro</span>
+                  ${(wizardEval && (wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))) ? '' : `
+                    <span style="background:rgba(2,132,199,0.2); color:#38bdf8; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #0284c7;">OMR Puro</span>
+                  `}
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(75px, 1fr)); gap:6px; max-height:220px; overflow-y:auto; padding:2px;">
                   ${(wizardEval.questions || []).map((q, idx) => `
@@ -2720,7 +2719,7 @@
               <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-size:1.4rem;">📝</span>
                 <div>
-                  <span style="color:#38bdf8; font-weight:800; font-size:0.85rem;">Cartilla de Respuestas: Corrección OMR Determinista</span>
+                  <span style="color:#38bdf8; font-weight:800; font-size:0.85rem;">Cartilla de Respuestas: Corrección OMR</span>
                   <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:400; margin-top:1px;">Escaneo rápido de alternativas marcadas por el estudiante. Sin llamadas a IA.</span>
                 </div>
               </div>
