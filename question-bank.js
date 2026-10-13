@@ -5224,6 +5224,12 @@ function confirmRama3() {
   showSummary();
 }
 
+function confirmRama3Bank() {
+  const ev = prepareRama3Evaluation();
+  if (!ev) return;
+  showSummary();
+}
+
 /**
  * Dispara directamente la visualización/impresión del Cuadernillo de Preguntas desde Rama 3 (Modo B).
  */
@@ -5310,6 +5316,7 @@ if (typeof window !== 'undefined') {
   window.renderRama3Matrix = renderRama3Matrix;
   window.rama3PrintBookletDirect = rama3PrintBookletDirect;
   window.confirmRama3 = confirmRama3;
+  window.confirmRama3Bank = confirmRama3Bank;
   window.confirmRama3AndPrintExam = confirmRama3AndPrintExam;
   window.confirmRama3AndPrintCartillas = confirmRama3AndPrintCartillas;
   window.confirmRama3AndScan = confirmRama3AndScan;

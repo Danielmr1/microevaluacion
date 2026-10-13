@@ -989,12 +989,12 @@ function renderQuestionBooklet(classId, evaluation) {
   const printBtn = document.getElementById('btn-print-booklet');
   if (printBtn) {
     if (layout.level === 'quad') {
-      printBtn.innerHTML = `📄 Descargar Cuadernillo (PDF) [A4 Horizontal · 4 por hoja]`;
+      printBtn.innerHTML = `📄 Descargar Examen (PDF) [A4 Horizontal · 4 por hoja]`;
     } else if (layout.level === 'half') {
-      printBtn.innerHTML = `📄 Descargar Cuadernillo (PDF) [A4 Horizontal · 2 por hoja]`;
+      printBtn.innerHTML = `📄 Descargar Examen (PDF) [A4 Horizontal · 2 por hoja]`;
     } else {
       const pCount = layout.pages.length;
-      printBtn.innerHTML = `📄 Descargar Cuadernillo (PDF) [A4 Vertical · ${pCount} ${pCount === 1 ? 'página' : 'páginas'}]`;
+      printBtn.innerHTML = `📄 Descargar Examen (PDF) [A4 Vertical · ${pCount} ${pCount === 1 ? 'página' : 'páginas'}]`;
     }
   }
 

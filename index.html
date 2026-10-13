@@ -44,13 +44,13 @@
   <script src="scanner.js?v=3.1.90"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.1.90"></script>
-  <script src="question-bank.js?v=3.2.05"></script>
+  <script src="question-bank.js?v=3.2.07"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
   <script src="card-cartilla.js?v=3.2.01"></script>
-  <script src="card-generator.js?v=3.2.05"></script>
+  <script src="card-generator.js?v=3.2.07"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.05">
+  <link rel="stylesheet" href="styles.css?v=3.2.07">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.06</span>
+          <span class="version-tag">v3.2.07</span>
         </div>
       </div>
     </div>
@@ -587,21 +587,11 @@
               </div>
             </div>
 
-            <!-- 3. BOTONES DE ACCIÓN DIRECTOS PARA MODO B -->
-            <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
-              <button type="button" onclick="confirmRama3AndPrintExam()"
-                style="flex:1; min-width:180px; background:linear-gradient(135deg, #0284c7, #0369a1); border:none; color:#fff; border-radius:8px; padding:11px 14px; font-size:0.85rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(2,132,199,0.3);">
-                📄 Descargar Examen (PDF)
-              </button>
-              <button type="button" onclick="confirmRama3AndPrintCartillas()"
-                style="flex:1; min-width:180px; background:linear-gradient(135deg, #2563eb, #1d4ed8); border:none; color:#fff; border-radius:8px; padding:11px 14px; font-size:0.85rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(37,99,235,0.3);">
-                🖨️ Descargar Cartillas OMR (PDF)
-              </button>
-              <button type="button" onclick="confirmRama3AndScan()"
-                style="flex:1; min-width:140px; background:linear-gradient(135deg, #059669, #047857); border:none; color:#fff; border-radius:8px; padding:11px 14px; font-size:0.85rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(5,150,105,0.3);">
-                📷 Ir al Escáner
-              </button>
-            </div>
+            <!-- BOTÓN DE CONFIRMACIÓN PARA MODO B -->
+            <button type="button" onclick="confirmRama3Bank()"
+              style="margin-top:12px; width:100%; background:linear-gradient(135deg, #0284c7, #2563eb); border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.85rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+              ✓ Confirmar Preguntas y Cartillas
+            </button>
           </div>
         </div>
 
@@ -938,13 +928,13 @@
 
         <!-- Acciones Principales: Botones Visibles en Móvil y Escritorio -->
         <div id="summary-main-actions" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+          <button id="btn-print-booklet" type="button" onclick="printQuestionBooklet()" class="btn-print-action"
+            style="display:none; background:#0284c7; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #0284c740; align-items:center; justify-content:center; gap:8px;">
+            📄 Descargar Examen (PDF)
+          </button>
           <button id="btn-print-sheets" type="button" onclick="printEvaluationSheets()" class="btn-print-action"
             style="background:#16a34a; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #16a34a40; display:flex; align-items:center; justify-content:center; gap:8px;">
             🖨️ Descargar / Imprimir páginas A4
-          </button>
-          <button id="btn-print-booklet" type="button" onclick="printQuestionBooklet()" class="btn-print-action"
-            style="display:none; background:#0284c7; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #0284c740; align-items:center; justify-content:center; gap:8px;">
-            📄 Descargar Cuadernillo (PDF)
           </button>
           <button type="button" onclick="switchTab('scan')" class="btn-goto-scan"
             style="background:#4f46e5; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px #4f46e540; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -959,10 +949,10 @@
 
     </div>
 
-    <!-- Contenedor dinámico de las 5 páginas A4 (10 fichas A5) -->
-    <div id="pages-container" style="display:none;"></div>
     <!-- Contenedor dinámico del Cuadernillo de Preguntas (Examen para alumnos) -->
     <div id="booklet-container" style="display:none;"></div>
+    <!-- Contenedor dinámico de las páginas A4 de cartillas para todos los alumnos -->
+    <div id="pages-container" style="display:none;"></div>
   </div>
 
   <!-- ========================================================= -->
@@ -2817,6 +2807,7 @@
         // ── Renderizar cuadernillo de preguntas si corresponde ──
         // EXCLUSIVO: Solo en Cartilla OMR (Rama 3) en Modo B (Preguntas del Banco)
         const btnBooklet = document.getElementById('btn-print-booklet');
+        const bookletContainer = document.getElementById('booklet-container');
         const hasBookletQuestions = wizardEval && (
           wizardEval.branch === 'rama3' && (wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))
         );
@@ -2824,8 +2815,10 @@
           if (hasBookletQuestions && typeof renderQuestionBooklet === 'function') {
             btnBooklet.style.display = 'flex';
             renderQuestionBooklet(wizardClassroomId, wizardEval);
+            if (bookletContainer) bookletContainer.style.display = 'flex';
           } else {
             btnBooklet.style.display = 'none';
+            if (bookletContainer) bookletContainer.style.display = 'none';
           }
         }
 
