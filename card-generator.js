@@ -703,6 +703,36 @@ function determineBookletLayout(evaluation) {
   const questions = (evaluation && evaluation.questions) ? evaluation.questions : [];
   if (questions.length === 0) return { level: 'quad', pages: [] };
 
+  // ── RAMA 3 (CARTILLA OMR): Siempre A4 Vertical según directiva de aula ──
+  if (evaluation && evaluation.branch === 'rama3') {
+    if (questions.length <= 5) {
+      return {
+        level: 'portrait_1col',
+        pages: [{ pageNum: 1, col1: questions, col2: [] }]
+      };
+    } else if (questions.length <= 10) {
+      const mid = Math.ceil(questions.length / 2);
+      return {
+        level: 'portrait',
+        pages: [{ pageNum: 1, col1: questions.slice(0, mid), col2: questions.slice(mid) }]
+      };
+    } else {
+      // 15 o 20 preguntas: 2 páginas A4 Vertical holgadas
+      const p1Count = questions.length <= 15 ? 8 : 10;
+      const p1Questions = questions.slice(0, p1Count);
+      const p2Questions = questions.slice(p1Count);
+      const p1Mid = Math.ceil(p1Questions.length / 2);
+      const p2Mid = Math.ceil(p2Questions.length / 2);
+      return {
+        level: 'portrait',
+        pages: [
+          { pageNum: 1, col1: p1Questions.slice(0, p1Mid), col2: p1Questions.slice(p1Mid) },
+          { pageNum: 2, col1: p2Questions.slice(0, p2Mid), col2: p2Questions.slice(p2Mid) }
+        ]
+      };
+    }
+  }
+
   // ── NIVEL 1: ¿Cabe en 1 cuadrante (A4 Horizontal en 4 partes)? ──
   // Ancho útil ~124mm, alto disponible para preguntas = 68mm.
   if (questions.length <= 4) {
@@ -1026,19 +1056,28 @@ function renderQuestionBooklet(classId, evaluation) {
     for (const p of layout.pages) {
       const sheetEl = document.createElement('div');
       sheetEl.className = 'sheet-booklet-portrait';
+      const is1Col = (layout.level === 'portrait_1col');
       sheetEl.innerHTML = `
-        <div class="booklet-header ${p.pageNum > 1 ? 'booklet-header-p2' : ''}">
+        <div class="booklet-header">
           <div class="booklet-title">EVALUACIÓN ESCOLAR ${totalPages > 1 ? ` — Página ${p.pageNum}` : ''}</div>
-          ${p.pageNum === 1 ? `
           <div class="booklet-student-line">
             <span>Estudiante: __________________________________________________</span>
           </div>
           <div class="booklet-instructions">
             * Lee atentamente cada pregunta y registra tus respuestas en tu Cartilla de Respuestas asignada.
           </div>
-          ` : ''}
         </div>
 
+        ${is1Col ? `
+        <div class="booklet-columns" style="display:block;">
+          <div class="booklet-col" style="width:100%; display:flex; flex-direction:column; gap:4mm;">
+            ${p.col1.map((q) => {
+              const globalIdx = questions.indexOf(q);
+              return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
+            }).join('')}
+          </div>
+        </div>
+        ` : `
         <div class="booklet-columns">
           <div class="booklet-col">
             ${p.col1.map((q) => {
@@ -1054,6 +1093,7 @@ function renderQuestionBooklet(classId, evaluation) {
             }).join('')}
           </div>
         </div>
+        `}
 
         <div class="booklet-footer">
           <span>Cuadernillo de Preguntas</span>

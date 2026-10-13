@@ -4687,10 +4687,10 @@ function updateRama3ControlsUI() {
 
   const layoutBadge = document.getElementById('r3-layout-badge');
   if (layoutBadge) {
-    if (r3State.count <= 4) {
-      layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (1 col) + Cartilla A6 (4 alumnos por A4)';
+    if (r3State.count <= 5) {
+      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 col) + Cartilla A6 (4 alumnos por A4)';
     } else if (r3State.count <= 6) {
-      layoutBadge.innerHTML = '📄 <b>Examen A5 Horizontal</b> (2 col) + Cartilla A6 (4 alumnos por A4)';
+      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (2 col) + Cartilla A6 (4 alumnos por A4)';
     } else if (r3State.count <= 10) {
       layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     } else {
@@ -4769,16 +4769,16 @@ function renderRama3Matrix() {
 
 // ── LAYOUT Y GEOMETRÍA DEL EXAMEN ESCOLAR (MODO B) ──
 function determineRama3ExamLayout(count) {
-  if (count <= 4) {
+  if (count <= 5) {
     return {
-      sheetClass: 'r3-exam-sheet-a5-v',
+      sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-1col',
       columns: 1,
       totalPages: 1
     };
   } else if (count <= 6) {
     return {
-      sheetClass: 'r3-exam-sheet-a5-h',
+      sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 1,
@@ -4806,7 +4806,7 @@ function determineRama3ExamLayout(count) {
       p2Col2: count - 12
     };
   } else {
-    // 20 preguntas
+    // 20 preguntas (2 hojas holgadas: 10 en pág 1, 10 en pág 2)
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
@@ -5015,14 +5015,12 @@ function renderRama3Exam() {
     <div class="r3-exam-sheet ${layout.sheetClass}">
       <div class="r3-exam-header ${activePage > 1 ? 'r3-exam-header-p2' : ''}">
         <div class="r3-exam-header-title">EVALUACIÓN ESCOLAR ${totalPages > 1 ? ` — PÁGINA ${activePage}` : ''}</div>
-        ${activePage === 1 ? `
         <div class="r3-exam-student-line">
           <span>Estudiante: __________________________________________________</span>
         </div>
         <div class="r3-exam-instructions">
           * Lee atentamente cada pregunta y registra tus respuestas rellenando la burbuja en tu Cartilla de Respuestas.
         </div>
-        ` : ''}
       </div>
       ${bodyHTML}
     </div>
