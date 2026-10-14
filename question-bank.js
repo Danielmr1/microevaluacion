@@ -4679,6 +4679,14 @@ let r3State = {
   bankQuestions: Array(20).fill(null)
 };
 
+function resetRama3Builder() {
+  r3State.count = 10;
+  r3State.mode = 'bank';
+  r3State.activePage = 1;
+  r3State.keys = Array(20).fill('A');
+  r3State.bankQuestions = Array(20).fill(null);
+}
+
 function initRama3Builder() {
   updateRama3ControlsUI();
   if (r3State.mode === 'keys') {
@@ -5324,6 +5332,7 @@ if (typeof window !== 'undefined') {
   window.toggleSimGrid = toggleSimGrid;
   window.r2State = r2State;
   window.r3State = r3State;
+  window.resetRama3Builder = resetRama3Builder;
 }
 
 

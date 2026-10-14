@@ -683,7 +683,11 @@
   function setActiveSession(session) {
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
-        window.localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(session));
+        if (!session) {
+          window.localStorage.removeItem(STORAGE_KEY_SESSION);
+        } else {
+          window.localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(session));
+        }
       } catch (e) {}
     }
   }
