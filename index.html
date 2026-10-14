@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.16</span>
+          <span class="version-tag">v3.2.17</span>
         </div>
       </div>
     </div>
@@ -1889,9 +1889,9 @@
       // Título en la barra superior del wizard
       const flowTitleEl = document.querySelector('.flow-title');
       if (flowTitleEl) {
-        if (branch === 'rama3') flowTitleEl.textContent = 'Cartilla de Respuestas OMR';
-        else if (branch === 'rama2') flowTitleEl.textContent = 'Evaluación Focalizada de Contenido';
-        else flowTitleEl.textContent = 'Evaluación Formativa (con IA)';
+        if (branch === 'rama3') flowTitleEl.textContent = 'Cartilla OMR';
+        else if (branch === 'rama2') flowTitleEl.textContent = 'Focalizada en la Respuesta';
+        else flowTitleEl.textContent = 'Formativa con IA';
       }
 
       // Garantizar que el Paso 2 permanezca oculto hasta que el docente elija un salón
@@ -2484,20 +2484,22 @@
         if (isBranch3) {
           if (modeIcon) modeIcon.textContent = '📝';
           if (modeTitle) {
-            modeTitle.textContent = 'Cartilla de Respuestas: Corrección OMR';
+            modeTitle.textContent = 'Modo de corrección: OMR';
             modeTitle.style.color = '#38bdf8';
           }
           if (modeSubtitle) {
-            modeSubtitle.textContent = 'Escaneo rápido de alternativas marcadas por el estudiante. Sin llamadas a IA.';
+            modeSubtitle.textContent = 'Escaneo rápido de alternativas marcadas.';
+            modeSubtitle.style.display = 'block';
           }
         } else if (isBranch2) {
           if (modeIcon) modeIcon.textContent = '⚡';
           if (modeTitle) {
-            modeTitle.textContent = 'Focalizada en la Respuesta';
+            modeTitle.textContent = 'Modo de corrección: Directa de la respuesta (marcada o escrita) sin evaluar procedimiento.';
             modeTitle.style.color = '#34d399';
           }
           if (modeSubtitle) {
-            modeSubtitle.textContent = 'Corrección directa de la respuesta (marcada o escrita) sin evaluar procedimiento. Cuadrícula de respaldo opcional.';
+            modeSubtitle.textContent = '';
+            modeSubtitle.style.display = 'none';
           }
         } else if (isOMR) {
           const currentMode = (session && session.correctionMode) || 'quick';
@@ -2509,6 +2511,7 @@
             }
             if (modeSubtitle) {
               modeSubtitle.textContent = 'Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.';
+              modeSubtitle.style.display = 'block';
             }
           } else {
             if (modeIcon) modeIcon.textContent = '🔬';
@@ -2518,6 +2521,7 @@
             }
             if (modeSubtitle) {
               modeSubtitle.textContent = 'Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.';
+              modeSubtitle.style.display = 'block';
             }
           }
         } else {
@@ -2529,6 +2533,7 @@
           }
           if (modeSubtitle) {
             modeSubtitle.textContent = 'Lectura de cuadrícula y respuesta manuscrita evaluadas mediante IA y rúbrica formativa.';
+            modeSubtitle.style.display = 'block';
           }
         }
 
