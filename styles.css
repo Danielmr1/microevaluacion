@@ -3963,6 +3963,7 @@
       border-radius: 14px;
       padding: 36px 28px;
       position: relative;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -3973,6 +3974,25 @@
 
     .eva-stage-sheet:hover {
       box-shadow: 0 24px 50px -10px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.06);
+    }
+
+    /* Haz de escaneo láser óptico interactivo que sube y baja */
+    .cyber-laser-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, #0284c7 25%, #38bdf8 50%, #0284c7 75%, transparent 100%);
+      box-shadow: 0 0 14px rgba(2, 132, 199, 0.6), 0 2px 20px rgba(56, 189, 248, 0.35);
+      animation: scanLaser 3.5s ease-in-out infinite alternate;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    @keyframes scanLaser {
+      0% { top: 6%; opacity: 0.25; }
+      50% { opacity: 0.95; }
+      100% { top: 94%; opacity: 0.25; }
     }
 
     /* 4 Marcadores ArUco nítidos de esquina */
