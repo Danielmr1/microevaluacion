@@ -50,53 +50,71 @@
   <script src="card-cartilla.js?v=3.2.01"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.19">
+  <link rel="stylesheet" href="styles.css?v=3.2.20">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
   <div id="dependency-error-banner" style="display:none; background:#b91c1c; color:#ffffff; padding:12px 16px; font-weight:600; font-size:0.85rem; text-align:center; position:fixed; top:0; left:0; right:0; z-index:9999;"></div>
 
-  <!-- Cabecera de la App -->
+  <!-- Cabecera de la App: Dynamic Island Flotante -->
   <header>
-    <div class="brand">
-      <div class="brand-text">
-        <h1>Microevaluación</h1>
-        <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.19</span>
+    <div class="island-capsule">
+      
+      <!-- Brand & Version -->
+      <div class="island-brand" onclick="goHomeHub()">
+        <div class="island-brand-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
         </div>
-      </div>
-    </div>
-
-    <!-- Acciones de cabecera: Pantalla completa + Linterna + Menú de usuario -->
-    <div class="header-right-group" style="display:flex; align-items:center; gap:8px;">
-      <div class="header-actions">
-        <button class="btn-icon" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
-        <button class="btn-icon" id="btn-torch" onclick="toggleTorch()" title="Encender linterna" style="display:none;">🔦</button>
+        <span class="island-brand-title">MICROEVAL</span>
+        <span class="version-tag">v3.2.20</span>
       </div>
 
-      <!-- Menú de Usuario (Avatar circular clickeable) -->
-      <div id="user-menu-wrap" style="display:none; position:relative;">
-        <button id="btn-user-avatar" type="button" onclick="toggleUserMenu(event)" title="Mi perfil"
-          style="background:none; border:none; padding:0; cursor:pointer; display:flex; align-items:center; border-radius:50%; outline:none;">
-          <img id="user-avatar" src="" alt="Docente"
-            style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid #3b82f6; background:#1e293b; display:block;">
+      <!-- Segmented Navigation (Estilo Unitree Go2 Top Nav) -->
+      <nav class="island-nav">
+        <button type="button" class="island-nav-item active" onclick="goHomeHub()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Inicio</span>
         </button>
+        <button type="button" class="island-nav-item" onclick="openFlow('classrooms')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          <span>Salones</span>
+        </button>
+        <button type="button" class="island-nav-item" onclick="openFlow('bank')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Banco</span>
+        </button>
+      </nav>
 
-        <!-- Dropdown flotante al hacer clic en el avatar -->
-        <div id="user-menu-dropdown" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:#1e293b; border:1px solid #334155; border-radius:12px; box-shadow:0 12px 28px rgba(0,0,0,0.6); padding:12px; min-width:210px; z-index:1000;">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #334155;">
-            <img id="user-menu-avatar-large" src="" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid #475569; background:#0f172a;">
-            <div style="min-width:0; flex:1;">
-              <div id="user-name" style="font-size:0.82rem; font-weight:700; color:#f8fafc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Docente</div>
-              <div id="user-email" style="font-size:0.7rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
-            </div>
-          </div>
-          <button type="button" onclick="closeUserMenu(); handleSignOut();"
-            style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background:#450a0a; border:1px solid #dc2626; color:#fca5a5; border-radius:8px; padding:8px 12px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:background 0.15s;">
-            ↪ Salir
+      <!-- Acciones de Cabecera: Pantalla Completa + Linterna + Avatar -->
+      <div class="island-actions">
+        <button class="island-icon-btn" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+        <button class="island-icon-btn" id="btn-torch" onclick="toggleTorch()" title="Encender linterna" style="display:none;">🔦</button>
+
+        <!-- Menú de Usuario (Avatar circular) -->
+        <div id="user-menu-wrap" style="display:none; position:relative;">
+          <button id="btn-user-avatar" type="button" onclick="toggleUserMenu(event)" title="Mi perfil" class="island-avatar-btn">
+            <img id="user-avatar" src="" alt="Docente" class="island-avatar-img">
           </button>
+
+          <!-- Dropdown Flotante -->
+          <div id="user-menu-dropdown" class="island-dropdown" style="display:none;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #334155;">
+              <img id="user-menu-avatar-large" src="" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid #475569; background:#0f172a;">
+              <div style="min-width:0; flex:1;">
+                <div id="user-name" style="font-size:0.82rem; font-weight:700; color:#f8fafc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Docente</div>
+                <div id="user-email" style="font-size:0.7rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+              </div>
+            </div>
+            <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
+              ↪ Salir
+            </button>
+          </div>
         </div>
       </div>
+
     </div>
   </header>
 
@@ -143,200 +161,193 @@
   <!-- ========================================================= -->
   <!-- VISTA 0: PANTALLA DE INICIO (HUB PRINCIPAL — OPCIÓN B)     -->
   <!-- ========================================================= -->
-  <div id="view-hub" class="view-content active" style="padding: 20px 16px;">
-    <div style="max-width: 780px; margin: 0 auto; width: 100%;">
+  <div id="view-hub" class="view-content active">
+    <div class="cyber-hub-container">
       
-      <!-- Bienvenida al Docente -->
-      <div style="text-align: center; padding: 20px 10px 24px;">
-        <h2 id="hub-welcome-title" style="font-size: 1.65rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; letter-spacing: -0.02em;">
-          ¡Hola, Docente!
-        </h2>
-        <p style="font-size: 0.88rem; color: #94a3b8; margin: 0; font-weight: 500;">
-          ¿Qué deseas hacer hoy en Microevaluación?
-        </p>
+      <!-- HERO HEADER CINEMATOGRÁFICO (ESTILO UNITREE GO2) -->
+      <div class="cyber-hero-head">
+        <div class="cyber-kicker">
+          <span class="cyber-kicker-dot"></span>
+          <span>SISTEMA DE EVALUACIÓN DOCENTE CON IA</span>
+          <span class="cyber-kicker-dot"></span>
+        </div>
+        <h1 class="cyber-hero-title">MICROEVALUACIÓN</h1>
+        <p class="cyber-hero-subtitle">EVALUACIÓN FORMATIVA &amp; ESCANEO DE ALTA VELOCIDAD</p>
+        
+        <div class="cyber-welcome-row">
+          <h2 id="hub-welcome-title" class="cyber-teacher-welcome">¡Hola, Docente!</h2>
+          <span id="hub-session-badge" style="display:none;" class="cyber-live-badge">SESIÓN EN CURSO</span>
+        </div>
       </div>
 
-      <!-- SECCIÓN 1: EVALUACIÓN EN AULA (3 MODALIDADES) -->
-      <div style="margin-bottom: 28px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <span style="font-size: 0.74rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
-            Tomar Evaluación en Aula
-          </span>
-          <span id="hub-session-badge" style="display: none; background: rgba(5, 150, 105, 0.2); border: 1px solid #10b981; color: #6ee7b7; font-size: 0.68rem; font-weight: 800; padding: 3px 10px; border-radius: 9999px; white-space: nowrap; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);">
-            SESIÓN EN CURSO
-          </span>
+      <!-- ESCENARIO CENTRAL CINEMATOGRÁFICO: LA FICHA A5 HOLOGRÁFICA CON ESCÁNER ÓPTICO -->
+      <div class="cyber-stage-wrap">
+        
+        <!-- HUD Telemetry Badges Flotantes (En órbita del escenario) -->
+        <div class="telemetry-badge telemetry-tl">
+          <span class="telemetry-pulse pulse-indigo"></span>
+          <span>✦ GEMINI IA · Rúbrica en vivo</span>
+        </div>
+        <div class="telemetry-badge telemetry-tr">
+          <span class="telemetry-pulse pulse-cyan"></span>
+          <span>⚡ LATENCIA &lt;50ms · Visión OMR</span>
+        </div>
+        <div class="telemetry-badge telemetry-bl">
+          <span class="telemetry-pulse pulse-emerald"></span>
+          <span>📷 ALINEACIÓN 4D · 4 Marcadores ArUco</span>
+        </div>
+        <div class="telemetry-badge telemetry-br">
+          <span class="telemetry-pulse pulse-amber"></span>
+          <span>💾 MODO OFFLINE · PWA Resiliente</span>
         </div>
 
-        <!-- Grilla Mosaico de 3 Modalidades -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
-          
-          <!-- MODALIDAD 1: Formativa Profunda con IA -->
-          <div onclick="openBranchFlow('rama1')" class="hub-card hub-card-branch1" style="display: flex; flex-direction: column; justify-content: space-between; border-color: #6366f1;">
-            <div>
-              <!-- Top Row: Icon + Badge -->
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div class="hub-card-icon-wrap" style="background: rgba(30, 27, 75, 0.75); border: 1.5px solid #818cf8; box-shadow: 0 0 14px rgba(99, 102, 241, 0.3);">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <path d="M9 13h6M9 17h4"/>
-                    <circle cx="17.5" cy="17.5" r="3.5" fill="#6366f1" fill-opacity="0.5" stroke="#a5b4fc" stroke-width="1.5"/>
-                  </svg>
-                </div>
-                <span style="background: rgba(99,102,241,0.18); color: #c7d2fe; font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 9999px; border: 1px solid rgba(129,140,248,0.4); letter-spacing: 0.04em;">
-                  RÚBRICA IA
-                </span>
+        <!-- OBJETO PROTAGONISTA: FICHA HOLOGRÁFICA CON HAZ DE LÁSER ACTIVO -->
+        <div class="cyber-stage-sheet">
+          <!-- Haz de Luz Láser Continuo -->
+          <div class="cyber-laser-beam"></div>
+
+          <!-- 4 Marcadores ArUco Luminosos de Esquina -->
+          <div class="cyber-aruco-marker aruco-tl"></div>
+          <div class="cyber-aruco-marker aruco-tr"></div>
+          <div class="cyber-aruco-marker aruco-bl"></div>
+          <div class="cyber-aruco-marker aruco-br"></div>
+
+          <!-- Cabecera de la Ficha Simulada -->
+          <div class="cyber-sheet-header">
+            <div class="cyber-sheet-qr">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+                <rect x="2" y="2" width="7" height="7" rx="1"/>
+                <rect x="15" y="2" width="7" height="7" rx="1"/>
+                <rect x="2" y="15" width="7" height="7" rx="1"/>
+                <rect x="15" y="15" width="3" height="3"/>
+                <path d="M19 19h3v3"/>
+              </svg>
+            </div>
+            <div class="cyber-sheet-meta">
+              <div class="cyber-line-title">EVALUACIÓN DE MATEMÁTICA · GRADO ACTUAL</div>
+              <div class="cyber-line-sub">Estudiante: _______________________ &nbsp; Fecha: __/__/__</div>
+            </div>
+            <div class="cyber-sheet-chip">A5 132×182mm</div>
+          </div>
+
+          <!-- Cuerpo de la Ficha: Cuadrícula y Burbujas OMR -->
+          <div class="cyber-sheet-body">
+            <div class="cyber-grid-area">
+              <div class="cyber-grid-label">CUADRÍCULA DE CÁLCULO / PROCEDIMIENTO</div>
+              <div class="cyber-math-grid"></div>
+            </div>
+            <div class="cyber-omr-area">
+              <div class="cyber-omr-col">
+                <div class="cyber-bubble filled">A</div>
+                <div class="cyber-bubble">B</div>
+                <div class="cyber-bubble">C</div>
+                <div class="cyber-bubble">D</div>
               </div>
-
-              <!-- Title & Tagline -->
-              <h3 style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin: 0 0 4px;">Formativa con IA</h3>
-              <p style="font-size: 0.74rem; color: #94a3b8; margin: 0; line-height: 1.4;">
-                Evaluación cualitativa integral del procedimiento y razonamiento matemático.
-              </p>
-
-              <!-- Mini Silhouette Preview: Ficha A5 con cuadrícula y rúbrica -->
-              <div class="hub-preview-sheet">
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
-                    <rect x="0.5" y="0.5" width="27" height="19" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1"/>
-                    <line x1="3" y1="4" x2="16" y2="4" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round"/>
-                    <rect x="3" y="7" width="22" height="9" rx="1" fill="#0f172a" stroke="#334155" stroke-width="0.8" stroke-dasharray="1 1"/>
-                  </svg>
-                  <span style="font-size: 0.68rem; color: #cbd5e1; font-weight: 700;">Ficha con Cuadrícula</span>
-                </div>
-                <span style="font-size: 0.65rem; color: #a5b4fc; font-weight: 800; background: rgba(99,102,241,0.25); padding: 1px 6px; border-radius: 4px;">Gemini</span>
-              </div>
-
-              <!-- Spec Chips -->
-              <div class="hub-spec-tags">
-                <span class="hub-spec-tag">1 a 2 Preguntas</span>
-                <span class="hub-spec-tag">Borrador de cálculo</span>
-                <span class="hub-spec-tag hub-spec-accent-indigo">Rúbrica Gemini</span>
+              <div class="cyber-omr-col">
+                <div class="cyber-bubble">A</div>
+                <div class="cyber-bubble filled">B</div>
+                <div class="cyber-bubble">C</div>
+                <div class="cyber-bubble">D</div>
               </div>
             </div>
+          </div>
 
-            <!-- Tactile CTA Button -->
-            <div class="hub-card-cta hub-cta-branch1">
-              <span>Iniciar Evaluación</span>
+          <!-- Pie de la Ficha -->
+          <div class="cyber-sheet-footer">
+            <span>Rpta: ___________________</span>
+            <span class="cyber-verified-stamp">✓ VISIÓN IA VERIFICADA</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cyber-hero-desc">
+        La Tecnología de Evaluación Más Rápida en el Aula
+      </div>
+
+      <!-- CÁPSULA SELECTORA DE MODALIDAD (3 MODALIDADES) -->
+      <div class="cyber-mode-container">
+        <div class="cyber-section-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          MODALIDADES DE EVALUACIÓN
+        </div>
+
+        <div class="cyber-cards-grid">
+          
+          <!-- MODALIDAD 1: Formativa Profunda con IA -->
+          <div onclick="openBranchFlow('rama1')" class="cyber-card card-rama1">
+            <div class="cyber-card-top">
+              <div class="cyber-card-icon icon-rama1">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <path d="M9 13h6M9 17h4"/>
+                  <circle cx="17.5" cy="17.5" r="3.5" fill="#6366f1" fill-opacity="0.5" stroke="#a5b4fc" stroke-width="1.5"/>
+                </svg>
+              </div>
+              <span class="cyber-pill-badge badge-rama1">RÚBRICA IA</span>
+            </div>
+            <h3 class="cyber-card-title">Formativa con IA</h3>
+            <p class="cyber-card-desc">Análisis de procedimiento cualitativo y rúbrica pedagógica de Gemini.</p>
+            <div class="cyber-chip-row">
+              <span class="cyber-spec-chip">1–2 Preguntas</span>
+              <span class="cyber-spec-chip">Cuadrícula</span>
+              <span class="cyber-spec-chip chip-highlight-rama1">Gemini IA</span>
+            </div>
+            <div class="cyber-cta-btn cta-rama1">
+              <span>Iniciar Formativa</span>
               <span class="hub-card-arrow">→</span>
             </div>
           </div>
 
           <!-- MODALIDAD 2: Focalizada en la Respuesta -->
-          <div onclick="openBranchFlow('rama2')" class="hub-card hub-card-branch2" style="display: flex; flex-direction: column; justify-content: space-between; border-color: #0284c7;">
-            <div>
-              <!-- Top Row: Icon + Badge -->
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div class="hub-card-icon-wrap" style="background: rgba(8, 47, 73, 0.75); border: 1.5px solid #38bdf8; box-shadow: 0 0 14px rgba(2, 132, 199, 0.3);">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bae6fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="#0284c7" fill-opacity="0.3"/>
-                  </svg>
-                </div>
-                <span style="background: rgba(14,165,233,0.18); color: #bae6fd; font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 9999px; border: 1px solid rgba(56,189,248,0.4); letter-spacing: 0.04em;">
-                  1–5 PREG.
-                </span>
+          <div onclick="openBranchFlow('rama2')" class="cyber-card card-rama2">
+            <div class="cyber-card-top">
+              <div class="cyber-card-icon icon-rama2">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bae6fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="#0284c7" fill-opacity="0.3"/>
+                </svg>
               </div>
-
-              <!-- Title & Tagline -->
-              <h3 style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin: 0 0 4px;">Focalizada en la Respuesta</h3>
-              <p style="font-size: 0.74rem; color: #94a3b8; margin: 0; line-height: 1.4;">
-                Corrección directa de alternativas marcadas o respuestas escritas con escaneo ágil.
-              </p>
-
-              <!-- Mini Silhouette Preview: Ficha con alternativas o franja manuscrita -->
-              <div class="hub-preview-sheet">
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
-                    <rect x="0.5" y="0.5" width="27" height="19" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1"/>
-                    <circle cx="5" cy="5" r="1.5" fill="#38bdf8"/>
-                    <line x1="8" y1="5" x2="22" y2="5" stroke="#64748b" stroke-width="1"/>
-                    <circle cx="5" cy="10" r="1.5" fill="#38bdf8"/>
-                    <line x1="8" y1="10" x2="22" y2="10" stroke="#64748b" stroke-width="1"/>
-                    <rect x="3" y="14" width="22" height="3" rx="1" fill="#0369a1" fill-opacity="0.4"/>
-                  </svg>
-                  <span style="font-size: 0.68rem; color: #cbd5e1; font-weight: 700;">Marcada o Escrita</span>
-                </div>
-                <span style="font-size: 0.65rem; color: #7dd3fc; font-weight: 800; background: rgba(14,165,233,0.25); padding: 1px 6px; border-radius: 4px;">Directa</span>
-              </div>
-
-              <!-- Spec Chips -->
-              <div class="hub-spec-tags">
-                <span class="hub-spec-tag">1 a 5 Preguntas</span>
-                <span class="hub-spec-tag">Borrador opcional</span>
-                <span class="hub-spec-tag hub-spec-accent-cyan">Clave directa</span>
-              </div>
+              <span class="cyber-pill-badge badge-rama2">1–5 PREG.</span>
             </div>
-
-            <!-- Tactile CTA Button -->
-            <div class="hub-card-cta hub-cta-branch2">
-              <span>Iniciar Evaluación</span>
+            <h3 class="cyber-card-title">Focalizada en la Respuesta</h3>
+            <p class="cyber-card-desc">Corrección directa de alternativas marcadas o escritas sin evaluar procedimiento.</p>
+            <div class="cyber-chip-row">
+              <span class="cyber-spec-chip">1–5 Preguntas</span>
+              <span class="cyber-spec-chip">Borrador opcional</span>
+              <span class="cyber-spec-chip chip-highlight-rama2">Clave directa</span>
+            </div>
+            <div class="cyber-cta-btn cta-rama2">
+              <span>Iniciar Focalizada</span>
               <span class="hub-card-arrow">→</span>
             </div>
           </div>
 
           <!-- MODALIDAD 3: Cartilla OMR -->
-          <div onclick="openBranchFlow('rama3')" class="hub-card hub-card-branch3" style="display: flex; flex-direction: column; justify-content: space-between; border-color: #059669;">
-            <div>
-              <!-- Top Row: Icon + Badge -->
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div class="hub-card-icon-wrap" style="background: rgba(6, 78, 59, 0.75); border: 1.5px solid #34d399; box-shadow: 0 0 14px rgba(5, 150, 105, 0.3);">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <circle cx="8" cy="8" r="1.5" fill="#34d399"/>
-                    <circle cx="12" cy="8" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
-                    <circle cx="16" cy="8" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
-                    <circle cx="8" cy="13" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
-                    <circle cx="12" cy="13" r="1.5" fill="#34d399"/>
-                    <circle cx="16" cy="13" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
-                  </svg>
-                </div>
-                <span style="background: rgba(16,185,129,0.18); color: #a7f3d0; font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 9999px; border: 1px solid rgba(52,211,153,0.4); letter-spacing: 0.04em;">
-                  HASTA 20 PREG.
-                </span>
+          <div onclick="openBranchFlow('rama3')" class="cyber-card card-rama3">
+            <div class="cyber-card-top">
+              <div class="cyber-card-icon icon-rama3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8" cy="8" r="1.5" fill="#34d399"/>
+                  <circle cx="12" cy="8" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
+                  <circle cx="16" cy="8" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
+                  <circle cx="8" cy="13" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
+                  <circle cx="12" cy="13" r="1.5" fill="#34d399"/>
+                  <circle cx="16" cy="13" r="1.5" stroke="#a7f3d0" stroke-width="1.2"/>
+                </svg>
               </div>
-
-              <!-- Title & Tagline -->
-              <h3 style="font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin: 0 0 4px;">Cartilla OMR</h3>
-              <p style="font-size: 0.74rem; color: #94a3b8; margin: 0; line-height: 1.4;">
-                Calificación masiva en segundos mediante escaneo óptico 100% determinista y local.
-              </p>
-
-              <!-- Mini Silhouette Preview: 2 columnas de burbujas OMR -->
-              <div class="hub-preview-sheet">
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
-                    <rect x="0.5" y="0.5" width="27" height="19" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1"/>
-                    <circle cx="5" cy="5" r="1" fill="#34d399"/>
-                    <circle cx="8" cy="5" r="1" fill="#64748b"/>
-                    <circle cx="11" cy="5" r="1" fill="#64748b"/>
-                    <circle cx="5" cy="9" r="1" fill="#64748b"/>
-                    <circle cx="8" cy="9" r="1" fill="#34d399"/>
-                    <circle cx="11" cy="9" r="1" fill="#64748b"/>
-                    <circle cx="17" cy="5" r="1" fill="#64748b"/>
-                    <circle cx="20" cy="5" r="1" fill="#34d399"/>
-                    <circle cx="23" cy="5" r="1" fill="#64748b"/>
-                    <circle cx="17" cy="9" r="1" fill="#34d399"/>
-                    <circle cx="20" cy="9" r="1" fill="#64748b"/>
-                    <circle cx="23" cy="9" r="1" fill="#64748b"/>
-                  </svg>
-                  <span style="font-size: 0.68rem; color: #cbd5e1; font-weight: 700;">2 Columnas (A-B-C-D)</span>
-                </div>
-                <span style="font-size: 0.65rem; color: #6ee7b7; font-weight: 800; background: rgba(16,185,129,0.25); padding: 1px 6px; border-radius: 4px;">Ultra-rápido</span>
-              </div>
-
-              <!-- Spec Chips -->
-              <div class="hub-spec-tags">
-                <span class="hub-spec-tag">Hasta 20 Preguntas</span>
-                <span class="hub-spec-tag">Sin llamadas a IA</span>
-                <span class="hub-spec-tag hub-spec-accent-emerald">OMR instantáneo</span>
-              </div>
+              <span class="cyber-pill-badge badge-rama3">HASTA 20 PREG.</span>
             </div>
-
-            <!-- Tactile CTA Button -->
-            <div class="hub-card-cta hub-cta-branch3">
+            <h3 class="cyber-card-title">Cartilla OMR</h3>
+            <p class="cyber-card-desc">Calificación masiva en segundos mediante escaneo óptico 100% local sin IA.</p>
+            <div class="cyber-chip-row">
+              <span class="cyber-spec-chip">Hasta 20 Preguntas</span>
+              <span class="cyber-spec-chip">2 Columnas</span>
+              <span class="cyber-spec-chip chip-highlight-rama3">OMR masivo</span>
+            </div>
+            <div class="cyber-cta-btn cta-rama3">
               <span>Iniciar Cartilla OMR</span>
               <span class="hub-card-arrow">→</span>
             </div>
@@ -345,99 +356,30 @@
         </div>
       </div>
 
-      <!-- SECCIÓN 2: GESTIÓN Y RECURSOS -->
-      <div>
-        <div style="margin-bottom: 14px;">
-          <span style="font-size: 0.74rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7"/>
-              <rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            Gestión y Recursos
-          </span>
-        </div>
-
-        <!-- Grilla de Gestión y Recursos -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-          
-          <!-- FLUJO 2: Gestión de Salones y Nóminas -->
-          <div onclick="openFlow('classrooms')" class="hub-card hub-card-classrooms">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <div class="hub-card-icon-wrap" style="width: 48px; height: 48px; background: rgba(6, 78, 59, 0.7); border: 1.5px solid #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <h3 style="font-size: 0.98rem; font-weight: 800; color: #f8fafc; margin: 0;">Mis Salones y Alumnos</h3>
-                <p style="font-size: 0.74rem; color: #94a3b8; margin: 2px 0 6px; line-height: 1.35;">
-                  Crea secciones, importa nóminas desde Excel o CSV y administra a tus estudiantes.
-                </p>
-                <div class="hub-spec-tags" style="margin-top: 0;">
-                  <span class="hub-spec-tag">Nóminas Excel / CSV</span>
-                  <span class="hub-spec-tag">Secciones y Alumnos</span>
-                </div>
-              </div>
-              <span class="hub-card-arrow" style="color: #34d399; font-size: 1.25rem; font-weight: 900; margin-left: 4px;">→</span>
-            </div>
-          </div>
-
-          <!-- FLUJO 3: Banco de Preguntas -->
-          <div onclick="openFlow('bank')" class="hub-card hub-card-bank">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <div class="hub-card-icon-wrap" style="width: 48px; height: 48px; background: rgba(67, 20, 7, 0.7); border: 1.5px solid #f97316; box-shadow: 0 0 12px rgba(249, 115, 22, 0.25);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fed7aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                  <line x1="9" y1="7" x2="15" y2="7"/>
-                  <line x1="9" y1="11" x2="13" y2="11"/>
-                </svg>
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <h3 style="font-size: 0.98rem; font-weight: 800; color: #f8fafc; margin: 0;">Banco de Preguntas</h3>
-                <p style="font-size: 0.74rem; color: #94a3b8; margin: 2px 0 6px; line-height: 1.35;">
-                  Explora problemas clasificados por grado y redacta preguntas con alternativas y rúbrica de IA.
-                </p>
-                <div class="hub-spec-tags" style="margin-top: 0;">
-                  <span class="hub-spec-tag">Por Grados 1°–5°</span>
-                  <span class="hub-spec-tag">Rúbrica y Claves</span>
-                </div>
-              </div>
-              <span class="hub-card-arrow" style="color: #fb923c; font-size: 1.25rem; font-weight: 900; margin-left: 4px;">→</span>
-            </div>
-          </div>
-
-          <!-- FLUJO 4: Sesiones Guardadas (Máximo 3) -->
-          <div onclick="openFlow('saved-sessions')" class="hub-card hub-card-saved-sessions" style="background: linear-gradient(180deg, #1e293b 0%, #171822 100%); border: 1.5px solid #d97706;">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <div class="hub-card-icon-wrap" style="width: 48px; height: 48px; background: rgba(69, 26, 3, 0.7); border: 1.5px solid #f59e0b; box-shadow: 0 0 12px rgba(217, 119, 6, 0.25);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fde68a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                  <polyline points="12 11 12 14 14 15" stroke-width="1.8"/>
-                </svg>
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-                  <h3 style="font-size: 0.98rem; font-weight: 800; color: #f8fafc; margin: 0;">Sesiones Guardadas</h3>
-                  <span id="hub-saved-sessions-badge" style="background: rgba(217,119,6,0.18); border: 1px solid #d97706; color: #fbbf24; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">0/3</span>
-                </div>
-                <p style="font-size: 0.74rem; color: #94a3b8; margin: 2px 0 6px; line-height: 1.35;">
-                  Accede de inmediato a tus evaluaciones listas para ir al escáner en un solo clic.
-                </p>
-                <div class="hub-spec-tags" style="margin-top: 0;">
-                  <span class="hub-spec-tag">Reanudar al instante</span>
-                  <span class="hub-spec-tag">Cero configuración</span>
-                </div>
-              </div>
-              <span class="hub-card-arrow" style="color: #fbbf24; font-size: 1.25rem; font-weight: 900; margin-left: 4px;">→</span>
-            </div>
-          </div>
-
+      <!-- DOCK FLOTANTE INFERIOR (ESTILO UNITREE GO2 CONTROL ISLAND) -->
+      <div class="cyber-dock-container">
+        <div class="cyber-dock">
+          <button type="button" class="dock-btn" onclick="openFlow('classrooms')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+            <span>Mis Salones</span>
+          </button>
+          <div class="dock-divider"></div>
+          <button type="button" class="dock-btn" onclick="openFlow('bank')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <span>Banco</span>
+          </button>
+          <div class="dock-divider"></div>
+          <button type="button" class="dock-btn" onclick="openFlow('saved-sessions')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span>Sesiones</span>
+            <span id="hub-saved-sessions-badge" class="dock-badge">0/3</span>
+          </button>
+          <div class="dock-divider"></div>
+          <!-- Botón Amarillo Neón de Alto Impacto (como "Visit Site" en Unitree Go2) -->
+          <button type="button" class="dock-cta-btn" onclick="openBranchFlow('rama1')">
+            <span>Iniciar Evaluación</span>
+            <span class="hub-card-arrow">→</span>
+          </button>
         </div>
       </div>
 

@@ -74,26 +74,39 @@ Cada rama de evaluación posee una identidad cromática única y consistente que
 
 ---
 
-## 5. Componentes Clave del Sistema
+## 5. Componentes Clave del Sistema (Arquitectura Cyber-Minimalista & Dynamic Island)
 
-### 5.1. Barra Superior y Cabecera (`<header>` / `.flow-topbar`)
-* Efecto de cristal esmerilado: `backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);`.
-* Fondo semitransparente oscuro: `rgba(11, 17, 32, 0.85);`.
-* Borde inferior fino: `1px solid rgba(255, 255, 255, 0.08);`.
-* Botón de retorno `← Volver al inicio`: Botón píldora con fondo `rgba(30, 41, 59, 0.8)` y borde `#334155`.
+Inspirado en los estándares de interfaces inmersivas de alta gama (Awwwards / Apple Cyber-Minimalism), el Hub Principal se estructura en 4 niveles de elevación:
 
-### 5.2. Tarjetas del Hub Principal (`.hub-card`)
-* Estructura tipo mosaico reactivo con `grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))`.
-* Icono en caja contenedora cuadrada redondeada (`border-radius: 12px`) con borde de 1.5px del color de acento.
-* Badge superior derecho con el atributo distintivo (`RÚBRICA IA`, `1–5 PREG.`, `HASTA 20 PREG.`).
-* Flecha de navegación `→` que reacciona con desplazamiento hacia la derecha en `:hover`.
+### 5.1. Barra de Navegación "Dynamic Island" (Cápsula Flotante Superior)
+* **Contenedor:** Cápsula flotante centrada de radio completo (`border-radius: 9999px`) con vidrio esmerilado de alta densidad (`backdrop-filter: blur(20px); background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 12px 32px rgba(0,0,0,0.4);`).
+* **Elementos integrados:**
+  * Identidad de marca con acento cian tecnológico (`MICRO•EVAL`).
+  * Selector segmentado de vistas rápidas (`Inicio`, `Salones`, `Banco`).
+  * Botones de acción circulares traslúcidos (Pantalla completa, Linterna, Perfil docente).
 
-### 5.3. Botones de Acción de Pantalla de Resumen
-Distribución en cuadrícula equilibrada:
-* **Guardar o Imprimir Fichas / Evaluación:** Verde esmeralda (`#16a34a`) / Azul cielo (`#0284c7`).
-* **Ir al Escáner:** Índigo vibrante (`#4f46e5`).
-* **Guardar Sesión:** Ámbar cálido (`#d97706`).
-* **Editar:** Pizarra neutra con borde marcado (`#1e293b`, borde `#475569`).
+### 5.2. Escenario Central Cinematográfico (Showcase Holográfico Ficha A5)
+* En lugar de tarjetas idénticas y planas, el núcleo del Hub presenta la **Ficha A5 Holográfica de Microevaluación**:
+  * Perspectiva dimensional y marco con los 4 marcadores ArUco luminosos.
+  * Haz de escaneo láser tenue continuo simulando la lectura óptica por cámara.
+  * Nube de micro-chips de telemetría flotantes:
+    * `✦ IA Gemini: Rúbrica Pedagógica en vivo`
+    * `⚡ Latencia OMR: <50ms determinista`
+    * `📷 Alineación Óptica: ArUco 4D`
+    * `💾 Modo Offline PWA: 100% activo`
+* Tipografía Hero: Título cinematográfico `MICROEVALUACIÓN` con subtítulo neón cyan `Evaluación Formativa & Escaneo de Alta Velocidad`.
+
+### 5.3. Cápsula Selectora de Modalidad (Segmented Island)
+* Barra flotante de píldoras interactivas para elegir la modalidad activa con un solo toque:
+  * `🔬 Formativa con IA` (Índigo `#6366f1`)
+  * `⚡ Focalizada en Respuesta` (Sky `#0284c7`)
+  * `📋 Cartilla OMR` (Esmeralda `#059669`)
+* Al interactuar, actualiza dinámicamente la información técnica y la silueta de la ficha.
+
+### 5.4. Dock Flotante Inferior (Control Bar con CTA de Alto Impacto)
+* Cápsula fija en la parte inferior de la pantalla con botones rápidos:
+  * `🏫 Mis Salones` · `📚 Banco de Preguntas` · `📁 Sesiones Guardadas (badge)`
+  * **Botón Primario de Alto Impacto:** Botón dorado/neón (`#fbbf24` o `#38bdf8`) `🚀 Iniciar Evaluación →` con presencia táctil inmediata para arranque en aula con un solo clic.
 
 ---
 
