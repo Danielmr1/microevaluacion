@@ -122,6 +122,8 @@
   const STORAGE_KEY_BANK = 'microeval_teacher_bank_v2';
   const STORAGE_KEY_BANK_VIEJO = 'microeval_teacher_bank_v1';
   const STORAGE_KEY_SESSION = 'microeval_active_session_v1';
+  const STORAGE_KEY_SAVED_SESSIONS = 'microeval_saved_sessions_v1';
+  const MAX_SAVED_SESSIONS = 3;
   const STORAGE_KEY_SYNC_QUEUE = 'microeval_pending_sync_v1';
 
   function queueForSync(item) {
@@ -705,6 +707,172 @@
     return null;
   }
 
+  /**
+   * Obtiene la lista de sesiones guardadas por el docente (máximo 3)
+   * @returns {Array} Lista de hasta 3 sesiones completas
+   */
+  function getSavedSessions() {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY_SAVED_SESSIONS);
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) return arr.slice(0, MAX_SAVED_SESSIONS);
+        }
+      } catch (e) {
+        console.error('[getSavedSessions Error]', e);
+      }
+    }
+    return [];
+  }
+
+  /**
+   * Guarda o actualiza una sesión en el almacenamiento local con tope estricto de 3
+   * @param {Object} sessionData Datos completos de la sesión
+   * @returns {Object} Resultado de la operación
+   */
+  function saveSession(sessionData) {
+    if (!sessionData || !sessionData.classroomId) {
+      return { success: false, reason: 'invalid_data', error: 'Faltan datos del salón o la evaluación' };
+    }
+    const list = getSavedSessions();
+    const existingIndex = sessionData.id ? list.findIndex(s => s.id === sessionData.id) : -1;
+
+    let targetSession;
+    if (existingIndex >= 0) {
+      targetSession = {
+        ...list[existingIndex],
+        ...sessionData,
+        updatedAt: new Date().toISOString()
+      };
+      list[existingIndex] = targetSession;
+    } else {
+      if (list.length >= MAX_SAVED_SESSIONS) {
+        return {
+          success: false,
+          reason: 'limit_reached',
+          max: MAX_SAVED_SESSIONS,
+          count: list.length,
+          error: `Has alcanzado el límite máximo de ${MAX_SAVED_SESSIONS} sesiones guardadas.`
+        };
+      }
+      targetSession = {
+        ...sessionData,
+        id: sessionData.id || ('sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4)),
+        createdAt: sessionData.createdAt || new Date().toISOString(),
+        timestamp: sessionData.timestamp || Date.now()
+      };
+      list.unshift(targetSession);
+    }
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(list.slice(0, MAX_SAVED_SESSIONS)));
+      } catch (e) {
+        return { success: false, reason: 'storage_error', error: e.message };
+      }
+    }
+    return {
+      success: true,
+      count: list.length,
+      max: MAX_SAVED_SESSIONS,
+      session: targetSession
+    };
+  }
+
+  /**
+   * Elimina una sesión guardada por ID
+   * @param {string} sessionId ID de la sesión a eliminar
+   * @returns {Object} Resultado
+   */
+  function deleteSavedSession(sessionId) {
+    if (!sessionId) return { success: false };
+    const list = getSavedSessions().filter(s => s.id !== sessionId);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(list));
+      } catch (e) {
+        return { success: false, error: e.message };
+      }
+    }
+    return { success: true, count: list.length };
+  }
+
+  /**
+   * Verifica si un salón está siendo utilizado en alguna sesión guardada
+   * @param {string} classroomId
+   * @returns {{inUse: boolean, sessionTitle?: string, sessionId?: string}}
+   */
+  function isClassroomInSavedSession(classroomId) {
+    if (!classroomId) return { inUse: false };
+    const target = String(classroomId).trim().toLowerCase();
+    const list = getSavedSessions();
+    for (const sess of list) {
+      if (sess.classroomId && String(sess.classroomId).trim().toLowerCase() === target) {
+        const title = sess.title || (sess.branchTitle ? `${sess.branchTitle} (${sess.classroomName || 'Salón'})` : (sess.classroomName || 'Sesión guardada'));
+        return { inUse: true, sessionTitle: title, sessionId: sess.id };
+      }
+    }
+    return { inUse: false };
+  }
+
+  /**
+   * Verifica si una pregunta (por ID o prompt) está presente en alguna sesión guardada
+   * @param {string} identifier
+   * @returns {{inUse: boolean, sessionTitle?: string, sessionId?: string}}
+   */
+  function isQuestionInSavedSession(identifier) {
+    if (!identifier) return { inUse: false };
+    const target = String(identifier).trim().toLowerCase();
+    if (target.length < 2) return { inUse: false };
+    const list = getSavedSessions();
+
+    for (const sess of list) {
+      const sessTitle = sess.title || (sess.branchTitle ? `${sess.branchTitle} (${sess.classroomName || 'Salón'})` : (sess.classroomName || 'Sesión guardada'));
+
+      if (sess.evalId && String(sess.evalId).trim().toLowerCase() === target) {
+        return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+      }
+      if (sess.prompt && String(sess.prompt).trim().toLowerCase() === target) {
+        return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+      }
+      if (sess.prompt && target.length > 15 && (String(sess.prompt).toLowerCase().includes(target) || target.includes(String(sess.prompt).trim().toLowerCase()))) {
+        return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+      }
+
+      if (Array.isArray(sess.questions)) {
+        for (const q of sess.questions) {
+          if (!q) continue;
+          if (q.id && String(q.id).trim().toLowerCase() === target) {
+            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          }
+          if (q.prompt && String(q.prompt).trim().toLowerCase() === target) {
+            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          }
+          if (q.prompt && target.length > 15 && (String(q.prompt).toLowerCase().includes(target) || target.includes(String(q.prompt).trim().toLowerCase()))) {
+            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          }
+        }
+      }
+
+      if (sess.wizardEval && Array.isArray(sess.wizardEval.questions)) {
+        for (const q of sess.wizardEval.questions) {
+          if (!q) continue;
+          if (q.id && String(q.id).trim().toLowerCase() === target) {
+            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          }
+          if (q.prompt && String(q.prompt).trim().toLowerCase() === target) {
+            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          }
+          if (q.prompt && target.length > 15 && (String(q.prompt).toLowerCase().includes(target) || target.includes(String(q.prompt).trim().toLowerCase()))) {
+            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          }
+        }
+      }
+    }
+    return { inUse: false };
+  }
+
   // Exportación universal
   const ClassroomData = {
     CLASSROOMS,
@@ -732,6 +900,12 @@
     setClassroomGrade,
     setActiveSession,
     getActiveSession,
+    getSavedSessions,
+    saveSession,
+    deleteSavedSession,
+    isClassroomInSavedSession,
+    isQuestionInSavedSession,
+    MAX_SAVED_SESSIONS,
     flushSyncQueue,
 
     updateStudent(classroomId, studentCode, fullName, shortName) {

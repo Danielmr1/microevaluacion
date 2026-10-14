@@ -514,6 +514,15 @@ async function handleDeleteClassroomFromManager() {
     const nombre = cls ? cls.name : 'este salón';
     const alumnos = (cls && cls.students) ? cls.students.length : 0;
 
+    // Guardarraíl: Protección si el salón está en una sesión guardada activa
+    if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.isClassroomInSavedSession === 'function') {
+      const inSaved = ClassroomData.isClassroomInSavedSession(classroomId);
+      if (inSaved && inSaved.inUse) {
+        showToast(`⚠️ No puedes eliminar el salón "${nombre}" porque está en la sesión guardada "${inSaved.sessionTitle}". Elimina primero esa sesión en "Sesiones Guardadas".`);
+        return;
+      }
+    }
+
     const seguro = confirm(
       '¿Borrar el salón "' + nombre + '"?\n\n' +
       'Se eliminan también sus ' + alumnos + ' alumno(s) y TODOS los resultados guardados.\n\n' +

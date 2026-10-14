@@ -378,6 +378,19 @@ function handleDeleteQuestionFromBank(target, displayText, optionalId) {
     ? (ClassroomData.getEvaluation(target) || (optionalId && ClassroomData.getEvaluation(optionalId)) || Object.values(ClassroomData.EVALUATIONS || {}).find(e => e && (e.id === target || e.prompt === target || (optionalId && e.id === optionalId))))
     : null;
   const promptToDelete = evalObj ? evalObj.prompt : target;
+
+  // Guardarraíl: Protección si la pregunta está en una sesión guardada activa
+  if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.isQuestionInSavedSession === 'function') {
+    const check1 = ClassroomData.isQuestionInSavedSession(target);
+    const check2 = optionalId ? ClassroomData.isQuestionInSavedSession(optionalId) : { inUse: false };
+    const check3 = promptToDelete ? ClassroomData.isQuestionInSavedSession(promptToDelete) : { inUse: false };
+    const inSaved = (check1 && check1.inUse) ? check1 : ((check2 && check2.inUse) ? check2 : ((check3 && check3.inUse) ? check3 : { inUse: false }));
+    if (inSaved && inSaved.inUse) {
+      showToast(`⚠️ No puedes eliminar esta pregunta porque forma parte de la sesión guardada "${inSaved.sessionTitle}". Elimina primero esa sesión en "Sesiones Guardadas".`);
+      return;
+    }
+  }
+
   const promptPreview = (displayText || promptToDelete || '').substring(0, 180);
 
   showAIDialog({
