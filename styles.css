@@ -3785,21 +3785,125 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
+    #view-hub {
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 60%),
+                  radial-gradient(circle at 10% 40%, rgba(14, 165, 233, 0.07) 0%, transparent 50%),
+                  radial-gradient(circle at 90% 70%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+                  #0b0f19;
+      min-height: calc(100vh - 65px);
+    }
     .hub-card {
-      background: #1e293b;
+      background: linear-gradient(180deg, #1e293b 0%, #141d2e 100%);
       border: 1.5px solid rgba(255, 255, 255, 0.08);
       border-radius: 18px;
       padding: 20px;
       cursor: pointer;
       transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.25);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.35);
       text-align: left;
       position: relative;
       overflow: hidden;
     }
     .hub-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.45);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.15), 0 16px 32px -6px rgba(0, 0, 0, 0.5);
+    }
+    .hub-card-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      backdrop-filter: blur(8px);
+    }
+    .hub-preview-sheet {
+      background: rgba(11, 15, 25, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 8px;
+      padding: 7px 10px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .hub-spec-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .hub-spec-tag {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+    .hub-spec-accent-indigo {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.35);
+      color: #c7d2fe;
+    }
+    .hub-spec-accent-cyan {
+      background: rgba(14, 165, 233, 0.15);
+      border-color: rgba(14, 165, 233, 0.35);
+      color: #bae6fd;
+    }
+    .hub-spec-accent-emerald {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #a7f3d0;
+    }
+    .hub-card-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 9px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin-top: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hub-cta-branch1 {
+      background: rgba(99, 102, 241, 0.14);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #c7d2fe;
+    }
+    .hub-card-branch1:hover .hub-cta-branch1 {
+      background: #6366f1;
+      color: #ffffff;
+      border-color: #818cf8;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+    .hub-cta-branch2 {
+      background: rgba(14, 165, 233, 0.14);
+      border: 1px solid rgba(14, 165, 233, 0.35);
+      color: #bae6fd;
+    }
+    .hub-card-branch2:hover .hub-cta-branch2 {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+    .hub-cta-branch3 {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #a7f3d0;
+    }
+    .hub-card-branch3:hover .hub-cta-branch3 {
+      background: #059669;
+      color: #ffffff;
+      border-color: #34d399;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
     }
     .hub-card-arrow {
       display: inline-block;
@@ -3814,32 +3918,32 @@
     }
     .hub-card-branch1:hover {
       border-color: #818cf8;
-      background: #1e293b radial-gradient(circle at top right, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
-      box-shadow: 0 12px 28px -4px rgba(99, 102, 241, 0.3);
+      background: #1e293b radial-gradient(circle at top right, rgba(99, 102, 241, 0.22) 0%, transparent 70%);
+      box-shadow: 0 12px 28px -4px rgba(99, 102, 241, 0.35);
     }
     .hub-card-branch2:hover {
       border-color: #38bdf8;
-      background: #1e293b radial-gradient(circle at top right, rgba(2, 132, 199, 0.18) 0%, transparent 70%);
-      box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.3);
+      background: #1e293b radial-gradient(circle at top right, rgba(2, 132, 199, 0.22) 0%, transparent 70%);
+      box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.35);
     }
     .hub-card-branch3:hover {
       border-color: #34d399;
-      background: #1e293b radial-gradient(circle at top right, rgba(5, 150, 105, 0.18) 0%, transparent 70%);
-      box-shadow: 0 12px 28px -4px rgba(5, 150, 105, 0.3);
+      background: #1e293b radial-gradient(circle at top right, rgba(5, 150, 105, 0.22) 0%, transparent 70%);
+      box-shadow: 0 12px 28px -4px rgba(5, 150, 105, 0.35);
     }
     .hub-card-classrooms:hover {
       border-color: #34d399;
-      background: #1e293b radial-gradient(circle at top right, rgba(16, 185, 129, 0.14) 0%, transparent 70%);
+      background: #1e293b radial-gradient(circle at top right, rgba(16, 185, 129, 0.16) 0%, transparent 70%);
       box-shadow: 0 12px 28px -4px rgba(16, 185, 129, 0.25);
     }
     .hub-card-bank:hover {
       border-color: #fb923c;
-      background: #1e293b radial-gradient(circle at top right, rgba(249, 115, 22, 0.14) 0%, transparent 70%);
+      background: #1e293b radial-gradient(circle at top right, rgba(249, 115, 22, 0.16) 0%, transparent 70%);
       box-shadow: 0 12px 28px -4px rgba(249, 115, 22, 0.25);
     }
     .hub-card-saved-sessions:hover {
       border-color: #fbbf24;
-      background: #1e293b radial-gradient(circle at top right, rgba(217, 119, 6, 0.18) 0%, transparent 70%);
+      background: #1e293b radial-gradient(circle at top right, rgba(217, 119, 6, 0.2) 0%, transparent 70%);
       box-shadow: 0 12px 28px -4px rgba(217, 119, 6, 0.25);
     }
 
