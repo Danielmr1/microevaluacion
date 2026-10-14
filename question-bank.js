@@ -4539,6 +4539,28 @@ function prepareRama3Evaluation() {
     return null;
   }
 
+  // Si estamos en Modo B (Evaluación y Cartillas / Banco):
+  // Validar que TODAS las preguntas desde 1 hasta r3State.count estén configuradas y seleccionadas del banco.
+  if (r3State.mode === 'bank') {
+    for (let i = 0; i < r3State.count; i++) {
+      const qObj = r3State.bankQuestions[i];
+      const isConfigured = !!(
+        qObj &&
+        qObj.prompt &&
+        qObj.prompt.trim() !== '' &&
+        !/^Pregunta\s+\d+$/i.test(qObj.prompt.trim()) &&
+        !qObj.prompt.startsWith('[Pregunta')
+      );
+      if (!isConfigured) {
+        if (typeof showToast === 'function') {
+          showToast(`⚠️ Falta configurar la Pregunta ${i + 1}. Selecciona o redacta la pregunta.`);
+        }
+        openRama3QuestionPicker(i);
+        return null;
+      }
+    }
+  }
+
   const questions = [];
   let hasRealQuestions = false;
   for (let i = 0; i < r3State.count; i++) {
@@ -4567,8 +4589,12 @@ function prepareRama3Evaluation() {
     questionCount: r3State.count,
     questions: questions,
     hasQuestionnaire: isBankMode || hasRealQuestions,
-    title: `Cartilla de Respuestas (${r3State.count} Preguntas)`,
-    prompt: `Cartilla de respuestas de ${r3State.count} preguntas`,
+    title: isBankMode
+      ? `Evaluación y Cartillas (${r3State.count} Preguntas)`
+      : `Solo Cartilla (${r3State.count} Preguntas)`,
+    prompt: isBankMode
+      ? questions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join(' | ')
+      : `Cartilla de respuestas de ${r3State.count} preguntas`,
     expectedAnswer: r3State.keys.slice(0, r3State.count).join(' '),
     correctionMode: 'quick',
     gradeStage: g?.stage,
@@ -4577,6 +4603,9 @@ function prepareRama3Evaluation() {
   };
 
   wizardEvalType = 'mc';
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+    wizardEval = ClassroomData.saveCustomEvaluation(wizardEval);
+  }
   return wizardEval;
 }
 
@@ -4597,12 +4626,16 @@ function confirmRama3AndPrintExam() {
 function confirmRama3AndPrintCartillas() {
   const ev = prepareRama3Evaluation();
   if (!ev) return;
+  const stepType = document.getElementById('step-eval-type');
+  if (stepType) stepType.style.display = 'none';
   showSummary();
 }
 
 function confirmRama3AndScan() {
   const ev = prepareRama3Evaluation();
   if (!ev) return;
+  const stepType = document.getElementById('step-eval-type');
+  if (stepType) stepType.style.display = 'none';
   showSummary();
   const startBtn = document.getElementById('btn-start-evaluation');
   if (startBtn) {
@@ -4613,12 +4646,16 @@ function confirmRama3AndScan() {
 function confirmRama3() {
   const ev = prepareRama3Evaluation();
   if (!ev) return;
+  const stepType = document.getElementById('step-eval-type');
+  if (stepType) stepType.style.display = 'none';
   showSummary();
 }
 
 function confirmRama3Bank() {
   const ev = prepareRama3Evaluation();
   if (!ev) return;
+  const stepType = document.getElementById('step-eval-type');
+  if (stepType) stepType.style.display = 'none';
   showSummary();
 }
 
