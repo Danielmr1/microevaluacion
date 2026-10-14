@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.13</span>
+          <span class="version-tag">v3.2.14</span>
         </div>
       </div>
     </div>
@@ -609,33 +609,6 @@
 
       </div>
 
-      <!-- ── PASO 3: Botones Banco / Nueva (para 1 Pregunta) ── -->
-      <div id="step-source" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
-        <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">3 · ¿De dónde tomas la evaluación?</label>
-        <div style="display:flex; gap:10px;">
-          <button id="btn-mode-bank" type="button" onclick="selectMode('bank')"
-            style="flex:1; padding:12px; border-radius:10px; border:2px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.88rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
-            📚 Cargar del banco
-          </button>
-          <button id="btn-mode-new" type="button" onclick="selectMode('new')"
-            style="flex:1; padding:12px; border-radius:10px; border:2px solid #334155; background:#1e293b; color:#94a3b8; font-size:0.88rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
-            ✏️ Crear nueva
-          </button>
-        </div>
-      </div>
-
-      <!-- ── PASO 4a: Lista del Banco ── -->
-      <div id="step-bank-list" style="display:none; padding:12px 20px; border-bottom:1px solid #1e293b;">
-        <label id="bank-title" style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">4 · Selecciona una evaluación</label>
-        <div id="bank-cards" style="display:flex; flex-direction:column; gap:8px;">
-          <!-- generado por renderBankCards() -->
-        </div>
-        <div id="bank-empty" style="display:none; padding:14px; border:1.5px dashed #334155; border-radius:10px; text-align:center;">
-          <div id="bank-empty-title" style="font-size:0.85rem; font-weight:700; color:#94a3b8;"></div>
-          <div id="bank-empty-hint" style="font-size:0.72rem; color:#64748b; margin-top:6px; line-height:1.5;"></div>
-        </div>
-      </div>
-
       <!-- ── PASO 4b: Formulario Unificado de Creación de Preguntas ── -->
       <div id="step-new-form" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
         <div style="margin-bottom:12px;">
@@ -710,151 +683,9 @@
           ✓ Confirmar y Generar Fichas
         </button>
         <div id="unified-status-hint" style="display:none; margin-top:8px; font-size:0.75rem; color:#94a3b8; text-align:center;"></div>
-
-        <!-- Dummy divs para compatibilidad -->
-        <div id="step-new-form-mc1" style="display:none;"></div>
-        <div id="step-new-form-free" style="display:none;"></div>
         <input type="hidden" id="input-eval-title">
         <input type="hidden" id="input-eval-expected">
         <input type="hidden" id="input-eval-unit">
-      </div>
-
-      <!-- ── PASO 4c: Builder para Opción Múltiple (2 Preguntas) ── -->
-      <div id="step-mc2-builder" style="display:none; padding:16px 20px; border-bottom:1px solid #1e293b;">
-        <div style="margin-bottom:12px;">
-          <label style="display:block; font-size:0.75rem; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.04em;">
-            3 · Arma tu evaluación de 2 Preguntas
-          </label>
-          <span style="font-size:0.72rem; color:#94a3b8; display:block; margin-top:2px;">
-            Elige independientemente para cada pregunta si la tomas del banco o la redactas nueva.
-          </span>
-        </div>
-
-        <!-- ── BLOQUE PREGUNTA 1 ── -->
-        <div style="background:#0f172a; border:1.5px solid #334155; border-radius:12px; padding:14px; margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-            <span style="font-size:0.82rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.05em;">
-              📌 Pregunta 1
-            </span>
-            <div style="display:flex; gap:6px;">
-              <button type="button" id="btn-mc2-p1-bank" onclick="mc2SetP1Mode('bank')"
-                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #3b82f6; background:#3b82f620; color:#60a5fa; cursor:pointer;">
-                📚 Cargar del banco
-              </button>
-              <button type="button" id="btn-mc2-p1-new" onclick="mc2SetP1Mode('new')"
-                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer;">
-                ✏️ Redactar nueva
-              </button>
-            </div>
-          </div>
-
-          <!-- Modo Banco P1 -->
-          <div id="mc2-p1-bank-wrap">
-            <select id="mc2-p1-select" class="form-control" onchange="mc2OnBankSelect(1, this.value)"
-              style="padding:8px 10px; font-size:0.85rem; margin-bottom:8px;"></select>
-            <div id="mc2-p1-bank-empty" style="display:none; font-size:0.72rem; color:#f59e0b; margin-bottom:8px;">
-              ⚠️ Todavía no hay preguntas de alternativas guardadas para este grado. Puedes redactarla con "✏️ Redactar nueva".
-            </div>
-            <div id="mc2-p1-preview" style="display:none; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; font-size:0.8rem;"></div>
-          </div>
-
-          <!-- Modo Nueva P1 -->
-          <div id="mc2-p1-new-wrap" style="display:none;">
-            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado</label>
-            <textarea id="mc2-q1-prompt" class="form-control" rows="2" maxlength="180"
-              placeholder="Ej: En un almacén hay 4 cajas de 6 botellas..."
-              style="resize:vertical; font-size:0.85rem; margin-bottom:8px;"></textarea>
-            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Alternativas y clave correcta:</label>
-            <div style="display:flex; flex-direction:column; gap:5px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-a" value="A" checked style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q1-rad-a" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">A)</label>
-                <input type="text" id="mc2-q1-opt-a" class="form-control" placeholder="Alternativa A" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-b" value="B" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q1-rad-b" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">B)</label>
-                <input type="text" id="mc2-q1-opt-b" class="form-control" placeholder="Alternativa B" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-c" value="C" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q1-rad-c" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">C)</label>
-                <input type="text" id="mc2-q1-opt-c" class="form-control" placeholder="Alternativa C" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q1-correct" id="mc2-q1-rad-d" value="D" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q1-rad-d" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">D)</label>
-                <input type="text" id="mc2-q1-opt-d" class="form-control" placeholder="Alternativa D" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── BLOQUE PREGUNTA 2 ── -->
-        <div style="background:#0f172a; border:1.5px solid #334155; border-radius:12px; padding:14px; margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-            <span style="font-size:0.82rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.05em;">
-              📌 Pregunta 2
-            </span>
-            <div style="display:flex; gap:6px;">
-              <button type="button" id="btn-mc2-p2-bank" onclick="mc2SetP2Mode('bank')"
-                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer;">
-                📚 Cargar del banco
-              </button>
-              <button type="button" id="btn-mc2-p2-new" onclick="mc2SetP2Mode('new')"
-                style="padding:5px 10px; border-radius:6px; font-size:0.72rem; font-weight:700; border:1px solid #3b82f6; background:#3b82f620; color:#60a5fa; cursor:pointer;">
-                ✏️ Redactar nueva
-              </button>
-            </div>
-          </div>
-
-          <!-- Modo Banco P2 -->
-          <div id="mc2-p2-bank-wrap" style="display:none;">
-            <select id="mc2-p2-select" class="form-control" onchange="mc2OnBankSelect(2, this.value)"
-              style="padding:8px 10px; font-size:0.85rem; margin-bottom:8px;"></select>
-            <div id="mc2-p2-bank-empty" style="display:none; font-size:0.72rem; color:#f59e0b; margin-bottom:8px;">
-              ⚠️ Todavía no hay preguntas de alternativas guardadas para este grado. Puedes redactarla con "✏️ Redactar nueva".
-            </div>
-            <div id="mc2-p2-preview" style="display:none; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; font-size:0.8rem;"></div>
-          </div>
-
-          <!-- Modo Nueva P2 -->
-          <div id="mc2-p2-new-wrap">
-            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Enunciado</label>
-            <textarea id="mc2-q2-prompt" class="form-control" rows="2" maxlength="180"
-              placeholder="Ej: ¿Cuánto es 48 dividido entre 6?..."
-              style="resize:vertical; font-size:0.85rem; margin-bottom:8px;"></textarea>
-            <label style="font-size:0.7rem; color:#94a3b8; display:block; margin-bottom:4px;">Alternativas y clave correcta:</label>
-            <div style="display:flex; flex-direction:column; gap:5px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-a" value="A" checked style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q2-rad-a" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">A)</label>
-                <input type="text" id="mc2-q2-opt-a" class="form-control" placeholder="Alternativa A" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-b" value="B" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q2-rad-b" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">B)</label>
-                <input type="text" id="mc2-q2-opt-b" class="form-control" placeholder="Alternativa B" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-c" value="C" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q2-rad-c" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">C)</label>
-                <input type="text" id="mc2-q2-opt-c" class="form-control" placeholder="Alternativa C" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="radio" name="mc2-q2-correct" id="mc2-q2-rad-d" value="D" style="accent-color:#22c55e; width:16px; height:16px; cursor:pointer;">
-                <label for="mc2-q2-rad-d" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">D)</label>
-                <input type="text" id="mc2-q2-opt-d" class="form-control" placeholder="Alternativa D" style="padding:5px 8px; font-size:0.82rem;">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button type="button" id="btn-confirm-mc2" onclick="confirmMC2()" disabled
-          style="width:100%; background:#334155; opacity:0.45; cursor:not-allowed; border:none; color:#fff; border-radius:8px; padding:12px; font-size:0.92rem; font-weight:800; box-shadow:none; transition:all 0.2s;">
-          ✓ Confirmar y Generar Fichas
-        </button>
-        <div id="mc2-status-hint" style="display:none; margin-top:8px; font-size:0.75rem; color:#94a3b8; text-align:center;"></div>
       </div>
 
       <!-- ── PASO 5: Resumen y Fichas Listas ── -->
@@ -2131,16 +1962,6 @@
 
     // [classroom-manager.js] GESTOR DE SALONES + ALUMNOS extraído en Tanda 3 (v3.1.31)
 
-    function resetTypeButtons() {
-      ['btn-type-mc1', 'btn-type-mc2', 'btn-type-free'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) {
-          btn.style.borderColor = '#334155';
-          btn.style.background = '#1e293b';
-        }
-      });
-    }
-
     /**
      * Oculta o muestra los botones de creación e importación de salón en el Paso 1.
      * Si hay un salón seleccionado (classId no vacío), se ocultan para mantener limpia la vista.
@@ -2149,66 +1970,6 @@
       const group = document.getElementById('classroom-actions-group');
       if (group) {
         group.style.display = classId ? 'none' : 'block';
-      }
-    }
-
-    /**
-     * Oculta o muestra el botón 'Banco de Preguntas' de la cabecera principal.
-     * Permanece visible hasta que el docente selecciona el tipo de evaluación.
-     */
-    function setHeaderBankButtonVisible(visible) {
-      const btn = document.getElementById('btn-open-bank-manager');
-      if (btn) {
-        btn.style.display = visible ? 'inline-flex' : 'none';
-      }
-    }
-
-    function selectEvalType(type) {
-      wizardEvalType = type;
-      wizardEval = null;
-      ClassroomData.setActiveSession(null);
-
-      // Ocultar el botón Banco de Preguntas una vez elegido el tipo de evaluación
-      setHeaderBankButtonVisible(false);
-
-      // Limpiar fichas impresas anteriores al cambiar de modo
-      const pages = document.getElementById('pages-container');
-      if (pages) {
-        pages.innerHTML = '';
-        pages.style.display = 'none';
-      }
-
-      resetTypeButtons();
-      const activeBtnId = type === 'mc1' ? 'btn-type-mc1' : (type === 'mc2' ? 'btn-type-mc2' : 'btn-type-free');
-      const activeBtn = document.getElementById(activeBtnId);
-      if (activeBtn) {
-        const color = wizardClassroomId ? ClassroomData.getClassroomColor(wizardClassroomId) : '#3b82f6';
-        activeBtn.style.borderColor = color;
-        activeBtn.style.background = color + '22';
-      }
-
-      const stepSrc = document.getElementById('step-source');
-      const stepBank = document.getElementById('step-bank-list');
-      const fNew = document.getElementById('step-new-form');
-      const fMC1 = document.getElementById('step-new-form-mc1');
-      const fMC2 = document.getElementById('step-mc2-builder');
-      const fFree = document.getElementById('step-new-form-free');
-      const stepSumm = document.getElementById('step-summary');
-
-      if (stepBank) stepBank.style.display = 'none';
-      if (fNew) fNew.style.display = 'none';
-      if (fMC1) fMC1.style.display = 'none';
-      if (fFree) fFree.style.display = 'none';
-      if (stepSumm) stepSumm.style.display = 'none';
-
-      if (type === 'mc2') {
-        if (stepSrc) stepSrc.style.display = 'none';
-        if (fMC2) fMC2.style.display = 'block';
-        mc2Init();
-      } else {
-        if (fMC2) fMC2.style.display = 'none';
-        if (stepSrc) stepSrc.style.display = 'block';
-        resetModeButtons();
       }
     }
 
@@ -2254,7 +2015,6 @@
         hideWizardSteps();
         renderGradeSelect(null);
         updateClassroomActionsVisibility(null);
-        setHeaderBankButtonVisible(true);
         return;
       }
       wizardClassroomId = classId;
@@ -2281,23 +2041,12 @@
         sel.style.color = color;
       }
 
-      // Mostrar paso 2 (preguntas según la modalidad elegida), ocultar pasos 3, 4 y 5
+      // Mostrar paso 2 (preguntas según la modalidad elegida)
       const stepType = document.getElementById('step-eval-type');
       if (stepType) stepType.style.display = 'block';
       const branchToActivate = window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
       if (typeof selectBranchMode === 'function') selectBranchMode(branchToActivate);
-      const stepSrc = document.getElementById('step-source');
-      if (stepSrc) stepSrc.style.display = 'none';
-      const stepBank = document.getElementById('step-bank-list');
-      if (stepBank) stepBank.style.display = 'none';
-      const fNew = document.getElementById('step-new-form');
-      if (fNew) fNew.style.display = 'none';
-      const fMC1 = document.getElementById('step-new-form-mc1');
-      if (fMC1) fMC1.style.display = 'none';
-      const fMC2 = document.getElementById('step-mc2-builder');
-      if (fMC2) fMC2.style.display = 'none';
-      const fFree = document.getElementById('step-new-form-free');
-      if (fFree) fFree.style.display = 'none';
+
       const stepSumm = document.getElementById('step-summary');
       if (stepSumm) stepSumm.style.display = 'none';
 
@@ -2306,13 +2055,6 @@
 
       // Ocultar acciones de salón (importar / crear a mano / plantilla) al seleccionar un salón
       updateClassroomActionsVisibility(classId);
-
-      // El botón Banco de Preguntas sigue visible antes de elegir el tipo de evaluación
-      setHeaderBankButtonVisible(true);
-
-      // Resetear estado visual de botones
-      resetTypeButtons();
-      resetModeButtons();
     }
 
     /* ── GRADO DEL SALÓN ──────────────────────────────────────────────
@@ -2438,17 +2180,6 @@
       }
     }
 
-    function resetModeButtons() {
-      ['btn-mode-bank', 'btn-mode-new'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) {
-          btn.style.borderColor = '#334155';
-          btn.style.background = '#1e293b';
-          btn.style.color = '#94a3b8';
-        }
-      });
-    }
-
     function syncUnifiedAnswer() {
       const rad = document.querySelector('input[name="eval-unified-correct"]:checked');
       const val = rad ? rad.value : 'A';
@@ -2464,61 +2195,6 @@
         elExpected.value = wizardEvalType === 'mc1' ? `Clave: ${val}` : selectedText;
       }
     }
-
-    function updateNewFormHeader() {
-      const title = document.getElementById('new-form-title');
-      const subtitle = document.getElementById('new-form-subtitle');
-      const isMC = wizardEvalType === 'mc1';
-      if (title) {
-        title.textContent = isMC
-          ? '4 · Redacta la evaluación (Modo: Opción Múltiple 1P)'
-          : '4 · Redacta la evaluación (Modo: Respuesta Libre)';
-      }
-      if (subtitle) {
-        subtitle.textContent = isMC
-          ? 'La ficha se imprimirá con burbujas (A, B, C, D) y cuadrícula de borrador. Se guardará con alternativas y rúbrica en el banco.'
-          : 'La ficha se imprimirá con cuadrícula amplia y franja manuscrita (Rpta: _______). Se guardará con alternativas y rúbrica en el banco.';
-      }
-    }
-
-    function selectMode(mode) {
-      resetModeButtons();
-      const activeBtn = document.getElementById(mode === 'bank' ? 'btn-mode-bank' : 'btn-mode-new');
-      if (activeBtn) {
-        const color = wizardClassroomId ? ClassroomData.getClassroomColor(wizardClassroomId) : '#3b82f6';
-        activeBtn.style.borderColor = color;
-        activeBtn.style.background = color + '18';
-        activeBtn.style.color = color;
-      }
-
-      const stepBank = document.getElementById('step-bank-list');
-      if (stepBank) stepBank.style.display = mode === 'bank' ? 'block' : 'none';
-      const fNew = document.getElementById('step-new-form');
-      if (fNew) fNew.style.display = mode === 'new' ? 'block' : 'none';
-      const fMC1 = document.getElementById('step-new-form-mc1');
-      if (fMC1) fMC1.style.display = 'none';
-      const fMC2 = document.getElementById('step-mc2-builder');
-      if (fMC2) fMC2.style.display = 'none';
-      const fFree = document.getElementById('step-new-form-free');
-      if (fFree) fFree.style.display = 'none';
-      const stepSumm = document.getElementById('step-summary');
-      if (stepSumm) stepSumm.style.display = 'none';
-
-      if (mode === 'bank') renderBankCards();
-      if (mode === 'new') {
-        if (!wizardClassroomId) {
-          const sel = document.getElementById('builder-classroom');
-          if (sel && sel.value) wizardClassroomId = sel.value;
-        }
-        updateNewFormHeader();
-        const evalPrompt = document.getElementById('input-eval-prompt');
-        if (evalPrompt) evalPrompt.focus();
-        resetRubrica();
-        updatePromptCounter();
-        syncUnifiedAnswer();
-      }
-    }
-
 
     // [question-bank.js] BANCO DE PREGUNTAS + RÚBRICA IA + EVALUACIONES extraído en Tanda 4 (v3.1.31)
 
@@ -2603,18 +2279,8 @@
         if (stepClass) stepClass.style.display = 'none';
         const stepType = document.getElementById('step-eval-type');
         if (stepType) stepType.style.display = 'none';
-        const stepSource = document.getElementById('step-source');
-        if (stepSource) stepSource.style.display = 'none';
-        const bankListEl = document.getElementById('step-bank-list');
-        if (bankListEl) bankListEl.style.display = 'none';
         const fNew = document.getElementById('step-new-form');
         if (fNew) fNew.style.display = 'none';
-        const fMC1 = document.getElementById('step-new-form-mc1');
-        if (fMC1) fMC1.style.display = 'none';
-        const fMC2 = document.getElementById('step-mc2-builder');
-        if (fMC2) fMC2.style.display = 'none';
-        const fFree = document.getElementById('step-new-form-free');
-        if (fFree) fFree.style.display = 'none';
 
         // Mostrar solo paso 5 (resumen)
         const summaryEl = document.getElementById('step-summary');
@@ -2957,24 +2623,12 @@
       if (stepClass) stepClass.style.display = 'block';
       const stepType = document.getElementById('step-eval-type');
       if (stepType) stepType.style.display = wizardClassroomId ? 'block' : 'none';
-      const stepSource = document.getElementById('step-source');
-      if (stepSource) stepSource.style.display = 'none';
-      const stepBank = document.getElementById('step-bank-list');
-      if (stepBank) stepBank.style.display = 'none';
       const fNew = document.getElementById('step-new-form');
       if (fNew) fNew.style.display = 'none';
-      const fMC1 = document.getElementById('step-new-form-mc1');
-      if (fMC1) fMC1.style.display = 'none';
-      const fMC2 = document.getElementById('step-mc2-builder');
-      if (fMC2) fMC2.style.display = 'none';
-      const fFree = document.getElementById('step-new-form-free');
-      if (fFree) fFree.style.display = 'none';
       const stepSummary = document.getElementById('step-summary');
       if (stepSummary) stepSummary.style.display = 'none';
       const branchToKeep = window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
       if (typeof selectBranchMode === 'function') selectBranchMode(branchToKeep);
-      resetTypeButtons();
-      resetModeButtons();
     }
 
     /**
@@ -2988,7 +2642,6 @@
       const stepClass = document.getElementById('step-classroom');
       if (stepClass) stepClass.style.display = 'block';
       hideWizardSteps();
-      setHeaderBankButtonVisible(true);
       const sel = document.getElementById('builder-classroom');
       updateClassroomActionsVisibility(sel ? sel.value : null);
       if (typeof updateHubSessionBadge === 'function') updateHubSessionBadge();
@@ -3035,12 +2688,9 @@
       if (badge) badge.textContent = cls.students.length + ' Alumnos';
 
       showSummary();
-      setHeaderBankButtonVisible(false);
       updateClassroomActionsVisibility(session.classroomId);
       console.log('[Sesión] Restaurada:', session.sessionRef || session.evalId);
     }
-
-    function onBankSelectionChanged() {} // legacy — ya no se usa, queda vacío por compatibilidad
 
     /**
      * Guarda la sesión actual con un tope estricto de 3 sesiones en memoria local.
@@ -3347,7 +2997,6 @@
 
       // 5. Mostrar la pantalla de resumen confirmada
       showSummary();
-      setHeaderBankButtonVisible(false);
       updateClassroomActionsVisibility(sess.classroomId);
 
       const btnSave = document.getElementById('btn-save-session');
@@ -3500,65 +3149,6 @@
       }
     }
 
-    function setCardOrientation(orientation, doRender = true) {
-      if (typeof wizardEval !== 'undefined' && wizardEval) {
-        wizardEval.cardOrientation = orientation;
-      }
-      const session = ClassroomData.getActiveSession();
-      if (session) {
-        session.cardOrientation = orientation;
-        ClassroomData.setActiveSession(session);
-      }
-      const btnH = document.getElementById('btn-orient-horizontal');
-      const btnV = document.getElementById('btn-orient-vertical');
-      if (btnH && btnV) {
-        if (orientation === 'vertical') {
-          btnV.style.background = '#3b82f6';
-          btnV.style.color = '#ffffff';
-          btnH.style.background = 'transparent';
-          btnH.style.color = '#94a3b8';
-        } else {
-          btnH.style.background = '#3b82f6';
-          btnH.style.color = '#ffffff';
-          btnV.style.background = 'transparent';
-          btnV.style.color = '#94a3b8';
-        }
-      }
-      if (doRender && typeof wizardClassroomId !== 'undefined' && wizardClassroomId && typeof wizardEval !== 'undefined' && wizardEval) {
-        renderAllPrintPages(wizardClassroomId, wizardEval);
-      }
-    }
-    window.setCardOrientation = setCardOrientation;
-
-    function setCardGridSize(gridSize, doRender = true) {
-      if (typeof wizardEval !== 'undefined' && wizardEval) {
-        wizardEval.gridSize = gridSize;
-      }
-      const session = ClassroomData.getActiveSession();
-      if (session) {
-        session.gridSize = gridSize;
-        ClassroomData.setActiveSession(session);
-      }
-      const btnNorm = document.getElementById('btn-grid-normal');
-      const btnExp = document.getElementById('btn-grid-expanded');
-      if (btnNorm && btnExp) {
-        if (gridSize === 'expanded') {
-          btnExp.style.background = '#10b981';
-          btnExp.style.color = '#ffffff';
-          btnNorm.style.background = 'transparent';
-          btnNorm.style.color = '#94a3b8';
-        } else {
-          btnNorm.style.background = '#10b981';
-          btnNorm.style.color = '#ffffff';
-          btnExp.style.background = 'transparent';
-          btnExp.style.color = '#94a3b8';
-        }
-      }
-      if (doRender && typeof wizardClassroomId !== 'undefined' && wizardClassroomId && typeof wizardEval !== 'undefined' && wizardEval) {
-        renderAllPrintPages(wizardClassroomId, wizardEval);
-      }
-    }
-    window.setCardGridSize = setCardGridSize;
 
     function goToScannerWithSession() {
       generateAndActivateSession();
