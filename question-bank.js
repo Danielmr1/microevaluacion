@@ -4258,6 +4258,23 @@ function buildSimulatorEvaluation() {
   return wizardEval;
 }
 
+/**
+ * Confirma las preguntas seleccionadas en el simulador (Rama 1 y Rama 2),
+ * oculta la vista de edición interactiva del Paso 2 y abre la pantalla de resumen
+ * mostrando los botones de acción (Guardar o Imprimir, Ir al Escáner, Editar) y las hojas A4.
+ */
+function confirmSimulator() {
+  const ev = buildSimulatorEvaluation();
+  if (!ev) return;
+
+  const stepType = document.getElementById('step-eval-type');
+  if (stepType) stepType.style.display = 'none';
+
+  if (typeof showSummary === 'function') {
+    showSummary();
+  }
+}
+
 function confirmSimAndPrint() {
   const ev = buildSimulatorEvaluation();
   if (!ev) return;
@@ -5333,6 +5350,7 @@ if (typeof window !== 'undefined') {
   window.r2State = r2State;
   window.r3State = r3State;
   window.resetRama3Builder = resetRama3Builder;
+  window.confirmSimulator = confirmSimulator;
 }
 
 

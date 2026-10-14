@@ -282,8 +282,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = students.length;
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-      printBtn.innerHTML = `🖨️ Descargar Fichas A4 (${sheetCount} ${pageWord}) [1 por hoja]`;
+      printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -330,10 +329,7 @@ function renderAllPrintPages(classId, evaluation) {
       if (isR3) {
         printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
       } else {
-        const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-        const labelText = isA6V ? 'Fichas A6' : 'Fichas Focalizadas';
-        const orientWord = isA6V ? ' [4 por hoja · Vertical]' : ' [4 por hoja]';
-        printBtn.innerHTML = `🖨️ Descargar ${labelText} (${sheetCount} ${pageWord})${orientWord}`;
+        printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
       }
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
@@ -439,8 +435,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
-      printBtn.innerHTML = `🖨️ Descargar / Imprimir (${sheetCount} ${pageWord}) [2 por hoja · Vertical]`;
+      printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -490,7 +485,7 @@ function renderAllPrintPages(classId, evaluation) {
     if (isR3) {
       printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
     } else {
-      printBtn.innerHTML = `🖨️ Descargar / Imprimir ${sheetCount} ${pageWord}`;
+      printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
     }
     printBtn.onclick = () => printEvaluationSheets(classId);
   }
