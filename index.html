@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.15</span>
+          <span class="version-tag">v3.2.16</span>
         </div>
       </div>
     </div>
@@ -691,13 +691,16 @@
       <!-- ── PASO 5: Resumen y Fichas Listas ── -->
       <div id="step-summary" style="display:none; padding:18px 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-          <div>
-            <label style="display:block; font-size:0.75rem; font-weight:800; color:#f8fafc; text-transform:uppercase; letter-spacing:0.04em;">
-              Evaluación Lista para Imprimir
-            </label>
-            <span style="font-size:0.72rem; color:#94a3b8;">
-              Las fichas A5 fueron generadas para la nómina de este salón.
-            </span>
+          <div id="summary-header-mode-container" style="display:flex; align-items:center; gap:10px;">
+            <span id="summary-header-mode-icon" style="font-size:1.45rem; line-height:1;">🔬</span>
+            <div>
+              <label id="summary-header-mode-title" style="display:block; font-size:0.85rem; font-weight:800; color:#f8fafc; letter-spacing:0.02em;">
+                Modo de corrección: Alternativa + procedimiento
+              </label>
+              <span id="summary-header-mode-subtitle" style="font-size:0.72rem; color:#94a3b8; display:block; margin-top:2px;">
+                Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.
+              </span>
+            </div>
           </div>
           <span id="summary-eval-type-badge" style="font-size:0.7rem; font-weight:800; padding:4px 10px; border-radius:8px;"></span>
         </div>
@@ -714,7 +717,7 @@
           </div>
 
           <!-- Contenedor dinámico de Pregunta(s) -->
-          <div id="summary-questions-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px;">
+          <div id="summary-questions-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:0;">
             <div style="margin-bottom:8px;">
               <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Consigna</span>
               <div id="summary-prompt" style="font-size:0.88rem; font-weight:600; color:#f1f5f9; line-height:1.4;"></div>
@@ -726,9 +729,8 @@
             <div id="summary-rubric" style="padding:8px 12px; border-radius:8px; font-size:0.78rem; font-weight:700;"></div>
           </div>
 
-          <!-- Configuración de corrección seleccionada -->
-          <div id="summary-config-badge" style="padding:12px 14px; border-radius:10px; font-size:0.8rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1e293b; border:1px solid #334155;">
-          </div>
+          <!-- Configuración de corrección seleccionada (Oculta al haberse movido al encabezado) -->
+          <div id="summary-config-badge" style="display:none;"></div>
 
           <!-- Selector de Modo de Corrección (Compatibilidad con toggle directo) -->
           <div id="mc-correction-mode-selector" style="display:none; margin-top:12px;">
@@ -2472,78 +2474,61 @@
           }
         }
 
-        // Configuración de corrección seleccionada
+        // Configuración de corrección seleccionada (ahora mostrada arriba en el encabezado)
+        const modeIcon = document.getElementById('summary-header-mode-icon');
+        const modeTitle = document.getElementById('summary-header-mode-title');
+        const modeSubtitle = document.getElementById('summary-header-mode-subtitle');
         const configBadge = document.getElementById('summary-config-badge');
-        if (configBadge) {
-          if (isBranch3) {
-            configBadge.innerHTML = `
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:1.4rem;">📝</span>
-                <div>
-                  <span style="color:#38bdf8; font-weight:800; font-size:0.85rem;">Cartilla de Respuestas: Corrección OMR</span>
-                  <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:400; margin-top:1px;">Escaneo rápido de alternativas marcadas por el estudiante. Sin llamadas a IA.</span>
-                </div>
-              </div>
-            `;
-            configBadge.style.background = '#0c4a6e25';
-            configBadge.style.border = '1px solid #0284c7';
-            configBadge.style.display = 'flex';
-          } else if (isBranch2) {
-            configBadge.innerHTML = `
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:1.4rem;">⚡</span>
-                <div>
-                  <span style="color:#34d399; font-weight:800; font-size:0.85rem;">Focalizada en la Respuesta</span>
-                  <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:400; margin-top:1px;">Corrección directa de la respuesta (marcada o escrita) sin evaluar procedimiento. Cuadrícula de respaldo opcional.</span>
-                </div>
-              </div>
-            `;
-            configBadge.style.background = '#064e3b25';
-            configBadge.style.border = '1px solid #10b981';
-            configBadge.style.display = 'flex';
-          } else if (isOMR) {
-            const currentMode = (session && session.correctionMode) || 'quick';
-            if (currentMode === 'quick') {
-              configBadge.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <span style="font-size:1.4rem;">⚡</span>
-                  <div>
-                    <span style="color:#38bdf8; font-weight:800; font-size:0.85rem;">Modo de corrección: Solo alternativa</span>
-                    <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:400; margin-top:1px;">Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.</span>
-                  </div>
-                </div>
-                <button type="button" onclick="promptMCCorrectionMode()" style="background:#0369a1; border:none; color:#fff; border-radius:6px; padding:5px 12px; font-size:0.74rem; font-weight:700; cursor:pointer; flex:0 0 auto;">Cambiar</button>
-              `;
-              configBadge.style.background = '#0c4a6e25';
-              configBadge.style.border = '1px solid #0284c7';
-            } else {
-              configBadge.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <span style="font-size:1.4rem;">🔬</span>
-                  <div>
-                    <span style="color:#c084fc; font-weight:800; font-size:0.85rem;">Modo de corrección: Alternativa + procedimiento</span>
-                    <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:400; margin-top:1px;">Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.</span>
-                  </div>
-                </div>
-                <button type="button" onclick="promptMCCorrectionMode()" style="background:#6b21a8; border:none; color:#fff; border-radius:6px; padding:5px 12px; font-size:0.74rem; font-weight:700; cursor:pointer; flex:0 0 auto;">Cambiar</button>
-              `;
-              configBadge.style.background = '#581c8725';
-              configBadge.style.border = '1px solid #a855f7';
+        if (configBadge) configBadge.style.display = 'none';
+
+        if (isBranch3) {
+          if (modeIcon) modeIcon.textContent = '📝';
+          if (modeTitle) {
+            modeTitle.textContent = 'Cartilla de Respuestas: Corrección OMR';
+            modeTitle.style.color = '#38bdf8';
+          }
+          if (modeSubtitle) {
+            modeSubtitle.textContent = 'Escaneo rápido de alternativas marcadas por el estudiante. Sin llamadas a IA.';
+          }
+        } else if (isBranch2) {
+          if (modeIcon) modeIcon.textContent = '⚡';
+          if (modeTitle) {
+            modeTitle.textContent = 'Focalizada en la Respuesta';
+            modeTitle.style.color = '#34d399';
+          }
+          if (modeSubtitle) {
+            modeSubtitle.textContent = 'Corrección directa de la respuesta (marcada o escrita) sin evaluar procedimiento. Cuadrícula de respaldo opcional.';
+          }
+        } else if (isOMR) {
+          const currentMode = (session && session.correctionMode) || 'quick';
+          if (currentMode === 'quick') {
+            if (modeIcon) modeIcon.textContent = '⚡';
+            if (modeTitle) {
+              modeTitle.textContent = 'Modo de corrección: Solo alternativa';
+              modeTitle.style.color = '#38bdf8';
             }
-            configBadge.style.display = 'flex';
+            if (modeSubtitle) {
+              modeSubtitle.textContent = 'Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.';
+            }
           } else {
-            configBadge.innerHTML = `
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:1.4rem;">✍️</span>
-                <div>
-                  <span style="color:#4ade80; font-weight:800; font-size:0.85rem;">Corrección pedagógica por desarrollo libre</span>
-                  <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:400; margin-top:1px;">Lectura de cuadrícula y respuesta manuscrita evaluadas mediante IA y rúbrica formativa.</span>
-                </div>
-              </div>
-            `;
-            configBadge.style.background = '#064e3b25';
-            configBadge.style.border = '1px solid #10b981';
-            configBadge.style.display = 'flex';
+            if (modeIcon) modeIcon.textContent = '🔬';
+            if (modeTitle) {
+              modeTitle.textContent = 'Modo de corrección: Alternativa + procedimiento';
+              modeTitle.style.color = '#c084fc';
+            }
+            if (modeSubtitle) {
+              modeSubtitle.textContent = 'Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.';
+            }
+          }
+        } else {
+          // Respuesta Libre tradicional
+          if (modeIcon) modeIcon.textContent = '✍️';
+          if (modeTitle) {
+            modeTitle.textContent = 'Corrección pedagógica por desarrollo libre';
+            modeTitle.style.color = '#4ade80';
+          }
+          if (modeSubtitle) {
+            modeSubtitle.textContent = 'Lectura de cuadrícula y respuesta manuscrita evaluadas mediante IA y rúbrica formativa.';
           }
         }
 
