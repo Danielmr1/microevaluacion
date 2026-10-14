@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.11</span>
+          <span class="version-tag">v3.2.12</span>
         </div>
       </div>
     </div>
@@ -878,38 +878,6 @@
 
           <!-- Configuración de corrección seleccionada -->
           <div id="summary-config-badge" style="padding:12px 14px; border-radius:10px; font-size:0.8rem; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1e293b; border:1px solid #334155;">
-          </div>
-
-          <!-- Selector de Orientación de Ficha (Horizontal clásica vs Vertical moderna) -->
-          <div id="orientation-selector-container" style="margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1e293b; border:1px solid #334155; padding:10px 14px; border-radius:10px;">
-            <div>
-              <div style="font-size:0.78rem; font-weight:700; color:#f1f5f9;">Orientación de las Fichas:</div>
-              <div style="font-size:0.7rem; color:#94a3b8; margin-top:1px;">Disposición de los 2 alumnos por pliego A4</div>
-            </div>
-            <div style="display:inline-flex; background:#0f172a; padding:3px; border-radius:8px; border:1px solid #334155; gap:2px;">
-              <button type="button" id="btn-orient-horizontal" onclick="setCardOrientation('horizontal')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:#3b82f6; color:#ffffff; transition:all 0.15s;">
-                ↔️ Horizontal
-              </button>
-              <button type="button" id="btn-orient-vertical" onclick="setCardOrientation('vertical')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.15s;">
-                ↕️ Vertical
-              </button>
-            </div>
-          </div>
-
-          <!-- Selector de Tamaño de Cuadrícula (1 Pregunta en A5) -->
-          <div id="grid-size-selector-container" style="display:none; margin-top:10px; align-items:center; justify-content:space-between; gap:10px; background:#1e293b; border:1px solid #334155; padding:10px 14px; border-radius:10px;">
-            <div>
-              <div style="font-size:0.78rem; font-weight:700; color:#f1f5f9;">Tamaño del Borrador:</div>
-              <div style="font-size:0.7rem; color:#94a3b8; margin-top:1px;">Área para operaciones y desarrollo</div>
-            </div>
-            <div style="display:inline-flex; background:#0f172a; padding:3px; border-radius:8px; border:1px solid #334155; gap:2px;">
-              <button type="button" id="btn-grid-normal" onclick="setCardGridSize('normal')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:#10b981; color:#ffffff; transition:all 0.15s;">
-                Normal
-              </button>
-              <button type="button" id="btn-grid-expanded" onclick="setCardGridSize('expanded')" style="padding:6px 12px; border:none; border-radius:6px; font-size:0.75rem; font-weight:700; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.15s;">
-                ➕ Ampliada
-              </button>
-            </div>
           </div>
 
           <!-- Selector de Modo de Corrección (Compatibilidad con toggle directo) -->
@@ -2828,31 +2796,6 @@
             configBadge.style.background = '#064e3b25';
             configBadge.style.border = '1px solid #10b981';
             configBadge.style.display = 'flex';
-          }
-        }
-
-        // Mostrar u ocultar selector de orientación según corresponda
-        const orientContainer = document.getElementById('orientation-selector-container');
-        if (orientContainer) {
-          if (isBranch3) {
-            orientContainer.style.display = 'none';
-          } else {
-            orientContainer.style.display = 'flex';
-            const curOrient = (wizardEval && wizardEval.cardOrientation) || 'horizontal';
-            setCardOrientation(curOrient, false);
-          }
-        }
-
-        // Mostrar selector de tamaño de borrador solo para 1 pregunta con cuadrícula
-        const gridSizeContainer = document.getElementById('grid-size-selector-container');
-        if (gridSizeContainer) {
-          const hasGrid1Q = wizardEval && wizardEval.withGrid !== false && (!wizardEval.questionCount || wizardEval.questionCount === 1);
-          if (hasGrid1Q && !isBranch3) {
-            gridSizeContainer.style.display = 'flex';
-            const curGrid = (wizardEval && wizardEval.gridSize) || 'normal';
-            setCardGridSize(curGrid, false);
-          } else {
-            gridSizeContainer.style.display = 'none';
           }
         }
 
