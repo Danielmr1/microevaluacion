@@ -50,7 +50,7 @@
   <script src="card-cartilla.js?v=3.2.01"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.21">
+  <link rel="stylesheet" href="styles.css?v=3.2.22">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -58,9 +58,9 @@
 
   <!-- Cabecera de la App: Dynamic Island Flotante -->
   <header>
-    <div class="island-capsule">
+    <div class="island-topbar">
       
-      <!-- Brand & Version -->
+      <!-- Brand / Logo Izquierda -->
       <div class="island-brand" onclick="goHomeHub()">
         <div class="island-brand-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
@@ -69,31 +69,20 @@
           </svg>
         </div>
         <span class="island-brand-title">MICROEVAL</span>
-        <span class="version-tag">v3.2.21</span>
+        <span class="version-tag">v3.2.22</span>
       </div>
 
-      <!-- Segmented Navigation (Cápsula Unificada) -->
-      <nav class="island-nav">
-        <button type="button" class="island-nav-item active" onclick="goHomeHub()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <span>Inicio</span>
-        </button>
-        <button type="button" class="island-nav-item" onclick="openFlow('classrooms')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
-          <span>Salones</span>
-        </button>
-        <button type="button" class="island-nav-item" onclick="openFlow('bank')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span>Banco</span>
-        </button>
-        <button type="button" class="island-nav-item" onclick="openFlow('saved-sessions')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          <span>Sesiones</span>
-          <span id="hub-saved-sessions-badge" class="nav-count-badge" style="display:none;">0/3</span>
-        </button>
-      </nav>
+      <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
+      <div class="island-capsule">
+        <nav class="island-nav">
+          <button type="button" class="island-nav-item active" onclick="goHomeHub()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <span>INICIO</span>
+          </button>
+        </nav>
+      </div>
 
-      <!-- Acciones de Cabecera: Pantalla Completa + Linterna + Avatar -->
+      <!-- Acciones de Cabecera Derecha: Pantalla Completa + Linterna + Avatar -->
       <div class="island-actions">
         <button class="island-icon-btn" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
         <button class="island-icon-btn" id="btn-torch" onclick="toggleTorch()" title="Encender linterna" style="display:none;">🔦</button>
@@ -169,161 +158,121 @@
   <div id="view-hub" class="view-content active">
     <div class="cyber-hub-container">
       
-      <!-- HERO HEADER CINEMATOGRÁFICO Y LUMINOSO -->
-      <div class="cyber-hero-head">
-        <div class="cyber-kicker">
-          <span class="cyber-kicker-dot"></span>
-          <span>SISTEMA DE EVALUACIÓN DOCENTE CON IA</span>
-          <span class="cyber-kicker-dot"></span>
-        </div>
-        <h1 class="cyber-hero-title">MICROEVALUACIÓN</h1>
-        <p class="cyber-hero-subtitle">Evaluación Formativa &amp; Escaneo de Alta Velocidad</p>
-        
-        <div class="cyber-welcome-row">
-          <h2 id="hub-welcome-title" class="cyber-teacher-welcome">¡Hola, Docente!</h2>
-          <span id="hub-session-badge" style="display:none;" class="cyber-live-badge">SESIÓN EN CURSO</span>
-        </div>
-      </div>
-
-      <!-- OBJETO PROTAGONISTA: FICHA A5 DE PAPEL FÍSICO CON HAZ DE ESCANEO -->
-      <div class="cyber-stage-wrap">
-        <div class="cyber-stage-sheet">
-          <!-- Haz de Luz de Escaneo Sutil -->
-          <div class="cyber-laser-beam"></div>
-
-          <!-- 4 Marcadores ArUco Nítidos de Esquina -->
+      <!-- ESCENARIO CENTRAL: FICHA CON 4 VÉRTICES ARUCO Y TÍTULO EVA -->
+      <div class="eva-stage-container">
+        <div class="eva-stage-sheet">
+          <!-- ÚNICAMENTE LOS 4 VÉRTICES ARUCO -->
           <div class="cyber-aruco-marker aruco-tl"></div>
           <div class="cyber-aruco-marker aruco-tr"></div>
           <div class="cyber-aruco-marker aruco-bl"></div>
           <div class="cyber-aruco-marker aruco-br"></div>
 
-          <!-- Cabecera de la Ficha Simulada -->
-          <div class="cyber-sheet-header">
-            <div class="cyber-sheet-qr">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2">
-                <rect x="2" y="2" width="7" height="7" rx="1"/>
-                <rect x="15" y="2" width="7" height="7" rx="1"/>
-                <rect x="2" y="15" width="7" height="7" rx="1"/>
-                <rect x="15" y="15" width="3" height="3"/>
-                <path d="M19 19h3v3"/>
+          <!-- CONTENIDO DENTRO DE LOS VÉRTICES -->
+          <div class="eva-card-content">
+            <div class="eva-teacher-badge">
+              <span class="cyber-kicker-dot"></span>
+              <span id="hub-welcome-title">¡Hola, Docente!</span>
+              <span id="hub-session-badge" style="display:none;" class="cyber-live-badge">SESIÓN EN CURSO</span>
+            </div>
+            <h1 class="eva-hero-title">EVA</h1>
+            <p class="eva-hero-subtitle">Evaluación Formativa y Escaneo de alta velocidad</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILA DE BOTONES APARTE: 4 BOTONES MINIMALISTAS CON TOOLTIP AL HOVER -->
+      <div class="eva-buttons-container">
+        
+        <!-- Botón 1: Formativa con IA -->
+        <div class="eva-btn-wrap" onclick="openBranchFlow('rama1')">
+          <button type="button" class="eva-action-btn btn-formativa">
+            <span class="eva-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <path d="M9 13h6M9 17h4"/>
+                <circle cx="17.5" cy="17.5" r="3.5" fill="#6366f1" fill-opacity="0.25" stroke="#6366f1" stroke-width="1.5"/>
               </svg>
-            </div>
-            <div class="cyber-sheet-meta">
-              <div class="cyber-line-title">EVALUACIÓN DE MATEMÁTICA · GRADO ACTUAL</div>
-              <div class="cyber-line-sub">Estudiante: _______________________ &nbsp; Fecha: __/__/__</div>
-            </div>
-            <div class="cyber-sheet-chip">A5 132×182mm</div>
-          </div>
-
-          <!-- Cuerpo de la Ficha: Cuadrícula y Burbujas OMR -->
-          <div class="cyber-sheet-body">
-            <div class="cyber-grid-area">
-              <div class="cyber-grid-label">CUADRÍCULA DE CÁLCULO / PROCEDIMIENTO</div>
-              <div class="cyber-math-grid"></div>
-            </div>
-            <div class="cyber-omr-area">
-              <div class="cyber-omr-col">
-                <div class="cyber-bubble filled">A</div>
-                <div class="cyber-bubble">B</div>
-                <div class="cyber-bubble">C</div>
-                <div class="cyber-bubble">D</div>
-              </div>
-              <div class="cyber-omr-col">
-                <div class="cyber-bubble">A</div>
-                <div class="cyber-bubble filled">B</div>
-                <div class="cyber-bubble">C</div>
-                <div class="cyber-bubble">D</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pie de la Ficha -->
-          <div class="cyber-sheet-footer">
-            <span>Rpta: ___________________</span>
-            <span class="cyber-verified-stamp">✓ VISIÓN IA VERIFICADA</span>
+            </span>
+            <span class="eva-btn-text">Formativa con IA</span>
+          </button>
+          <div class="eva-tooltip">
+            Análisis cualitativo del procedimiento manuscrito con rúbrica pedagógica de Gemini.
           </div>
         </div>
-      </div>
 
-      <div class="cyber-hero-desc">
-        La Tecnología de Evaluación Más Rápida en el Aula
-      </div>
-
-      <!-- MODALIDADES DE EVALUACIÓN (3 TARJETAS LIMPIAS Y DIÁFANAS) -->
-      <div class="cyber-mode-container">
-        <div class="cyber-section-label">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.5">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-          MODALIDADES DE EVALUACIÓN
+        <!-- Botón 2: Focalizada en la Respuesta -->
+        <div class="eva-btn-wrap" onclick="openBranchFlow('rama2')">
+          <button type="button" class="eva-action-btn btn-focalizada">
+            <span class="eva-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </span>
+            <span class="eva-btn-text">Focalizada en la Respuesta</span>
+          </button>
+          <div class="eva-tooltip">
+            Corrección directa de alternativas marcadas o escritas sin evaluar procedimiento.
+          </div>
         </div>
 
-        <div class="cyber-cards-grid">
-          
-          <!-- MODALIDAD 1: Formativa Profunda con IA -->
-          <div onclick="openBranchFlow('rama1')" class="cyber-card card-rama1">
-            <div class="cyber-card-top">
-              <div class="cyber-card-icon icon-rama1">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <path d="M9 13h6M9 17h4"/>
-                  <circle cx="17.5" cy="17.5" r="3.5" fill="#6366f1" fill-opacity="0.2" stroke="#6366f1" stroke-width="1.5"/>
-                </svg>
-              </div>
-              <span class="cyber-pill-badge badge-rama1">RÚBRICA IA</span>
-            </div>
-            <h3 class="cyber-card-title">Formativa con IA</h3>
-            <p class="cyber-card-desc">Análisis cualitativo del procedimiento manuscrito con rúbrica pedagógica de Gemini.</p>
-            <div class="cyber-card-action action-rama1">
-              <span>Iniciar Formativa</span>
-              <span class="hub-card-arrow">→</span>
-            </div>
+        <!-- Botón 3: Cartilla OMR -->
+        <div class="eva-btn-wrap" onclick="openBranchFlow('rama3')">
+          <button type="button" class="eva-action-btn btn-omr">
+            <span class="eva-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+                <circle cx="12" cy="8" r="1.5"/>
+                <circle cx="16" cy="8" r="1.5"/>
+                <circle cx="8" cy="13" r="1.5"/>
+                <circle cx="12" cy="13" r="1.5" fill="currentColor"/>
+                <circle cx="16" cy="13" r="1.5"/>
+              </svg>
+            </span>
+            <span class="eva-btn-text">Cartilla OMR</span>
+          </button>
+          <div class="eva-tooltip">
+            Calificación masiva en segundos mediante escaneo óptico 100% local sin IA.
           </div>
-
-          <!-- MODALIDAD 2: Focalizada en la Respuesta -->
-          <div onclick="openBranchFlow('rama2')" class="cyber-card card-rama2">
-            <div class="cyber-card-top">
-              <div class="cyber-card-icon icon-rama2">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-              </div>
-              <span class="cyber-pill-badge badge-rama2">1–5 PREG.</span>
-            </div>
-            <h3 class="cyber-card-title">Focalizada en la Respuesta</h3>
-            <p class="cyber-card-desc">Corrección directa de alternativas marcadas o escritas sin evaluar procedimiento.</p>
-            <div class="cyber-card-action action-rama2">
-              <span>Iniciar Focalizada</span>
-              <span class="hub-card-arrow">→</span>
-            </div>
-          </div>
-
-          <!-- MODALIDAD 3: Cartilla OMR -->
-          <div onclick="openBranchFlow('rama3')" class="cyber-card card-rama3">
-            <div class="cyber-card-top">
-              <div class="cyber-card-icon icon-rama3">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
-                  <circle cx="12" cy="8" r="1.5"/>
-                  <circle cx="16" cy="8" r="1.5"/>
-                  <circle cx="8" cy="13" r="1.5"/>
-                  <circle cx="12" cy="13" r="1.5" fill="currentColor"/>
-                  <circle cx="16" cy="13" r="1.5"/>
-                </svg>
-              </div>
-              <span class="cyber-pill-badge badge-rama3">HASTA 20 PREG.</span>
-            </div>
-            <h3 class="cyber-card-title">Cartilla OMR</h3>
-            <p class="cyber-card-desc">Calificación masiva en segundos mediante escaneo óptico 100% local sin IA.</p>
-            <div class="cyber-card-action action-rama3">
-              <span>Iniciar Cartilla OMR</span>
-              <span class="hub-card-arrow">→</span>
-            </div>
-          </div>
-
         </div>
+
+        <!-- Botón 4: Gestor (Salones, Banco, Sesiones) -->
+        <div class="eva-btn-wrap eva-gestor-wrap" onclick="toggleGestorDropdown(event)">
+          <button type="button" class="eva-action-btn btn-gestor">
+            <span class="eva-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </span>
+            <span class="eva-btn-text">Gestor</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="eva-tooltip">
+            Administración de salones, banco de preguntas y sesiones guardadas.
+          </div>
+
+          <!-- Menú Flotante del Gestor -->
+          <div class="eva-gestor-dropdown" id="eva-gestor-dropdown" onclick="event.stopPropagation()">
+            <button type="button" class="gestor-item" onclick="openFlow('classrooms')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+              <span>Salones</span>
+            </button>
+            <button type="button" class="gestor-item" onclick="openFlow('bank')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>Banco</span>
+            </button>
+            <button type="button" class="gestor-item" onclick="openFlow('saved-sessions')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span>Sesiones</span>
+              <span id="hub-saved-sessions-badge" class="nav-count-badge" style="display:none;">0/3</span>
+            </button>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -3183,15 +3132,40 @@
     }
     window.closeUserMenu = closeUserMenu;
 
-    // Cerrar menú al hacer clic afuera o presionar Escape
+    // ── Dropdown de Gestor (Salones, Banco, Sesiones) ──
+    function toggleGestorDropdown(event) {
+      if (event) {
+        event.stopPropagation();
+      }
+      const wrap = document.querySelector('.eva-gestor-wrap');
+      if (wrap) {
+        wrap.classList.toggle('open');
+      }
+    }
+    window.toggleGestorDropdown = toggleGestorDropdown;
+
+    function closeGestorDropdown() {
+      const wrap = document.querySelector('.eva-gestor-wrap');
+      if (wrap) wrap.classList.remove('open');
+    }
+    window.closeGestorDropdown = closeGestorDropdown;
+
+    // Cerrar menús al hacer clic afuera o presionar Escape
     document.addEventListener('click', (e) => {
       const wrap = document.getElementById('user-menu-wrap');
       if (wrap && !wrap.contains(e.target)) {
         closeUserMenu();
       }
+      const gestorWrap = document.querySelector('.eva-gestor-wrap');
+      if (gestorWrap && !gestorWrap.contains(e.target)) {
+        closeGestorDropdown();
+      }
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeUserMenu();
+      if (e.key === 'Escape') {
+        closeUserMenu();
+        closeGestorDropdown();
+      }
     });
 
     function showLoginOverlay() {

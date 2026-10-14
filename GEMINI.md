@@ -118,4 +118,26 @@ Todo asistente de inteligencia artificial o desarrollador que opere en este repo
 * Toda ficha, tarjeta o cartilla imprimible que contenga marcadores ArUco y código QR **DEBE contar obligatoriamente con un marco perimetral negro cerrado (`border: 1mm solid #000000`)**.
 * Entre el límite físico exterior de la hoja A4 y el marco negro de la ficha **SIEMPRE debe existir un espacio libre en blanco (margen/padding)**, garantizando que el borde nunca quede pegado al filo del papel ni sea mutilado por los márgenes de impresión de la impresora física.
 
+---
 
+## 14. Guardarraíl de Geometría Visual y Validación de Proporciones Físicas Reales
+* **Prohibición de validaciones abstractas y unidimensionales:** Ningún test de interfaz gráfica o de simulador interactivo de fichas puede darse por aprobado únicamente validando strings de texto HTML, variables en memoria o ausencia de desborde horizontal (`clipping`).
+* **Verificación dimensional estricta obligatoria (Tolerancia Cero ±1 mm):** Todo cambio en estilos CSS, contenedores flex o generadores de tarjetas DEBE validarse midiendo en un motor de navegador real (Chromium / Edge) las dimensiones computadas de la caja renderizada en cada formato:
+  1. **A6 Horizontal:** Ancho `132 mm` (±1 mm) × Alto `89 mm` (±1 mm). Proporción apaisada W/H ≈ 1.48. **PROHIBIDO** cualquier estiramiento vertical o vacío blanco deformado.
+  2. **A6 Vertical:** Ancho `89 mm` (±1 mm) × Alto `132 mm` (±1 mm). Proporción vertical W/H ≈ 0.67.
+  3. **A5 Horizontal:** Ancho `186 mm` (±1 mm) × Alto `134 mm` (±1 mm). Proporción apaisada W/H ≈ 1.39. **PROHIBIDO** el aplastamiento horizontal en formato cuadrado.
+  4. **A5 Vertical:** Ancho `132 mm` (±1 mm) × Alto `182 mm` (±1 mm). Proporción vertical W/H ≈ 0.72.
+* **Integridad de contenedores y reglas Flex (`.sim-card-host` / `.card-*`):** Las dimensiones base de las tarjetas (`width` y `height`) son soberanas e inmutables. Ninguna propiedad `flex` o `flex-basis` de contenedores padre puede sobreescribir, aplastar o estirar el eje de una ficha.
+* Si cualquiera de estas proporciones se desvía más de 1 mm o presenta deformación de aspecto en el renderizado, **el cambio queda automáticamente vetado y los tests deben fallar de inmediato en rojo**.
+
+---
+
+## 15. Guardarraíl Anti-Asunción y Prohibición de Respuestas Complacientes o Vacías
+* **Prohibición Absoluta de Asumir Requerimientos o Estilos:** Está terminantemente prohibido asumir paletas de colores (como fondos oscuros por defecto), estéticas, jerarquías o interpretaciones de diseño sin confirmación explícita.
+* **Prohibición de Frases Vacías de Falsa Certidumbre:**
+  * Queda vetado responder con expresiones como *"Ya te entendí"*, *"Ahora sí está 100% claro"* o similares, a menos que el usuario haya confirmado puntualmente cada elemento.
+  * El asistente NO debe fingir comprensión para apresurarse a escribir código.
+* **Obligación de Inspección y Pregunta Previa:**
+  * Ante cualquier enlace, imagen o referente externo, el asistente DEBE inspeccionar el contenido real (abrir la página o analizar la imagen) ANTES de opinar o planificar.
+  * Ante la menor ambigüedad o decisión de diseño (colores, tonos, estructura), el asistente **TIENE LA OBLIGACIÓN DE PREGUNTAR PRIMERO** y acordar el camino antes de modificar archivos o escribir código nuevo.
+  * Queda prohibido sobrecargar pantallas con botones duplicados, textos explicativos no pedidos o plantillas genéricas de IA para "rellenar espacio".
