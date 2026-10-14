@@ -50,7 +50,7 @@
   <script src="card-cartilla.js?v=3.2.01"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.07">
+  <link rel="stylesheet" href="styles.css?v=3.2.18">
 </head>
 <body>
   <!-- Banner de Guardrail de Dependencias (Guardrail 1) -->
@@ -62,7 +62,7 @@
       <div class="brand-text">
         <h1>Microevaluación</h1>
         <div style="margin-top:2px; line-height:1;">
-          <span class="version-tag">v3.2.17</span>
+          <span class="version-tag">v3.2.18</span>
         </div>
       </div>
     </div>
@@ -147,92 +147,92 @@
     <div style="max-width: 780px; margin: 0 auto; width: 100%;">
       
       <!-- Bienvenida al Docente -->
-      <div style="text-align: center; padding: 16px 10px 22px;">
-        <h2 id="hub-welcome-title" style="font-size: 1.55rem; font-weight: 900; color: #f8fafc; margin-bottom: 6px;">
+      <div style="text-align: center; padding: 20px 10px 24px;">
+        <h2 id="hub-welcome-title" style="font-size: 1.65rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; letter-spacing: -0.02em;">
           ¡Hola, Docente!
         </h2>
-        <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">
+        <p style="font-size: 0.88rem; color: #94a3b8; margin: 0; font-weight: 500;">
           ¿Qué deseas hacer hoy en Microevaluación?
         </p>
       </div>
 
       <!-- SECCIÓN 1: EVALUACIÓN EN AULA (3 MODALIDADES) -->
-      <div style="margin-bottom: 26px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <span style="font-size: 0.74rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.07em;">
-            🚀 Tomar Evaluación en Aula
+      <div style="margin-bottom: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <span style="font-size: 0.74rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
+            <span>🚀</span> Tomar Evaluación en Aula
           </span>
-          <span id="hub-session-badge" style="display: none; background: #065f46; color: #6ee7b7; font-size: 0.68rem; font-weight: 800; padding: 3px 9px; border-radius: 6px; white-space: nowrap;">
+          <span id="hub-session-badge" style="display: none; background: rgba(5, 150, 105, 0.2); border: 1px solid #10b981; color: #6ee7b7; font-size: 0.68rem; font-weight: 800; padding: 3px 10px; border-radius: 9999px; white-space: nowrap; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);">
             SESIÓN EN CURSO
           </span>
         </div>
 
         <!-- Grilla Mosaico de 3 Modalidades -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
           
           <!-- MODALIDAD 1: Formativa Profunda con IA -->
-          <div onclick="openBranchFlow('rama1')" class="hub-card hub-card-branch1" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 195px; border-color: #6366f1;">
+          <div onclick="openBranchFlow('rama1')" class="hub-card hub-card-branch1" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-color: #6366f1;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div style="font-size: 1.7rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #1e1b4b; border-radius: 12px; border: 1.5px solid #818cf8;">
+                <div style="font-size: 1.7rem; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: rgba(30, 27, 75, 0.7); border-radius: 14px; border: 1.5px solid #818cf8; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);">
                   🔬
                 </div>
-                <span style="background: rgba(99,102,241,0.2); color: #a5b4fc; font-size: 0.65rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(99,102,241,0.4);">
+                <span style="background: rgba(99,102,241,0.18); color: #c7d2fe; font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 9999px; border: 1px solid rgba(129,140,248,0.4); letter-spacing: 0.03em;">
                   RÚBRICA IA
                 </span>
               </div>
               <h3 style="font-size: 1.02rem; font-weight: 800; color: #f8fafc; margin: 0 0 6px;">Formativa con IA</h3>
-              <p style="font-size: 0.75rem; color: #94a3b8; margin: 0; line-height: 1.4;">
+              <p style="font-size: 0.76rem; color: #94a3b8; margin: 0; line-height: 1.45;">
                 1 a 2 preguntas · Cuadrícula de cálculo obligatoria · Análisis de procedimiento y rúbrica pedagógica de Gemini.
               </p>
             </div>
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 14px; color: #818cf8; font-size: 0.8rem; font-weight: 800;">
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 16px; color: #818cf8; font-size: 0.82rem; font-weight: 800;">
               <span>Iniciar</span>
-              <span>→</span>
+              <span class="hub-card-arrow">→</span>
             </div>
           </div>
 
           <!-- MODALIDAD 2: Focalizada en la Respuesta -->
-          <div onclick="openBranchFlow('rama2')" class="hub-card hub-card-branch2" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 195px; border-color: #0284c7;">
+          <div onclick="openBranchFlow('rama2')" class="hub-card hub-card-branch2" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-color: #0284c7;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div style="font-size: 1.7rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #082f49; border-radius: 12px; border: 1.5px solid #38bdf8;">
+                <div style="font-size: 1.7rem; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: rgba(8, 47, 73, 0.7); border-radius: 14px; border: 1.5px solid #38bdf8; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);">
                   ⚡
                 </div>
-                <span style="background: rgba(14,165,233,0.2); color: #7dd3fc; font-size: 0.65rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(14,165,233,0.4);">
+                <span style="background: rgba(14,165,233,0.18); color: #bae6fd; font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 9999px; border: 1px solid rgba(56,189,248,0.4); letter-spacing: 0.03em;">
                   1–5 PREG.
                 </span>
               </div>
               <h3 style="font-size: 1.02rem; font-weight: 800; color: #f8fafc; margin: 0 0 6px;">Focalizada en la Respuesta</h3>
-              <p style="font-size: 0.75rem; color: #94a3b8; margin: 0; line-height: 1.4;">
+              <p style="font-size: 0.76rem; color: #94a3b8; margin: 0; line-height: 1.45;">
                 1 a 5 preguntas (escrita o marcada) · Con o sin borrador (hasta 2P con borrador) · Corrección directa de la clave sin rúbrica de procedimiento.
               </p>
             </div>
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 14px; color: #38bdf8; font-size: 0.8rem; font-weight: 800;">
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 16px; color: #38bdf8; font-size: 0.82rem; font-weight: 800;">
               <span>Iniciar</span>
-              <span>→</span>
+              <span class="hub-card-arrow">→</span>
             </div>
           </div>
 
           <!-- MODALIDAD 3: Cartilla OMR -->
-          <div onclick="openBranchFlow('rama3')" class="hub-card hub-card-branch3" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 195px; border-color: #059669;">
+          <div onclick="openBranchFlow('rama3')" class="hub-card hub-card-branch3" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; border-color: #059669;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div style="font-size: 1.7rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #064e3b; border-radius: 12px; border: 1.5px solid #34d399;">
+                <div style="font-size: 1.7rem; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: rgba(6, 78, 59, 0.7); border-radius: 14px; border: 1.5px solid #34d399; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);">
                   📋
                 </div>
-                <span style="background: rgba(16,185,129,0.2); color: #6ee7b7; font-size: 0.65rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(16,185,129,0.4);">
+                <span style="background: rgba(16,185,129,0.18); color: #a7f3d0; font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 9999px; border: 1px solid rgba(52,211,153,0.4); letter-spacing: 0.03em;">
                   HASTA 20 PREG.
                 </span>
               </div>
               <h3 style="font-size: 1.02rem; font-weight: 800; color: #f8fafc; margin: 0 0 6px;">Cartilla OMR</h3>
-              <p style="font-size: 0.75rem; color: #94a3b8; margin: 0; line-height: 1.4;">
+              <p style="font-size: 0.76rem; color: #94a3b8; margin: 0; line-height: 1.45;">
                 Hasta 20 preguntas (A, B, C, D) en 2 columnas · Calificación masiva instantánea · Pauta o banco · Nota vigesimal.
               </p>
             </div>
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 14px; color: #34d399; font-size: 0.8rem; font-weight: 800;">
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 16px; color: #34d399; font-size: 0.82rem; font-weight: 800;">
               <span>Iniciar</span>
-              <span>→</span>
+              <span class="hub-card-arrow">→</span>
             </div>
           </div>
 
@@ -241,63 +241,63 @@
 
       <!-- SECCIÓN 2: GESTIÓN Y RECURSOS -->
       <div>
-        <div style="margin-bottom: 12px;">
-          <span style="font-size: 0.74rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.07em;">
-            📂 Gestión y Recursos
+        <div style="margin-bottom: 14px;">
+          <span style="font-size: 0.74rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
+            <span>📂</span> Gestión y Recursos
           </span>
         </div>
 
         <!-- Grilla de Gestión y Recursos -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
           
           <!-- FLUJO 2: Gestión de Salones y Nóminas -->
           <div onclick="openFlow('classrooms')" class="hub-card hub-card-classrooms">
             <div style="display: flex; align-items: center; gap: 14px;">
-              <div style="font-size: 1.8rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #064e3b; border-radius: 12px; border: 1.5px solid #10b981; flex-shrink: 0;">
+              <div style="font-size: 1.8rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(6, 78, 59, 0.7); border-radius: 14px; border: 1.5px solid #10b981; flex-shrink: 0; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);">
                 🏫
               </div>
               <div style="flex: 1; min-width: 0;">
                 <h3 style="font-size: 0.98rem; font-weight: 800; color: #f8fafc; margin: 0;">Mis Salones y Alumnos</h3>
-                <p style="font-size: 0.74rem; color: #94a3b8; margin: 3px 0 0; line-height: 1.35;">
+                <p style="font-size: 0.75rem; color: #94a3b8; margin: 3px 0 0; line-height: 1.4;">
                   Crea secciones, importa nóminas desde Excel o CSV y administra a tus estudiantes.
                 </p>
               </div>
-              <span style="color: #34d399; font-size: 1.2rem; font-weight: 900;">→</span>
+              <span class="hub-card-arrow" style="color: #34d399; font-size: 1.2rem; font-weight: 900;">→</span>
             </div>
           </div>
 
           <!-- FLUJO 3: Banco de Preguntas -->
           <div onclick="openFlow('bank')" class="hub-card hub-card-bank">
             <div style="display: flex; align-items: center; gap: 14px;">
-              <div style="font-size: 1.8rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #431407; border-radius: 12px; border: 1.5px solid #f97316; flex-shrink: 0;">
+              <div style="font-size: 1.8rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(67, 20, 7, 0.7); border-radius: 14px; border: 1.5px solid #f97316; flex-shrink: 0; box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);">
                 📚
               </div>
               <div style="flex: 1; min-width: 0;">
                 <h3 style="font-size: 0.98rem; font-weight: 800; color: #f8fafc; margin: 0;">Banco de Preguntas</h3>
-                <p style="font-size: 0.74rem; color: #94a3b8; margin: 3px 0 0; line-height: 1.35;">
+                <p style="font-size: 0.75rem; color: #94a3b8; margin: 3px 0 0; line-height: 1.4;">
                   Explora problemas clasificados por grado y redacta preguntas con alternativas y rúbrica de IA.
                 </p>
               </div>
-              <span style="color: #fb923c; font-size: 1.2rem; font-weight: 900;">→</span>
+              <span class="hub-card-arrow" style="color: #fb923c; font-size: 1.2rem; font-weight: 900;">→</span>
             </div>
           </div>
 
           <!-- FLUJO 4: Sesiones Guardadas (Máximo 3) -->
-          <div onclick="openFlow('saved-sessions')" class="hub-card hub-card-saved-sessions" style="background:#1e293b; border:1.5px solid #d97706; border-radius:14px; padding:16px; cursor:pointer; transition:all 0.15s; box-shadow:0 4px 12px rgba(0,0,0,0.25);">
+          <div onclick="openFlow('saved-sessions')" class="hub-card hub-card-saved-sessions" style="background:#1e293b; border:1.5px solid #d97706;">
             <div style="display: flex; align-items: center; gap: 14px;">
-              <div style="font-size: 1.8rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #451a03; border-radius: 12px; border: 1.5px solid #f59e0b; flex-shrink: 0;">
+              <div style="font-size: 1.8rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(69, 26, 3, 0.7); border-radius: 14px; border: 1.5px solid #f59e0b; flex-shrink: 0; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);">
                 📁
               </div>
               <div style="flex: 1; min-width: 0;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                   <h3 style="font-size: 0.98rem; font-weight: 800; color: #f8fafc; margin: 0;">Sesiones Guardadas</h3>
-                  <span id="hub-saved-sessions-badge" style="background: rgba(217,119,6,0.2); border: 1px solid #d97706; color: #fbbf24; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">0/3</span>
+                  <span id="hub-saved-sessions-badge" style="background: rgba(217,119,6,0.18); border: 1px solid #d97706; color: #fbbf24; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">0/3</span>
                 </div>
-                <p style="font-size: 0.74rem; color: #94a3b8; margin: 3px 0 0; line-height: 1.35;">
+                <p style="font-size: 0.75rem; color: #94a3b8; margin: 3px 0 0; line-height: 1.4;">
                   Accede de inmediato a tus evaluaciones listas para ir al escáner en un solo clic.
                 </p>
               </div>
-              <span style="color: #fbbf24; font-size: 1.2rem; font-weight: 900;">→</span>
+              <span class="hub-card-arrow" style="color: #fbbf24; font-size: 1.2rem; font-weight: 900;">→</span>
             </div>
           </div>
 
@@ -354,12 +354,10 @@
           <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;"
               onchange="handleExcelImport(this)">
-            <button onclick="document.getElementById('excel-file-input').click()"
-              style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #475569; color:#94a3b8; border-radius:8px; padding:7px 12px; font-size:0.76rem; cursor:pointer;">
+            <button class="btn-dashed-action" onclick="document.getElementById('excel-file-input').click()">
               📂 Importar (.xlsx / .csv)
             </button>
-            <button id="btn-manual-classroom" onclick="toggleManualClassroomForm()"
-              style="display:flex; align-items:center; gap:6px; background:#1e293b; border:1px dashed #475569; color:#94a3b8; border-radius:8px; padding:7px 12px; font-size:0.76rem; cursor:pointer;">
+            <button id="btn-manual-classroom" class="btn-dashed-action" onclick="toggleManualClassroomForm()">
               ➕ Crear salón a mano
             </button>
             <span id="excel-import-status" style="font-size:0.72rem; color:#64748b;"></span>
