@@ -116,12 +116,12 @@ function onManagerClassroomSelected(classId) {
       listEl.innerHTML = '<div style="color:#64748b; font-size:0.75rem; padding:10px; text-align:center;">Este salón no tiene alumnos cargados aún.</div>';
     } else {
       listEl.innerHTML = cls.students.map((s, idx) => `
-        <div style="display:flex; align-items:center; justify-content:space-between; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:8px 12px; font-size:0.78rem; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.78rem; gap:10px;">
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             <span style="color:#64748b; font-weight:800; font-size:0.7rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
             <div style="display:flex; flex-direction:column; min-width:0;">
-              <span style="color:#f8fafc; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escaparHtml(s.name)}</span>
-              <span style="color:#38bdf8; font-size:0.7rem; font-weight:600; margin-top:2px;">
+              <span style="color:#0f172a; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escaparHtml(s.name)}</span>
+              <span style="color:#0284c7; font-size:0.7rem; font-weight:600; margin-top:2px;">
                 📱 ${escaparHtml(s.shortName || generateShortName(s.name))}
               </span>
             </div>
@@ -130,12 +130,12 @@ function onManagerClassroomSelected(classId) {
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
             <button type="button" onclick="openEditStudentModal('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', '${escaparHtml(s.shortName || '').replace(/'/g, "\\'")}')"
               title="Editar nombre y nombre corto"
-              style="background:#0f172a; border:1px solid #3b82f6; color:#93c5fd; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
+              style="background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
               ✏️ Editar
             </button>
             <button type="button" onclick="handleDeleteStudent('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', this)"
               title="Eliminar este alumno del salón"
-              style="background:#0f172a; border:1px solid #7f1d1d; color:#f87171; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
+              style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
               🗑️
             </button>
           </div>` : ''}
@@ -321,14 +321,14 @@ function switchManagerCreateTab(tab) {
   const contentManual = document.getElementById('manager-tab-manual-content');
 
   if (btnImport) {
-    btnImport.style.border = isImport ? '1.5px solid #3b82f6' : '1.5px solid #334155';
-    btnImport.style.background = isImport ? '#3b82f620' : '#0f172a';
-    btnImport.style.color = isImport ? '#60a5fa' : '#94a3b8';
+    btnImport.style.border = isImport ? '1.5px solid #2563eb' : '1.5px solid #cbd5e1';
+    btnImport.style.background = isImport ? '#eff6ff' : '#ffffff';
+    btnImport.style.color = isImport ? '#1d4ed8' : '#64748b';
   }
   if (btnManual) {
-    btnManual.style.border = !isImport ? '1.5px solid #3b82f6' : '1.5px solid #334155';
-    btnManual.style.background = !isImport ? '#3b82f620' : '#0f172a';
-    btnManual.style.color = !isImport ? '#60a5fa' : '#94a3b8';
+    btnManual.style.border = !isImport ? '1.5px solid #2563eb' : '1.5px solid #cbd5e1';
+    btnManual.style.background = !isImport ? '#eff6ff' : '#ffffff';
+    btnManual.style.color = !isImport ? '#1d4ed8' : '#64748b';
   }
   if (contentImport) contentImport.style.display = isImport ? 'block' : 'none';
   if (contentManual) contentManual.style.display = !isImport ? 'block' : 'none';
@@ -359,7 +359,7 @@ function addMgrStudentRowElement(container, value = '', num = null) {
     <span class="mgr-student-idx" style="font-size:0.8rem; font-weight:800; color:#64748b; width:28px; text-align:right; flex-shrink:0;">${rowNum}.</span>
     <input type="text" class="mgr-student-input form-control" maxlength="60" value="${escaparHtml(value)}"
       placeholder="Apellidos, Nombres"
-      style="flex:1; min-width:0; font-size:0.9rem; font-weight:600; padding:10px 12px; background:#0f172a; border:1.5px solid #334155; color:#f8fafc; border-radius:8px;"
+      style="flex:1; min-width:0; font-size:0.9rem; font-weight:600; padding:10px 12px; background:#ffffff; border:1.5px solid #cbd5e1; color:#0f172a; border-radius:8px;"
       onkeydown="handleMgrStudentRowKeydown(event, this)"
       oninput="updateMgrStudentRowsCount()">
     <button type="button" onclick="removeMgrStudentRow(this)" title="Quitar este alumno"

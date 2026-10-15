@@ -437,21 +437,26 @@
     /* VISTA 1: REDACTAR E IMPRIMIR FICHAS                       */
     /* ========================================================= */
     #view-create {
-      background: #0b0f19;
+      background: radial-gradient(circle at 50% 0%, rgba(224, 242, 254, 0.7) 0%, rgba(248, 250, 252, 0) 65%),
+                  radial-gradient(circle at 15% 45%, rgba(238, 242, 255, 0.5) 0%, rgba(248, 250, 252, 0) 55%),
+                  radial-gradient(circle at 85% 60%, rgba(236, 253, 245, 0.4) 0%, rgba(248, 250, 252, 0) 55%),
+                  #f8fafc;
       padding: 16px;
       align-items: center;
       overflow-y: auto;
+      min-height: calc(100vh - 65px);
+      color: #0f172a;
     }
 
     .teacher-panel {
       width: 100%;
       max-width: 900px;
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
       padding: 20px;
       margin-bottom: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -461,7 +466,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid #e2e8f0;
       padding-bottom: 14px;
       flex-wrap: wrap;
       gap: 10px;
@@ -469,13 +474,13 @@
 
     .panel-header h2 {
       font-size: 1.15rem;
-      color: #f8fafc;
+      color: #0f172a;
       font-weight: 800;
     }
 
     .panel-header p {
       font-size: 0.82rem;
-      color: #94a3b8;
+      color: #64748b;
       margin-top: 2px;
     }
 
@@ -498,16 +503,16 @@
     .form-group label {
       font-size: 0.78rem;
       font-weight: 700;
-      color: #cbd5e1;
+      color: #334155;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
     .form-control {
-      background: #0f172a;
-      border: 1.5px solid #334155;
-      color: #f8fafc;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      color: #0f172a;
       padding: 10px 14px;
       border-radius: 10px;
       font-size: 0.88rem;
@@ -516,30 +521,37 @@
 
     .form-control:focus {
       outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+    }
+
+    .form-control option {
+      background: #ffffff;
+      color: #0f172a;
     }
 
     .btn-dashed-action {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(30, 41, 59, 0.6);
-      border: 1.5px dashed #475569;
-      color: #94a3b8;
+      background: #ffffff;
+      border: 1.5px dashed #cbd5e1;
+      color: #475569;
       border-radius: 9999px;
       padding: 7px 14px;
       font-size: 0.76rem;
       font-weight: 700;
       cursor: pointer;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
       transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-dashed-action:hover {
-      background: rgba(51, 65, 85, 0.8);
-      border-color: #94a3b8;
-      color: #f8fafc;
+      background: #f8fafc;
+      border-color: #0284c7;
+      color: #0284c7;
       transform: translateY(-1px);
-    }
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.12);
+
 
     textarea.form-control {
       resize: vertical;
@@ -3953,10 +3965,10 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 18px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(248, 250, 252, 0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      border-bottom: 1px solid #e2e8f0;
       gap: 12px;
       flex-wrap: wrap;
       position: sticky;
@@ -3967,32 +3979,34 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #cbd5e1;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
       border-radius: 9999px;
       padding: 6px 14px;
       font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
     }
     .btn-flow-back:hover {
-      background: #334155;
-      color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.25);
+      background: #f8fafc;
+      color: #0284c7;
+      border-color: #0284c7;
       transform: translateX(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
     }
     .flow-title {
       font-size: 0.85rem;
       font-weight: 800;
-      color: #94a3b8;
+      color: #0f172a;
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
-    #view-hub {
+    #view-hub,
+    #view-create,
+    #view-classrooms {
       background: radial-gradient(circle at 50% 0%, rgba(224, 242, 254, 0.7) 0%, rgba(248, 250, 252, 0) 65%),
                   radial-gradient(circle at 15% 45%, rgba(238, 242, 255, 0.5) 0%, rgba(248, 250, 252, 0) 55%),
                   radial-gradient(circle at 85% 60%, rgba(236, 253, 245, 0.4) 0%, rgba(248, 250, 252, 0) 55%),
@@ -4370,8 +4384,8 @@
     }
 
     .sim-toolbar {
-      background: #0f172a;
-      border: 1px solid #334155;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 12px 16px;
       display: flex;
@@ -4382,9 +4396,9 @@
     .sim-pill-btn {
       padding: 5px 11px;
       border-radius: 8px;
-      border: 1.5px solid #334155;
-      background: #1e293b;
-      color: #94a3b8;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
       font-size: 0.74rem;
       font-weight: 700;
       cursor: pointer;
@@ -4393,23 +4407,27 @@
       align-items: center;
       gap: 5px;
       user-select: none;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     }
 
     .sim-pill-btn:hover:not(:disabled) {
-      border-color: #64748b;
-      color: #f1f5f9;
+      border-color: #94a3b8;
+      color: #0f172a;
+      background: #f1f5f9;
     }
 
     .sim-pill-btn.active {
-      background: rgba(99, 102, 241, 0.2);
-      border-color: #6366f1;
-      color: #c7d2fe;
+      background: #e0f2fe;
+      border-color: #0284c7;
+      color: #0369a1;
+      font-weight: 800;
     }
 
     .sim-pill-btn.active-emerald {
-      background: rgba(16, 185, 129, 0.2);
+      background: #d1fae5;
       border-color: #10b981;
-      color: #a7f3d0;
+      color: #065f46;
+      font-weight: 800;
     }
 
     .sim-pill-btn:disabled {
@@ -4419,15 +4437,15 @@
 
     .sim-card-viewport {
       width: 100%;
-      background: #0b0f19;
-      border: 1.5px solid #334155;
+      background: #f1f5f9;
+      border: 1.5px solid #cbd5e1;
       border-radius: 12px;
       padding: 20px 14px;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+      box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.06);
       margin: 0 auto;
     }
 
@@ -4647,15 +4665,15 @@
 
     /* Badge compacto de formato junto al número de preguntas */
     .sim-format-badge {
-      background: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #0284c7;
+      background: #f0f9ff;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
       border-radius: 6px;
       padding: 3px 9px;
       font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.05em;
-      box-shadow: 0 1px 4px rgba(2, 132, 199, 0.25);
+      box-shadow: none;
       user-select: none;
     }
 
