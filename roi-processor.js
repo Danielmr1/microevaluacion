@@ -149,7 +149,7 @@
   // Definición de Coordenadas Fijas de ROIs para Ficha A5 Vertical.
   const ROI_CONFIG_VERTICAL = {
     // Código QR (esquina superior derecha de la cabecera vertical de 134 mm)
-    QR: Object.assign(mmToPxVertical(94, 3.5, 24, 20), {
+    QR: Object.assign(mmToPxVertical(92, 2.0, 28, 24), {
       label: 'Código QR (Vertical)'
     }),
 
@@ -167,7 +167,7 @@
   // Definición de Coordenadas Fijas de ROIs para Ficha A6 (132 x 89 mm en lienzo 2000 x 1441 px).
   const ROI_CONFIG_A6 = {
     // Código QR (esquina superior derecha de la cabecera A6)
-    QR: Object.assign(mmToPx(138, 3.0, 24, 21), {
+    QR: Object.assign(mmToPx(134, 2.0, 32, 28), {
       label: 'Código QR (A6)'
     }),
     // Caja de respuesta manuscrita en A6

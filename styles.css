@@ -817,8 +817,8 @@
     .card-a6-r3 .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
 
     .a6-card-header {
-      height: 18.5mm;
-      padding: 2.2mm 16.5mm 1.8mm 16mm;
+      height: 20mm;
+      padding: 2mm 16.5mm 2mm 16mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -832,7 +832,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: 13.5mm;
+      height: 16mm;
       flex: 1 1 auto;
       min-width: 0;
       overflow: hidden;
@@ -912,7 +912,7 @@
       align-items: center;
       gap: 2.5mm;
       flex: 0 0 auto;
-      height: 13.5mm;
+      height: 16mm;
     }
 
     .a6-qr-code-text {
@@ -925,9 +925,9 @@
     }
 
     .a6-qr-box {
-      width: 13.5mm;
-      height: 13.5mm;
-      flex: 0 0 13.5mm;
+      width: 16mm;
+      height: 16mm;
+      flex: 0 0 16mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1129,7 +1129,7 @@
 
     .v-card-header {
       height: 20mm;
-      padding: 2.5mm 16.5mm 2mm 16mm;
+      padding: 2mm 16.5mm 2mm 16mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -1143,7 +1143,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: 14.5mm;
+      height: 16mm;
       flex: 1 1 auto;
       min-width: 0;
       overflow: hidden;
@@ -1223,7 +1223,7 @@
       align-items: center;
       gap: 3mm;
       flex: 0 0 auto;
-      height: 14.5mm;
+      height: 16mm;
     }
 
     .v-qr-code-text {
@@ -1236,9 +1236,9 @@
     }
 
     .v-qr-box {
-      width: 14.5mm;
-      height: 14.5mm;
-      flex: 0 0 14.5mm;
+      width: 16mm;
+      height: 16mm;
+      flex: 0 0 16mm;
       display: flex;
       align-items: center;
       justify-content: center;
