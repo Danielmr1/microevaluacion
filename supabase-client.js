@@ -782,6 +782,110 @@
   }
 
   // ─────────────────────────────────────────────
+  // SESIONES GUARDADAS (SINCRONIZACIÓN EN LA NUBE)
+  // ─────────────────────────────────────────────
+
+  /**
+   * Carga las sesiones guardadas del docente desde Supabase.
+   * @returns {Promise<Array>} Lista de sesiones guardadas (hasta 8).
+   */
+  async function loadSavedSessions() {
+    const client = getClient();
+    if (!client) return [];
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    const { data, error } = await client
+      .from('microeval_sessions')
+      .select('*')
+      .eq('teacher_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(8);
+
+    if (error) {
+      console.warn('[SupabaseClient] Error al cargar sesiones guardadas:', error.message);
+      return [];
+    }
+
+    return (data || []).map(row => {
+      const sess = row.data || {};
+      sess.id = row.session_id || sess.id;
+      sess.sessionRef = row.session_ref || sess.sessionRef;
+      sess.title = row.title || sess.title;
+      sess.classroomId = row.classroom_id || sess.classroomId;
+      sess.classroomName = row.classroom_name || sess.classroomName;
+      sess.branch = row.branch || sess.branch;
+      sess.branchTitle = row.branch_title || sess.branchTitle;
+      sess.type = row.type || sess.type;
+      sess.questionCount = row.question_count || sess.questionCount;
+      sess.updatedAt = row.updated_at || sess.updatedAt;
+      sess.createdAt = row.created_at || sess.createdAt;
+      return sess;
+    });
+  }
+
+  /**
+   * Guarda o actualiza una sesión en Supabase.
+   * @param {Object} sessionData Datos de la sesión.
+   * @returns {Promise<boolean>}
+   */
+  async function saveSessionToCloud(sessionData) {
+    const client = getClient();
+    if (!client || !sessionData || !sessionData.id) return false;
+    const user = await getCurrentUser();
+    if (!user) return false;
+
+    const row = {
+      teacher_id: user.id,
+      session_id: sessionData.id,
+      session_ref: sessionData.sessionRef || null,
+      title: sessionData.title || null,
+      classroom_id: sessionData.classroomId || null,
+      classroom_name: sessionData.classroomName || null,
+      branch: sessionData.branch || null,
+      branch_title: sessionData.branchTitle || null,
+      type: sessionData.type || null,
+      question_count: sessionData.questionCount || 1,
+      data: sessionData,
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await client
+      .from('microeval_sessions')
+      .upsert(row, { onConflict: 'teacher_id,session_id' });
+
+    if (error) {
+      console.warn('[SupabaseClient] Error al guardar sesión en la nube:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Elimina una sesión guardada de Supabase por su session_id.
+   * @param {string} sessionId ID de la sesión.
+   * @returns {Promise<boolean>}
+   */
+  async function deleteSessionFromCloud(sessionId) {
+    const client = getClient();
+    if (!client || !sessionId) return false;
+    const user = await getCurrentUser();
+    if (!user) return false;
+
+    const { error } = await client
+      .from('microeval_sessions')
+      .delete()
+      .eq('teacher_id', user.id)
+      .eq('session_id', sessionId);
+
+    if (error) {
+      console.warn('[SupabaseClient] Error al eliminar sesión de la nube:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  // ─────────────────────────────────────────────
   // EXPORTACIÓN
   // ─────────────────────────────────────────────
   global.SupabaseClient = {
@@ -805,7 +909,10 @@
     loadSessionResults,
     deleteResult,
     deleteSessionResults,
-    gradeSheet
+    gradeSheet,
+    loadSavedSessions,
+    saveSessionToCloud,
+    deleteSessionFromCloud
   };
 
 })(typeof window !== 'undefined' ? window : this);

@@ -124,7 +124,7 @@
   const STORAGE_KEY_BANK_VIEJO = 'microeval_teacher_bank_v1';
   const STORAGE_KEY_SESSION = 'microeval_active_session_v1';
   const STORAGE_KEY_SAVED_SESSIONS = 'microeval_saved_sessions_v1';
-  const MAX_SAVED_SESSIONS = 3;
+  const MAX_SAVED_SESSIONS = 8;
   const STORAGE_KEY_SYNC_QUEUE = 'microeval_pending_sync_v1';
 
   function queueForSync(item) {
@@ -754,8 +754,8 @@
   }
 
   /**
-   * Obtiene la lista de sesiones guardadas por el docente (máximo 3)
-   * @returns {Array} Lista de hasta 3 sesiones completas
+   * Obtiene la lista de sesiones guardadas por el docente (máximo 8)
+   * @returns {Array} Lista de hasta 8 sesiones completas
    */
   function getSavedSessions() {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -773,7 +773,48 @@
   }
 
   /**
-   * Guarda o actualiza una sesión en el almacenamiento local con tope estricto de 3
+   * Sincroniza las sesiones guardadas entre la memoria local y Supabase.
+   * - Conserva las sesiones locales prioritarias si aún no están en la nube.
+   * - Si hay sesiones en la nube, combina inteligentemente respetando el tope de 8.
+   * - Actualiza el localStorage como respaldo offline.
+   * @returns {Promise<Array>} Lista sincronizada de sesiones
+   */
+  async function syncSessionsWithCloud() {
+    if (typeof window === 'undefined' || !window.SupabaseClient || typeof window.SupabaseClient.loadSavedSessions !== 'function') {
+      return getSavedSessions();
+    }
+    try {
+      const user = await window.SupabaseClient.getCurrentUser();
+      if (!user) return getSavedSessions();
+
+      const cloudSessions = (await window.SupabaseClient.loadSavedSessions()) || [];
+      const localSessions = getSavedSessions();
+
+      const combined = [...cloudSessions];
+
+      // Verificar si hay sesiones locales que no existen en la nube para subirlas
+      for (const loc of localSessions) {
+        const existsInCloud = combined.some(c => c.id === loc.id || (c.sessionRef && loc.sessionRef && c.sessionRef === loc.sessionRef));
+        if (!existsInCloud && combined.length < MAX_SAVED_SESSIONS) {
+          combined.push(loc);
+          // Guardar en la nube en segundo plano
+          window.SupabaseClient.saveSessionToCloud(loc).catch(e => console.warn('[Cloud Upload Sync]', e));
+        }
+      }
+
+      // Guardar en localStorage para respaldo offline
+      if (typeof window.localStorage !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(combined.slice(0, MAX_SAVED_SESSIONS)));
+      }
+      return combined.slice(0, MAX_SAVED_SESSIONS);
+    } catch (e) {
+      console.warn('[syncSessionsWithCloud Error]', e);
+      return getSavedSessions();
+    }
+  }
+
+  /**
+   * Guarda o actualiza una sesión en el almacenamiento local y en la nube con tope estricto de 8
    * @param {Object} sessionData Datos completos de la sesión
    * @returns {Object} Resultado de la operación
    */
@@ -818,6 +859,14 @@
         return { success: false, reason: 'storage_error', error: e.message };
       }
     }
+
+    // Sincronizar en la nube en segundo plano (Supabase)
+    if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveSessionToCloud === 'function') {
+      window.SupabaseClient.saveSessionToCloud(targetSession).catch(err => {
+        console.warn('[Cloud Save Session]', err && err.message);
+      });
+    }
+
     return {
       success: true,
       count: list.length,
@@ -827,7 +876,7 @@
   }
 
   /**
-   * Elimina una sesión guardada por ID
+   * Elimina una sesión guardada por ID tanto localmente como en la nube
    * @param {string} sessionId ID de la sesión a eliminar
    * @returns {Object} Resultado
    */
@@ -841,7 +890,15 @@
         return { success: false, error: e.message };
       }
     }
-    return { success: true, count: list.length };
+
+    // Eliminar de Supabase en segundo plano
+    if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.deleteSessionFromCloud === 'function') {
+      window.SupabaseClient.deleteSessionFromCloud(sessionId).catch(err => {
+        console.warn('[Cloud Delete Session]', err && err.message);
+      });
+    }
+
+    return { success: true, count: list.length, max: MAX_SAVED_SESSIONS };
   }
 
   /**
@@ -947,6 +1004,7 @@
     setActiveSession,
     getActiveSession,
     getSavedSessions,
+    syncSessionsWithCloud,
     saveSession,
     deleteSavedSession,
     isClassroomInSavedSession,
