@@ -4016,19 +4016,201 @@
       color: #0f172a;
     }
 
-    /* ── HUB PRINCIPAL (ESTÉTICA MINIMALISTA & LUZ NATURAL) ── */
-    .cyber-hub-container {
-      max-width: 960px;
+    /* ── TIRA SUPERIOR DE 3 TARJETAS COMPACTAS DEL GESTOR (DEBAJO DE INICIO) ── */
+    .hub-top-strip {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 20px 0;
+      max-width: 980px;
       margin: 0 auto;
       width: 100%;
-      min-height: calc(100vh - 70px);
-      padding: 32px 20px 40px;
+      flex-wrap: wrap;
+    }
+    .top-strip-card {
+      flex: 1;
+      min-width: 190px;
+      max-width: 290px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+    .top-strip-card:hover {
+      transform: translateY(-2px);
+      border-color: #0284c7;
+      box-shadow: 0 8px 18px rgba(2, 132, 199, 0.1);
+      background: #ffffff;
+    }
+    .strip-card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .icon-sky { background: #e0f2fe; color: #0284c7; }
+    .icon-indigo { background: #e0e7ff; color: #4f46e5; }
+    .icon-amber { background: #fef3c7; color: #d97706; }
+
+    .strip-card-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .strip-card-title {
+      font-size: 0.82rem;
+      font-weight: 750;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .strip-card-sub {
+      font-size: 0.68rem;
+      color: #64748b;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* ── HUB PRINCIPAL: HERO SPLIT (EVA IZQUIERDA / ARUCO DERECHA) ── */
+    .cyber-hub-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      width: 100%;
+      min-height: calc(100vh - 120px);
+      padding: 30px 24px 50px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      flex: 1;
       justify-content: center;
       position: relative;
+    }
+
+    .hero-split-layout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1000px;
+      gap: 40px;
+      margin-top: 10px;
+    }
+
+    .hero-left-content {
+      flex: 1.1;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      z-index: 2;
+    }
+
+    .hero-left-content .eva-hero-subtitle {
+      text-align: left;
+      margin-left: 0;
+      max-width: 480px;
+    }
+
+    .hero-cta-wrap {
+      margin-top: 24px;
+    }
+
+    .hero-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 750;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .hero-cta-btn:hover {
+      background: #0284c7;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(2, 132, 199, 0.3);
+    }
+
+    .hero-right-backdrop {
+      flex: 0.9;
+      max-width: 420px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .ghost-stage-sheet {
+      width: 100%;
+      max-width: 380px;
+      min-height: 230px;
+      padding: 24px 20px;
+      opacity: 0.38;
+      transform: perspective(800px) rotateY(-8deg) rotateX(4deg);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid rgba(15, 23, 42, 0.2);
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.06);
+    }
+    .ghost-stage-sheet:hover {
+      opacity: 0.55;
+    }
+
+    .ghost-sheet-wireframe {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .wireframe-qr {
+      width: 28px;
+      height: 28px;
+      background: rgba(15, 23, 42, 0.25);
+      border-radius: 4px;
+    }
+    .wireframe-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .wf-line {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(15, 23, 42, 0.15);
+    }
+    .l-long { width: 85%; }
+    .l-med { width: 60%; }
+    .wireframe-grid {
+      height: 80px;
+      border: 1px dashed rgba(15, 23, 42, 0.2);
+      border-radius: 6px;
+      background-image: 
+        linear-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+      background-size: 14px 14px;
     }
 
     /* ESCENARIO PROTAGONISTA: FICHA EVA CON 4 VÉRTICES ARUCO */
@@ -4727,6 +4909,28 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     }
 
+    /* Píldora de Acción dentro de cada pantalla del Stage */
+    .stage-action-pill {
+      position: absolute;
+      bottom: 14px;
+      left: 16px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      z-index: 5;
+    }
+    .pill-indigo { background: #4f46e5; color: #ffffff; }
+    .pill-sky { background: #0284c7; color: #ffffff; }
+    .pill-emerald { background: #059669; color: #ffffff; }
+    .media-container:hover .stage-action-pill {
+      transform: translateX(4px);
+    }
+
     @media (max-width: 640px) {
       .island-topbar {
         gap: 8px;
@@ -4741,9 +4945,37 @@
         padding: 5px 12px;
         font-size: 0.72rem;
       }
+      .hub-top-strip {
+        padding: 12px 14px 0;
+        gap: 8px;
+      }
+      .top-strip-card {
+        flex: 1 1 100%;
+        max-width: 100%;
+        padding: 8px 12px;
+      }
       .cyber-hub-container {
         padding: 24px 14px 30px;
         min-height: calc(100svh - 60px);
+      }
+      .hero-split-layout {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 24px;
+      }
+      .hero-left-content {
+        align-items: center;
+        text-align: center;
+      }
+      .hero-left-content .eva-hero-subtitle {
+        text-align: center;
+      }
+      .hero-right-backdrop {
+        width: 100%;
+        max-width: 320px;
+        transform: scale(0.9);
+        margin-top: -10px;
       }
       .eva-stage-sheet {
         padding: 24px 18px;
