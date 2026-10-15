@@ -4749,6 +4749,10 @@ if (typeof window !== 'undefined') {
   window.toggleSimGrid = toggleSimGrid;
   window.r2State = r2State;
   window.r3State = r3State;
+  window.simState = simState;
+  window.updateSimToolbar = updateSimToolbar;
+  window.renderSimulatedCard = renderSimulatedCard;
+  window.initRama3Builder = initRama3Builder;
   window.resetRama3Builder = resetRama3Builder;
   window.confirmSimulator = confirmSimulator;
 }
