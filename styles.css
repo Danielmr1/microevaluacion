@@ -23,7 +23,7 @@
     /* Cabecera Principal Topbar (Inspiración AIROBOTS / Unitree Go2) */
     header {
       background: transparent;
-      padding: 14px 20px;
+      padding: 10px 16px;
       display: flex;
       justify-content: center;
       position: sticky;
@@ -31,6 +31,21 @@
       z-index: 100;
       border: none;
       width: 100%;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    header.header-dark {
+      background: rgba(11, 15, 25, 0.90) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    header.header-light {
+      background: rgba(248, 250, 252, 0.92) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
     }
 
     .island-topbar {
@@ -82,19 +97,18 @@
       letter-spacing: 0.03em;
     }
 
-    /* Cápsula Oscura Flotante al Centro */
+    /* Cápsula Flotante al Centro */
     .island-capsule {
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: transparent !important;
+      border: none !important;
       border-radius: 9999px;
-      padding: 4px 6px;
+      padding: 0 !important;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.16);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
 
     .island-nav {
@@ -106,29 +120,84 @@
     .island-nav-item {
       background: transparent;
       border: 1px solid transparent;
-      color: #94a3b8;
-      padding: 6px 18px;
+      color: #475569;
+      padding: 6px 16px;
       border-radius: 9999px;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 800;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
+      line-height: 1.2;
       transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .island-nav-item:hover {
-      color: #f8fafc;
-      background: rgba(255, 255, 255, 0.1);
+      color: #0f172a;
+      background: rgba(241, 245, 249, 0.9);
     }
 
     .island-nav-item.active {
-      color: #0f172a;
-      background: #ffffff;
-      border-color: #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 9999px !important;
+      padding: 6px 16px !important;
+      font-size: 0.82rem !important;
+      font-weight: 800 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      white-space: nowrap !important;
+      line-height: 1.2 !important;
+    }
+
+    /* Píldora de Modalidad Seleccionada en la Topbar (Idéntica a INICIO) */
+    .topbar-modality-pill {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 9999px !important;
+      padding: 6px 16px !important;
+      font-size: 0.82rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.02em !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      white-space: nowrap !important;
+      line-height: 1.2 !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .topbar-modality-pill:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 8px 12px !important;
+      }
+      .island-topbar {
+        gap: 8px !important;
+      }
+      .topbar-modality-pill {
+        padding: 5px 10px !important;
+        font-size: 0.75rem !important;
+        max-width: 155px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      .island-nav-item.active {
+        padding: 5px 10px !important;
+        font-size: 0.75rem !important;
+      }
     }
 
     .nav-count-badge {
