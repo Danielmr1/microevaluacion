@@ -765,6 +765,9 @@
       captured_at: new Date().toISOString()
     }).then(row => {
       if (row) console.log('[Resultados] Captura guardada en Supabase con imagen:', studentId, verdict);
+      if (typeof refreshEvaluatedFromResults === 'function' && session.sessionRef) {
+        refreshEvaluatedFromResults(session.sessionRef);
+      }
     }).catch(e => {
       console.warn('[Resultados] No se pudo guardar la captura:', e && e.message);
     });
@@ -2275,6 +2278,8 @@
     setSession,
     setEvaluatedStudents,
     removeEvaluatedStudent,
+    getEvaluatedCount: () => evaluatedStudentIds.size,
+    getEvaluatedStudents: () => Array.from(evaluatedStudentIds),
     onClassroomChanged,
     onEvaluationChanged,
     assignManualStudent,

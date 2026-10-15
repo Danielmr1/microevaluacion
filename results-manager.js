@@ -517,6 +517,9 @@ async function handleDeleteSingleResult(studentId, triggerBtn = null) {
     }
     showToast('🗑️ Resultado eliminado. Alumno listo para volver a escanear.');
     loadAndRenderResultsTable();
+    if (typeof refreshEvaluatedFromResults === 'function' && session.sessionRef) {
+      refreshEvaluatedFromResults(session.sessionRef);
+    }
   } catch (err) {
     console.error('[Delete Result Error]', err);
     showToast('⚠️ No se pudo eliminar el resultado: ' + (err.message || 'error de red'));
@@ -667,6 +670,9 @@ async function handleDeleteAllSessionResults(triggerBtn = null) {
     }
     showToast('🗑️ Sesión reiniciada. Se borraron todos los resultados.');
     loadAndRenderResultsTable();
+    if (typeof refreshEvaluatedFromResults === 'function' && session.sessionRef) {
+      refreshEvaluatedFromResults(session.sessionRef);
+    }
   } catch (err) {
     console.error('[Delete All Results Error]', err);
     showToast('⚠️ No se pudieron borrar los resultados: ' + (err.message || 'error de red'));
