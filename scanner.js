@@ -1135,7 +1135,7 @@
         const sess = ClassroomData.getActiveSession();
         if (!sess) return false;
         const qC = sess.questionCount || (sess.questions ? sess.questions.length : 1);
-        return (sess.branch === 'rama3' && qC <= 8) || (sess.branch === 'rama2' && sess.withGrid === false && qC <= 2 && sess.cardFormat !== 'a5');
+        return (sess.branch === 'rama3' && qC <= 10) || (sess.branch === 'rama2' && sess.withGrid === false && qC <= 2 && sess.cardFormat !== 'a5');
       })();
 
       const cardType = isPortrait ? 'a5_vertical' : (isCardA6 ? 'a6' : 'a5');
@@ -1597,13 +1597,14 @@
     const isOMR = (activeEval && activeEval.type === 'mc') || (activeSession && activeSession.type === 'mc');
 
     try {
+      let isCardPortrait = false;
       if (sheetQuad) {
         // Perspective Warp al tamaño estándar del lienzo, tomado de
         // ROIProcessor para que el warp y las ROIs no puedan desincronizarse.
         // Si la ficha es vertical (A5 portrait: leftH > topW * 1.15), rectificar en 1441 x 2000.
         const topW = Math.hypot(sheetQuad.pTR.x - sheetQuad.pTL.x, sheetQuad.pTR.y - sheetQuad.pTL.y);
         const leftH = Math.hypot(sheetQuad.pBL.x - sheetQuad.pTL.x, sheetQuad.pBL.y - sheetQuad.pTL.y);
-        const isCardPortrait = leftH > topW * 1.15;
+        isCardPortrait = leftH > topW * 1.15;
 
         const baseW = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_WIDTH) || 2000;
         const baseH = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_HEIGHT) || 1441;
@@ -1628,6 +1629,43 @@
         fullWarpCanvas.getContext('2d').drawImage(img, 0, 0);
       }
 
+      // Determinar si la evaluación activa corresponde a ficha A6 y configurar opciones de procesado
+      let qCount = 1;
+      const branch = (activeSession && activeSession.branch) || (activeEval && activeEval.branch) || 'rama1';
+      const withGrid = (activeSession && activeSession.withGrid !== undefined)
+        ? activeSession.withGrid
+        : ((activeEval && activeEval.withGrid !== undefined) ? activeEval.withGrid : true);
+
+      if (activeEval && activeEval.questionCount) {
+        qCount = activeEval.questionCount;
+      } else if (activeSession && activeSession.questionCount) {
+        qCount = activeSession.questionCount;
+      } else if (activeEval && (activeEval.questions && activeEval.questions.length)) {
+        qCount = activeEval.questions.length;
+      } else if (activeSession && (activeSession.questions && activeSession.questions.length)) {
+        qCount = activeSession.questions.length;
+      } else if (activeEval && activeEval.prompt && activeEval.prompt.includes('1.') && activeEval.prompt.includes('2.')) {
+        qCount = 2;
+      } else if (activeSession && activeSession.prompt && activeSession.prompt.includes('1.') && activeSession.prompt.includes('2.')) {
+        qCount = 2;
+      }
+
+      const isA6Card = (activeSession && activeSession.cardFormat === 'a6') || (activeEval && activeEval.cardFormat === 'a6') ||
+        (branch === 'rama3' && qCount <= 10) || (branch === 'rama2' && !withGrid && qCount <= 2 && (activeSession?.cardFormat !== 'a5' && activeEval?.cardFormat !== 'a5'));
+      const gridSize = (activeSession && activeSession.gridSize) || (activeEval && activeEval.gridSize) || 'normal';
+      const cardOrientation = (activeSession && activeSession.cardOrientation) || (activeEval && activeEval.cardOrientation) || (isCardPortrait ? 'vertical' : 'horizontal');
+
+      const procOptions = {
+        branch,
+        withGrid,
+        gridSize,
+        isA6: isA6Card,
+        cardFormat: isA6Card ? 'a6' : (isCardPortrait ? 'a5_vertical' : 'a5'),
+        cardOrientation,
+        isPortrait: isCardPortrait,
+        questionCount: qCount
+      };
+
       // GUARDRAIL 4: LECTURA DEL QR CON TOLERANCIA A FALLOS
       if (!qrText && fullWarpCanvas) {
         // Intento 1: BarcodeDetector nativo sobre lienzo completo
@@ -1647,43 +1685,6 @@
             if (qr) { qrText = qr.data; qrIntento = 2; }
           } catch (e) {}
         }
-
-        // Determinar si la evaluación activa corresponde a ficha A6
-        let qCount = 1;
-        const branch = (activeSession && activeSession.branch) || (activeEval && activeEval.branch) || 'rama1';
-        const withGrid = (activeSession && activeSession.withGrid !== undefined)
-          ? activeSession.withGrid
-          : ((activeEval && activeEval.withGrid !== undefined) ? activeEval.withGrid : true);
-
-        if (activeEval && activeEval.questionCount) {
-          qCount = activeEval.questionCount;
-        } else if (activeSession && activeSession.questionCount) {
-          qCount = activeSession.questionCount;
-        } else if (activeEval && (activeEval.questions && activeEval.questions.length)) {
-          qCount = activeEval.questions.length;
-        } else if (activeSession && (activeSession.questions && activeSession.questions.length)) {
-          qCount = activeSession.questions.length;
-        } else if (activeEval && activeEval.prompt && activeEval.prompt.includes('1.') && activeEval.prompt.includes('2.')) {
-          qCount = 2;
-        } else if (activeSession && activeSession.prompt && activeSession.prompt.includes('1.') && activeSession.prompt.includes('2.')) {
-          qCount = 2;
-        }
-
-        const isA6Card = (activeSession && activeSession.cardFormat === 'a6') || (activeEval && activeEval.cardFormat === 'a6') ||
-          (branch === 'rama3' && qCount <= 8) || (branch === 'rama2' && !withGrid && qCount <= 2 && (activeSession?.cardFormat !== 'a5' && activeEval?.cardFormat !== 'a5'));
-        const gridSize = (activeSession && activeSession.gridSize) || (activeEval && activeEval.gridSize) || 'normal';
-        const cardOrientation = (activeSession && activeSession.cardOrientation) || (activeEval && activeEval.cardOrientation) || (isCardPortrait ? 'vertical' : 'horizontal');
-
-        const procOptions = {
-          branch,
-          withGrid,
-          gridSize,
-          isA6: isA6Card,
-          cardFormat: isA6Card ? 'a6' : 'a5',
-          cardOrientation,
-          isPortrait: isCardPortrait,
-          questionCount: qCount
-        };
 
         // Intento 3 (Respaldo): Extraer ROI de QR específica y aplicar contraste si no se leyó
         if (!qrText && typeof ROIProcessor !== 'undefined') {
