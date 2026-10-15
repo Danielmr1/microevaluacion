@@ -1275,33 +1275,36 @@ function estadoParaEscanear() {
       detalle: 'El salón de esta sesión ya no existe. Configurá la sesión de nuevo en la pestaña 1.' };
   }
 
-  const ev = ClassroomData.getEvaluation(session.evalId);
+  const ev = (typeof ClassroomData !== 'undefined')
+    ? (ClassroomData.getEvaluation(session.evalId) || (session.questions && session.questions.length > 0 ? session : null))
+    : null;
+
   if (!ev) {
     return { ok: false, motivo: 'sin-evaluacion', puedeGenerar: false,
       detalle: 'Esta sesión apunta a una evaluación que ya no está en el banco. Elige otra en la pestaña 1.' };
   }
 
-  // El grado del salón y el de la pregunta tienen que coincidir: la rúbrica
-  // se generó con el grado de la pregunta, así que corregir con otra
-  // combinación sería juzgar con el criterio de otro grado.
+  // ── MODO OPCIÓN MÚLTIPLE (OMR) vs RESPUESTA LIBRE (IA) ──
+  // Las evaluaciones de Opción Múltiple (1P, 2P o Cartillas OMR) NO requieren rúbrica por IA.
+  // Su corrección es directa y determinística leyendo las burbujas contra la clave de respuestas.
+  const isOMR = (ev && ev.type === 'mc') ||
+                (session && session.type === 'mc') ||
+                (session && session.branch === 'rama3') ||
+                (ev && ev.branch === 'rama3') ||
+                (ev && ev.questionCount) ||
+                (session && session.questionCount) ||
+                (ev && Array.isArray(ev.questions) && ev.questions.length > 0) ||
+                (session && Array.isArray(session.questions) && session.questions.length > 0);
+
+  // El grado del salón y el de la pregunta tienen que coincidir en Respuesta Libre (IA)
   const gCls = claveDeGrado({ stage: cls.gradeStage, level: cls.gradeLevel });
   const gEv = claveDeGrado({ stage: ev.gradeStage, level: ev.gradeLevel });
-  if (gCls && gEv && gCls !== gEv) {
+  if (gCls && gEv && gCls !== gEv && !isOMR) {
     return { ok: false, motivo: 'grado-distinto', puedeGenerar: false,
       detalle: 'Esta pregunta es de ' + (ev.gradeText || gEv) + ' y el salón es de ' +
                (ClassroomData.getClassroomGrade(session.classroomId) || gCls) +
                '. Elige una pregunta del grado del salón.' };
   }
-
-  // ── MODO OPCIÓN MÚLTIPLE (OMR) vs RESPUESTA LIBRE (IA) ──
-  // Las evaluaciones de Opción Múltiple (1P o 2P con burbujas OMR) NO requieren rúbrica por IA.
-  // Su corrección es directa y determinística leyendo las burbujas contra la clave de respuestas.
-  const isOMR = (ev && ev.type === 'mc') ||
-                (session && session.type === 'mc') ||
-                (ev && ev.questionCount) ||
-                (session && session.questionCount) ||
-                (ev && Array.isArray(ev.questions) && ev.questions.length > 0) ||
-                (session && Array.isArray(session.questions) && session.questions.length > 0);
 
   if (!isOMR && !ev.rubric) {
     return { ok: false, motivo: 'sin-rubrica', puedeGenerar: true,

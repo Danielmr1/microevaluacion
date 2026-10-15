@@ -113,6 +113,7 @@
   //
   // El banco se llena solo, con las preguntas que el docente va creando.
   const EVALUATIONS = {};
+  const SESSION_EVALUATIONS = {};
 
   // Cargar evaluaciones guardadas previamente en localStorage.
   //
@@ -451,7 +452,51 @@
    * verifican.
    */
   function getEvaluation(evalId) {
-    return EVALUATIONS[evalId] || null;
+    if (!evalId) return null;
+    if (EVALUATIONS[evalId]) return EVALUATIONS[evalId];
+    if (SESSION_EVALUATIONS[evalId]) return SESSION_EVALUATIONS[evalId];
+
+    // Fallback con la sesión activa actual en memoria o almacenamiento
+    const active = getActiveSession();
+    if (active && (active.evalId === evalId || active.id === evalId || active.sessionRef === evalId)) {
+      return {
+        id: evalId,
+        title: active.title || 'Evaluación de Sesión',
+        prompt: active.prompt || '',
+        expectedAnswer: active.expectedAnswer || '',
+        type: active.type || 'mc',
+        branch: active.branch || 'rama3',
+        questionCount: active.questionCount || (active.questions ? active.questions.length : 1),
+        questions: active.questions || [],
+        gradeStage: active.gradeStage,
+        gradeLevel: active.gradeLevel,
+        gradeText: active.gradeText,
+        correctionMode: active.correctionMode || 'quick'
+      };
+    }
+
+    // Fallback con sesiones guardadas
+    const saved = getSavedSessions();
+    const foundSess = saved.find(s => s && (s.evalId === evalId || s.id === evalId || (s.wizardEval && s.wizardEval.id === evalId)));
+    if (foundSess) {
+      const w = foundSess.wizardEval || foundSess;
+      return {
+        id: evalId,
+        title: w.title || foundSess.title,
+        prompt: w.prompt || foundSess.prompt,
+        expectedAnswer: w.expectedAnswer || foundSess.expectedAnswer,
+        type: w.type || foundSess.type || 'mc',
+        branch: w.branch || foundSess.branch || 'rama3',
+        questionCount: w.questionCount || foundSess.questionCount,
+        questions: w.questions || foundSess.questions || [],
+        gradeStage: w.gradeStage || foundSess.gradeStage,
+        gradeLevel: w.gradeLevel || foundSess.gradeLevel,
+        gradeText: w.gradeText || foundSess.gradeText,
+        correctionMode: foundSess.correctionMode || 'quick'
+      };
+    }
+
+    return null;
   }
 
   function getStudent(classroomId, studentId) {
@@ -561,6 +606,7 @@
     // REGLA: Las Cartillas OMR (Rama 3) son plantillas de sesión para escanear burbujas,
     // NO son preguntas de banco. Se devuelven en memoria para la sesión pero NUNCA se guardan en el banco.
     if (evalData.branch === 'rama3' || String(id).startsWith('eval_r3_') || String(promptLimpio).startsWith('Cartilla de respuestas')) {
+      SESSION_EVALUATIONS[id] = newEval;
       return newEval;
     }
 
