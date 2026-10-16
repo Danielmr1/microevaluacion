@@ -4083,7 +4083,8 @@ let r3State = {
   count: 10,
   mode: 'bank', // 'bank' | 'keys'
   activePage: 1, // 1 | 2
-  keys: Array(20).fill('A'),
+  soloKeys: Array(20).fill(null), // Modo A: Solo Cartilla (100% independiente, arranca sin nada seleccionado)
+  keys: Array(20).fill('A'),     // Modo B: Evaluación y Cartillas
   bankQuestions: Array(20).fill(null)
 };
 
@@ -4093,6 +4094,7 @@ function resetRama3Builder() {
   r3State.count = 10;
   r3State.mode = 'bank';
   r3State.activePage = 1;
+  r3State.soloKeys = Array(20).fill(null);
   r3State.keys = Array(20).fill('A');
   r3State.bankQuestions = Array(20).fill(null);
   r3ActiveKeyIdx = 0;
@@ -4230,39 +4232,33 @@ function onRama3BubbleClick(event, qIdx, letter) {
     try { event.stopPropagation(); } catch (e) {}
   }
   if (qIdx >= 0 && qIdx < r3State.count) {
-    r3State.keys[qIdx] = letter;
+    r3State.soloKeys[qIdx] = letter;
     if (qIdx < r3State.count - 1) {
       r3ActiveKeyIdx = qIdx + 1;
     } else {
       r3ActiveKeyIdx = qIdx;
     }
     renderRama3KeysCartilla();
-    if (r3State.mode === 'bank') {
-      renderRama3Exam();
-      renderRama3CartillaPreview();
-    }
   }
 }
 
 function onRama3KeypadClick(letter) {
   if (r3ActiveKeyIdx >= 0 && r3ActiveKeyIdx < r3State.count) {
-    r3State.keys[r3ActiveKeyIdx] = letter;
+    r3State.soloKeys[r3ActiveKeyIdx] = letter;
     if (r3ActiveKeyIdx < r3State.count - 1) {
       r3ActiveKeyIdx++;
     }
     renderRama3KeysCartilla();
-    if (r3State.mode === 'bank') {
-      renderRama3Exam();
-      renderRama3CartillaPreview();
-    }
   }
 }
 
 function setRama3Key(qIdx, key) {
   if (qIdx >= 0 && qIdx < 20) {
-    r3State.keys[qIdx] = key;
-    renderRama3KeysCartilla();
-    if (r3State.mode === 'bank') {
+    if (r3State.mode === 'keys') {
+      r3State.soloKeys[qIdx] = key;
+      renderRama3KeysCartilla();
+    } else {
+      r3State.keys[qIdx] = key;
       renderRama3Exam();
       renderRama3CartillaPreview();
     }
@@ -4311,7 +4307,7 @@ function renderRama3KeysCartilla() {
     activeRowIdx: r3ActiveKeyIdx,
     questions: Array.from({ length: r3State.count }, (_, i) => ({
       num: i + 1,
-      correct: r3State.keys[i] || 'A'
+      correct: r3State.soloKeys[i] || null
     }))
   };
 
@@ -4343,11 +4339,11 @@ function renderRama3KeysCartilla() {
   if (labelEl) {
     labelEl.innerHTML = `✏️ Marcando Pregunta <b>${String(r3ActiveKeyIdx + 1).padStart(2, '0')}</b> de <b>${r3State.count}</b>:`;
   }
-  const currentKey = r3State.keys[r3ActiveKeyIdx] || 'A';
+  const currentKey = r3State.soloKeys[r3ActiveKeyIdx] || null;
   ['A', 'B', 'C', 'D'].forEach(letter => {
     const btn = document.getElementById(`btn-keypad-${letter}`);
     if (btn) {
-      const isSel = (letter === currentKey);
+      const isSel = (currentKey !== null && letter === currentKey);
       btn.classList.toggle('active', isSel);
       if (isSel) {
         btn.style.borderColor = '#0284c7';
@@ -4698,6 +4694,23 @@ function prepareRama3Evaluation() {
     return null;
   }
 
+  // Si estamos en Modo A (Solo Cartilla):
+  // Validar que TODAS las preguntas desde 1 hasta r3State.count tengan su alternativa seleccionada.
+  if (r3State.mode === 'keys') {
+    for (let i = 0; i < r3State.count; i++) {
+      if (!r3State.soloKeys[i]) {
+        if (typeof showToast === 'function') {
+          showToast(`⚠️ Falta seleccionar la alternativa de la Pregunta ${i + 1}.`);
+        }
+        r3ActiveKeyIdx = i;
+        renderRama3KeysCartilla();
+        const keypadEl = document.getElementById('r3-keypad-panel');
+        if (keypadEl) keypadEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return null;
+      }
+    }
+  }
+
   // Si estamos en Modo B (Evaluación y Cartillas / Banco):
   // Validar que TODAS las preguntas desde 1 hasta r3State.count estén configuradas y seleccionadas del banco.
   if (r3State.mode === 'bank') {
@@ -4720,6 +4733,7 @@ function prepareRama3Evaluation() {
     }
   }
 
+  const isBankMode = (r3State.mode === 'bank');
   const questions = [];
   let hasRealQuestions = false;
   for (let i = 0; i < r3State.count; i++) {
@@ -4727,17 +4741,20 @@ function prepareRama3Evaluation() {
     const isReal = !!(qObj && (qObj.options || (qObj.prompt && !/^Pregunta\s+\d+$/i.test(qObj.prompt.trim()))));
     if (isReal) hasRealQuestions = true;
 
+    const assignedCorrect = isBankMode
+      ? (r3State.keys[i] || qObj?.correct || 'A')
+      : (r3State.soloKeys[i] || 'A');
+
     questions.push({
       id: qObj?.id || ('r3_q' + (i + 1)),
       num: i + 1,
       prompt: qObj?.prompt || `Pregunta ${i + 1}`,
       options: qObj?.options || { A: 'A', B: 'B', C: 'C', D: 'D' },
-      correct: r3State.keys[i] || qObj?.correct || 'A'
+      correct: assignedCorrect
     });
   }
 
   const g = (typeof gradoDelSalon === 'function') ? gradoDelSalon(wizardClassroomId) : null;
-  const isBankMode = (r3State.mode === 'bank');
 
   wizardEval = {
     id: 'eval_r3_' + Date.now(),
@@ -4754,7 +4771,9 @@ function prepareRama3Evaluation() {
     prompt: isBankMode
       ? questions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join(' | ')
       : `Cartilla de respuestas de ${r3State.count} preguntas`,
-    expectedAnswer: r3State.keys.slice(0, r3State.count).join(' '),
+    expectedAnswer: isBankMode
+      ? r3State.keys.slice(0, r3State.count).join(' ')
+      : r3State.soloKeys.slice(0, r3State.count).join(' '),
     correctionMode: 'quick',
     gradeStage: g?.stage,
     gradeLevel: g?.level,
