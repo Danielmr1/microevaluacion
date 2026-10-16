@@ -4121,14 +4121,16 @@ function updateRama3ControlsUI() {
   const countBtns = document.querySelectorAll('.btn-r3-qcount');
   countBtns.forEach(btn => {
     const val = parseInt(btn.textContent.trim(), 10);
-    if (val === r3State.count) {
+    const isActive = (val === r3State.count);
+    btn.classList.toggle('active', isActive);
+    if (isActive) {
       btn.style.borderColor = '#0284c7';
-      btn.style.background = 'rgba(2,132,199,0.25)';
-      btn.style.color = '#38bdf8';
+      btn.style.background = '#e0f2fe';
+      btn.style.color = '#0284c7';
     } else {
-      btn.style.borderColor = '#334155';
-      btn.style.background = '#1e293b';
-      btn.style.color = '#94a3b8';
+      btn.style.borderColor = '#cbd5e1';
+      btn.style.background = '#ffffff';
+      btn.style.color = '#475569';
     }
   });
 
@@ -4141,9 +4143,9 @@ function updateRama3ControlsUI() {
     } else {
       layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
     }
-    layoutBadge.style.color = '#38bdf8';
-    layoutBadge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
-    layoutBadge.style.background = 'rgba(2, 132, 199, 0.12)';
+    layoutBadge.style.color = '#0369a1';
+    layoutBadge.style.borderColor = '#bae6fd';
+    layoutBadge.style.background = '#f0f9ff';
   }
 
   const btnKeys = document.getElementById('btn-r3-mode-keys');
@@ -4153,21 +4155,25 @@ function updateRama3ControlsUI() {
 
   if (btnKeys && btnBank) {
     if (r3State.mode === 'keys') {
+      btnKeys.classList.add('active');
+      btnBank.classList.remove('active');
       btnKeys.style.borderColor = '#0284c7';
-      btnKeys.style.background = 'rgba(2,132,199,0.2)';
-      btnKeys.style.color = '#38bdf8';
-      btnBank.style.borderColor = '#334155';
-      btnBank.style.background = '#1e293b';
-      btnBank.style.color = '#94a3b8';
+      btnKeys.style.background = '#e0f2fe';
+      btnKeys.style.color = '#0284c7';
+      btnBank.style.borderColor = '#cbd5e1';
+      btnBank.style.background = '#ffffff';
+      btnBank.style.color = '#64748b';
       if (wrapKeys) wrapKeys.style.display = 'block';
       if (wrapBank) wrapBank.style.display = 'none';
     } else {
+      btnBank.classList.add('active');
+      btnKeys.classList.remove('active');
       btnBank.style.borderColor = '#0284c7';
-      btnBank.style.background = 'rgba(2,132,199,0.2)';
-      btnBank.style.color = '#38bdf8';
-      btnKeys.style.borderColor = '#334155';
-      btnKeys.style.background = '#1e293b';
-      btnKeys.style.color = '#94a3b8';
+      btnBank.style.background = '#e0f2fe';
+      btnBank.style.color = '#0284c7';
+      btnKeys.style.borderColor = '#cbd5e1';
+      btnKeys.style.background = '#ffffff';
+      btnKeys.style.color = '#64748b';
       if (wrapKeys) wrapKeys.style.display = 'none';
       if (wrapBank) wrapBank.style.display = 'block';
     }

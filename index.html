@@ -53,13 +53,13 @@
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.50"></script>
-  <script src="question-bank.js?v=3.2.50"></script>
+  <script src="question-bank.js?v=3.2.53"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
   <script src="card-cartilla.js?v=3.2.50"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.52">
+  <link rel="stylesheet" href="styles.css?v=3.2.53">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -264,14 +264,14 @@
       color: #0f172a !important;
     }
     .btn-r3-qcount {
-      background: #ffffff !important;
-      border: 1px solid #cbd5e1 !important;
-      color: #475569 !important;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
     }
     .btn-r3-qcount.active {
       background: #e0f2fe !important;
       border-color: #0284c7 !important;
-      color: #0369a1 !important;
+      color: #0284c7 !important;
     }
 
     #step-new-form > div > div {
@@ -370,7 +370,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.52</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.53</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -805,11 +805,6 @@
           <label style="font-size:0.74rem; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
             2 · Preguntas de la Evaluación
           </label>
-          <div id="branch-badge-indicator" style="display:inline-flex; align-items:center; gap:8px;">
-            <span id="branch-badge-label" style="background:#eef2ff; border:1.5px solid #818cf8; color:#4338ca; font-size:0.74rem; font-weight:800; padding:4px 10px; border-radius:8px;">
-              🔬 Formativa con IA
-            </span>
-          </div>
         </div>
 
         <!-- ── SIMULADOR INTERACTIVO DE FICHAS (WYSIWYG: RAMA 1 Y RAMA 2) ── -->
@@ -871,11 +866,11 @@
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
             <span style="font-size:0.75rem; color:#475569; font-weight:700;">Cantidad de preguntas:</span>
             <div style="display:flex; gap:4px; flex-wrap:wrap;">
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(5)" style="padding:4px 9px; border-radius:6px; border:1px solid #cbd5e1; background:#ffffff; color:#475569; font-size:0.75rem; font-weight:800; cursor:pointer;">5</button>
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(6)" style="padding:4px 9px; border-radius:6px; border:1px solid #cbd5e1; background:#ffffff; color:#475569; font-size:0.75rem; font-weight:800; cursor:pointer;">6</button>
-              <button type="button" class="btn-r3-qcount active" onclick="setRama3Count(10)" style="padding:4px 9px; border-radius:6px; border:1px solid #0284c7; background:#e0f2fe; color:#0284c7; font-size:0.75rem; font-weight:800; cursor:pointer;">10</button>
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(15)" style="padding:4px 9px; border-radius:6px; border:1px solid #cbd5e1; background:#ffffff; color:#475569; font-size:0.75rem; font-weight:800; cursor:pointer;">15</button>
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(20)" style="padding:4px 9px; border-radius:6px; border:1px solid #cbd5e1; background:#ffffff; color:#475569; font-size:0.75rem; font-weight:800; cursor:pointer;">20</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(5)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">5</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(6)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">6</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(10)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">10</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(15)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">15</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(20)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">20</button>
             </div>
           </div>
 
