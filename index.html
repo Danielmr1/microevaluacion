@@ -43,7 +43,7 @@
   <script src="roi-processor.js?v=3.2.50"></script>
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
-  <script src="classroom-manager.js?v=3.2.50"></script>
+  <script src="classroom-manager.js?v=3.2.61"></script>
   <script src="question-bank.js?v=3.2.61"></script>
   <script src="card-simulator.js?v=3.2.61"></script>
   <script src="card-exam-builder.js?v=3.2.61"></script>
@@ -1132,7 +1132,7 @@
   <!-- VISTA: GESTIÓN DE SALONES Y NÓMINAS (FLUJO 2)              -->
   <!-- ========================================================= -->
   <div id="view-classrooms" class="view-content" style="padding: 0;">
-    <div style="max-width: 760px; margin: 0 auto; width: 100%; padding: 18px 16px 40px; display: flex; flex-direction: column; gap: 20px;">
+    <div class="mgr-content-wrapper" style="max-width: 760px; margin: 0 auto; width: 100%; padding: 18px 16px 120px; display: flex; flex-direction: column; gap: 20px;">
 
       <!-- Banner de advertencia: Evaluación en curso -->
       <div id="mgr-active-session-warning" style="display: none; background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 12px; padding: 14px 16px; color: #92400e; font-size: 0.82rem; line-height: 1.4; align-items: center; gap: 10px;">
@@ -1142,8 +1142,8 @@
         </div>
       </div>
 
-      <!-- Panel: Salones Existentes -->
-      <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px rgba(15,23,42,0.05);">
+      <!-- Panel 1: Salones Registrados (Crossfade Panel 1) -->
+      <div id="manager-view-registered-panel" class="mgr-crossfade-panel is-active" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px rgba(15,23,42,0.05);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
           <h3 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
             <span>🏫</span> Salones Registrados
@@ -1179,8 +1179,8 @@
         </div>
       </div>
 
-      <!-- Panel: Alta de Nuevo Salón -->
-      <div id="manager-add-classroom-panel" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px rgba(15,23,42,0.05);">
+      <!-- Panel 2: Alta de Nuevo Salón (Crossfade Panel 2) -->
+      <div id="manager-add-classroom-panel" class="mgr-crossfade-panel" style="display: none; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px rgba(15,23,42,0.05);">
         <h3 style="margin: 0 0 14px; font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
           <span>➕</span> Agregar Nuevo Salón
         </h3>
@@ -1302,6 +1302,35 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Barra Fija Flotante (Sticky Bottom Dock estilo Leo Cussen con marcado contraste) -->
+      <div class="mgr-bottom-dock-wrap" id="mgr-bottom-dock">
+        <div class="mgr-dock-inner" role="tablist" aria-label="Navegación de Salones">
+          <!-- Tarjeta 1: Salones Registrados (Activa por defecto) -->
+          <button type="button" class="mgr-dock-card active" id="btn-dock-registered" onclick="switchClassroomManagerTab('registered')" role="tab" aria-selected="true" title="Ver salones registrados y nómina de alumnos">
+            <div class="mgr-dock-card-top">
+              <span class="mgr-dock-tag">01 · REGISTRADOS</span>
+              <span class="mgr-dock-badge" id="dock-registered-count">0 salones</span>
+            </div>
+            <div class="mgr-dock-card-title">
+              <span>🏫</span>
+              <span>Salones Registrados</span>
+            </div>
+          </button>
+
+          <!-- Tarjeta 2: Agregar Nuevo Salón (Inactiva por defecto) -->
+          <button type="button" class="mgr-dock-card" id="btn-dock-add" onclick="switchClassroomManagerTab('add')" role="tab" aria-selected="false" title="Registrar un nuevo salón por Excel o a mano">
+            <div class="mgr-dock-card-top">
+              <span class="mgr-dock-tag">02 · ALTA</span>
+              <span class="mgr-dock-badge badge-emerald">Nuevo</span>
+            </div>
+            <div class="mgr-dock-card-title">
+              <span>➕</span>
+              <span>Agregar Nuevo Salón</span>
+            </div>
+          </button>
+        </div>
       </div>
 
     </div>

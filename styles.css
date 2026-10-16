@@ -5614,4 +5614,197 @@
       box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35) !important;
     }
 
+    /* =============================================================================
+       MÓDULO SALONES Y ALUMNOS: STICKY BOTTOM DOCK Y CROSSFADE DE PANELES
+       ============================================================================= */
+
+    #view-classrooms .mgr-content-wrapper {
+      padding-bottom: 120px !important;
+    }
+
+    .mgr-bottom-dock-wrap {
+      position: sticky;
+      bottom: 16px;
+      z-index: 85;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      margin-top: 24px;
+      padding: 0 16px;
+      box-sizing: border-box;
+    }
+
+    .mgr-dock-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 640px;
+      background: rgba(248, 250, 252, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 8px;
+      border-radius: 20px;
+      border: 1.5px solid rgba(203, 213, 225, 0.95);
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
+      pointer-events: auto;
+    }
+
+    .mgr-dock-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: left;
+      border: 1.5px solid #cbd5e1;
+      background: #f1f5f9;
+      color: #64748b;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mgr-dock-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    .mgr-dock-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .mgr-dock-tag {
+      font-size: 0.64rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .mgr-dock-badge {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 8px;
+      line-height: 1.2;
+    }
+
+    /* ── MARCADÍSIMO CONTRASTE ENTRE TARJETA ACTIVA E INACTIVA ── */
+
+    /* 1. Tarjeta Inactiva: atenuada, fondo gris pizarra claro, sin elevación */
+    .mgr-dock-card:not(.active) {
+      background: #e2e8f0 !important;
+      border-color: #cbd5e1 !important;
+      color: #64748b !important;
+      box-shadow: none !important;
+      opacity: 0.85;
+    }
+    .mgr-dock-card:not(.active):hover:not(.is-disabled) {
+      background: #ffffff !important;
+      border-color: #94a3b8 !important;
+      color: #0f172a !important;
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+    .mgr-dock-card:not(.active) .mgr-dock-tag {
+      color: #64748b;
+    }
+    .mgr-dock-card:not(.active) .mgr-dock-badge {
+      background: #cbd5e1;
+      color: #475569;
+    }
+    .mgr-dock-card:not(.active) .mgr-dock-card-title {
+      color: #475569;
+    }
+
+    /* 2. Tarjeta Activa: resalta fuertemente con fondo blanco brillante, borde azul rey y sombra */
+    .mgr-dock-card.active {
+      background: #ffffff !important;
+      border: 2px solid #2563eb !important;
+      color: #0f172a !important;
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.22), 0 1px 3px rgba(37, 99, 235, 0.12) !important;
+      transform: translateY(-2px);
+      opacity: 1 !important;
+    }
+    .mgr-dock-card.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3.5px;
+      background: #2563eb;
+      border-radius: 3px 3px 0 0;
+    }
+    .mgr-dock-card.active .mgr-dock-tag {
+      color: #2563eb;
+    }
+    .mgr-dock-card.active .mgr-dock-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .mgr-dock-card.active .mgr-dock-badge.badge-emerald {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    .mgr-dock-card.active .mgr-dock-card-title {
+      color: #0f172a;
+    }
+
+    .mgr-dock-card.is-disabled {
+      opacity: 0.45 !important;
+      cursor: not-allowed !important;
+      filter: grayscale(0.8);
+    }
+
+    /* ── ANIMACIÓN DE FUNDIDO CRUZADO (CROSSFADE) ── */
+    .mgr-crossfade-panel {
+      transition: opacity 0.20s cubic-bezier(0.16, 1, 0.3, 1), transform 0.20s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .mgr-crossfade-panel.is-anim-out {
+      opacity: 0 !important;
+      transform: translateY(-8px) scale(0.995) !important;
+      pointer-events: none;
+    }
+    .mgr-crossfade-panel.is-anim-in-init {
+      opacity: 0 !important;
+      transform: translateY(8px) scale(0.995) !important;
+    }
+    .mgr-crossfade-panel.is-active {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+    }
+
+    @media (max-width: 640px) {
+      .mgr-dock-inner {
+        gap: 8px;
+        padding: 6px;
+        border-radius: 16px;
+      }
+      .mgr-dock-card {
+        padding: 8px 10px;
+      }
+      .mgr-dock-card-title {
+        font-size: 0.78rem;
+        gap: 6px;
+      }
+      .mgr-dock-tag {
+        font-size: 0.58rem;
+      }
+    }
+
 

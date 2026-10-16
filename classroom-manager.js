@@ -18,21 +18,124 @@
 // =============================================================================
 
 /* ── GESTOR DE SALONES (FLUJO 2) ── */
+let currentManagerViewTab = 'registered'; // 'registered' | 'add'
+let isManagerCrossfadeRunning = false;
+
+function switchClassroomManagerTab(targetTab) {
+  if (isManagerCrossfadeRunning) return;
+  if (!targetTab) targetTab = 'registered';
+
+  const panelReg = document.getElementById('manager-view-registered-panel');
+  const panelAdd = document.getElementById('manager-add-classroom-panel');
+  const btnReg = document.getElementById('btn-dock-registered');
+  const btnAdd = document.getElementById('btn-dock-add');
+
+  if (!panelReg || !panelAdd) return;
+
+  const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+  const isSessionLocked = !!(session && session.classroomId);
+  if (targetTab === 'add' && isSessionLocked) {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Hay una evaluación en marcha. Finaliza o reinicia la sesión antes de agregar salones.');
+    }
+    return;
+  }
+
+  if (currentManagerViewTab === targetTab && 
+      ((targetTab === 'registered' && panelReg.style.display !== 'none') || 
+       (targetTab === 'add' && panelAdd.style.display !== 'none'))) {
+    return;
+  }
+
+  isManagerCrossfadeRunning = true;
+  currentManagerViewTab = targetTab;
+
+  // Actualizar estilos activos de inmediato para feedback instantáneo
+  if (btnReg) {
+    btnReg.classList.toggle('active', targetTab === 'registered');
+    btnReg.setAttribute('aria-selected', targetTab === 'registered');
+  }
+  if (btnAdd) {
+    btnAdd.classList.toggle('active', targetTab === 'add');
+    btnAdd.setAttribute('aria-selected', targetTab === 'add');
+  }
+
+  const leavingPanel = (targetTab === 'registered') ? panelAdd : panelReg;
+  const enteringPanel = (targetTab === 'registered') ? panelReg : panelAdd;
+
+  // Fase 1: Desvanecimiento de salida (Fade-out suave)
+  leavingPanel.classList.remove('is-active', 'is-anim-in-init');
+  leavingPanel.classList.add('is-anim-out');
+
+  setTimeout(() => {
+    leavingPanel.style.display = 'none';
+    leavingPanel.classList.remove('is-anim-out');
+
+    // Fase 2: Preparar panel entrante con estado inicial transparente
+    enteringPanel.style.display = 'block';
+    enteringPanel.classList.remove('is-active');
+    enteringPanel.classList.add('is-anim-in-init');
+
+    void enteringPanel.offsetHeight; // Forzar reflow
+
+    // Fase 3: Desvanecimiento de entrada (Fade-in suave)
+    requestAnimationFrame(() => {
+      enteringPanel.classList.remove('is-anim-in-init');
+      enteringPanel.classList.add('is-active');
+
+      setTimeout(() => {
+        isManagerCrossfadeRunning = false;
+      }, 220);
+    });
+  }, 190);
+}
+
 function renderClassroomManager(selectedClassId = null) {
   const sel = document.getElementById('manager-classroom-select');
   const countEl = document.getElementById('manager-classrooms-count');
   const warnActive = document.getElementById('mgr-active-session-warning');
   const panelAdd = document.getElementById('manager-add-classroom-panel');
+  const panelReg = document.getElementById('manager-view-registered-panel');
   const session = ClassroomData.getActiveSession();
   const isSessionLocked = !!(session && session.classroomId);
 
   if (warnActive) warnActive.style.display = isSessionLocked ? 'flex' : 'none';
-  if (panelAdd) panelAdd.style.display = isSessionLocked ? 'none' : 'block';
-
-  if (!sel) return;
 
   const list = ClassroomData.getClassroomList();
   if (countEl) countEl.textContent = `${list.length} salón${list.length === 1 ? '' : 'es'}`;
+
+  // Actualizar contador en la tarjeta del dock
+  const dockCountEl = document.getElementById('dock-registered-count');
+  if (dockCountEl) dockCountEl.textContent = `${list.length} salón${list.length === 1 ? '' : 'es'}`;
+
+  const btnDockAdd = document.getElementById('btn-dock-add');
+  if (btnDockAdd) {
+    btnDockAdd.classList.toggle('is-disabled', isSessionLocked);
+    btnDockAdd.title = isSessionLocked ? 'Bloqueado durante evaluación activa' : 'Registrar un nuevo salón por Excel o a mano';
+  }
+
+  // Estado del crossfade: asegurar visibilidad correcta del panel activo
+  if (panelReg && currentManagerViewTab === 'registered') {
+    panelReg.style.display = 'block';
+    panelReg.classList.add('is-active');
+    if (panelAdd) panelAdd.style.display = 'none';
+  } else if (panelAdd && currentManagerViewTab === 'add' && !isSessionLocked) {
+    panelAdd.style.display = 'block';
+    panelAdd.classList.add('is-active');
+    if (panelReg) panelReg.style.display = 'none';
+  } else {
+    currentManagerViewTab = 'registered';
+    if (panelReg) {
+      panelReg.style.display = 'block';
+      panelReg.classList.add('is-active');
+    }
+    if (panelAdd) panelAdd.style.display = 'none';
+    const btnDockReg = document.getElementById('btn-dock-registered');
+    if (btnDockReg) btnDockReg.classList.add('active');
+    if (btnDockAdd) btnDockAdd.classList.remove('active');
+  }
+
+  if (!sel) return;
 
   const previousVal = selectedClassId || sel.value;
   sel.innerHTML = '<option value="">— Elige un salón para ver sus alumnos —</option>';
@@ -648,6 +751,7 @@ async function handleCreateClassroomManualFromManager() {
       renderClassroomSelect();
     }
     renderClassroomManager(newClassroomId);
+    switchClassroomManagerTab('registered');
 
     showToast(`✅ Salón "${name}" creado con éxito con ${students.length} alumnos`);
   } catch (err) {
@@ -918,6 +1022,7 @@ function toggleManualClassroomForm(forzar, titulo) {
 function prefillManualClassroomForm(nombre, students) {
   const isManagerActive = document.getElementById('view-classrooms')?.classList.contains('active');
   if (isManagerActive) {
+    switchClassroomManagerTab('add');
     switchManagerCreateTab('manual');
     const mgrName = document.getElementById('mgr-manual-classroom-name');
     if (mgrName) mgrName.value = nombre || '';
@@ -1303,4 +1408,8 @@ async function handleExcelImport(input) {
     if (statusEl) { statusEl.textContent = '❌ Archivo inválido o error al procesar'; statusEl.style.color = '#f87171'; }
   }
   input.value = '';  // Resetear el input para permitir reimportar el mismo archivo
+}
+
+if (typeof window !== 'undefined') {
+  window.switchClassroomManagerTab = switchClassroomManagerTab;
 }
