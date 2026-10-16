@@ -4118,8 +4118,8 @@
       max-width: 1040px;
       margin: 0 auto;
       width: 100%;
-      min-height: calc(100vh - 120px);
-      padding: 24px 24px 40px;
+      min-height: 75vh;
+      padding: 20px 24px 30px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -4130,8 +4130,8 @@
     .hero-center-stage {
       position: relative;
       width: 100%;
-      max-width: 860px;
-      min-height: 380px;
+      max-width: 960px;
+      min-height: 440px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4144,7 +4144,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       width: 100%;
-      max-width: 540px;
+      max-width: 780px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -4154,14 +4154,14 @@
 
     .ghost-stage-sheet {
       width: 100%;
-      max-width: 500px;
-      min-height: 290px;
-      padding: 24px 22px;
+      max-width: 720px;
+      min-height: 400px;
+      padding: 34px 32px;
       opacity: 0.28; /* Transparencia estética para que funcione como marca de agua viva */
       transform: perspective(900px) rotateY(-4deg) rotateX(2deg);
       background: rgba(255, 255, 255, 0.72);
       border: 1.5px solid rgba(15, 23, 42, 0.25);
-      border-radius: 16px;
+      border-radius: 18px;
       position: relative;
       overflow: hidden;
       box-shadow: 0 20px 45px rgba(2, 132, 199, 0.08);
@@ -4181,7 +4181,7 @@
     }
 
     .hero-front-content .eva-hero-title {
-      font-size: clamp(3.2rem, 7.5vw, 5.2rem);
+      font-size: clamp(4.4rem, 9.5vw, 6.4rem);
       font-weight: 950;
       color: #0f172a;
       letter-spacing: -0.04em;
@@ -4191,11 +4191,11 @@
     }
 
     .hero-front-content .eva-hero-subtitle {
-      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      font-size: clamp(1.1rem, 2.2vw, 1.35rem);
       font-weight: 650;
       color: #1e293b;
       margin: 0;
-      max-width: 520px;
+      max-width: 620px;
       line-height: 1.35;
       text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9);
     }
@@ -4229,35 +4229,35 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       margin-top: 10px;
     }
     .wireframe-qr {
-      width: 28px;
-      height: 28px;
+      width: 36px;
+      height: 36px;
       background: rgba(15, 23, 42, 0.25);
-      border-radius: 4px;
+      border-radius: 6px;
     }
     .wireframe-lines {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
     }
     .wf-line {
-      height: 6px;
-      border-radius: 3px;
+      height: 7px;
+      border-radius: 4px;
       background: rgba(15, 23, 42, 0.15);
     }
     .l-long { width: 85%; }
     .l-med { width: 60%; }
     .wireframe-grid {
-      height: 120px;
+      height: 180px;
       border: 1px dashed rgba(15, 23, 42, 0.2);
-      border-radius: 6px;
+      border-radius: 8px;
       background-image: 
         linear-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px),
         linear-gradient(90deg, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
-      background-size: 14px 14px;
+      background-size: 16px 16px;
     }
 
     /* ESCENARIO PROTAGONISTA: FICHA EVA CON 4 VÉRTICES ARUCO */
@@ -4611,12 +4611,12 @@
     #target-section {
       position: relative;
       width: 100%;
-      min-height: 250vh; /* Runway de scroll para las transformaciones en el mismo lugar */
+      min-height: 155vh; /* Runway optimizado para desplazador largo y transición rápida */
       display: flex;
       justify-content: space-between;
       max-width: 1040px;
       margin: 0 auto;
-      padding: 60px 24px 100px;
+      padding: 40px 24px 70px;
       gap: 36px;
     }
 
@@ -4741,7 +4741,7 @@
     .target-stage .list {
       display: flex;
       flex-direction: column;
-      gap: 25vh; /* Separación que guía el cambio de fase al hacer scroll */
+      gap: 12vh; /* Separación optimizada para transiciones rápidas */
     }
 
     .mobile-stage-header {
@@ -4751,7 +4751,7 @@
     .target-stage .item {
       display: flex;
       flex-direction: column;
-      min-height: 65vh;
+      min-height: 45vh;
       justify-content: center;
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
@@ -5054,7 +5054,7 @@
         position: relative;
         flex-direction: column;
         padding: 0;
-        min-height: 280vh; /* Runway de scroll para las transiciones suaves */
+        min-height: 180vh; /* Runway de scroll optimizado para transiciones suaves y rápidas */
         gap: 0;
       }
       #target-section .head {
