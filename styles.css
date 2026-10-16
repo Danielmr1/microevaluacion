@@ -4165,7 +4165,8 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 20px 45px rgba(2, 132, 199, 0.08);
-      transition: opacity 0.3s ease;
+      transform-origin: center center;
+      will-change: transform, opacity;
     }
 
     .hero-front-content {
@@ -4176,6 +4177,7 @@
       align-items: center;
       text-align: center;
       padding: 20px 16px;
+      will-change: transform, opacity;
     }
 
     .hero-front-content .eva-hero-title {
@@ -5032,6 +5034,8 @@
         opacity: 0.22;
         padding: 16px 14px;
         transform: none; /* Centrado simétrico en móvil */
+        transform-origin: center center;
+        will-change: transform, opacity;
       }
       .hero-front-content {
         padding: 14px 10px;
