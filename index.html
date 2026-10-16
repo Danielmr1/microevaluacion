@@ -59,7 +59,7 @@
   <script src="card-cartilla.js?v=3.2.50"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.51">
+  <link rel="stylesheet" href="styles.css?v=3.2.52">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -370,7 +370,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.51</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.52</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -784,24 +784,18 @@
              para ese salón quedarían apuntando a otro criterio.
              El selector aparece en un único caso: un salón al que le falta el
              grado porque se creó antes de que el grado fuera obligatorio. -->
-        <div id="grade-block" style="display:none; margin-top:14px;">
-          <label style="display:block; font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
-            Grado del salón
-          </label>
-
-          <!-- Solo lectura: el grado se eligió al crear el salón y no se cambia.
-               Cambiarlo dejaría inconsistentes las rúbricas ya generadas, porque
-               cada rúbrica se hizo tomando un grado como contexto. -->
-          <div id="grade-readonly" style="display:none; align-items:center; gap:10px;">
-            <span id="grade-value" style="font-size:0.95rem; font-weight:800; color:#4ade80;"></span>
+        <div id="grade-block" style="display:none; margin-top:8px;">
+          <!-- Solo lectura: el grado se eligió al crear el salón y no se cambia. -->
+          <div id="grade-readonly" style="display:none; align-items:center; gap:8px;">
+            <span id="grade-value" style="font-size:0.95rem; font-weight:800; color:#16a34a;"></span>
           </div>
 
           <select id="builder-grade" class="form-control" onchange="onGradeChanged(this.value)"
-            style="display:none; font-size:0.92rem; font-weight:700; padding:9px 12px;">
+            style="display:none; font-size:0.92rem; font-weight:700; padding:9px 12px; margin-top:4px;">
             <option value="">Sin especificar</option>
           </select>
 
-          <p id="grade-hint" style="font-size:0.68rem; color:#334155; margin:6px 0 0;"></p>
+          <p id="grade-hint" style="font-size:0.68rem; color:#f59e0b; margin:6px 0 0; display:none;"></p>
         </div>
       </div>
 
@@ -2707,7 +2701,7 @@
         block.style.display = 'none';
         if (readonly) readonly.style.display = 'none';
         if (readValue) readValue.textContent = '';
-        if (hint) hint.textContent = '';
+        if (hint) { hint.textContent = ''; hint.style.display = 'none'; }
         return;
       }
 
@@ -2724,14 +2718,14 @@
         return;
       }
 
-      // Con grado: solo se muestra, sin forma de cambiarlo.
+      // Con grado: solo se muestra el grado debajo del selector, sin textos explicativos ni etiquetas redundantes.
       sel.value = cls.gradeStage + ':' + cls.gradeLevel;
       sel.style.display = 'none';
       if (readonly) readonly.style.display = 'flex';
       if (readValue) readValue.textContent = grade;
       if (hint) {
-        hint.textContent = 'Se eligió al crear el salón y no se cambia: las rúbricas se generan con este grado.';
-        hint.style.color = '#334155';
+        hint.textContent = '';
+        hint.style.display = 'none';
       }
     }
 
@@ -2744,6 +2738,7 @@
       if (readonly) readonly.style.display = 'none';
       if (hint) {
         hint.textContent = motivo || 'Completa el grado: define qué procedimiento de resolución se considera correcto.';
+        hint.style.display = 'block';
         hint.style.color = '#f59e0b';
       }
     }
