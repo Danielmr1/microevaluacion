@@ -53,13 +53,13 @@
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.50"></script>
-  <script src="question-bank.js?v=3.2.59"></script>
+  <script src="question-bank.js?v=3.2.60"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
-  <script src="card-cartilla.js?v=3.2.59"></script>
+  <script src="card-cartilla.js?v=3.2.60"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.59">
+  <link rel="stylesheet" href="styles.css?v=3.2.60">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -141,16 +141,15 @@
       font-size: 0.82rem !important;
       font-weight: 800 !important;
       letter-spacing: 0.02em !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       white-space: nowrap !important;
       line-height: 1.2 !important;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .topbar-modality-pill:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      cursor: default !important;
+      user-select: none !important;
+      pointer-events: none !important;
     }
 
     /* MODO CLARO UNIFICADO PARA WIZARD, SALONES Y MODALES (Anti-Caché) */
@@ -362,7 +361,7 @@
     <div class="island-topbar">
       
       <!-- Brand / Logo Izquierda -->
-      <div class="island-brand" onclick="goHomeHub()">
+      <div class="island-brand" id="topbar-island-brand" onclick="onBrandClick()">
         <div class="island-brand-icon" id="topbar-brand-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -370,7 +369,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.59</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.60</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1292,12 +1291,11 @@
                   <!-- Filas numeradas generadas dinámicamente -->
                 </div>
 
-                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-start; align-items: center; gap: 8px;">
                   <button type="button" onclick="addMgrStudentRow()"
                     style="display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1.5px dashed #94a3b8; color: #0284c7; border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s;">
                     ➕ Agregar alumno
                   </button>
-                  <span style="font-size: 0.7rem; color: #64748b;">Cada fila equivale a un único alumno</span>
                 </div>
               </div>
             </div>
@@ -2122,10 +2120,18 @@
     /* ── NAVEGACIÓN Y CONTROLADOR DE FLUJOS (v3.1.28) ── */
     let currentFlow = 'hub'; // 'hub' | 'eval' | 'classrooms' | 'bank'
 
+    function onBrandClick() {
+      if (currentFlow === 'hub') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+    window.onBrandClick = onBrandClick;
+
     function updateTopbarModeTitle(branch) {
       const titleEl = document.getElementById('topbar-app-title');
       const iconEl = document.getElementById('topbar-brand-icon');
       const tagEl = document.getElementById('topbar-version-tag');
+      const brandEl = document.getElementById('topbar-island-brand');
       if (!titleEl) return;
 
       if (branch === 'classrooms') {
@@ -2133,6 +2139,10 @@
         if (tagEl) tagEl.style.display = 'none';
         titleEl.classList.add('topbar-modality-pill');
         titleEl.textContent = 'Salones';
+        if (brandEl) {
+          brandEl.style.cursor = 'default';
+          brandEl.style.pointerEvents = 'none';
+        }
       } else if (branch === 'rama3' || branch === 'rama2' || branch === 'rama1') {
         if (iconEl) iconEl.style.display = 'none';
         if (tagEl) tagEl.style.display = 'none';
@@ -2145,11 +2155,19 @@
         } else if (branch === 'rama1') {
           titleEl.textContent = 'Formativa con IA';
         }
+        if (brandEl) {
+          brandEl.style.cursor = 'default';
+          brandEl.style.pointerEvents = 'none';
+        }
       } else {
         if (iconEl) iconEl.style.display = 'flex';
         if (tagEl) tagEl.style.display = 'inline-block';
         titleEl.classList.remove('topbar-modality-pill');
         titleEl.textContent = 'MICROEVAL';
+        if (brandEl) {
+          brandEl.style.cursor = 'pointer';
+          brandEl.style.pointerEvents = 'auto';
+        }
       }
     }
     window.updateTopbarModeTitle = updateTopbarModeTitle;

@@ -167,17 +167,15 @@
       font-size: 0.82rem !important;
       font-weight: 800 !important;
       letter-spacing: 0.02em !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       white-space: nowrap !important;
       line-height: 1.2 !important;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .topbar-modality-pill:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      cursor: default !important;
+      user-select: none !important;
+      pointer-events: none !important;
     }
 
     @media (max-width: 600px) {
