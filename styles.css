@@ -4697,6 +4697,10 @@
       gap: 25vh; /* Separación que guía el cambio de fase al hacer scroll */
     }
 
+    .mobile-stage-header {
+      display: none;
+    }
+
     .target-stage .item {
       display: flex;
       flex-direction: column;
@@ -5018,28 +5022,68 @@
       }
       #target-section {
         flex-direction: column;
-        padding: 40px 14px 60px;
+        padding: 24px 14px 60px;
         min-height: auto;
+        gap: 0;
       }
       #target-section .head {
-        position: relative;
-        top: 0;
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 30px;
+        display: none !important;
+      }
+      .mobile-stage-header {
+        display: block;
+        margin-bottom: 12px;
+      }
+      .mobile-stage-title {
+        font-size: 1.45rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0 0 6px;
+        letter-spacing: -0.025em;
+        line-height: 1.2;
+      }
+      .mobile-stage-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .mobile-badge-range {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #0284c7;
+        background: #e0f2fe;
+        padding: 3px 10px;
+        border-radius: 999px;
+      }
+      .mobile-badge-format {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #475569;
+        background: #f1f5f9;
+        padding: 3px 10px;
+        border-radius: 999px;
       }
       .target-stage {
         width: 100%;
         max-width: 100%;
       }
       .target-stage .list {
-        gap: 40px;
+        gap: 28px;
       }
       .target-stage .item {
         min-height: auto;
+        opacity: 1 !important;
+        filter: none !important;
+        transform: none !important;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 20px 16px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
       }
       .media {
-        height: 250px;
+        height: 240px;
       }
     }
 
