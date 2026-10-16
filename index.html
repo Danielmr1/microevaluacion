@@ -53,13 +53,13 @@
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.50"></script>
-  <script src="question-bank.js?v=3.2.57"></script>
+  <script src="question-bank.js?v=3.2.58"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
-  <script src="card-cartilla.js?v=3.2.57"></script>
+  <script src="card-cartilla.js?v=3.2.58"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.57">
+  <link rel="stylesheet" href="styles.css?v=3.2.58">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -370,7 +370,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.57</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.58</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -809,34 +809,32 @@
 
         <!-- ── SIMULADOR INTERACTIVO DE FICHAS (WYSIWYG: RAMA 1 Y RAMA 2) ── -->
         <div id="sheet-simulator-container" style="display:flex; flex-direction:column; gap:14px;">
-          <!-- TOOLBAR SUPERIOR DEL SIMULADOR: PREGUNTAS + FORMATO (INFORMATIVO) + RESPUESTA -->
-          <div class="sim-toolbar" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-            <!-- 1. Selector de Cantidad de Preguntas -->
-            <div style="display:flex; align-items:center; gap:8px;">
+          <!-- TOOLBAR SUPERIOR DEL SIMULADOR: PREGUNTAS (ARRIBA) + RESPUESTA (DEBAJO) -->
+          <div class="sim-toolbar" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <!-- Fila 1 (Arriba): Selector de Cantidad de Preguntas -->
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
               <span style="font-size:0.75rem; color:#475569; font-weight:700;">Preguntas:</span>
               <div id="sim-qcount-group" style="display:flex; gap:4px;">
                 <!-- Rellenado dinámicamente por updateSimToolbar() -->
               </div>
             </div>
 
-            <!-- 2. Indicador Informativo de Tamaño de Hoja y Orientación (De solo lectura) -->
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span style="font-size:0.75rem; color:#475569; font-weight:700;">Formato:</span>
-              <span id="sim-card-format-tag" class="sim-format-badge" style="cursor:default;" title="Tamaño y orientación optimizados automáticamente">A6 Horizontal</span>
+            <!-- Fila 2 (Debajo): Selector de Tipo de Respuesta -->
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+              <button type="button" id="sim-btn-type-mc" onclick="setSimType('mc')" class="sim-pill-btn active">
+                🔘 Alternativas (OMR)
+              </button>
+              <button type="button" id="sim-btn-type-free" onclick="setSimType('free')" class="sim-pill-btn">
+                ✍️ Escribir respuesta
+              </button>
             </div>
+          </div>
 
-            <!-- 3. Selector de Tipo de Respuesta -->
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:0.75rem; color:#475569; font-weight:700;">Respuesta:</span>
-              <div style="display:flex; gap:4px;">
-                <button type="button" id="sim-btn-type-mc" onclick="setSimType('mc')" class="sim-pill-btn active">
-                  🔘 Alternativas (OMR)
-                </button>
-                <button type="button" id="sim-btn-type-free" onclick="setSimType('free')" class="sim-pill-btn">
-                  ✍️ Escribir respuesta
-                </button>
-              </div>
-            </div>
+          <!-- INDICADOR DEL FORMATO DE LA FICHA (OPCIÓN B) -->
+          <div style="display:flex; justify-content:flex-start; align-items:center; margin-bottom:-4px;">
+            <span id="sim-card-format-tag" class="sim-format-badge">
+              📄 Ficha A6 Horizontal
+            </span>
           </div>
 
           <!-- VIEWPORT DE SIMULACIÓN EN VIVO (LA FICHA REAL EN PANTALLA) -->
@@ -884,9 +882,9 @@
 
           <!-- Matriz / Cartilla Dinámica de Claves (Modo A: Solo Cartilla) -->
           <div id="rama3-keys-wrap" style="display:block; margin-bottom:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <span id="r3-keys-cartilla-title" style="font-size:0.78rem; font-weight:800; color:#059669; display:flex; align-items:center; gap:6px;">
-                📋 Cartilla A6
+            <div style="display:flex; justify-content:flex-start; align-items:center; margin-bottom:6px;">
+              <span id="r3-keys-cartilla-title" class="sim-format-badge">
+                📄 Cartilla A6
               </span>
             </div>
 
@@ -929,7 +927,7 @@
           <div id="rama3-bank-wrap" style="display:none; margin-bottom:12px; flex-direction:column; gap:14px;">
             <!-- Indicador y Paginación (para 15P y 20P) -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-              <span id="r3-exam-format-badge" style="background:#f0f9ff; border:1px solid #bae6fd; color:#0284c7; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:8px;">
+              <span id="r3-exam-format-badge" class="sim-format-badge">
                 📄 Examen A4 Vertical · 2 Columnas
               </span>
               <div id="r3-page-switcher" style="display:none; align-items:center; gap:6px;">
@@ -948,9 +946,9 @@
 
             <!-- 2. DIVISOR Y CARTILLA OMR DEBAJO (CON ARUCO, MARCO EXTERIOR Y QR) -->
             <div style="margin-top:10px; padding-top:12px; border-top:1px dashed #cbd5e1;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span id="r3-bank-cartilla-title" style="font-size:0.78rem; font-weight:800; color:#059669; display:flex; align-items:center; gap:6px;">
-                  📋 Cartilla A6
+              <div style="display:flex; justify-content:flex-start; align-items:center; margin-bottom:8px;">
+                <span id="r3-bank-cartilla-title" class="sim-format-badge">
+                  📄 Cartilla A6
                 </span>
               </div>
               <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">

@@ -5439,18 +5439,21 @@
       box-sizing: border-box;
     }
 
-    /* Badge compacto de formato junto al número de preguntas */
+    /* Badge de formato sobre la ficha, examen o cartilla (Opción B) */
     .sim-format-badge {
       background: #f0f9ff;
       color: #0284c7;
       border: 1px solid #bae6fd;
-      border-radius: 6px;
-      padding: 3px 9px;
-      font-size: 0.72rem;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
       font-weight: 800;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.02em;
       box-shadow: none;
       user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* Control de redimensionamiento de cuadrícula en esquina inferior derecha */

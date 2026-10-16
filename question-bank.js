@@ -2381,7 +2381,7 @@ function updateSimToolbar() {
   const layout = determineCardLayout(simState);
   const tagEl = document.getElementById('sim-card-format-tag');
   if (tagEl) {
-    tagEl.textContent = layout.badgeFull || layout.badge;
+    tagEl.textContent = `📄 Ficha ${layout.badgeFull || layout.badge}`;
   }
 
   // 3. Selector de Tipo de Respuesta (Alternativas OMR vs Escribir respuesta)
@@ -2905,7 +2905,7 @@ function renderSimulatedCard() {
   // Actualizar etiqueta del formato
   const formatTag = document.getElementById('sim-card-format-tag');
   if (formatTag) {
-    formatTag.textContent = layout.badge;
+    formatTag.textContent = `📄 Ficha ${layout.badgeFull || layout.badge}`;
   }
 
   // Ventana dinámica según la orientación
@@ -4164,7 +4164,7 @@ function updateRama3ControlsUI() {
   });
 
   // Título dinámico del tamaño de cartilla para ambos modos (A6 hasta 10 preguntas, A5 para 15 y 20)
-  const cartillaTitleText = (r3State.count <= 10) ? '📋 Cartilla A6' : '📋 Cartilla A5';
+  const cartillaTitleText = (r3State.count <= 10) ? '📄 Cartilla A6' : '📄 Cartilla A5';
   const keysTitle = document.getElementById('r3-keys-cartilla-title');
   if (keysTitle) {
     keysTitle.textContent = cartillaTitleText;
