@@ -5623,14 +5623,15 @@
     }
 
     .mgr-bottom-dock-wrap {
-      position: sticky;
-      bottom: 16px;
-      z-index: 85;
+      position: fixed;
+      bottom: 18px;
+      left: 0;
+      right: 0;
+      z-index: 95;
       width: 100%;
       display: flex;
       justify-content: center;
       pointer-events: none;
-      margin-top: 24px;
       padding: 0 16px;
       box-sizing: border-box;
     }
@@ -5640,75 +5641,54 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       width: 100%;
-      max-width: 640px;
+      max-width: 600px;
       background: rgba(248, 250, 252, 0.94);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      padding: 8px;
-      border-radius: 20px;
+      padding: 7px;
+      border-radius: 18px;
       border: 1.5px solid rgba(203, 213, 225, 0.95);
-      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(15, 23, 42, 0.08);
       pointer-events: auto;
     }
 
     .mgr-dock-card {
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 10px 14px;
-      border-radius: 14px;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 13px;
       cursor: pointer;
-      text-align: left;
+      text-align: center;
       border: 1.5px solid #cbd5e1;
-      background: #f1f5f9;
+      background: #e2e8f0;
       color: #64748b;
       transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
       position: relative;
       overflow: hidden;
-    }
-
-    .mgr-dock-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      margin-bottom: 4px;
+      min-height: 44px;
     }
 
     .mgr-dock-card-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.88rem;
+      font-size: 0.90rem;
       font-weight: 800;
       line-height: 1.25;
-    }
-
-    .mgr-dock-tag {
-      font-size: 0.64rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .mgr-dock-badge {
-      font-size: 0.68rem;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 8px;
-      line-height: 1.2;
+      letter-spacing: -0.01em;
+      text-align: center;
+      display: block;
+      width: 100%;
     }
 
     /* ── MARCADÍSIMO CONTRASTE ENTRE TARJETA ACTIVA E INACTIVA ── */
 
-    /* 1. Tarjeta Inactiva: atenuada, fondo gris pizarra claro, sin elevación */
+    /* 1. Tarjeta Inactiva: atenuada, fondo gris pizarra claro, sin sombra */
     .mgr-dock-card:not(.active) {
       background: #e2e8f0 !important;
       border-color: #cbd5e1 !important;
       color: #64748b !important;
       box-shadow: none !important;
-      opacity: 0.85;
+      opacity: 0.82;
     }
     .mgr-dock-card:not(.active):hover:not(.is-disabled) {
       background: #ffffff !important;
@@ -5717,15 +5697,8 @@
       opacity: 1;
       transform: translateY(-1px);
     }
-    .mgr-dock-card:not(.active) .mgr-dock-tag {
-      color: #64748b;
-    }
-    .mgr-dock-card:not(.active) .mgr-dock-badge {
-      background: #cbd5e1;
-      color: #475569;
-    }
     .mgr-dock-card:not(.active) .mgr-dock-card-title {
-      color: #475569;
+      color: #64748b;
     }
 
     /* 2. Tarjeta Activa: resalta fuertemente con fondo blanco brillante, borde azul rey y sombra */
@@ -5747,21 +5720,9 @@
       background: #2563eb;
       border-radius: 3px 3px 0 0;
     }
-    .mgr-dock-card.active .mgr-dock-tag {
-      color: #2563eb;
-    }
-    .mgr-dock-card.active .mgr-dock-badge {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-    }
-    .mgr-dock-card.active .mgr-dock-badge.badge-emerald {
-      background: #ecfdf5;
-      color: #047857;
-      border: 1px solid #a7f3d0;
-    }
     .mgr-dock-card.active .mgr-dock-card-title {
       color: #0f172a;
+      font-weight: 800;
     }
 
     .mgr-dock-card.is-disabled {

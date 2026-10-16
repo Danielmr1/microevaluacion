@@ -1304,31 +1304,17 @@
 
       </div>
 
-      <!-- Barra Fija Flotante (Sticky Bottom Dock estilo Leo Cussen con marcado contraste) -->
+      <!-- Barra Fija Flotante (Fixed Viewport Dock con marcado contraste) -->
       <div class="mgr-bottom-dock-wrap" id="mgr-bottom-dock">
         <div class="mgr-dock-inner" role="tablist" aria-label="Navegación de Salones">
           <!-- Tarjeta 1: Salones Registrados (Activa por defecto) -->
           <button type="button" class="mgr-dock-card active" id="btn-dock-registered" onclick="switchClassroomManagerTab('registered')" role="tab" aria-selected="true" title="Ver salones registrados y nómina de alumnos">
-            <div class="mgr-dock-card-top">
-              <span class="mgr-dock-tag">01 · REGISTRADOS</span>
-              <span class="mgr-dock-badge" id="dock-registered-count">0 salones</span>
-            </div>
-            <div class="mgr-dock-card-title">
-              <span>🏫</span>
-              <span>Salones Registrados</span>
-            </div>
+            <span class="mgr-dock-card-title">Salones Registrados</span>
           </button>
 
           <!-- Tarjeta 2: Agregar Nuevo Salón (Inactiva por defecto) -->
           <button type="button" class="mgr-dock-card" id="btn-dock-add" onclick="switchClassroomManagerTab('add')" role="tab" aria-selected="false" title="Registrar un nuevo salón por Excel o a mano">
-            <div class="mgr-dock-card-top">
-              <span class="mgr-dock-tag">02 · ALTA</span>
-              <span class="mgr-dock-badge badge-emerald">Nuevo</span>
-            </div>
-            <div class="mgr-dock-card-title">
-              <span>➕</span>
-              <span>Agregar Nuevo Salón</span>
-            </div>
+            <span class="mgr-dock-card-title">Agregar Nuevo Salón</span>
           </button>
         </div>
       </div>
