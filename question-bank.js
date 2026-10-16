@@ -4134,6 +4134,17 @@ function updateRama3ControlsUI() {
     }
   });
 
+  // Título dinámico del tamaño de cartilla para ambos modos (A6 hasta 10 preguntas, A5 para 15 y 20)
+  const cartillaTitleText = (r3State.count <= 10) ? '📋 Cartilla A6' : '📋 Cartilla A5';
+  const keysTitle = document.getElementById('r3-keys-cartilla-title');
+  if (keysTitle) {
+    keysTitle.textContent = cartillaTitleText;
+  }
+  const bankTitle = document.getElementById('r3-bank-cartilla-title');
+  if (bankTitle) {
+    bankTitle.textContent = cartillaTitleText;
+  }
+
   const layoutBadge = document.getElementById('r3-layout-badge');
   if (layoutBadge) {
     if (r3State.count <= 6) {
