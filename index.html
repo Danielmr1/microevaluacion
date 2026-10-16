@@ -53,13 +53,13 @@
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.50"></script>
-  <script src="question-bank.js?v=3.2.56"></script>
+  <script src="question-bank.js?v=3.2.57"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
-  <script src="card-cartilla.js?v=3.2.56"></script>
+  <script src="card-cartilla.js?v=3.2.57"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.56">
+  <link rel="stylesheet" href="styles.css?v=3.2.57">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -370,7 +370,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.56</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.57</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1063,7 +1063,6 @@
               </span>
             </div>
           </div>
-          <span id="summary-eval-type-badge" style="font-size:0.7rem; font-weight:800; padding:4px 10px; border-radius:8px;"></span>
         </div>
 
         <!-- Tarjeta de Resumen -->
@@ -2982,38 +2981,11 @@
           }
         }
 
-        // Eval type badge - REGLA 2: Aislamiento estricto de alternativas
+        // Tipos y conteos para resumen - REGLA 2: Aislamiento estricto de alternativas
         const isOMR = wizardEval && wizardEval.type === 'mc';
         const isBranch3 = wizardEval && wizardEval.branch === 'rama3';
         const isBranch2 = wizardEval && wizardEval.branch === 'rama2';
         const qCount = wizardEval.questionCount || (wizardEval.questions ? wizardEval.questions.length : 1);
-        const badgeEl = document.getElementById('summary-eval-type-badge');
-        if (badgeEl) {
-          if (isBranch3) {
-            badgeEl.textContent = `📝 Cartilla OMR (${qCount} Preguntas)`;
-            badgeEl.style.background = '#0369a1';
-            badgeEl.style.color = '#e0f2fe';
-            badgeEl.style.border = '1px solid #38bdf8';
-          } else if (isBranch2) {
-            const gridLabel = wizardEval.withGrid ? 'Con Borrador' : 'Sin Cuadrícula';
-            badgeEl.textContent = isOMR
-              ? `⚡ Focalizada OMR (${qCount}P · ${gridLabel})`
-              : `⚡ Focalizada Escrita (${qCount}P · ${gridLabel})`;
-            badgeEl.style.background = '#065f46';
-            badgeEl.style.color = '#a7f3d0';
-            badgeEl.style.border = '1px solid #10b981';
-          } else if (isOMR) {
-            badgeEl.textContent = `🔘 Alternativas (${qCount} ${qCount === 1 ? 'Pregunta' : 'Preguntas'})`;
-            badgeEl.style.background = '#1e3a8a';
-            badgeEl.style.color = '#93c5fd';
-            badgeEl.style.border = '1px solid #3b82f6';
-          } else {
-            badgeEl.textContent = '✍️ Respuesta Libre (1 Pregunta)';
-            badgeEl.style.background = '#064e3b';
-            badgeEl.style.color = '#6ee7b7';
-            badgeEl.style.border = '1px solid #10b981';
-          }
-        }
 
         // Poblar contenedor dinámico de preguntas
         const qContainer = document.getElementById('summary-questions-container');
