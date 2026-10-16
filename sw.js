@@ -1,11 +1,11 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.2.49
+// Service Worker para Microevaluación A5 (PWA) — v3.2.50
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.2.49';
+const CACHE_NAME = 'microeval-cache-v3.2.50';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './styles.css?v=3.2.49',
+  './styles.css?v=3.2.50',
   './manifest.json',
   './icon-192.png',
   // Librerías de soporte (100% locales / self-hosted)
@@ -19,16 +19,16 @@ const PRECACHE_ASSETS = [
   './jsqr.min.js?v=3.0.6',
   './warp_math.js',
   // Módulos de la aplicación
-  './classroom-data.js?v=3.2.49',
-  './supabase-client.js?v=3.2.49',
-  './roi-processor.js?v=3.2.49',
-  './scanner.js?v=3.2.49',
+  './classroom-data.js?v=3.2.50',
+  './supabase-client.js?v=3.2.50',
+  './roi-processor.js?v=3.2.50',
+  './scanner.js?v=3.2.50',
   './results-manager.js?v=3.1.90',
-  './classroom-manager.js?v=3.2.49',
-  './question-bank.js?v=3.2.49',
+  './classroom-manager.js?v=3.2.50',
+  './question-bank.js?v=3.2.50',
   './card-formativa.js?v=3.1.95',
   './card-focalizada.js?v=3.1.95',
-  './card-cartilla.js?v=3.2.49',
+  './card-cartilla.js?v=3.2.50',
   './card-generator.js?v=3.2.11'
 ];
 

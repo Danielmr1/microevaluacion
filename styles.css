@@ -5062,10 +5062,10 @@
       }
       .mobile-stage-header {
         display: block;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
       .mobile-stage-title {
-        font-size: 1.35rem;
+        font-size: 1.45rem;
         font-weight: 900;
         color: #0f172a;
         margin: 0 0 6px;
@@ -5077,22 +5077,22 @@
         gap: 8px;
         flex-wrap: wrap;
         align-items: center;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
       }
       .mobile-badge-range {
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         font-weight: 700;
         color: #0284c7;
         background: #e0f2fe;
-        padding: 2px 9px;
+        padding: 3px 10px;
         border-radius: 999px;
       }
       .mobile-badge-format {
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         font-weight: 600;
         color: #475569;
         background: #f1f5f9;
-        padding: 2px 9px;
+        padding: 3px 10px;
         border-radius: 999px;
       }
       .target-stage {
@@ -5102,9 +5102,9 @@
         max-width: 100%;
         height: calc(100vh - 65px);
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
-        padding: 10px 14px;
+        padding: 20px 14px 28px;
         box-sizing: border-box;
       }
       .target-stage .list {
@@ -5123,29 +5123,29 @@
         box-sizing: border-box;
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 18px 16px;
-        box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08);
+        border-radius: 22px;
+        padding: 22px 18px 20px;
+        box-shadow: 0 14px 34px -6px rgba(15, 23, 42, 0.09);
       }
       .item-text .item-title {
-        font-size: 1.05rem;
-        font-weight: 800;
+        font-size: 1.15rem;
+        font-weight: 850;
         color: #0f172a;
-        margin: 0 0 4px;
+        margin: 0 0 6px;
         line-height: 1.25;
       }
       .item-text .item-desc {
-        font-size: 0.8rem;
+        font-size: 0.86rem;
         color: #475569;
-        line-height: 1.45;
-        margin-bottom: 10px;
+        line-height: 1.5;
+        margin-bottom: 14px;
         display: block;
       }
       .media-container {
         margin-top: 0;
       }
       .media {
-        height: 200px;
+        height: 225px;
       }
     }
 
