@@ -2847,6 +2847,27 @@ function fitRama3ToViewport() {
       cartHost.style.marginBottom = `-${heightDiff}px`;
     }
   }
+
+  // 3. Ajuste proporcional de la Cartilla OMR Interactiva (Rama 3 Modo A: Solo Cartilla)
+  const keysCartViewport = document.getElementById('r3-keys-cartilla-viewport');
+  const keysCartHost = document.getElementById('r3-keys-cartilla-render-host');
+  const keysCartCard = keysCartHost ? keysCartHost.firstElementChild : null;
+  if (keysCartViewport && keysCartHost && keysCartCard) {
+    keysCartHost.style.transform = 'none';
+    keysCartHost.style.marginBottom = '0px';
+
+    const availWidth = keysCartViewport.clientWidth - 28;
+    const cardWidth = keysCartCard.offsetWidth;
+
+    if (cardWidth > 0 && availWidth > 0 && cardWidth > availWidth) {
+      const scale = availWidth / cardWidth;
+      keysCartHost.style.transform = `scale(${scale})`;
+      keysCartHost.style.transformOrigin = 'top center';
+      const cardHeight = keysCartCard.offsetHeight;
+      const heightDiff = cardHeight * (1 - scale);
+      keysCartHost.style.marginBottom = `-${heightDiff}px`;
+    }
+  }
 }
 
 if (typeof window !== 'undefined') {
@@ -4066,12 +4087,15 @@ let r3State = {
   bankQuestions: Array(20).fill(null)
 };
 
+let r3ActiveKeyIdx = 0;
+
 function resetRama3Builder() {
   r3State.count = 10;
   r3State.mode = 'bank';
   r3State.activePage = 1;
   r3State.keys = Array(20).fill('A');
   r3State.bankQuestions = Array(20).fill(null);
+  r3ActiveKeyIdx = 0;
 }
 
 function initRama3Builder() {
@@ -4087,6 +4111,9 @@ function initRama3Builder() {
 function setRama3Count(count) {
   r3State.count = parseInt(count, 10) || 10;
   r3State.activePage = 1;
+  if (r3ActiveKeyIdx >= r3State.count) {
+    r3ActiveKeyIdx = 0;
+  }
   updateRama3ControlsUI();
   if (r3State.mode === 'keys') {
     renderRama3Matrix();
@@ -4191,10 +4218,50 @@ function updateRama3ControlsUI() {
   }
 }
 
+function onRama3SelectRow(qIdx) {
+  if (qIdx >= 0 && qIdx < r3State.count) {
+    r3ActiveKeyIdx = qIdx;
+    renderRama3KeysCartilla();
+  }
+}
+
+function onRama3BubbleClick(event, qIdx, letter) {
+  if (event) {
+    try { event.stopPropagation(); } catch (e) {}
+  }
+  if (qIdx >= 0 && qIdx < r3State.count) {
+    r3State.keys[qIdx] = letter;
+    if (qIdx < r3State.count - 1) {
+      r3ActiveKeyIdx = qIdx + 1;
+    } else {
+      r3ActiveKeyIdx = qIdx;
+    }
+    renderRama3KeysCartilla();
+    if (r3State.mode === 'bank') {
+      renderRama3Exam();
+      renderRama3CartillaPreview();
+    }
+  }
+}
+
+function onRama3KeypadClick(letter) {
+  if (r3ActiveKeyIdx >= 0 && r3ActiveKeyIdx < r3State.count) {
+    r3State.keys[r3ActiveKeyIdx] = letter;
+    if (r3ActiveKeyIdx < r3State.count - 1) {
+      r3ActiveKeyIdx++;
+    }
+    renderRama3KeysCartilla();
+    if (r3State.mode === 'bank') {
+      renderRama3Exam();
+      renderRama3CartillaPreview();
+    }
+  }
+}
+
 function setRama3Key(qIdx, key) {
   if (qIdx >= 0 && qIdx < 20) {
     r3State.keys[qIdx] = key;
-    renderRama3Matrix();
+    renderRama3KeysCartilla();
     if (r3State.mode === 'bank') {
       renderRama3Exam();
       renderRama3CartillaPreview();
@@ -4203,30 +4270,102 @@ function setRama3Key(qIdx, key) {
 }
 
 function renderRama3Matrix() {
-  const container = document.getElementById('rama3-keys-matrix');
-  if (!container) return;
+  renderRama3KeysCartilla();
+}
 
-  let html = '';
-  for (let i = 0; i < r3State.count; i++) {
-    const selectedKey = r3State.keys[i] || 'A';
-    html += `
-      <div style="background:#090d16; border:1px solid #334155; border-radius:8px; padding:6px 8px; display:flex; align-items:center; justify-content:space-between; gap:4px;">
-        <span style="font-size:0.75rem; font-weight:800; color:#cbd5e1; width:28px;">P${(i + 1).toString().padStart(2, '0')}</span>
-        <div style="display:flex; gap:3px;">
-          ${['A', 'B', 'C', 'D'].map(k => {
-            const isSel = selectedKey === k;
-            return `
-              <button type="button" onclick="setRama3Key(${i}, '${k}')"
-                style="width:24px; height:24px; border-radius:50%; border:1px solid ${isSel ? '#0284c7' : '#334155'}; background:${isSel ? '#0284c7' : '#1e293b'}; color:${isSel ? '#fff' : '#94a3b8'}; font-size:0.72rem; font-weight:${isSel ? '800' : '600'}; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; transition:all 0.1s;">
-                ${k}
-              </button>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
+function renderRama3KeysCartilla() {
+  const host = document.getElementById('r3-keys-cartilla-render-host');
+  if (!host) return;
+
+  if (r3ActiveKeyIdx >= r3State.count) {
+    r3ActiveKeyIdx = Math.max(0, r3State.count - 1);
   }
-  container.innerHTML = html;
+
+  const clsId = wizardClassroomId || (document.getElementById('builder-classroom')?.value);
+  let classroom = null;
+  if (clsId && typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom) {
+    classroom = ClassroomData.getClassroom(clsId);
+  }
+  if (!classroom) {
+    classroom = {
+      id: 'demo_class',
+      name: 'Salón Demostración',
+      gradeStage: 'primaria',
+      gradeLevel: 4,
+      students: []
+    };
+  }
+
+  const sampleStudent = (classroom.students && classroom.students.length > 0)
+    ? classroom.students[0]
+    : { id: 'est_01', name: 'MATEO GARCÍA RODRÍGUEZ' };
+
+  const evalMock = {
+    id: 'eval_mock_r3_keys',
+    branch: 'rama3',
+    mode: 'keys',
+    type: 'mc',
+    withGrid: false,
+    questionCount: r3State.count,
+    showKeys: true,
+    activeRowIdx: r3ActiveKeyIdx,
+    questions: Array.from({ length: r3State.count }, (_, i) => ({
+      num: i + 1,
+      correct: r3State.keys[i] || 'A'
+    }))
+  };
+
+  let cardHTML = '';
+  if (r3State.count <= 10) {
+    if (typeof createCartillaA6Card === 'function') {
+      cardHTML = createCartillaA6Card(sampleStudent, classroom, evalMock);
+    }
+  } else {
+    if (typeof createCartillaA5VerticalCard === 'function') {
+      cardHTML = createCartillaA5VerticalCard(sampleStudent, classroom, evalMock);
+    }
+  }
+
+  if (cardHTML) {
+    host.innerHTML = cardHTML;
+    if (typeof QRCode !== 'undefined' && QRCode.toString) {
+      QRCode.toString(sampleStudent.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+        if (!err && svg) {
+          const qrBox = host.querySelector('[data-qr-id="' + sampleStudent.id + '"]') || host.querySelector('#qr-box-' + sampleStudent.id);
+          if (qrBox) qrBox.innerHTML = svg;
+        }
+      });
+    }
+  }
+
+  // Actualizar keypad UI
+  const labelEl = document.getElementById('r3-keypad-label');
+  if (labelEl) {
+    labelEl.innerHTML = `✏️ Marcando Pregunta <b>${String(r3ActiveKeyIdx + 1).padStart(2, '0')}</b> de <b>${r3State.count}</b>:`;
+  }
+  const currentKey = r3State.keys[r3ActiveKeyIdx] || 'A';
+  ['A', 'B', 'C', 'D'].forEach(letter => {
+    const btn = document.getElementById(`btn-keypad-${letter}`);
+    if (btn) {
+      const isSel = (letter === currentKey);
+      btn.classList.toggle('active', isSel);
+      if (isSel) {
+        btn.style.borderColor = '#0284c7';
+        btn.style.background = '#0284c7';
+        btn.style.color = '#ffffff';
+      } else {
+        btn.style.borderColor = '#cbd5e1';
+        btn.style.background = '#f8fafc';
+        btn.style.color = '#0f172a';
+      }
+    }
+  });
+
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(fitRama3ToViewport);
+  } else {
+    fitRama3ToViewport();
+  }
 }
 
 // ── LAYOUT Y GEOMETRÍA DEL EXAMEN ESCOLAR (MODO B) ──
@@ -4772,6 +4911,10 @@ if (typeof window !== 'undefined') {
   window.initRama3Builder = initRama3Builder;
   window.resetRama3Builder = resetRama3Builder;
   window.confirmSimulator = confirmSimulator;
+  window.onRama3SelectRow = onRama3SelectRow;
+  window.onRama3BubbleClick = onRama3BubbleClick;
+  window.onRama3KeypadClick = onRama3KeypadClick;
+  window.renderRama3KeysCartilla = renderRama3KeysCartilla;
 }
 
 

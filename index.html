@@ -53,13 +53,13 @@
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.50"></script>
-  <script src="question-bank.js?v=3.2.54"></script>
+  <script src="question-bank.js?v=3.2.55"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
-  <script src="card-cartilla.js?v=3.2.50"></script>
+  <script src="card-cartilla.js?v=3.2.55"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.54">
+  <link rel="stylesheet" href="styles.css?v=3.2.55">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -370,7 +370,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.54</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.55</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -882,18 +882,46 @@
             </button>
           </div>
 
-          <!-- Matriz de Claves de Cartilla (Modo A) -->
+          <!-- Matriz / Cartilla Dinámica de Claves (Modo A: Solo Cartilla) -->
           <div id="rama3-keys-wrap" style="display:block; margin-bottom:12px;">
-            <div id="r3-keys-cartilla-title" style="font-size:0.78rem; font-weight:800; color:#059669; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
-              📋 Cartilla A6
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span id="r3-keys-cartilla-title" style="font-size:0.78rem; font-weight:800; color:#059669; display:flex; align-items:center; gap:6px;">
+                📋 Cartilla A6
+              </span>
+              <span style="font-size:0.7rem; color:#64748b;">Con ArUco, marco cerrado y QR</span>
             </div>
-            <div style="font-size:0.7rem; color:#64748b; margin-bottom:8px;">
-              Haz clic en la clave correcta de cada pregunta para armar la pauta:
+
+            <!-- VIEWPORT DE LA CARTILLA INTERACTIVA WYSIWYG -->
+            <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">
+              <div id="r3-keys-cartilla-viewport" class="sim-card-viewport" style="width:100%; display:flex; justify-content:center; overflow-x:hidden;">
+                <div id="r3-keys-cartilla-render-host"></div>
+              </div>
             </div>
-            <div id="rama3-keys-matrix" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:8px; max-height:280px; overflow-y:auto; padding:4px;"></div>
+
+            <!-- KEYPAD RÁPIDO PARA PAUTAR (FACILIDAD EN 20 PREGUNTAS) -->
+            <div id="r3-keypad-panel" style="background:#ffffff; border:1px solid #bae6fd; border-radius:12px; padding:10px 14px; margin-top:10px; margin-bottom:12px; box-shadow:0 2px 6px rgba(2,132,199,0.06);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                <span id="r3-keypad-label" style="font-size:0.78rem; font-weight:800; color:#0369a1; display:flex; align-items:center; gap:6px;">
+                  ✏️ Marcando Pregunta 01 de 10:
+                </span>
+                <span id="r3-keypad-hint" style="font-size:0.68rem; color:#64748b;">
+                  Toca una fila en la cartilla o usa los botones para avanzar
+                </span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
+                <button type="button" id="btn-keypad-A" class="btn-r3-keypad" onclick="onRama3KeypadClick('A')"
+                  style="padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; background:#f8fafc; color:#0f172a; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.1s;">A</button>
+                <button type="button" id="btn-keypad-B" class="btn-r3-keypad" onclick="onRama3KeypadClick('B')"
+                  style="padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; background:#f8fafc; color:#0f172a; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.1s;">B</button>
+                <button type="button" id="btn-keypad-C" class="btn-r3-keypad" onclick="onRama3KeypadClick('C')"
+                  style="padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; background:#f8fafc; color:#0f172a; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.1s;">C</button>
+                <button type="button" id="btn-keypad-D" class="btn-r3-keypad" onclick="onRama3KeypadClick('D')"
+                  style="padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; background:#f8fafc; color:#0f172a; font-size:1rem; font-weight:800; cursor:pointer; transition:all 0.1s;">D</button>
+              </div>
+            </div>
 
             <button type="button" onclick="confirmRama3()"
-              style="margin-top:12px; width:100%; background:linear-gradient(135deg, #0284c7, #2563eb); border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.85rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+              style="margin-top:4px; width:100%; background:linear-gradient(135deg, #0284c7, #2563eb); border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.85rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
               ✓ Confirmar Cartillas
             </button>
           </div>

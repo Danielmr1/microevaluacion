@@ -33,6 +33,8 @@ function createCartillaA5VerticalCard(student, classroom, evaluation) {
   const orderMatch = String(student.id || '').match(/\d+/);
   const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 10);
+  const isInteractive = !!evaluation.showKeys;
+  const activeIdx = typeof evaluation.activeRowIdx === 'number' ? evaluation.activeRowIdx : -1;
 
   let bodyHTML = '';
   if (totalQ === 20) {
@@ -40,28 +42,36 @@ function createCartillaA5VerticalCard(student, classroom, evaluation) {
     const col2Rows = [];
     for (let i = 0; i < 10; i++) {
       const qNum = String(i + 1).padStart(2, '0');
+      const selectedKey = (evaluation.questions && evaluation.questions[i] && evaluation.questions[i].correct) || '';
+      const rowActiveClass = (isInteractive && activeIdx === i) ? ' active-row' : '';
+      const rowClickAttr = isInteractive ? ` onclick="onRama3SelectRow(${i})"` : '';
       col1Rows.push(`
-        <div class="v-q-row">
+        <div class="v-q-row${rowActiveClass}"${rowClickAttr} data-q-idx="${i}">
           <span class="v-q-num">${qNum}</span>
           <div class="v-bubbles-group">
-            <span class="v-bubble">A</span>
-            <span class="v-bubble">B</span>
-            <span class="v-bubble">C</span>
-            <span class="v-bubble">D</span>
+            ${['A', 'B', 'C', 'D'].map(k => {
+              const isFilled = (isInteractive && selectedKey === k) ? ' filled' : '';
+              const bubbleClickAttr = isInteractive ? ` onclick="onRama3BubbleClick(event, ${i}, '${k}')"` : '';
+              return `<span class="v-bubble${isFilled}"${bubbleClickAttr}>${k}</span>`;
+            }).join('')}
           </div>
         </div>
       `);
     }
     for (let i = 10; i < 20; i++) {
       const qNum = String(i + 1).padStart(2, '0');
+      const selectedKey = (evaluation.questions && evaluation.questions[i] && evaluation.questions[i].correct) || '';
+      const rowActiveClass = (isInteractive && activeIdx === i) ? ' active-row' : '';
+      const rowClickAttr = isInteractive ? ` onclick="onRama3SelectRow(${i})"` : '';
       col2Rows.push(`
-        <div class="v-q-row">
+        <div class="v-q-row${rowActiveClass}"${rowClickAttr} data-q-idx="${i}">
           <span class="v-q-num">${qNum}</span>
           <div class="v-bubbles-group">
-            <span class="v-bubble">A</span>
-            <span class="v-bubble">B</span>
-            <span class="v-bubble">C</span>
-            <span class="v-bubble">D</span>
+            ${['A', 'B', 'C', 'D'].map(k => {
+              const isFilled = (isInteractive && selectedKey === k) ? ' filled' : '';
+              const bubbleClickAttr = isInteractive ? ` onclick="onRama3BubbleClick(event, ${i}, '${k}')"` : '';
+              return `<span class="v-bubble${isFilled}"${bubbleClickAttr}>${k}</span>`;
+            }).join('')}
           </div>
         </div>
       `);
@@ -77,14 +87,18 @@ function createCartillaA5VerticalCard(student, classroom, evaluation) {
     const qRows = [];
     for (let i = 0; i < totalQ; i++) {
       const qNum = String(i + 1).padStart(2, '0');
+      const selectedKey = (evaluation.questions && evaluation.questions[i] && evaluation.questions[i].correct) || '';
+      const rowActiveClass = (isInteractive && activeIdx === i) ? ' active-row' : '';
+      const rowClickAttr = isInteractive ? ` onclick="onRama3SelectRow(${i})"` : '';
       qRows.push(`
-        <div class="v-q-row">
+        <div class="v-q-row${rowActiveClass}"${rowClickAttr} data-q-idx="${i}">
           <span class="v-q-num">${qNum}</span>
           <div class="v-bubbles-group">
-            <span class="v-bubble">A</span>
-            <span class="v-bubble">B</span>
-            <span class="v-bubble">C</span>
-            <span class="v-bubble">D</span>
+            ${['A', 'B', 'C', 'D'].map(k => {
+              const isFilled = (isInteractive && selectedKey === k) ? ' filled' : '';
+              const bubbleClickAttr = isInteractive ? ` onclick="onRama3BubbleClick(event, ${i}, '${k}')"` : '';
+              return `<span class="v-bubble${isFilled}"${bubbleClickAttr}>${k}</span>`;
+            }).join('')}
           </div>
         </div>
       `);
@@ -130,6 +144,8 @@ function createCartillaA6Card(student, classroom, evaluation) {
   const orderMatch = String(student.id || '').match(/\d+/);
   const orderNumber = orderMatch ? '#' + String(orderMatch[0]).padStart(2, '0') : escape(student.id || '');
   const totalQ = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 5);
+  const isInteractive = !!evaluation.showKeys;
+  const activeIdx = typeof evaluation.activeRowIdx === 'number' ? evaluation.activeRowIdx : -1;
 
   let bodyHTML = '';
   if (totalQ === 8 || totalQ === 10) {
@@ -138,28 +154,36 @@ function createCartillaA6Card(student, classroom, evaluation) {
     const col2Rows = [];
     for (let i = 0; i < half; i++) {
       const qNum = String(i + 1).padStart(2, '0');
+      const selectedKey = (evaluation.questions && evaluation.questions[i] && evaluation.questions[i].correct) || '';
+      const rowActiveClass = (isInteractive && activeIdx === i) ? ' active-row' : '';
+      const rowClickAttr = isInteractive ? ` onclick="onRama3SelectRow(${i})"` : '';
       col1Rows.push(`
-        <div class="a6-q-row">
+        <div class="a6-q-row${rowActiveClass}"${rowClickAttr} data-q-idx="${i}">
           <span class="a6-q-num">${qNum}</span>
           <div class="a6-bubbles-group">
-            <span class="a6-bubble">A</span>
-            <span class="a6-bubble">B</span>
-            <span class="a6-bubble">C</span>
-            <span class="a6-bubble">D</span>
+            ${['A', 'B', 'C', 'D'].map(k => {
+              const isFilled = (isInteractive && selectedKey === k) ? ' filled' : '';
+              const bubbleClickAttr = isInteractive ? ` onclick="onRama3BubbleClick(event, ${i}, '${k}')"` : '';
+              return `<span class="a6-bubble${isFilled}"${bubbleClickAttr}>${k}</span>`;
+            }).join('')}
           </div>
         </div>
       `);
     }
     for (let i = half; i < totalQ; i++) {
       const qNum = String(i + 1).padStart(2, '0');
+      const selectedKey = (evaluation.questions && evaluation.questions[i] && evaluation.questions[i].correct) || '';
+      const rowActiveClass = (isInteractive && activeIdx === i) ? ' active-row' : '';
+      const rowClickAttr = isInteractive ? ` onclick="onRama3SelectRow(${i})"` : '';
       col2Rows.push(`
-        <div class="a6-q-row">
+        <div class="a6-q-row${rowActiveClass}"${rowClickAttr} data-q-idx="${i}">
           <span class="a6-q-num">${qNum}</span>
           <div class="a6-bubbles-group">
-            <span class="a6-bubble">A</span>
-            <span class="a6-bubble">B</span>
-            <span class="a6-bubble">C</span>
-            <span class="a6-bubble">D</span>
+            ${['A', 'B', 'C', 'D'].map(k => {
+              const isFilled = (isInteractive && selectedKey === k) ? ' filled' : '';
+              const bubbleClickAttr = isInteractive ? ` onclick="onRama3BubbleClick(event, ${i}, '${k}')"` : '';
+              return `<span class="a6-bubble${isFilled}"${bubbleClickAttr}>${k}</span>`;
+            }).join('')}
           </div>
         </div>
       `);
@@ -175,14 +199,18 @@ function createCartillaA6Card(student, classroom, evaluation) {
     const qRows = [];
     for (let i = 0; i < totalQ; i++) {
       const qNum = String(i + 1).padStart(2, '0');
+      const selectedKey = (evaluation.questions && evaluation.questions[i] && evaluation.questions[i].correct) || '';
+      const rowActiveClass = (isInteractive && activeIdx === i) ? ' active-row' : '';
+      const rowClickAttr = isInteractive ? ` onclick="onRama3SelectRow(${i})"` : '';
       qRows.push(`
-        <div class="a6-q-row">
+        <div class="a6-q-row${rowActiveClass}"${rowClickAttr} data-q-idx="${i}">
           <span class="a6-q-num">${qNum}</span>
           <div class="a6-bubbles-group">
-            <span class="a6-bubble">A</span>
-            <span class="a6-bubble">B</span>
-            <span class="a6-bubble">C</span>
-            <span class="a6-bubble">D</span>
+            ${['A', 'B', 'C', 'D'].map(k => {
+              const isFilled = (isInteractive && selectedKey === k) ? ' filled' : '';
+              const bubbleClickAttr = isInteractive ? ` onclick="onRama3BubbleClick(event, ${i}, '${k}')"` : '';
+              return `<span class="a6-bubble${isFilled}"${bubbleClickAttr}>${k}</span>`;
+            }).join('')}
           </div>
         </div>
       `);

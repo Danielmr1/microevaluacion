@@ -5572,3 +5572,45 @@
       }
     }
 
+    /* ── CARTILLA OMR INTERACTIVA WYSIWYG & KEYPAD RÁPIDO ── */
+    .a6-q-row.active-row,
+    .v-q-row.active-row {
+      background: #e0f2fe !important;
+      border-radius: 4px;
+      box-shadow: 0 0 0 1.5px #0284c7;
+    }
+    .a6-bubble.filled,
+    .v-bubble.filled {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 900 !important;
+    }
+    .a6-q-row,
+    .v-q-row {
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background 0.15s ease;
+    }
+    .a6-q-row:hover,
+    .v-q-row:hover {
+      background: rgba(2, 132, 199, 0.08);
+    }
+    .a6-bubble,
+    .v-bubble {
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.1s ease, background 0.15s ease;
+    }
+    .a6-bubble:active,
+    .v-bubble:active {
+      transform: scale(0.9);
+    }
+    .btn-r3-keypad.active {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35) !important;
+    }
+
+
