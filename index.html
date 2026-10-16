@@ -53,13 +53,13 @@
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.50"></script>
-  <script src="question-bank.js?v=3.2.58"></script>
+  <script src="question-bank.js?v=3.2.59"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
-  <script src="card-cartilla.js?v=3.2.58"></script>
+  <script src="card-cartilla.js?v=3.2.59"></script>
   <script src="card-generator.js?v=3.2.11"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.58">
+  <link rel="stylesheet" href="styles.css?v=3.2.59">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -370,7 +370,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.58</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.59</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1138,14 +1138,6 @@
   <!-- VISTA: GESTIÓN DE SALONES Y NÓMINAS (FLUJO 2)              -->
   <!-- ========================================================= -->
   <div id="view-classrooms" class="view-content" style="padding: 0;">
-    <!-- Barra superior de retorno -->
-    <div class="flow-topbar">
-      <button type="button" class="btn-flow-back" onclick="goHomeHub()">
-        ← Volver al inicio
-      </button>
-      <span class="flow-title">Mis Salones y Alumnos</span>
-    </div>
-
     <div style="max-width: 760px; margin: 0 auto; width: 100%; padding: 18px 16px 40px; display: flex; flex-direction: column; gap: 20px;">
 
       <!-- Banner de advertencia: Evaluación en curso -->
@@ -1224,11 +1216,11 @@
             <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
               <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.74rem;">
                 <strong style="color: #0f172a;">Columna 1 — Nombre Completo:</strong>
-                <span style="color: #64748b;"> Obligatoria. Nombres y apellidos oficiales (ej. <em>GARCIA LOPEZ, MATEO ALEJANDRO</em>). Se imprime en la ficha PDF.</span>
+                <span style="color: #64748b;"> Obligatoria. Apellidos y Nombres.</span>
               </div>
               <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.74rem;">
                 <strong style="color: #0284c7;">Columna 2 — Nombre Corto:</strong>
-                <span style="color: #64748b;"> Opcional. Si la dejas vacía, el sistema genera automáticamente un nombre corto para la pantalla del celular (ej. <em>Mateo G.</em>).</span>
+                <span style="color: #64748b;"> Opcional. Si la dejas vacía, el sistema genera automáticamente un nombre corto.</span>
               </div>
             </div>
             <button onclick="downloadEmptyRosterTemplate()" type="button"
@@ -2136,7 +2128,12 @@
       const tagEl = document.getElementById('topbar-version-tag');
       if (!titleEl) return;
 
-      if (branch === 'rama3' || branch === 'rama2' || branch === 'rama1') {
+      if (branch === 'classrooms') {
+        if (iconEl) iconEl.style.display = 'none';
+        if (tagEl) tagEl.style.display = 'none';
+        titleEl.classList.add('topbar-modality-pill');
+        titleEl.textContent = 'Salones';
+      } else if (branch === 'rama3' || branch === 'rama2' || branch === 'rama1') {
         if (iconEl) iconEl.style.display = 'none';
         if (tagEl) tagEl.style.display = 'none';
         titleEl.classList.add('topbar-modality-pill');
@@ -2406,6 +2403,8 @@
       } else if (flowName === 'eval') {
         const curBranch = window.selectedBranch || (wizardEval && wizardEval.branch) || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
         updateTopbarModeTitle(curBranch);
+      } else if (flowName === 'classrooms') {
+        updateTopbarModeTitle('classrooms');
       }
     }
 
