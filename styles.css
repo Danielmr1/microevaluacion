@@ -4017,81 +4017,109 @@
     }
 
     /* ── TIRA SUPERIOR DE 3 TARJETAS COMPACTAS DEL GESTOR (DEBAJO DE INICIO) ── */
+    /* ── TIRA SUPERIOR DE SOLO ÍCONOS CON TOOLTIP FLOTANTE ── */
     .hub-top-strip {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 14px;
-      padding: 18px 20px 0;
+      padding: 16px 20px 0;
       max-width: 980px;
       margin: 0 auto;
       width: 100%;
-      flex-wrap: wrap;
     }
-    .top-strip-card {
-      flex: 1;
-      min-width: 190px;
-      max-width: 290px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1.5px solid #e2e8f0;
+    .top-strip-icon-btn {
+      position: relative;
+      width: 46px;
+      height: 46px;
       border-radius: 12px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      user-select: none;
-    }
-    .top-strip-card:hover {
-      transform: translateY(-2px);
-      border-color: #0284c7;
-      box-shadow: 0 8px 18px rgba(2, 132, 199, 0.1);
-      background: #ffffff;
-    }
-    .strip-card-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1.5px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      padding: 0;
+    }
+    .top-strip-icon-btn:hover {
+      transform: translateY(-2px);
+      border-color: #0284c7;
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.18);
+      background: #ffffff;
+    }
+    .top-strip-icon-btn .strip-card-icon {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .icon-sky { background: #e0f2fe; color: #0284c7; }
     .icon-indigo { background: #e0e7ff; color: #4f46e5; }
     .icon-amber { background: #fef3c7; color: #d97706; }
 
-    .strip-card-info {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-    .strip-card-title {
-      font-size: 0.82rem;
-      font-weight: 750;
-      color: #0f172a;
+    /* Tooltip Flotante al pasar el mouse */
+    .top-strip-icon-btn .hub-tooltip {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 0.76rem;
+      font-weight: 700;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      padding: 5px 10px;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+      z-index: 50;
     }
-    .strip-card-sub {
-      font-size: 0.68rem;
-      color: #64748b;
-      font-weight: 500;
-      white-space: nowrap;
+    .top-strip-icon-btn .hub-tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-bottom-color: #0f172a;
+    }
+    .top-strip-icon-btn:hover .hub-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(5px);
+    }
+    .top-strip-icon-btn .nav-count-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: #d97706;
+      color: #ffffff;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.4);
+      z-index: 2;
     }
 
-    /* ── HUB PRINCIPAL: HERO SPLIT (EVA IZQUIERDA / ARUCO DERECHA) ── */
+    /* ── HUB PRINCIPAL: HERO CENTRADO CON FICHA ARUCO DETRÁS ── */
     .cyber-hub-container {
       max-width: 1040px;
       margin: 0 auto;
       width: 100%;
       min-height: calc(100vh - 120px);
-      padding: 30px 24px 50px;
+      padding: 24px 24px 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -4099,30 +4127,75 @@
       position: relative;
     }
 
-    .hero-split-layout {
+    .hero-center-stage {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+      min-height: 380px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      max-width: 1000px;
-      gap: 40px;
+      justify-content: center;
       margin-top: 10px;
     }
 
-    .hero-left-content {
-      flex: 1.1;
-      max-width: 520px;
+    .hero-backdrop-sheet {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 540px;
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-      z-index: 2;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+      pointer-events: none;
     }
 
-    .hero-left-content .eva-hero-subtitle {
-      text-align: left;
-      margin-left: 0;
-      max-width: 480px;
+    .ghost-stage-sheet {
+      width: 100%;
+      max-width: 500px;
+      min-height: 290px;
+      padding: 24px 22px;
+      opacity: 0.28; /* Transparencia estética para que funcione como marca de agua viva */
+      transform: perspective(900px) rotateY(-4deg) rotateX(2deg);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1.5px solid rgba(15, 23, 42, 0.25);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(2, 132, 199, 0.08);
+      transition: opacity 0.3s ease;
+    }
+
+    .hero-front-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 16px;
+    }
+
+    .hero-front-content .eva-hero-title {
+      font-size: clamp(3.2rem, 7.5vw, 5.2rem);
+      font-weight: 950;
+      color: #0f172a;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin: 12px 0 8px;
+      text-shadow: 0 2px 20px rgba(255, 255, 255, 0.9), 0 0 35px rgba(255, 255, 255, 0.95);
+    }
+
+    .hero-front-content .eva-hero-subtitle {
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      font-weight: 650;
+      color: #1e293b;
+      margin: 0;
+      max-width: 520px;
+      line-height: 1.35;
+      text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9);
     }
 
     .hero-cta-wrap {
@@ -4148,34 +4221,6 @@
       background: #0284c7;
       transform: translateY(-2px);
       box-shadow: 0 8px 22px rgba(2, 132, 199, 0.3);
-    }
-
-    .hero-right-backdrop {
-      flex: 1.1;
-      max-width: 520px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-
-    .ghost-stage-sheet {
-      width: 100%;
-      max-width: 480px;
-      min-height: 290px;
-      padding: 26px 24px;
-      opacity: 0.38;
-      transform: perspective(900px) rotateY(-8deg) rotateX(4deg);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-      background: rgba(255, 255, 255, 0.75);
-      border: 1.5px solid rgba(15, 23, 42, 0.2);
-      border-radius: 14px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
-    }
-    .ghost-stage-sheet:hover {
-      opacity: 0.55;
     }
 
     .ghost-sheet-wireframe {
@@ -4972,53 +5017,34 @@
       }
       .hub-top-strip {
         padding: 12px 14px 0;
-        gap: 8px;
-      }
-      .top-strip-card {
-        flex: 1 1 100%;
-        max-width: 100%;
-        padding: 8px 12px;
+        gap: 12px;
       }
       .cyber-hub-container {
-        padding: 24px 14px 30px;
+        padding: 20px 14px 30px;
         min-height: calc(100svh - 60px);
       }
-      .hero-split-layout {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 24px;
+      .hero-center-stage {
+        min-height: 290px;
       }
-      .hero-left-content {
-        align-items: center;
-        text-align: center;
-      }
-      .hero-left-content .eva-hero-subtitle {
-        text-align: center;
-      }
-      .hero-right-backdrop {
-        width: 100%;
+      .ghost-stage-sheet {
         max-width: 320px;
-        transform: scale(0.9);
-        margin-top: -10px;
+        min-height: 220px;
+        opacity: 0.22;
+        padding: 16px 14px;
+        transform: none; /* Centrado simétrico en móvil */
       }
-      .eva-stage-sheet {
-        padding: 24px 18px;
-        min-height: 180px;
+      .hero-front-content {
+        padding: 14px 10px;
       }
-      .eva-hero-title {
-        font-size: 3rem;
+      .hero-front-content .eva-hero-title {
+        font-size: 3.2rem;
       }
-      .eva-hero-subtitle {
-        font-size: 0.88rem;
+      .hero-front-content .eva-hero-subtitle {
+        font-size: 0.9rem;
       }
-      .eva-buttons-container {
-        gap: 10px;
-        margin-top: 24px;
-      }
-      .eva-action-btn {
-        padding: 10px 16px;
-        font-size: 0.82rem;
+      /* En la versión celular borra el botón Explorar Modalidades */
+      .hero-cta-wrap {
+        display: none !important;
       }
       #target-section {
         position: relative;
