@@ -43,7 +43,7 @@
   <script src="roi-processor.js?v=3.2.50"></script>
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
-  <script src="classroom-manager.js?v=3.2.61"></script>
+  <script src="classroom-manager.js?v=3.2.62"></script>
   <script src="question-bank.js?v=3.2.61"></script>
   <script src="card-simulator.js?v=3.2.61"></script>
   <script src="card-exam-builder.js?v=3.2.61"></script>
@@ -54,7 +54,7 @@
   <script src="session-controller.js?v=3.2.61"></script>
   <script src="app-navigation.js?v=3.2.61"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.61">
+  <link rel="stylesheet" href="styles.css?v=3.2.62">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -364,7 +364,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.61</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.62</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1132,7 +1132,7 @@
   <!-- VISTA: GESTIÓN DE SALONES Y NÓMINAS (FLUJO 2)              -->
   <!-- ========================================================= -->
   <div id="view-classrooms" class="view-content" style="padding: 0;">
-    <div class="mgr-content-wrapper" style="max-width: 760px; margin: 0 auto; width: 100%; padding: 18px 16px 120px; display: flex; flex-direction: column; gap: 20px;">
+    <div class="mgr-content-wrapper" style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px;">
 
       <!-- Banner de advertencia: Evaluación en curso -->
       <div id="mgr-active-session-warning" style="display: none; background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 12px; padding: 14px 16px; color: #92400e; font-size: 0.82rem; line-height: 1.4; align-items: center; gap: 10px;">
@@ -1142,180 +1142,65 @@
         </div>
       </div>
 
-      <!-- Panel 1: Salones Registrados (Crossfade Panel 1) -->
-      <div id="manager-view-registered-panel" class="mgr-crossfade-panel is-active" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px rgba(15,23,42,0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-          <h3 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-            <span>🏫</span> Salones Registrados
-          </h3>
-          <span id="manager-classrooms-count" style="font-size: 0.72rem; color: #475569; background: #f1f5f9; padding: 3px 10px; border-radius: 12px; border: 1px solid #e2e8f0;">0 salones</span>
-        </div>
-
-        <div style="display: flex; gap: 8px; align-items: stretch; margin-bottom: 14px;">
-          <select id="manager-classroom-select" class="form-control" onchange="onManagerClassroomSelected(this.value)"
-            style="flex: 1; min-width: 0; font-size: 0.95rem; font-weight: 700; padding: 10px 14px;">
-            <option value="">— Elige un salón para ver sus alumnos —</option>
-          </select>
-          <button id="btn-manager-delete-classroom" onclick="handleDeleteClassroomFromManager()" title="Borrar el salón seleccionado"
-            style="display: none; flex: 0 0 auto; background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; border-radius: 8px; padding: 0 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer; align-items: center; gap: 6px;">
-            🗑️ Borrar
-          </button>
-        </div>
-
-        <!-- Lista de alumnos del salón seleccionado -->
-        <div id="manager-students-container" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; min-height: 100px;">
-          <div id="manager-students-empty" style="text-align: center; color: #64748b; font-size: 0.8rem; padding: 20px;">
-            Selecciona un salón arriba para ver y verificar su lista de estudiantes.
-          </div>
-          <div id="manager-students-table-wrap" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span id="manager-selected-classroom-grade" style="font-size: 0.75rem; font-weight: 800; color: #15803d;"></span>
-              <span id="manager-selected-classroom-students-count" style="font-size: 0.72rem; color: #64748b;"></span>
-            </div>
-            <div id="manager-students-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto;">
-              <!-- Filas de estudiantes -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Panel 2: Alta de Nuevo Salón (Crossfade Panel 2) -->
-      <div id="manager-add-classroom-panel" class="mgr-crossfade-panel" style="display: none; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px rgba(15,23,42,0.05);">
-        <h3 style="margin: 0 0 14px; font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-          <span>➕</span> Agregar Nuevo Salón
-        </h3>
-
-        <!-- Tabs de método: Importar vs Manual -->
-        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
-          <button id="btn-tab-import" type="button" onclick="switchManagerCreateTab('import')"
-            style="flex: 1; padding: 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 800; cursor: pointer; border: 1.5px solid #2563eb; background: #eff6ff; color: #1d4ed8; transition: all 0.15s;">
-            📂 Importar Excel / CSV
-          </button>
-          <button id="btn-tab-manual" type="button" onclick="switchManagerCreateTab('manual')"
-            style="flex: 1; padding: 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 800; cursor: pointer; border: 1.5px solid #cbd5e1; background: #ffffff; color: #64748b; transition: all 0.15s;">
-            ✍️ Crear a Mano
-          </button>
-        </div>
-
-        <!-- Método 1: Importar Excel / CSV con Guía Ilustrada -->
-        <div id="manager-tab-import-content">
-          <!-- Tarjeta de Guía Clara -->
-          <div style="background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
-            <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; color: #0369a1; font-size: 0.85rem; margin-bottom: 8px;">
-              <span>ℹ️</span> ¿Cómo preparar tu lista de alumnos?
-            </div>
-            <p style="font-size: 0.77rem; color: #334155; line-height: 1.45; margin: 0 0 10px;">
-              Puedes usar la misma nómina oficial que descargas del colegio o de SIAGIE. El archivo solo necesita:
-            </p>
-            <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
-              <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.74rem;">
-                <strong style="color: #0f172a;">Columna 1 — Nombre Completo:</strong>
-                <span style="color: #64748b;"> Obligatoria. Apellidos y Nombres.</span>
-              </div>
-              <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.74rem;">
-                <strong style="color: #0284c7;">Columna 2 — Nombre Corto:</strong>
-                <span style="color: #64748b;"> Opcional. Si la dejas vacía, el sistema genera automáticamente un nombre corto.</span>
-              </div>
-            </div>
-            <button onclick="downloadEmptyRosterTemplate()" type="button"
-              style="display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #0284c7; color: #0284c7; border-radius: 6px; padding: 6px 12px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
-              ⬇️ Descargar plantilla vacía (.csv)
-            </button>
-          </div>
-
-          <!-- Botón de seleccionar archivo -->
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <input type="file" id="manager-excel-file-input" accept=".xlsx,.xls,.csv" style="display: none;"
-              onchange="handleExcelImport(this)">
-            <button type="button" onclick="document.getElementById('manager-excel-file-input').click()"
-              style="display: inline-flex; align-items: center; gap: 8px; background: #2563eb; border: none; color: #fff; border-radius: 8px; padding: 10px 18px; font-size: 0.82rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 4px rgba(37,99,235,0.25);">
-              📂 Seleccionar archivo (.xlsx / .csv) e importar
-            </button>
-            <span id="manager-excel-import-status" style="font-size: 0.74rem; color: #64748b;"></span>
-          </div>
-        </div>
-
-        <!-- Método 2: Crear a Mano con Filas Numeradas Dinámicas -->
-        <div id="manager-tab-manual-content" style="display: none;">
-          <div style="display: flex; flex-direction: column; gap: 14px;">
+      <!-- Contenedor Maestro: PLANO DEL COLEGIO (Campus Blueprint) -->
+      <div class="campus-blueprint-container">
+        <!-- Header del Plano -->
+        <div class="campus-blueprint-header">
+          <div class="campus-title-group">
+            <span class="campus-badge-icon">🏫</span>
             <div>
-              <label style="font-size: 0.74rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">Nombre del salón</label>
-              <input type="text" id="mgr-manual-classroom-name" class="form-control" maxlength="50"
-                
-                style="width: 100%; font-size: 0.95rem; font-weight: 700; padding: 10px 14px; background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a; border-radius: 8px;">
+              <h2 class="campus-title">Plano del Colegio</h2>
+              <p class="campus-subtitle">Distribución arquitectónica de aulas · Ordenadas de menor a mayor grado</p>
             </div>
-
-            <div>
-              <label style="font-size: 0.74rem; font-weight: 700; color: #475569; display: block; margin-bottom: 5px;">
-                Grado <span style="color: #f59e0b;">*</span>
-              </label>
-              <select id="mgr-manual-classroom-grade" class="form-control"
-                style="width: 100%; font-size: 0.95rem; font-weight: 700; padding: 10px 14px; background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a; border-radius: 8px;">
-                <option value="">— Elige el grado —</option>
-              </select>
-            </div>
-
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
-                <label style="font-size: 0.74rem; font-weight: 700; color: #475569; margin: 0;">
-                  Alumnos del salón (escribe y pulsa Enter para crear la siguiente fila)
-                </label>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <button type="button" onclick="toggleMgrPasteBox()"
-                    style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
-                    📋 Pegar lista copiada
-                  </button>
-                  <span id="mgr-manual-student-count" style="font-size: 0.74rem; font-weight: 800; color: #64748b;">0 alumnos</span>
-                </div>
-              </div>
-
-              <!-- Cuadro opcional para pegar lista masiva copiada -->
-              <div id="mgr-paste-box" style="display: none; background: #f8fafc; border: 1.5px dashed #94a3b8; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
-                <span style="font-size: 0.72rem; color: #334155; display: block; margin-bottom: 6px;">Pega los nombres aquí (uno por línea o desde Excel):</span>
-                <textarea id="mgr-paste-textarea" class="form-control" rows="4" 
-                  style="width: 100%; font-size: 0.84rem; padding: 8px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 6px; margin-bottom: 8px; font-family: ui-monospace,monospace;"></textarea>
-                <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                  <button type="button" onclick="toggleMgrPasteBox()" style="background: transparent; border: 1px solid #cbd5e1; color: #64748b; border-radius: 6px; padding: 5px 12px; font-size: 0.74rem; cursor: pointer;">Cancelar</button>
-                  <button type="button" onclick="applyMgrPastedStudents()" style="background: #2563eb; border: none; color: #fff; border-radius: 6px; padding: 5px 14px; font-size: 0.74rem; font-weight: 700; cursor: pointer;">Cargar a las filas</button>
-                </div>
-              </div>
-
-              <!-- Contenedor dinámico de filas numeradas (100% de ancho) -->
-              <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px; width: 100%; box-sizing: border-box;">
-                <div id="mgr-manual-students-rows-container" style="display: flex; flex-direction: column; max-height: 380px; overflow-y: auto; padding-right: 4px;">
-                  <!-- Filas numeradas generadas dinámicamente -->
-                </div>
-
-                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-start; align-items: center; gap: 8px;">
-                  <button type="button" onclick="addMgrStudentRow()"
-                    style="display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1.5px dashed #94a3b8; color: #0284c7; border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s;">
-                    ➕ Agregar alumno
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <button type="button" id="btn-mgr-save-classroom" onclick="handleCreateClassroomManualFromManager()"
-              style="background: #10b981; border: none; color: #fff; border-radius: 10px; padding: 13px; font-size: 0.92rem; font-weight: 800; cursor: pointer; margin-top: 4px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); display: flex; align-items: center; justify-content: center; gap: 8px;">
-              ✓ Guardar Salón
+          </div>
+          <div class="campus-header-actions">
+            <span id="campus-occupancy-badge" class="campus-occupancy-pill">0 de 10 aulas</span>
+            <button id="btn-campus-add-classroom" type="button" class="btn-campus-add" onclick="openAddClassroomModal()" title="Registrar un nuevo salón">
+              ➕ Nueva Aula
             </button>
           </div>
         </div>
 
-      </div>
+        <!-- Fachada / Entrada del Campus -->
+        <div class="campus-facade-indicator">
+          <span class="campus-facade-line"></span>
+          <span class="campus-facade-label">🏛️ ENTRADA PRINCIPAL / FACHADA NORTE</span>
+          <span class="campus-facade-line"></span>
+        </div>
 
-      <!-- Barra Fija Flotante (Fixed Viewport Dock con marcado contraste) -->
-      <div class="mgr-bottom-dock-wrap" id="mgr-bottom-dock">
-        <div class="mgr-dock-inner" role="tablist" aria-label="Navegación de Salones">
-          <!-- Tarjeta 1: Salones Registrados (Activa por defecto) -->
-          <button type="button" class="mgr-dock-card active" id="btn-dock-registered" onclick="switchClassroomManagerTab('registered')" role="tab" aria-selected="true" title="Ver salones registrados y nómina de alumnos">
-            <span class="mgr-dock-card-title">Salones Registrados</span>
-          </button>
+        <!-- Campus Ground Layout: Pabellón Izquierdo + Patio Central + Pabellón Derecho -->
+        <div class="campus-ground-layout">
+          <!-- Pabellón Izquierdo (Ala Oeste: Aulas 1 a 5) -->
+          <div class="campus-wing campus-wing-left">
+            <div class="campus-wing-title">PABELLÓN OESTE</div>
+            <div class="campus-wing-rooms" id="campus-wing-left-rooms">
+              <!-- Renderizado dinámico de slots 1 a 5 -->
+            </div>
+          </div>
 
-          <!-- Tarjeta 2: Agregar Nuevo Salón (Inactiva por defecto) -->
-          <button type="button" class="mgr-dock-card" id="btn-dock-add" onclick="switchClassroomManagerTab('add')" role="tab" aria-selected="false" title="Registrar un nuevo salón por Excel o a mano">
-            <span class="mgr-dock-card-title">Agregar Nuevo Salón</span>
-          </button>
+          <!-- Patio Central / Pasillo Arbolado / Área de Recreo -->
+          <div class="campus-courtyard">
+            <div class="courtyard-path-top"></div>
+            <div class="courtyard-center-hub">
+              <span class="courtyard-icon">🌱</span>
+              <span class="courtyard-title">PATIO CENTRAL</span>
+              <span class="courtyard-desc">Pasillos y Áreas Verdes</span>
+            </div>
+            <div class="courtyard-path-bottom"></div>
+          </div>
+
+          <!-- Pabellón Derecho (Ala Este: Aulas 6 a 10) -->
+          <div class="campus-wing campus-wing-right">
+            <div class="campus-wing-title">PABELLÓN ESTE</div>
+            <div class="campus-wing-rooms" id="campus-wing-right-rooms">
+              <!-- Renderizado dinámico de slots 6 a 10 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Base / Pasillo Sur del Campus -->
+        <div class="campus-south-corridor">
+          <span>📐 Capacidad fija de 10 aulas · Haz clic en cualquier aula para gestionar su nómina de estudiantes</span>
         </div>
       </div>
 
@@ -1590,6 +1475,223 @@
       <div id="ai-dialog-actions" style="padding:12px 18px; background:#0f172a; border-top:1px solid #334155; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
         <!-- Botones dinámicos -->
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Gestión de Aula y Estudiantes (Plano del Colegio) -->
+  <div id="modal-manage-classroom" onclick="if(event.target === this) closeClassroomModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:18px; width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(15,23,42,0.25); overflow:hidden;">
+      
+      <!-- Header del Modal -->
+      <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="mgr-modal-room-badge" style="width:14px; height:34px; border-radius:4px; display:inline-block; background:#3b82f6;"></span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3 id="mgr-modal-room-name" style="margin:0; font-size:1.15rem; font-weight:800; color:#0f172a;">Aula</h3>
+              <span id="mgr-modal-room-grade" style="font-size:0.75rem; font-weight:800; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:6px; border:1px solid #86efac;">—</span>
+            </div>
+            <span id="mgr-modal-room-students-count" style="font-size:0.72rem; color:#64748b; font-weight:600;">0 estudiantes registrados</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeClassroomModal()" style="background:transparent; border:none; color:#64748b; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Cerrar">✕</button>
+      </div>
+
+      <!-- Barra de Herramientas del Salón -->
+      <div style="padding:10px 20px; background:#f1f5f9; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="btn-toggle-add-student" type="button" onclick="toggleAddStudentForm()"
+            style="display:inline-flex; align-items:center; gap:6px; background:#2563eb; border:none; color:#ffffff; border-radius:7px; padding:6px 12px; font-size:0.76rem; font-weight:700; cursor:pointer;">
+            ➕ Agregar Alumno
+          </button>
+          <button type="button" onclick="exportClassroomRosterToExcel()"
+            style="display:inline-flex; align-items:center; gap:6px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; border-radius:7px; padding:6px 12px; font-size:0.76rem; font-weight:700; cursor:pointer;">
+            📥 Exportar Excel
+          </button>
+        </div>
+        <button id="btn-manager-delete-classroom" type="button" onclick="handleDeleteClassroomFromManager()"
+          style="display:inline-flex; align-items:center; gap:6px; background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; border-radius:7px; padding:6px 12px; font-size:0.76rem; font-weight:700; cursor:pointer;">
+          🗑️ Eliminar este Salón
+        </button>
+      </div>
+
+      <!-- Formulario Rápido Desplegable para Agregar Alumno -->
+      <div id="mgr-inline-add-student-box" style="display:none; padding:12px 20px; background:#eff6ff; border-bottom:1.5px solid #bfdbfe;">
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+          <div style="flex:2; min-width:180px;">
+            <label style="font-size:0.70rem; font-weight:700; color:#1e40af; display:block; margin-bottom:3px;">Nombre Completo del Estudiante</label>
+            <input type="text" id="mgr-inline-student-fullname" class="form-control" placeholder="Apellidos y Nombres" style="width:100%; font-size:0.82rem; padding:6px 10px; border-radius:6px; border:1px solid #93c5fd;">
+          </div>
+          <div style="flex:1; min-width:120px;">
+            <label style="font-size:0.70rem; font-weight:700; color:#1e40af; display:block; margin-bottom:3px;">Nombre Corto (Opcional)</label>
+            <input type="text" id="mgr-inline-student-shortname" class="form-control" placeholder="Ej: Mateo G." style="width:100%; font-size:0.82rem; padding:6px 10px; border-radius:6px; border:1px solid #93c5fd;">
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" onclick="toggleAddStudentForm(false)" style="background:#ffffff; border:1px solid #cbd5e1; color:#64748b; border-radius:6px; padding:6px 10px; font-size:0.76rem; cursor:pointer;">Cancelar</button>
+            <button id="btn-save-inline-student" type="button" onclick="handleSaveInlineStudent()" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:6px 14px; font-size:0.76rem; font-weight:700; cursor:pointer;">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuerpo del Modal: Lista de Estudiantes con scroll interno -->
+      <div style="flex:1; overflow-y:auto; padding:16px 20px;">
+        <div id="mgr-modal-students-list" style="display:flex; flex-direction:column; gap:6px;">
+          <!-- Filas de estudiantes -->
+        </div>
+        <div id="mgr-modal-students-empty" style="display:none; text-align:center; padding:30px 10px; color:#64748b; font-size:0.82rem;">
+          Este salón aún no tiene estudiantes cargados. Haz clic en "➕ Agregar Alumno" para registrar estudiantes.
+        </div>
+      </div>
+
+      <!-- Footer del Modal -->
+      <div style="padding:12px 20px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; align-items:center;">
+        <button type="button" onclick="closeClassroomModal()"
+          style="background:#0f172a; border:none; color:#ffffff; border-radius:8px; padding:8px 20px; font-size:0.82rem; font-weight:700; cursor:pointer;">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Alta de Nuevo Salón al Plano (Plano del Colegio) -->
+  <div id="modal-add-classroom" onclick="if(event.target === this) closeAddClassroomModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:18px; width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(15,23,42,0.25); overflow:hidden;">
+      
+      <!-- Header -->
+      <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.3rem;">➕</span>
+          <div>
+            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;">Agregar Nuevo Salón al Colegio</h3>
+            <p style="margin:2px 0 0; font-size:0.72rem; color:#64748b;">El salón se ubicará automáticamente en el plano según su grado escolar.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeAddClassroomModal()" style="background:transparent; border:none; color:#64748b; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Cerrar">✕</button>
+      </div>
+
+      <!-- Selector de Método: Importar Excel vs Crear a Mano -->
+      <div style="display:flex; border-bottom:1px solid #e2e8f0; background:#f1f5f9;">
+        <button id="btn-tab-import" type="button" onclick="switchManagerCreateTab('import')"
+          style="flex:1; padding:12px; font-size:0.82rem; font-weight:800; cursor:pointer; border:none; border-bottom:2px solid #2563eb; background:#ffffff; color:#1d4ed8; transition:all 0.15s;">
+          📂 Importar Excel / CSV
+        </button>
+        <button id="btn-tab-manual" type="button" onclick="switchManagerCreateTab('manual')"
+          style="flex:1; padding:12px; font-size:0.82rem; font-weight:800; cursor:pointer; border:none; border-bottom:2px solid transparent; background:transparent; color:#64748b; transition:all 0.15s;">
+          ✍️ Crear a Mano
+        </button>
+      </div>
+
+      <!-- Cuerpo con Scroll -->
+      <div style="flex:1; overflow-y:auto; padding:20px;">
+        <!-- Método 1: Importar Excel / CSV -->
+        <div id="manager-tab-import-content">
+          <div style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:8px; font-weight:800; color:#0369a1; font-size:0.85rem; margin-bottom:8px;">
+              <span>ℹ️</span> ¿Cómo preparar tu lista de alumnos?
+            </div>
+            <p style="font-size:0.77rem; color:#334155; line-height:1.45; margin:0 0 10px;">
+              Puedes usar la misma nómina oficial que descargas del colegio o de SIAGIE. El archivo solo necesita:
+            </p>
+            <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.74rem;">
+                <strong style="color:#0f172a;">Columna 1 — Nombre Completo:</strong>
+                <span style="color:#64748b;"> Obligatoria. Apellidos y Nombres.</span>
+              </div>
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.74rem;">
+                <strong style="color:#0284c7;">Columna 2 — Nombre Corto:</strong>
+                <span style="color:#64748b;"> Opcional. Si la dejas vacía, el sistema genera automáticamente un nombre corto.</span>
+              </div>
+            </div>
+            <button onclick="downloadEmptyRosterTemplate()" type="button"
+              style="display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid #0284c7; color:#0284c7; border-radius:6px; padding:6px 12px; font-size:0.72rem; font-weight:700; cursor:pointer;">
+              ⬇️ Descargar plantilla vacía (.csv)
+            </button>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <input type="file" id="manager-excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelImport(this)">
+            <button type="button" onclick="document.getElementById('manager-excel-file-input').click()"
+              style="display:inline-flex; align-items:center; gap:8px; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:11px 20px; font-size:0.85rem; font-weight:700; cursor:pointer; box-shadow:0 2px 4px rgba(37,99,235,0.25);">
+              📂 Seleccionar archivo (.xlsx / .csv) e importar
+            </button>
+            <span id="manager-excel-import-status" style="font-size:0.74rem; color:#64748b;"></span>
+          </div>
+        </div>
+
+        <!-- Método 2: Crear a Mano -->
+        <div id="manager-tab-manual-content" style="display:none;">
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label style="font-size:0.74rem; font-weight:700; color:#475569; display:block; margin-bottom:5px;">Nombre del salón</label>
+              <input type="text" id="mgr-manual-classroom-name" class="form-control" maxlength="50" placeholder="Ej: 4° A, Sigma, Los Creativos"
+                style="width:100%; font-size:0.92rem; font-weight:700; padding:10px 14px; background:#ffffff; border:1.5px solid #cbd5e1; color:#0f172a; border-radius:8px;">
+            </div>
+
+            <div>
+              <label style="font-size:0.74rem; font-weight:700; color:#475569; display:block; margin-bottom:5px;">
+                Grado <span style="color:#f59e0b;">*</span>
+              </label>
+              <select id="mgr-manual-classroom-grade" class="form-control"
+                style="width:100%; font-size:0.92rem; font-weight:700; padding:10px 14px; background:#ffffff; border:1.5px solid #cbd5e1; color:#0f172a; border-radius:8px;">
+                <option value="">— Elige el grado —</option>
+              </select>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                <label style="font-size:0.74rem; font-weight:700; color:#475569; margin:0;">
+                  Alumnos del salón (escribe y pulsa Enter para crear la siguiente fila)
+                </label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button type="button" onclick="toggleMgrPasteBox()"
+                    style="background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; border-radius:6px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer;">
+                    📋 Pegar lista copiada
+                  </button>
+                  <span id="mgr-manual-student-count" style="font-size:0.74rem; font-weight:800; color:#64748b;">0 alumnos</span>
+                </div>
+              </div>
+
+              <!-- Cuadro opcional para pegar lista masiva -->
+              <div id="mgr-paste-box" style="display:none; background:#f8fafc; border:1.5px dashed #94a3b8; border-radius:10px; padding:12px; margin-bottom:10px;">
+                <span style="font-size:0.72rem; color:#334155; display:block; margin-bottom:6px;">Pega los nombres aquí (uno por línea o desde Excel):</span>
+                <textarea id="mgr-paste-textarea" class="form-control" rows="4" 
+                  style="width:100%; font-size:0.84rem; padding:8px; background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; border-radius:6px; margin-bottom:8px; font-family:ui-monospace,monospace;"></textarea>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                  <button type="button" onclick="toggleMgrPasteBox()" style="background:transparent; border:1px solid #cbd5e1; color:#64748b; border-radius:6px; padding:5px 12px; font-size:0.74rem; cursor:pointer;">Cancelar</button>
+                  <button type="button" onclick="applyMgrPastedStudents()" style="background:#2563eb; border:none; color:#fff; border-radius:6px; padding:5px 14px; font-size:0.74rem; font-weight:700; cursor:pointer;">Cargar a las filas</button>
+                </div>
+              </div>
+
+              <!-- Contenedor dinámico de filas numeradas -->
+              <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:12px; width:100%; box-sizing:border-box;">
+                <div id="mgr-manual-students-rows-container" style="display:flex; flex-direction:column; max-height:300px; overflow-y:auto; padding-right:4px;">
+                </div>
+                <div style="margin-top:10px; padding-top:8px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-start; align-items:center; gap:8px;">
+                  <button type="button" onclick="addMgrStudentRow()"
+                    style="display:inline-flex; align-items:center; gap:6px; background:#ffffff; border:1.5px dashed #94a3b8; color:#0284c7; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">
+                    ➕ Agregar alumno
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" id="btn-mgr-save-classroom" onclick="handleCreateClassroomManualFromManager()"
+              style="background:#10b981; border:none; color:#fff; border-radius:10px; padding:13px; font-size:0.92rem; font-weight:800; cursor:pointer; margin-top:4px; box-shadow:0 4px 12px rgba(16,185,129,0.25); display:flex; align-items:center; justify-content:center; gap:8px;">
+              ✓ Guardar Salón y Ubicar en el Plano
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:12px 20px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end;">
+        <button type="button" onclick="closeAddClassroomModal()"
+          style="background:transparent; border:1px solid #cbd5e1; color:#64748b; border-radius:8px; padding:7px 16px; font-size:0.8rem; font-weight:700; cursor:pointer;">
+          Cancelar
+        </button>
+      </div>
+
     </div>
   </div>
 

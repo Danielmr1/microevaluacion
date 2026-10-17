@@ -17,151 +17,86 @@
 //                        hideWizardSteps, renderGradeSelect, escaparHtml
 // =============================================================================
 
-/* ── GESTOR DE SALONES (FLUJO 2) ── */
-let currentManagerViewTab = 'registered'; // 'registered' | 'add'
-let isManagerCrossfadeRunning = false;
+//* ── GESTOR DE SALONES: PLANO ARQUITECTÓNICO DEL COLEGIO (CAMPUS BLUEPRINT) ── */
+const MAX_CAMPUS_CLASSROOMS = 10;
+let currentSelectedClassroomId = null;
 
-function switchClassroomManagerTab(targetTab) {
-  if (isManagerCrossfadeRunning) return;
-  if (!targetTab) targetTab = 'registered';
+/**
+ * Devuelve los salones registrados ordenados estrictamente por grado de menor a mayor:
+ * 1. Etapa: Primaria (1) antes que Secundaria (2).
+ * 2. Nivel: 1° a 6° ascendente.
+ * 3. Nombre alfabético como desempate.
+ */
+function getSortedCampusClassrooms() {
+  const rawList = ClassroomData.getClassroomList();
+  const fullList = rawList.map(item => {
+    const cls = ClassroomData.getClassroom(item.id);
+    return {
+      id: item.id,
+      name: (cls && cls.name) || item.name || 'Salón',
+      count: (cls && cls.students) ? cls.students.length : (item.count || 0),
+      gradeStage: cls?.gradeStage || null,
+      gradeLevel: cls?.gradeLevel || null,
+      color: (cls?.color) || ClassroomData.getClassroomColor(item.id) || '#3b82f6',
+      students: (cls && cls.students) ? cls.students : []
+    };
+  });
 
-  const panelReg = document.getElementById('manager-view-registered-panel');
-  const panelAdd = document.getElementById('manager-add-classroom-panel');
-  const btnReg = document.getElementById('btn-dock-registered');
-  const btnAdd = document.getElementById('btn-dock-add');
+  return fullList.sort((a, b) => {
+    // 1. Etapa escolar
+    const stageWeight = (s) => {
+      if (!s) return 99;
+      const str = String(s).toLowerCase();
+      if (str === 'primaria') return 1;
+      if (str === 'secundaria') return 2;
+      return 3;
+    };
+    const swA = stageWeight(a.gradeStage);
+    const swB = stageWeight(b.gradeStage);
+    if (swA !== swB) return swA - swB;
 
-  if (!panelReg || !panelAdd) return;
+    // 2. Grado escolar (1..6)
+    const lvlA = Number(a.gradeLevel) || 99;
+    const lvlB = Number(b.gradeLevel) || 99;
+    if (lvlA !== lvlB) return lvlA - lvlB;
 
-  const session = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
-  const isSessionLocked = !!(session && session.classroomId);
-  if (targetTab === 'add' && isSessionLocked) {
-    if (typeof showToast === 'function') {
-      showToast('⚠️ Hay una evaluación en marcha. Finaliza o reinicia la sesión antes de agregar salones.');
-    }
-    return;
-  }
-
-  if (currentManagerViewTab === targetTab && 
-      ((targetTab === 'registered' && panelReg.style.display !== 'none') || 
-       (targetTab === 'add' && panelAdd.style.display !== 'none'))) {
-    return;
-  }
-
-  isManagerCrossfadeRunning = true;
-  currentManagerViewTab = targetTab;
-
-  // Actualizar estilos activos de inmediato para feedback instantáneo
-  if (btnReg) {
-    btnReg.classList.toggle('active', targetTab === 'registered');
-    btnReg.setAttribute('aria-selected', targetTab === 'registered');
-  }
-  if (btnAdd) {
-    btnAdd.classList.toggle('active', targetTab === 'add');
-    btnAdd.setAttribute('aria-selected', targetTab === 'add');
-  }
-
-  const leavingPanel = (targetTab === 'registered') ? panelAdd : panelReg;
-  const enteringPanel = (targetTab === 'registered') ? panelReg : panelAdd;
-
-  // Fase 1: Desvanecimiento de salida (Fade-out suave)
-  leavingPanel.classList.remove('is-active', 'is-anim-in-init');
-  leavingPanel.classList.add('is-anim-out');
-
-  setTimeout(() => {
-    leavingPanel.style.display = 'none';
-    leavingPanel.classList.remove('is-anim-out');
-
-    // Fase 2: Preparar panel entrante con estado inicial transparente
-    enteringPanel.style.display = 'block';
-    enteringPanel.classList.remove('is-active');
-    enteringPanel.classList.add('is-anim-in-init');
-
-    void enteringPanel.offsetHeight; // Forzar reflow
-
-    // Fase 3: Desvanecimiento de entrada (Fade-in suave)
-    requestAnimationFrame(() => {
-      enteringPanel.classList.remove('is-anim-in-init');
-      enteringPanel.classList.add('is-active');
-
-      setTimeout(() => {
-        isManagerCrossfadeRunning = false;
-      }, 220);
-    });
-  }, 190);
+    // 3. Nombre del aula
+    return (a.name || '').localeCompare(b.name || '', 'es', { sensitivity: 'base' });
+  });
 }
 
 function renderClassroomManager(selectedClassId = null) {
-  const sel = document.getElementById('manager-classroom-select');
-  const countEl = document.getElementById('manager-classrooms-count');
   const warnActive = document.getElementById('mgr-active-session-warning');
-  const panelAdd = document.getElementById('manager-add-classroom-panel');
-  const panelReg = document.getElementById('manager-view-registered-panel');
+  const badgeOccupancy = document.getElementById('campus-occupancy-badge');
+  const btnAdd = document.getElementById('btn-campus-add-classroom');
+  const wingLeft = document.getElementById('campus-wing-left-rooms');
+  const wingRight = document.getElementById('campus-wing-right-rooms');
+
   const session = ClassroomData.getActiveSession();
   const isSessionLocked = !!(session && session.classroomId);
 
   if (warnActive) warnActive.style.display = isSessionLocked ? 'flex' : 'none';
 
-  const list = ClassroomData.getClassroomList();
-  if (countEl) countEl.textContent = `${list.length} salón${list.length === 1 ? '' : 'es'}`;
+  const classrooms = getSortedCampusClassrooms();
+  const count = classrooms.length;
 
-  // Actualizar contador en la tarjeta del dock
-  const dockCountEl = document.getElementById('dock-registered-count');
-  if (dockCountEl) dockCountEl.textContent = `${list.length} salón${list.length === 1 ? '' : 'es'}`;
-
-  const btnDockAdd = document.getElementById('btn-dock-add');
-  if (btnDockAdd) {
-    btnDockAdd.classList.toggle('is-disabled', isSessionLocked);
-    btnDockAdd.title = isSessionLocked ? 'Bloqueado durante evaluación activa' : 'Registrar un nuevo salón por Excel o a mano';
+  if (badgeOccupancy) {
+    badgeOccupancy.textContent = `${count} de ${MAX_CAMPUS_CLASSROOMS} aulas`;
   }
 
-  // Estado del crossfade: asegurar visibilidad correcta del panel activo
-  if (panelReg && currentManagerViewTab === 'registered') {
-    panelReg.style.display = 'block';
-    panelReg.classList.add('is-active');
-    if (panelAdd) panelAdd.style.display = 'none';
-  } else if (panelAdd && currentManagerViewTab === 'add' && !isSessionLocked) {
-    panelAdd.style.display = 'block';
-    panelAdd.classList.add('is-active');
-    if (panelReg) panelReg.style.display = 'none';
-  } else {
-    currentManagerViewTab = 'registered';
-    if (panelReg) {
-      panelReg.style.display = 'block';
-      panelReg.classList.add('is-active');
+  if (btnAdd) {
+    const isFull = count >= MAX_CAMPUS_CLASSROOMS;
+    btnAdd.disabled = isSessionLocked || isFull;
+    if (isFull) {
+      btnAdd.title = 'Capacidad máxima de 10 aulas completada';
+    } else if (isSessionLocked) {
+      btnAdd.title = 'Bloqueado durante evaluación activa';
+    } else {
+      btnAdd.title = 'Registrar un nuevo salón';
     }
-    if (panelAdd) panelAdd.style.display = 'none';
-    const btnDockReg = document.getElementById('btn-dock-registered');
-    if (btnDockReg) btnDockReg.classList.add('active');
-    if (btnDockAdd) btnDockAdd.classList.remove('active');
   }
 
-  if (!sel) return;
-
-  const previousVal = selectedClassId || sel.value;
-  sel.innerHTML = '<option value="">— Elige un salón para ver sus alumnos —</option>';
-  list.forEach(cls => {
-    const opt = document.createElement('option');
-    opt.value = cls.id;
-    opt.textContent = `${cls.name} (${cls.count} alumnos)`;
-    sel.appendChild(opt);
-  });
-
-  // Si se pasa un salón específico o había uno válido seleccionado, mantenerlo
-  if (previousVal && list.some(c => c.id === previousVal)) {
-    sel.value = previousVal;
-    onManagerClassroomSelected(previousVal);
-  } else {
-    sel.value = '';
-    onManagerClassroomSelected('');
-  }
-
-  // Inicializar filas dinámicas de alumnos si no existen
-  const rowsContainer = document.getElementById('mgr-manual-students-rows-container');
-  if (rowsContainer && rowsContainer.children.length === 0) {
-    resetMgrStudentRows(['']);
-  }
-
-  // Grados en el formulario manual
+  // Poblar selectores de grados en el modal de alta si no estaban listos
   const gradeSel = document.getElementById('mgr-manual-classroom-grade');
   if (gradeSel && gradeSel.options && gradeSel.options.length <= 1) {
     ClassroomData.getGradeStages().forEach(stage => {
@@ -176,49 +111,140 @@ function renderClassroomManager(selectedClassId = null) {
       gradeSel.appendChild(group);
     });
   }
+
+  const rowsContainer = document.getElementById('mgr-manual-students-rows-container');
+  if (rowsContainer && rowsContainer.children.length === 0) {
+    resetMgrStudentRows(['']);
+  }
+
+  // Si no existen los contenedores del plano en el DOM, terminar
+  if (!wingLeft || !wingRight) return;
+
+  // Renderizar 10 ranuras: 0..4 en Pabellón Oeste, 5..9 en Pabellón Este
+  let htmlLeft = '';
+  let htmlRight = '';
+
+  for (let i = 0; i < MAX_CAMPUS_CLASSROOMS; i++) {
+    const slotNum = String(i + 1).padStart(2, '0');
+    let cardHtml = '';
+
+    if (i < count) {
+      // Aula Ocupada
+      const cls = classrooms[i];
+      const gradeText = ClassroomData.formatGrade(cls.gradeStage, cls.gradeLevel) || 'Sin grado asignado';
+      const color = cls.color || '#3b82f6';
+
+      cardHtml = `
+        <div class="campus-room-card is-occupied" style="border-left-color: ${color};" onclick="openClassroomModal('${cls.id}')" title="Clic para gestionar el aula y nómina de estudiantes">
+          <div class="room-card-top">
+            <span class="room-slot-num">AULA ${slotNum}</span>
+            <span class="room-grade-badge">${escaparHtml(gradeText)}</span>
+          </div>
+          <div class="room-name-row">
+            <span class="room-name">${escaparHtml(cls.name)}</span>
+          </div>
+          <div class="room-card-bottom">
+            <span class="room-students-count">👥 ${cls.count} estudiante${cls.count === 1 ? '' : 's'}</span>
+            <span class="room-status-door">🚪 Ver Alumnos →</span>
+          </div>
+        </div>
+      `;
+    } else {
+      // Aula Disponible
+      const disabledAttr = isSessionLocked ? 'style="opacity:0.55; cursor:not-allowed;"' : '';
+      const clickAction = isSessionLocked
+        ? `showToast('⚠️ No se pueden agregar salones durante una evaluación activa.')`
+        : `openAddClassroomModal()`;
+
+      cardHtml = `
+        <div class="campus-room-card is-available" ${disabledAttr} onclick="${clickAction}" title="Espacio libre en el colegio. Clic para registrar salón.">
+          <span class="room-slot-num" style="align-self: flex-start; margin-bottom: 2px;">ESPACIO ${slotNum}</span>
+          <div class="room-available-label">
+            <span>➕</span> Aula Disponible
+          </div>
+          <span class="room-available-hint">Clic para registrar nuevo salón</span>
+        </div>
+      `;
+    }
+
+    if (i < 5) {
+      htmlLeft += cardHtml;
+    } else {
+      htmlRight += cardHtml;
+    }
+  }
+
+  wingLeft.innerHTML = htmlLeft;
+  wingRight.innerHTML = htmlRight;
+
+  // Si hay un salón abierto en modal o solicitado, refrescarlo
+  if (selectedClassId) {
+    openClassroomModal(selectedClassId);
+  } else if (currentSelectedClassroomId && document.getElementById('modal-manage-classroom')?.style.display === 'flex') {
+    openClassroomModal(currentSelectedClassroomId);
+  }
+}
+
+/* ── COMPATIBILIDAD CON LLAMADORES EXTERNOS ── */
+function switchClassroomManagerTab(tab) {
+  if (tab === 'add') {
+    openAddClassroomModal();
+  } else {
+    closeAddClassroomModal();
+  }
 }
 
 function onManagerClassroomSelected(classId) {
-  const emptyEl = document.getElementById('manager-students-empty');
-  const tableWrap = document.getElementById('manager-students-table-wrap');
-  const listEl = document.getElementById('manager-students-list');
-  const gradeEl = document.getElementById('manager-selected-classroom-grade');
-  const countEl = document.getElementById('manager-selected-classroom-students-count');
+  if (classId) {
+    openClassroomModal(classId);
+  } else {
+    closeClassroomModal();
+  }
+}
+
+/* ── MODAL: GESTIÓN DE AULA Y ALUMNOS ── */
+function openClassroomModal(classroomId) {
+  if (!classroomId) return;
+  const cls = ClassroomData.getClassroom(classroomId);
+  if (!cls) return;
+
+  currentSelectedClassroomId = classroomId;
+
+  const modal = document.getElementById('modal-manage-classroom');
+  const badgeEl = document.getElementById('mgr-modal-room-badge');
+  const nameEl = document.getElementById('mgr-modal-room-name');
+  const gradeEl = document.getElementById('mgr-modal-room-grade');
+  const countEl = document.getElementById('mgr-modal-room-students-count');
+  const listEl = document.getElementById('mgr-modal-students-list');
+  const emptyEl = document.getElementById('mgr-modal-students-empty');
   const btnDelete = document.getElementById('btn-manager-delete-classroom');
 
   const session = ClassroomData.getActiveSession();
   const isSessionLocked = !!(session && session.classroomId);
 
-  // Mientras no elige ningún salón, ocultar botón Borrar
+  if (badgeEl) badgeEl.style.background = cls.color || '#3b82f6';
+  if (nameEl) nameEl.textContent = `Aula: ${cls.name}`;
+
+  const gradeText = ClassroomData.formatGrade(cls.gradeStage, cls.gradeLevel) || 'Sin grado asignado';
+  if (gradeEl) gradeEl.textContent = gradeText;
+
+  const students = cls.students || [];
+  if (countEl) countEl.textContent = `${students.length} estudiante(s) registrado(s)`;
+
   if (btnDelete) {
-    btnDelete.style.display = (classId && !isSessionLocked) ? 'inline-flex' : 'none';
+    btnDelete.style.display = isSessionLocked ? 'none' : 'inline-flex';
   }
 
-  if (!classId) {
-    if (emptyEl) emptyEl.style.display = 'block';
-    if (tableWrap) tableWrap.style.display = 'none';
-    return;
-  }
-
-  const cls = ClassroomData.getClassroom(classId);
-  if (!cls) {
-    if (emptyEl) emptyEl.style.display = 'block';
-    if (tableWrap) tableWrap.style.display = 'none';
-    return;
-  }
-
-  if (emptyEl) emptyEl.style.display = 'none';
-  if (tableWrap) tableWrap.style.display = 'block';
-
-  const gradeText = ClassroomData.formatGrade(cls.gradeStage, cls.gradeLevel) || 'Sin grado especificado';
-  if (gradeEl) gradeEl.textContent = `Grado: ${gradeText}`;
-  if (countEl) countEl.textContent = `${cls.students.length} estudiante(s)`;
+  // Ocultar formulario inline de agregar alumno si estaba abierto
+  toggleAddStudentForm(false);
 
   if (listEl) {
-    if (cls.students.length === 0) {
-      listEl.innerHTML = '<div style="color:#64748b; font-size:0.75rem; padding:10px; text-align:center;">Este salón no tiene alumnos cargados aún.</div>';
+    if (students.length === 0) {
+      listEl.innerHTML = '';
+      if (emptyEl) emptyEl.style.display = 'block';
     } else {
-      listEl.innerHTML = cls.students.map((s, idx) => `
+      if (emptyEl) emptyEl.style.display = 'none';
+      listEl.innerHTML = students.map((s, idx) => `
         <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.78rem; gap:10px;">
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
             <span style="color:#64748b; font-weight:800; font-size:0.7rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
@@ -245,6 +271,164 @@ function onManagerClassroomSelected(classId) {
         </div>
       `).join('');
     }
+  }
+
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeClassroomModal() {
+  const modal = document.getElementById('modal-manage-classroom');
+  if (modal) modal.style.display = 'none';
+  currentSelectedClassroomId = null;
+}
+
+/* ── MODAL: ALTA DE NUEVO SALÓN ── */
+function openAddClassroomModal() {
+  const session = ClassroomData.getActiveSession();
+  const isSessionLocked = !!(session && session.classroomId);
+  if (isSessionLocked) {
+    showToast('⚠️ Hay una evaluación en marcha. Finaliza o reinicia la sesión antes de agregar salones.');
+    return;
+  }
+
+  const classrooms = ClassroomData.getClassroomList();
+  if (classrooms.length >= MAX_CAMPUS_CLASSROOMS) {
+    showToast(`⚠️ Has alcanzado el límite máximo de ${MAX_CAMPUS_CLASSROOMS} salones para el colegio.`);
+    return;
+  }
+
+  const modal = document.getElementById('modal-add-classroom');
+  if (modal) modal.style.display = 'flex';
+
+  switchManagerCreateTab('import');
+  const nameInput = document.getElementById('mgr-manual-classroom-name');
+  if (nameInput) setTimeout(() => nameInput.focus(), 80);
+}
+
+function closeAddClassroomModal() {
+  const modal = document.getElementById('modal-add-classroom');
+  if (modal) modal.style.display = 'none';
+}
+
+/* ── FORMULARIO INLINE: AGREGAR ALUMNO EN MODAL ── */
+function toggleAddStudentForm(force) {
+  const box = document.getElementById('mgr-inline-add-student-box');
+  if (!box) return;
+  const isVisible = box.style.display !== 'none';
+  const show = (force !== undefined) ? !!force : !isVisible;
+  box.style.display = show ? 'block' : 'none';
+  if (show) {
+    const fnInput = document.getElementById('mgr-inline-student-fullname');
+    if (fnInput) {
+      fnInput.value = '';
+      fnInput.focus();
+    }
+    const snInput = document.getElementById('mgr-inline-student-shortname');
+    if (snInput) snInput.value = '';
+  }
+}
+
+async function handleSaveInlineStudent() {
+  const classroomId = currentSelectedClassroomId;
+  if (!classroomId) return;
+
+  const fnInput = document.getElementById('mgr-inline-student-fullname');
+  const snInput = document.getElementById('mgr-inline-student-shortname');
+  const btnSave = document.getElementById('btn-save-inline-student');
+
+  const fullName = cleanName(fnInput?.value || '');
+  let shortName = cleanName(snInput?.value || '');
+
+  const val = validateStudentNames(fullName, shortName);
+  if (!val.valid) {
+    showToast(`⚠️ ${val.error}`);
+    return;
+  }
+
+  if (!shortName) shortName = generateShortName(fullName);
+
+  const cls = ClassroomData.getClassroom(classroomId);
+  if (!cls) return;
+
+  // Chequeo de duplicados contra la nómina actual
+  const normFull = normalizeTextForComparison(fullName);
+  const normShort = normalizeTextForComparison(shortName);
+  for (const st of (cls.students || [])) {
+    if (normalizeTextForComparison(st.name) === normFull) {
+      showToast(`⚠️ Ya existe otro estudiante con el nombre "${st.name}" en este salón.`);
+      return;
+    }
+    if (normalizeTextForComparison(st.shortName) === normShort) {
+      showToast(`⚠️ El nombre corto "${shortName}" ya pertenece a otro estudiante. Elige uno diferente.`);
+      return;
+    }
+  }
+
+  try {
+    if (btnSave) {
+      btnSave.disabled = true;
+      btnSave.textContent = '⏳';
+    }
+    showToast('⏳ Guardando alumno...');
+
+    const currentList = (cls.students || []).map(s => ({
+      fullName: s.name,
+      shortName: s.shortName
+    }));
+    currentList.push({ fullName, shortName });
+
+    const ok = await SupabaseClient.importStudents(classroomId, currentList);
+    if (!ok) {
+      showToast('❌ No se pudo guardar el alumno en la base de datos.');
+      return;
+    }
+
+    const user = await SupabaseClient.getCurrentUser();
+    if (user) {
+      await loadAndRenderClassrooms(user, classroomId);
+    }
+
+    toggleAddStudentForm(false);
+    renderClassroomManager(classroomId);
+    openClassroomModal(classroomId);
+    showToast(`✅ Alumno "${fullName}" agregado.`);
+  } catch (err) {
+    console.error('[handleSaveInlineStudent Error]', err);
+    showToast('❌ Error al agregar alumno: ' + (err.message || 'error'));
+  } finally {
+    if (btnSave) {
+      btnSave.disabled = false;
+      btnSave.textContent = 'Guardar';
+    }
+  }
+}
+
+function exportClassroomRosterToExcel() {
+  const classroomId = currentSelectedClassroomId;
+  if (!classroomId) return;
+  const cls = ClassroomData.getClassroom(classroomId);
+  if (!cls || !cls.students || cls.students.length === 0) {
+    showToast('⚠️ No hay alumnos para exportar en este salón.');
+    return;
+  }
+
+  try {
+    const data = cls.students.map((s, idx) => ({
+      'N°': idx + 1,
+      'Nombre Completo': s.name,
+      'Nombre Corto': s.shortName || generateShortName(s.name)
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Nomina');
+
+    const cleanRoomName = cls.name.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    XLSX.writeFile(wb, `Nomina_${cleanRoomName}.xlsx`);
+    showToast('📥 Nómina exportada a Excel.');
+  } catch (err) {
+    console.error('[exportClassroomRosterToExcel Error]', err);
+    showToast('❌ Error al exportar: ' + (err.message || err));
   }
 }
 
@@ -608,7 +792,7 @@ async function handleDeleteClassroomFromManager() {
       return;
     }
     const sel = document.getElementById('manager-classroom-select');
-    const classroomId = sel ? sel.value : '';
+    const classroomId = currentSelectedClassroomId || (sel ? sel.value : '');
     if (!classroomId) {
       showToast('⚠️ Elige primero el salón que quieres borrar.');
       return;
@@ -651,6 +835,8 @@ async function handleDeleteClassroomFromManager() {
 
     wizardClassroomId = null;
     wizardEval = null;
+
+    closeClassroomModal();
 
     const user = await SupabaseClient.getCurrentUser();
     if (user) {
@@ -750,8 +936,9 @@ async function handleCreateClassroomManualFromManager() {
     } else {
       renderClassroomSelect();
     }
+    closeAddClassroomModal();
     renderClassroomManager(newClassroomId);
-    switchClassroomManagerTab('registered');
+    openClassroomModal(newClassroomId);
 
     showToast(`✅ Salón "${name}" creado con éxito con ${students.length} alumnos`);
   } catch (err) {
@@ -1022,7 +1209,7 @@ function toggleManualClassroomForm(forzar, titulo) {
 function prefillManualClassroomForm(nombre, students) {
   const isManagerActive = document.getElementById('view-classrooms')?.classList.contains('active');
   if (isManagerActive) {
-    switchClassroomManagerTab('add');
+    openAddClassroomModal();
     switchManagerCreateTab('manual');
     const mgrName = document.getElementById('mgr-manual-classroom-name');
     if (mgrName) mgrName.value = nombre || '';
@@ -1399,6 +1586,9 @@ async function handleExcelImport(input) {
       if (statusEl) { statusEl.textContent = `✅ ${students.length} alumnos guardados`; statusEl.style.color = '#4ade80'; }
       const user = await SupabaseClient.getCurrentUser();
       if (user) await loadAndRenderClassrooms(user, targetClassroomId);
+      closeAddClassroomModal();
+      renderClassroomManager(targetClassroomId);
+      openClassroomModal(targetClassroomId);
       showToast(`✅ Salón y nómina guardados: ${students.length} alumnos`);
     } else {
       if (statusEl) { statusEl.textContent = '❌ Error al guardar alumnos'; statusEl.style.color = '#f87171'; }
@@ -1411,5 +1601,13 @@ async function handleExcelImport(input) {
 }
 
 if (typeof window !== 'undefined') {
+  window.renderClassroomManager = renderClassroomManager;
+  window.openClassroomModal = openClassroomModal;
+  window.closeClassroomModal = closeClassroomModal;
+  window.openAddClassroomModal = openAddClassroomModal;
+  window.closeAddClassroomModal = closeAddClassroomModal;
+  window.toggleAddStudentForm = toggleAddStudentForm;
+  window.handleSaveInlineStudent = handleSaveInlineStudent;
+  window.exportClassroomRosterToExcel = exportClassroomRosterToExcel;
   window.switchClassroomManagerTab = switchClassroomManagerTab;
 }

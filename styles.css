@@ -5615,156 +5615,370 @@
     }
 
     /* =============================================================================
-       MÓDULO SALONES Y ALUMNOS: STICKY BOTTOM DOCK Y CROSSFADE DE PANELES
+       MÓDULO SALONES Y ALUMNOS: PLANO ARQUITECTÓNICO DEL COLEGIO (CAMPUS BLUEPRINT)
        ============================================================================= */
 
     #view-classrooms .mgr-content-wrapper {
-      padding-bottom: 120px !important;
+      padding-bottom: 40px !important;
     }
 
-    .mgr-bottom-dock-wrap {
-      position: fixed;
-      bottom: 18px;
-      left: 0;
-      right: 0;
-      z-index: 95;
-      width: 100%;
+    .campus-blueprint-container {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 20px;
+      padding: 22px 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
       display: flex;
-      justify-content: center;
-      pointer-events: none;
-      padding: 0 16px;
-      box-sizing: border-box;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    .mgr-dock-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .campus-blueprint-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
-      width: 100%;
-      max-width: 600px;
-      background: rgba(248, 250, 252, 0.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 7px;
-      border-radius: 18px;
-      border: 1.5px solid rgba(203, 213, 225, 0.95);
-      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(15, 23, 42, 0.08);
-      pointer-events: auto;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    .mgr-dock-card {
+    .campus-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .campus-badge-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .campus-title {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+
+    .campus-subtitle {
+      margin: 3px 0 0;
+      font-size: 0.74rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .campus-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .campus-occupancy-pill {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: #0369a1;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .btn-campus-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+      transition: all 0.18s ease;
+    }
+
+    .btn-campus-add:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-campus-add:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Fachada del colegio */
+    .campus-facade-indicator {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 12px 18px;
-      border-radius: 13px;
-      cursor: pointer;
+      gap: 12px;
+      margin: 2px 0 8px;
+    }
+
+    .campus-facade-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+    }
+
+    .campus-facade-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+
+    /* Distribución general: Pabellón Oeste + Patio Central + Pabellón Este */
+    .campus-ground-layout {
+      display: grid;
+      grid-template-columns: 1fr 140px 1fr;
+      gap: 16px;
+      align-items: stretch;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .campus-wing {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .campus-wing-title {
+      font-size: 0.70rem;
+      font-weight: 800;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       text-align: center;
-      border: 1.5px solid #cbd5e1;
+      padding: 4px;
       background: #e2e8f0;
-      color: #64748b;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      user-select: none;
+      border-radius: 6px;
+    }
+
+    .campus-wing-rooms {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    /* Tarjetas de Aulas (Slots) */
+    .campus-room-card {
+      border-radius: 12px;
+      padding: 12px 14px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
       position: relative;
-      overflow: hidden;
-      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 72px;
+      box-sizing: border-box;
+      user-select: none;
     }
 
-    .mgr-dock-card-title {
-      font-size: 0.90rem;
+    /* Aula Ocupada */
+    .campus-room-card.is-occupied {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-left-width: 6px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    }
+
+    .campus-room-card.is-occupied:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
+      border-color: #94a3b8;
+    }
+
+    .room-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .room-slot-num {
+      font-size: 0.65rem;
       font-weight: 800;
-      line-height: 1.25;
-      letter-spacing: -0.01em;
-      text-align: center;
-      display: block;
-      width: 100%;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    /* ── MARCADÍSIMO CONTRASTE ENTRE TARJETA ACTIVA E INACTIVA ── */
+    .room-grade-badge {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
 
-    /* 1. Tarjeta Inactiva: atenuada, fondo gris pizarra claro, sin sombra */
-    .mgr-dock-card:not(.active) {
-      background: #e2e8f0 !important;
-      border-color: #cbd5e1 !important;
-      color: #64748b !important;
-      box-shadow: none !important;
-      opacity: 0.82;
+    .room-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .mgr-dock-card:not(.active):hover:not(.is-disabled) {
-      background: #ffffff !important;
-      border-color: #94a3b8 !important;
-      color: #0f172a !important;
-      opacity: 1;
-      transform: translateY(-1px);
+
+    .room-name {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: #0f172a;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    .mgr-dock-card:not(.active) .mgr-dock-card-title {
+
+    .room-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
       color: #64748b;
     }
 
-    /* 2. Tarjeta Activa: resalta fuertemente con fondo blanco brillante, borde azul rey y sombra */
-    .mgr-dock-card.active {
-      background: #ffffff !important;
-      border: 2px solid #2563eb !important;
-      color: #0f172a !important;
-      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.22), 0 1px 3px rgba(37, 99, 235, 0.12) !important;
+    .room-students-count {
+      font-weight: 700;
+      color: #0369a1;
+    }
+
+    .room-status-door {
+      font-size: 0.70rem;
+      color: #10b981;
+      font-weight: 700;
+    }
+
+    /* Aula Libre / Disponible */
+    .campus-room-card.is-available {
+      background: rgba(255, 255, 255, 0.6);
+      border: 2px dashed #cbd5e1;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .campus-room-card.is-available:hover {
+      background: #eff6ff;
+      border-color: #3b82f6;
       transform: translateY(-2px);
-      opacity: 1 !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
     }
-    .mgr-dock-card.active::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3.5px;
-      background: #2563eb;
-      border-radius: 3px 3px 0 0;
-    }
-    .mgr-dock-card.active .mgr-dock-card-title {
-      color: #0f172a;
+
+    .room-available-label {
+      font-size: 0.82rem;
       font-weight: 800;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .mgr-dock-card.is-disabled {
-      opacity: 0.45 !important;
-      cursor: not-allowed !important;
-      filter: grayscale(0.8);
+    .room-available-hint {
+      font-size: 0.66rem;
+      color: #64748b;
+      margin-top: 2px;
     }
 
-    /* ── ANIMACIÓN DE FUNDIDO CRUZADO (CROSSFADE) ── */
-    .mgr-crossfade-panel {
-      transition: opacity 0.20s cubic-bezier(0.16, 1, 0.3, 1), transform 0.20s cubic-bezier(0.16, 1, 0.3, 1);
-      will-change: opacity, transform;
-    }
-    .mgr-crossfade-panel.is-anim-out {
-      opacity: 0 !important;
-      transform: translateY(-8px) scale(0.995) !important;
-      pointer-events: none;
-    }
-    .mgr-crossfade-panel.is-anim-in-init {
-      opacity: 0 !important;
-      transform: translateY(8px) scale(0.995) !important;
-    }
-    .mgr-crossfade-panel.is-active {
-      opacity: 1 !important;
-      transform: translateY(0) scale(1) !important;
+    /* Patio Central */
+    .campus-courtyard {
+      background: #f0fdf4;
+      border: 1.5px dashed #86efac;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 6px;
+      box-sizing: border-box;
+      min-height: 100%;
     }
 
-    @media (max-width: 640px) {
-      .mgr-dock-inner {
+    .courtyard-path-top,
+    .courtyard-path-bottom {
+      width: 2px;
+      flex: 1;
+      background: repeating-linear-gradient(to bottom, #86efac 0, #86efac 4px, transparent 4px, transparent 8px);
+    }
+
+    .courtyard-center-hub {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 10px 4px;
+      gap: 4px;
+    }
+
+    .courtyard-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .courtyard-title {
+      font-size: 0.70rem;
+      font-weight: 800;
+      color: #166534;
+      letter-spacing: 0.05em;
+    }
+
+    .courtyard-desc {
+      font-size: 0.60rem;
+      color: #15803d;
+      line-height: 1.2;
+      max-width: 100px;
+    }
+
+    /* Pasillo Sur */
+    .campus-south-corridor {
+      text-align: center;
+      font-size: 0.70rem;
+      color: #64748b;
+      font-weight: 600;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .campus-ground-layout {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .campus-courtyard {
+        flex-direction: row;
+        padding: 8px 14px;
+        min-height: 50px;
+      }
+      .courtyard-path-top,
+      .courtyard-path-bottom {
+        width: 100%;
+        height: 2px;
+        background: repeating-linear-gradient(to right, #86efac 0, #86efac 4px, transparent 4px, transparent 8px);
+      }
+      .courtyard-center-hub {
+        flex-direction: row;
         gap: 8px;
-        padding: 6px;
-        border-radius: 16px;
-      }
-      .mgr-dock-card {
-        padding: 8px 10px;
-      }
-      .mgr-dock-card-title {
-        font-size: 0.78rem;
-        gap: 6px;
-      }
-      .mgr-dock-tag {
-        font-size: 0.58rem;
+        padding: 0 10px;
       }
     }
 
