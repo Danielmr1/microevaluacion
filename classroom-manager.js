@@ -157,12 +157,8 @@ function renderClassroomManager(selectedClassId = null) {
         : `openAddClassroomModal()`;
 
       cardHtml = `
-        <div class="campus-room-card is-available" ${disabledAttr} onclick="${clickAction}" title="Espacio libre en el colegio. Clic para registrar salón.">
-          <span class="room-slot-num" style="align-self: flex-start; margin-bottom: 2px;">ESPACIO ${slotNum}</span>
-          <div class="room-available-label">
-            <span>➕</span> Aula Disponible
-          </div>
-          <span class="room-available-hint">Clic para registrar nuevo salón</span>
+        <div class="campus-room-card is-available" ${disabledAttr} onclick="${clickAction}" title="Agregar nuevo salón">
+          <div class="room-available-plus">+</div>
         </div>
       `;
     }

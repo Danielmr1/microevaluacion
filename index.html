@@ -43,7 +43,7 @@
   <script src="roi-processor.js?v=3.2.50"></script>
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
-  <script src="classroom-manager.js?v=3.2.62"></script>
+  <script src="classroom-manager.js?v=3.2.63"></script>
   <script src="question-bank.js?v=3.2.61"></script>
   <script src="card-simulator.js?v=3.2.61"></script>
   <script src="card-exam-builder.js?v=3.2.61"></script>
@@ -54,7 +54,7 @@
   <script src="session-controller.js?v=3.2.61"></script>
   <script src="app-navigation.js?v=3.2.61"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.62">
+  <link rel="stylesheet" href="styles.css?v=3.2.63">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -1150,7 +1150,6 @@
             <span class="campus-badge-icon">📐</span>
             <div>
               <h2 class="campus-title">Plano del Colegio</h2>
-              <p class="campus-subtitle">Campus Escolar · Ordenado estrictamente de menor a mayor grado</p>
             </div>
           </div>
           <div class="campus-header-actions">
@@ -1161,13 +1160,6 @@
           </div>
         </div>
 
-        <!-- Fachada / Entrada del Campus -->
-        <div class="campus-facade-indicator">
-          <span class="campus-facade-line"></span>
-          <span class="campus-facade-label">🏛️ FACHADA PRINCIPAL DEL CAMPUS</span>
-          <span class="campus-facade-line"></span>
-        </div>
-
         <!-- Estructura Continua de Muros Arquitectónicos (CAD Building Blueprint) -->
         <div class="campus-building-cad">
           <!-- Pabellón 1 (Aulas 1 a 5) -->
@@ -1175,13 +1167,8 @@
             <!-- Renderizado dinámico de slots 1 a 5 -->
           </div>
 
-          <!-- Pasillo y Patio Central Continuo -->
+          <!-- Pasillo Central Continuo -->
           <div class="campus-cad-corridor">
-            <span class="corridor-decor-line"></span>
-            <div class="corridor-title-box">
-              <span class="corridor-icon">🏛️</span>
-              <span class="corridor-text">PATIO Y PASILLO CENTRAL</span>
-            </div>
             <span class="corridor-decor-line"></span>
           </div>
 
@@ -1189,11 +1176,6 @@
           <div class="campus-cad-wing wing-south" id="campus-wing-right-rooms">
             <!-- Renderizado dinámico de slots 6 a 10 -->
           </div>
-        </div>
-
-        <!-- Base / Pasillo Sur del Campus -->
-        <div class="campus-south-corridor">
-          <span>📐 Capacidad fija de 10 aulas · Muros perimetrales continuos · Haz clic en cualquier aula para gestionar su nómina de estudiantes</span>
         </div>
       </div>
 
