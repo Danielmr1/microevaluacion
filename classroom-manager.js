@@ -137,7 +137,6 @@ function renderClassroomManager(selectedClassId = null) {
       cardHtml = `
         <div class="campus-room-card is-occupied" style="border-left-color: ${color};" onclick="openClassroomModal('${cls.id}')" title="Clic para gestionar el aula y nómina de estudiantes">
           <div class="room-card-top">
-            <span class="room-slot-num">AULA ${slotNum}</span>
             <span class="room-grade-badge">${escaparHtml(gradeText)}</span>
           </div>
           <div class="room-name-row">
@@ -145,7 +144,7 @@ function renderClassroomManager(selectedClassId = null) {
           </div>
           <div class="room-card-bottom">
             <span class="room-students-count">👥 ${cls.count} estudiante${cls.count === 1 ? '' : 's'}</span>
-            <span class="room-status-door">🚪 Ver Alumnos →</span>
+            <span class="room-status-door">Ver o Editar →</span>
           </div>
         </div>
       `;
