@@ -447,9 +447,6 @@ function handleDeleteQuestionFromBank(target, displayText, optionalId) {
 let bankManagerActiveGrade = null; // { stage: 'primaria', level: 4, label: '4° Primaria' }
 
 function openBankManagerModal() {
-  const modal = document.getElementById('bank-manager-modal');
-  if (!modal) return;
-
   // Determinar grado inicial: el del salón seleccionado o el primer grado habilitado en el catálogo
   let initialGrade = null;
   if (wizardClassroomId) {
