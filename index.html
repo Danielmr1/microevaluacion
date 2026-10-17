@@ -1147,10 +1147,10 @@
         <!-- Header del Plano -->
         <div class="campus-blueprint-header">
           <div class="campus-title-group">
-            <span class="campus-badge-icon">🏫</span>
+            <span class="campus-badge-icon">📐</span>
             <div>
               <h2 class="campus-title">Plano del Colegio</h2>
-              <p class="campus-subtitle">Distribución arquitectónica de aulas · Ordenadas de menor a mayor grado</p>
+              <p class="campus-subtitle">Campus Escolar · Ordenado estrictamente de menor a mayor grado</p>
             </div>
           </div>
           <div class="campus-header-actions">
@@ -1164,43 +1164,36 @@
         <!-- Fachada / Entrada del Campus -->
         <div class="campus-facade-indicator">
           <span class="campus-facade-line"></span>
-          <span class="campus-facade-label">🏛️ ENTRADA PRINCIPAL / FACHADA NORTE</span>
+          <span class="campus-facade-label">🏛️ FACHADA PRINCIPAL DEL CAMPUS</span>
           <span class="campus-facade-line"></span>
         </div>
 
-        <!-- Campus Ground Layout: Pabellón Izquierdo + Patio Central + Pabellón Derecho -->
-        <div class="campus-ground-layout">
-          <!-- Pabellón Izquierdo (Ala Oeste: Aulas 1 a 5) -->
-          <div class="campus-wing campus-wing-left">
-            <div class="campus-wing-title">PABELLÓN OESTE</div>
-            <div class="campus-wing-rooms" id="campus-wing-left-rooms">
-              <!-- Renderizado dinámico de slots 1 a 5 -->
-            </div>
+        <!-- Estructura Continua de Muros Arquitectónicos (CAD Building Blueprint) -->
+        <div class="campus-building-cad">
+          <!-- Pabellón 1 (Aulas 1 a 5) -->
+          <div class="campus-cad-wing wing-north" id="campus-wing-left-rooms">
+            <!-- Renderizado dinámico de slots 1 a 5 -->
           </div>
 
-          <!-- Patio Central / Pasillo Arbolado / Área de Recreo -->
-          <div class="campus-courtyard">
-            <div class="courtyard-path-top"></div>
-            <div class="courtyard-center-hub">
-              <span class="courtyard-icon">🌱</span>
-              <span class="courtyard-title">PATIO CENTRAL</span>
-              <span class="courtyard-desc">Pasillos y Áreas Verdes</span>
+          <!-- Pasillo y Patio Central Continuo -->
+          <div class="campus-cad-corridor">
+            <span class="corridor-decor-line"></span>
+            <div class="corridor-title-box">
+              <span class="corridor-icon">🏛️</span>
+              <span class="corridor-text">PATIO Y PASILLO CENTRAL</span>
             </div>
-            <div class="courtyard-path-bottom"></div>
+            <span class="corridor-decor-line"></span>
           </div>
 
-          <!-- Pabellón Derecho (Ala Este: Aulas 6 a 10) -->
-          <div class="campus-wing campus-wing-right">
-            <div class="campus-wing-title">PABELLÓN ESTE</div>
-            <div class="campus-wing-rooms" id="campus-wing-right-rooms">
-              <!-- Renderizado dinámico de slots 6 a 10 -->
-            </div>
+          <!-- Pabellón 2 (Aulas 6 a 10) -->
+          <div class="campus-cad-wing wing-south" id="campus-wing-right-rooms">
+            <!-- Renderizado dinámico de slots 6 a 10 -->
           </div>
         </div>
 
         <!-- Base / Pasillo Sur del Campus -->
         <div class="campus-south-corridor">
-          <span>📐 Capacidad fija de 10 aulas · Haz clic en cualquier aula para gestionar su nómina de estudiantes</span>
+          <span>📐 Capacidad fija de 10 aulas · Muros perimetrales continuos · Haz clic en cualquier aula para gestionar su nómina de estudiantes</span>
         </div>
       </div>
 

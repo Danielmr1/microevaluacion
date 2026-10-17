@@ -5622,15 +5622,26 @@
       padding-bottom: 40px !important;
     }
 
+    /* =============================================================================
+       MÓDULO SALONES: PLANO ARQUITECTÓNICO CONTINUO (BLUEPRINT AZUL TÉCNICO)
+       PC: Formato Apaisado 5x2 (Más anchura que altura W > H)
+       Celular: Formato Vertical 2x5 (Más altura que anchura H > W)
+       ============================================================================= */
+
+    #view-classrooms .mgr-content-wrapper {
+      padding-bottom: 40px !important;
+    }
+
     .campus-blueprint-container {
-      background: #ffffff;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 20px;
-      padding: 22px 24px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      background: #061122;
+      border: 1.5px solid #1e3a5f;
+      border-radius: 18px;
+      padding: 20px 22px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+      color: #f1f5f9;
     }
 
     .campus-blueprint-header {
@@ -5639,34 +5650,34 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
     }
 
     .campus-title-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .campus-badge-icon {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       line-height: 1;
     }
 
     .campus-title {
       margin: 0;
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 800;
-      color: #0f172a;
+      color: #38bdf8;
       letter-spacing: -0.01em;
     }
 
     .campus-subtitle {
-      margin: 3px 0 0;
-      font-size: 0.74rem;
-      color: #64748b;
-      font-weight: 600;
+      margin: 2px 0 0;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-weight: 500;
     }
 
     .campus-header-actions {
@@ -5676,309 +5687,359 @@
     }
 
     .campus-occupancy-pill {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 800;
-      color: #0369a1;
-      background: #e0f2fe;
-      border: 1px solid #bae6fd;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
       padding: 5px 12px;
       border-radius: 20px;
+      letter-spacing: 0.02em;
     }
 
     .btn-campus-add {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #2563eb;
+      background: #0284c7;
       color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 0.82rem;
+      border: 1px solid #38bdf8;
+      border-radius: 9px;
+      padding: 7px 15px;
+      font-size: 0.80rem;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35);
       transition: all 0.18s ease;
     }
 
     .btn-campus-add:hover:not(:disabled) {
-      background: #1d4ed8;
+      background: #0369a1;
+      border-color: #7dd3fc;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
     }
 
     .btn-campus-add:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
       box-shadow: none;
     }
 
-    /* Fachada del colegio */
     .campus-facade-indicator {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      margin: 2px 0 8px;
+      gap: 10px;
+      margin: 0;
     }
 
     .campus-facade-line {
       flex: 1;
       height: 1px;
-      background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.35), transparent);
     }
 
     .campus-facade-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 800;
-      color: #64748b;
+      color: #7dd3fc;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      padding: 4px 14px;
-      border-radius: 20px;
+      letter-spacing: 0.09em;
+      background: rgba(14, 34, 61, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 3px 12px;
+      border-radius: 14px;
     }
 
-    /* Distribución general: Pabellón Oeste + Patio Central + Pabellón Este */
-    .campus-ground-layout {
-      display: grid;
-      grid-template-columns: 1fr 140px 1fr;
-      gap: 16px;
-      align-items: stretch;
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 16px;
-    }
-
-    .campus-wing {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .campus-wing-title {
-      font-size: 0.70rem;
-      font-weight: 800;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      text-align: center;
-      padding: 4px;
-      background: #e2e8f0;
-      border-radius: 6px;
-    }
-
-    .campus-wing-rooms {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
-    }
-
-    /* Tarjetas de Aulas (Slots) */
-    .campus-room-card {
-      border-radius: 12px;
-      padding: 12px 14px;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      cursor: pointer;
+    /* ── ESTRUCTURA CAD CON MUROS CONTINUOS (BLUEPRINT) ── */
+    .campus-building-cad {
+      background-color: #07162c;
+      background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.07) 1px, transparent 1px);
+      background-size: 18px 18px;
+      border: 3.5px solid #38bdf8;
+      box-shadow: 0 0 0 1px #0284c7, 0 10px 30px rgba(2, 132, 199, 0.18);
       position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      /* PC por defecto: orientación apaisada (horizontal 5x2) */
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      min-height: 72px;
+      width: 100%;
+    }
+
+    /* Pabellón en PC: 5 aulas continuas de izquierda a derecha */
+    .campus-cad-wing {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Pasillo y Patio Central en PC: franja horizontal continua */
+    .campus-cad-corridor {
+      height: 36px;
+      background: rgba(2, 132, 199, 0.18);
+      border-top: 2px solid #0284c7;
+      border-bottom: 2px solid #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 16px;
       box-sizing: border-box;
       user-select: none;
     }
 
-    /* Aula Ocupada */
-    .campus-room-card.is-occupied {
-      background: #ffffff;
-      border: 1.5px solid #cbd5e1;
-      border-left-width: 6px;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    .corridor-decor-line {
+      flex: 1;
+      height: 1px;
+      background: repeating-linear-gradient(90deg, #38bdf8 0, #38bdf8 6px, transparent 6px, transparent 12px);
+      opacity: 0.6;
     }
 
-    .campus-room-card.is-occupied:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
-      border-color: #94a3b8;
+    .corridor-title-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .corridor-icon {
+      font-size: 0.9rem;
+    }
+
+    .corridor-text {
+      font-size: 0.66rem;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* AULAS CONTINUAS (Cero huecos, muros tabique continuos) */
+    .campus-room-card {
+      margin: 0;
+      padding: 10px 10px;
+      min-height: 108px;
+      box-sizing: border-box;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: background 0.18s ease, outline 0.18s ease;
+      background: rgba(11, 30, 58, 0.7);
+    }
+
+    /* Muros interiores continuos en PC (5x2):
+       Cada aula tiene borde derecho que actúa como tabique con la siguiente */
+    .wing-north .campus-room-card:not(:last-child),
+    .wing-south .campus-room-card:not(:last-child) {
+      border-right: 1.5px solid #0284c7;
+    }
+
+    /* Hover técnico de aula en blueprint */
+    .campus-room-card:hover {
+      background: rgba(56, 189, 248, 0.18) !important;
+      outline: 2px solid #38bdf8;
+      outline-offset: -2px;
+      z-index: 5;
+    }
+
+    /* Aula Ocupada */
+    .campus-room-card.is-occupied {
+      border-top: 4px solid #38bdf8;
     }
 
     .room-card-top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 6px;
+      align-items: flex-start;
+      gap: 4px;
+      margin-bottom: 4px;
     }
 
     .room-slot-num {
-      font-size: 0.65rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.64rem;
       font-weight: 800;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      color: #7dd3fc;
+      letter-spacing: 0.05em;
     }
 
     .room-grade-badge {
-      font-size: 0.68rem;
+      font-size: 0.64rem;
       font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 6px;
-      background: #f1f5f9;
-      color: #334155;
-      border: 1px solid #e2e8f0;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.14);
+      color: #bae6fd;
+      border: 1px solid rgba(56, 189, 248, 0.35);
       white-space: nowrap;
     }
 
     .room-name-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      margin: 2px 0 4px;
     }
 
     .room-name {
-      font-size: 0.96rem;
+      font-size: 0.90rem;
       font-weight: 800;
-      color: #0f172a;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      display: block;
     }
 
     .room-card-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.72rem;
-      color: #64748b;
+      font-size: 0.68rem;
+      margin-top: auto;
     }
 
     .room-students-count {
       font-weight: 700;
-      color: #0369a1;
+      color: #93c5fd;
+      font-size: 0.68rem;
     }
 
     .room-status-door {
-      font-size: 0.70rem;
-      color: #10b981;
+      font-size: 0.66rem;
+      color: #4ade80;
       font-weight: 700;
     }
 
-    /* Aula Libre / Disponible */
+    /* Aula Disponible / Libre */
     .campus-room-card.is-available {
-      background: rgba(255, 255, 255, 0.6);
-      border: 2px dashed #cbd5e1;
+      background: rgba(15, 23, 42, 0.45);
+      border-top: 3px dashed rgba(56, 189, 248, 0.4);
+      align-items: center;
       justify-content: center;
-      align-items: center;
       text-align: center;
-    }
-
-    .campus-room-card.is-available:hover {
-      background: #eff6ff;
-      border-color: #3b82f6;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
-    }
-
-    .room-available-label {
-      font-size: 0.82rem;
-      font-weight: 800;
-      color: #2563eb;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .room-available-hint {
-      font-size: 0.66rem;
-      color: #64748b;
-      margin-top: 2px;
-    }
-
-    /* Patio Central */
-    .campus-courtyard {
-      background: #f0fdf4;
-      border: 1.5px dashed #86efac;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 6px;
-      box-sizing: border-box;
-      min-height: 100%;
-    }
-
-    .courtyard-path-top,
-    .courtyard-path-bottom {
-      width: 2px;
-      flex: 1;
-      background: repeating-linear-gradient(to bottom, #86efac 0, #86efac 4px, transparent 4px, transparent 8px);
-    }
-
-    .courtyard-center-hub {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 10px 4px;
       gap: 4px;
     }
 
-    .courtyard-icon {
-      font-size: 1.5rem;
-      line-height: 1;
+    .campus-room-card.is-available .room-slot-num {
+      position: absolute;
+      top: 6px;
+      left: 8px;
     }
 
-    .courtyard-title {
-      font-size: 0.70rem;
+    .room-available-label {
+      font-size: 0.76rem;
       font-weight: 800;
-      color: #166534;
-      letter-spacing: 0.05em;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    .courtyard-desc {
-      font-size: 0.60rem;
-      color: #15803d;
-      line-height: 1.2;
-      max-width: 100px;
+    .room-available-hint {
+      font-size: 0.62rem;
+      color: #94a3b8;
     }
 
-    /* Pasillo Sur */
     .campus-south-corridor {
       text-align: center;
-      font-size: 0.70rem;
-      color: #64748b;
-      font-weight: 600;
-      padding: 8px 12px;
-      background: #f8fafc;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      font-weight: 500;
+      padding: 6px 12px;
+      background: rgba(14, 34, 61, 0.7);
+      border-radius: 8px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
     }
 
-    /* Responsive */
+    /* =============================================================================
+       ADAPTACIÓN CELULAR (MOBILE): FORMATO VERTICAL 2x5 (MÁS ALTURA QUE ANCHURA H > W)
+       ============================================================================= */
     @media (max-width: 768px) {
-      .campus-ground-layout {
-        grid-template-columns: 1fr;
-        gap: 12px;
+      .campus-blueprint-container {
+        padding: 14px 12px;
       }
-      .campus-courtyard {
-        flex-direction: row;
-        padding: 8px 14px;
-        min-height: 50px;
-      }
-      .courtyard-path-top,
-      .courtyard-path-bottom {
+
+      /* El edificio pasa de horizontal 5x2 a 3 columnas verticales:
+         Pabellón Izquierdo (5 aulas) | Pasillo Vertical | Pabellón Derecho (5 aulas) */
+      .campus-building-cad {
+        display: grid;
+        grid-template-columns: 1fr 30px 1fr;
         width: 100%;
-        height: 2px;
-        background: repeating-linear-gradient(to right, #86efac 0, #86efac 4px, transparent 4px, transparent 8px);
       }
-      .courtyard-center-hub {
-        flex-direction: row;
-        gap: 8px;
-        padding: 0 10px;
+
+      /* Cada ala se apila verticalmente con 5 aulas continuas */
+      .campus-cad-wing {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      /* Muros interiores continuos en Celular (2x5):
+         Tabiques horizontales entre aulas apiladas */
+      .wing-north .campus-room-card:not(:last-child),
+      .wing-south .campus-room-card:not(:last-child) {
+        border-right: none !important;
+        border-bottom: 1.5px solid #0284c7 !important;
+      }
+
+      .campus-room-card {
+        min-height: 96px;
+        padding: 8px;
+      }
+
+      .room-name {
+        font-size: 0.84rem;
+      }
+
+      /* Pasillo Central en Celular: Eje vertical continuo entre ambos pabellones */
+      .campus-cad-corridor {
+        height: auto;
+        width: 100%;
+        background: rgba(2, 132, 199, 0.22);
+        border-top: none;
+        border-bottom: none;
+        border-left: 2px solid #0284c7;
+        border-right: 2px solid #0284c7;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 0;
+        gap: 0;
+      }
+
+      .corridor-decor-line {
+        width: 1px;
+        height: 100%;
+        background: repeating-linear-gradient(to bottom, #38bdf8 0, #38bdf8 6px, transparent 6px, transparent 12px);
+      }
+
+      .corridor-title-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin: 10px 0;
+      }
+
+      .corridor-icon {
+        font-size: 0.8rem;
+      }
+
+      .corridor-text {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        letter-spacing: 0.14em;
+        font-size: 0.58rem;
       }
     }
 
