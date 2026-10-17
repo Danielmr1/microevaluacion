@@ -54,7 +54,7 @@
   <script src="session-controller.js?v=3.2.61"></script>
   <script src="app-navigation.js?v=3.2.61"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.63">
+  <link rel="stylesheet" href="styles.css?v=3.2.66">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -1538,8 +1538,7 @@
         <div style="display:flex; align-items:center; gap:10px;">
           <span style="font-size:1.3rem;">➕</span>
           <div>
-            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;">Agregar Nuevo Salón al Colegio</h3>
-            <p style="margin:2px 0 0; font-size:0.72rem; color:#64748b;">El salón se ubicará automáticamente en el plano según su grado escolar.</p>
+            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;">Agregar Nuevo Salón</h3>
           </div>
         </div>
         <button type="button" onclick="closeAddClassroomModal()" style="background:transparent; border:none; color:#64748b; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Cerrar">✕</button>
@@ -1566,7 +1565,7 @@
               <span>ℹ️</span> ¿Cómo preparar tu lista de alumnos?
             </div>
             <p style="font-size:0.77rem; color:#334155; line-height:1.45; margin:0 0 10px;">
-              Puedes usar la misma nómina oficial que descargas del colegio o de SIAGIE. El archivo solo necesita:
+              El archivo solo necesita:
             </p>
             <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
               <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.74rem;">
@@ -1599,7 +1598,7 @@
           <div style="display:flex; flex-direction:column; gap:14px;">
             <div>
               <label style="font-size:0.74rem; font-weight:700; color:#475569; display:block; margin-bottom:5px;">Nombre del salón</label>
-              <input type="text" id="mgr-manual-classroom-name" class="form-control" maxlength="50" placeholder="Ej: 4° A, Sigma, Los Creativos"
+              <input type="text" id="mgr-manual-classroom-name" class="form-control" maxlength="50" placeholder=""
                 style="width:100%; font-size:0.92rem; font-weight:700; padding:10px 14px; background:#ffffff; border:1.5px solid #cbd5e1; color:#0f172a; border-radius:8px;">
             </div>
 
@@ -1657,14 +1656,6 @@
             </button>
           </div>
         </div>
-      </div>
-
-      <!-- Footer -->
-      <div style="padding:12px 20px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end;">
-        <button type="button" onclick="closeAddClassroomModal()"
-          style="background:transparent; border:1px solid #cbd5e1; color:#64748b; border-radius:8px; padding:7px 16px; font-size:0.8rem; font-weight:700; cursor:pointer;">
-          Cancelar
-        </button>
       </div>
 
     </div>
