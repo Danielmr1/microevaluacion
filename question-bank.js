@@ -482,17 +482,17 @@ function openBankManagerModal() {
   toggleBankManagerAddForm(false);
   renderBankManagerGradeTabs();
   renderBankManagerQuestions();
-
-  modal.style.display = 'flex';
 }
 
 function closeBankManagerModal() {
-  const modal = document.getElementById('bank-manager-modal');
-  if (modal) modal.style.display = 'none';
   toggleBankManagerAddForm(false);
   if (typeof renderBankCards === 'function') renderBankCards();
-  if (currentFlow === 'bank' || currentFlow === 'hub') {
-    showView('hub');
+  if (currentFlow === 'bank') {
+    if (typeof goHomeHub === 'function') {
+      goHomeHub();
+    } else {
+      showView('hub');
+    }
   }
 }
 

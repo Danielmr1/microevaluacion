@@ -123,6 +123,24 @@ if (typeof window !== 'undefined') {
           brandEl.style.cursor = 'default';
           brandEl.style.pointerEvents = 'none';
         }
+      } else if (branch === 'bank') {
+        if (iconEl) iconEl.style.display = 'none';
+        if (tagEl) tagEl.style.display = 'none';
+        titleEl.classList.add('topbar-modality-pill');
+        titleEl.textContent = 'Banco de Preguntas';
+        if (brandEl) {
+          brandEl.style.cursor = 'default';
+          brandEl.style.pointerEvents = 'none';
+        }
+      } else if (branch === 'saved-sessions') {
+        if (iconEl) iconEl.style.display = 'none';
+        if (tagEl) tagEl.style.display = 'none';
+        titleEl.classList.add('topbar-modality-pill');
+        titleEl.textContent = 'Sesiones Guardadas';
+        if (brandEl) {
+          brandEl.style.cursor = 'default';
+          brandEl.style.pointerEvents = 'none';
+        }
       } else if (branch === 'rama3' || branch === 'rama2' || branch === 'rama1') {
         if (iconEl) iconEl.style.display = 'none';
         if (tagEl) tagEl.style.display = 'none';
@@ -356,6 +374,8 @@ if (typeof window !== 'undefined') {
       const viewHub = document.getElementById('view-hub');
       const viewCreate = document.getElementById('view-create');
       const viewClassrooms = document.getElementById('view-classrooms');
+      const viewBank = document.getElementById('view-bank');
+      const viewSavedSessions = document.getElementById('view-saved-sessions');
       const viewScan = document.getElementById('view-scan');
 
       const headerEl = document.querySelector('header');
@@ -372,6 +392,8 @@ if (typeof window !== 'undefined') {
       if (viewHub) viewHub.classList.toggle('active', flowName === 'hub');
       if (viewCreate) viewCreate.classList.toggle('active', flowName === 'eval');
       if (viewClassrooms) viewClassrooms.classList.toggle('active', flowName === 'classrooms');
+      if (viewBank) viewBank.classList.toggle('active', flowName === 'bank');
+      if (viewSavedSessions) viewSavedSessions.classList.toggle('active', flowName === 'saved-sessions');
       if (viewScan) viewScan.classList.toggle('active', flowName === 'scan');
 
       // Botón INICIO en la barra superior: oculto en el Hub de inicio, visible en cualquier otra vista
@@ -403,6 +425,10 @@ if (typeof window !== 'undefined') {
         updateTopbarModeTitle(curBranch);
       } else if (flowName === 'classrooms') {
         updateTopbarModeTitle('classrooms');
+      } else if (flowName === 'bank') {
+        updateTopbarModeTitle('bank');
+      } else if (flowName === 'saved-sessions') {
+        updateTopbarModeTitle('saved-sessions');
       }
     }
 
@@ -431,19 +457,13 @@ if (typeof window !== 'undefined') {
         renderClassroomManager();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (flowName === 'bank') {
-        const btnHome = document.getElementById('topbar-btn-home');
-        if (btnHome) {
-          btnHome.classList.remove('is-hidden');
-          btnHome.style.setProperty('display', 'inline-flex', 'important');
-        }
+        showView('bank');
         openBankManagerModal();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (flowName === 'saved-sessions') {
-        const btnHome = document.getElementById('topbar-btn-home');
-        if (btnHome) {
-          btnHome.classList.remove('is-hidden');
-          btnHome.style.setProperty('display', 'inline-flex', 'important');
-        }
+        showView('saved-sessions');
         openSavedSessionsModal();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
 

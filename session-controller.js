@@ -1032,26 +1032,23 @@
     }
 
     function openSavedSessionsModal() {
-      const modal = document.getElementById('saved-sessions-modal');
-      if (modal) {
-        modal.style.display = 'flex';
-        renderSavedSessionsModal();
-        if (typeof ClassroomData !== 'undefined' && ClassroomData.syncSessionsWithCloud) {
-          ClassroomData.syncSessionsWithCloud().then(() => {
-            renderSavedSessionsModal();
-            updateHubSavedSessionsBadge();
-          }).catch(() => {});
-        }
+      renderSavedSessionsModal();
+      if (typeof ClassroomData !== 'undefined' && ClassroomData.syncSessionsWithCloud) {
+        ClassroomData.syncSessionsWithCloud().then(() => {
+          renderSavedSessionsModal();
+          updateHubSavedSessionsBadge();
+        }).catch(() => {});
       }
     }
     window.openSavedSessionsModal = openSavedSessionsModal;
 
     function closeSavedSessionsModal() {
-      const modal = document.getElementById('saved-sessions-modal');
-      if (modal) modal.style.display = 'none';
-      if (currentFlow === 'hub') {
-        const btnHome = document.getElementById('topbar-btn-home');
-        if (btnHome) btnHome.style.display = 'none';
+      if (currentFlow === 'saved-sessions') {
+        if (typeof goHomeHub === 'function') {
+          goHomeHub();
+        } else {
+          showView('hub');
+        }
       }
     }
     window.closeSavedSessionsModal = closeSavedSessionsModal;
