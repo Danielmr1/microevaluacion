@@ -44,15 +44,15 @@
   <script src="scanner.js?v=3.2.50"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.70"></script>
-  <script src="question-bank.js?v=3.2.70"></script>
+  <script src="question-bank.js?v=3.2.71"></script>
   <script src="card-simulator.js?v=3.2.61"></script>
   <script src="card-exam-builder.js?v=3.2.61"></script>
   <script src="card-formativa.js?v=3.1.95"></script>
   <script src="card-focalizada.js?v=3.1.95"></script>
   <script src="card-cartilla.js?v=3.2.60"></script>
   <script src="card-generator.js?v=3.2.11"></script>
-  <script src="session-controller.js?v=3.2.70"></script>
-  <script src="app-navigation.js?v=3.2.70"></script>
+  <script src="session-controller.js?v=3.2.71"></script>
+  <script src="app-navigation.js?v=3.2.71"></script>
 
   <link rel="stylesheet" href="styles.css?v=3.2.70">
 
@@ -364,7 +364,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.70</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.71</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1948,14 +1948,8 @@
       <!-- Contenedor Maestro: Banco de Preguntas -->
       <div style="background:#0f172a; border:1.5px solid #334155; border-radius:18px; box-shadow:0 12px 32px rgba(0,0,0,0.3); overflow:hidden; display:flex; flex-direction:column;">
         
-        <!-- Header del Banco -->
-        <div style="padding:18px 22px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; background:#1e293b;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:1.6rem; line-height:1;">📚</span>
-            <div>
-              <h2 style="margin:0; font-size:1.15rem; font-weight:800; color:#f8fafc;">Banco de Preguntas</h2>
-            </div>
-          </div>
+        <!-- Header del Banco: Solo botón de acción sin textos duplicados -->
+        <div style="padding:14px 22px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:flex-end; background:#1e293b;">
           <button id="btn-toggle-add-question" type="button" onclick="toggleBankManagerAddForm()"
             style="display:inline-flex; align-items:center; gap:6px; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:8px 16px; font-size:0.80rem; font-weight:700; cursor:pointer; transition:all 0.15s; box-shadow:0 2px 8px rgba(37,99,235,0.3);">
             ➕ Nueva Pregunta para este Grado

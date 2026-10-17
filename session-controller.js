@@ -1043,13 +1043,7 @@
     window.openSavedSessionsModal = openSavedSessionsModal;
 
     function closeSavedSessionsModal() {
-      if (currentFlow === 'saved-sessions') {
-        if (typeof goHomeHub === 'function') {
-          goHomeHub();
-        } else {
-          showView('hub');
-        }
-      }
+      // Función de cierre segura
     }
     window.closeSavedSessionsModal = closeSavedSessionsModal;
 

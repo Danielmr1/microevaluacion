@@ -484,13 +484,6 @@ function openBankManagerModal() {
 function closeBankManagerModal() {
   toggleBankManagerAddForm(false);
   if (typeof renderBankCards === 'function') renderBankCards();
-  if (currentFlow === 'bank') {
-    if (typeof goHomeHub === 'function') {
-      goHomeHub();
-    } else {
-      showView('hub');
-    }
-  }
 }
 
 function renderBankManagerGradeTabs() {
