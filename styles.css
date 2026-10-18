@@ -6188,8 +6188,18 @@
       }
 
       .summary-actions-stack {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+
+      .summary-actions-stack #btn-goto-scan,
+      .summary-actions-stack .btn-summary-primary {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        grid-column: 1 / -1 !important;
       }
 
       .summary-document-viewport {
