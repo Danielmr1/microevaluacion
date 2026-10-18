@@ -136,7 +136,11 @@ if (typeof window !== 'undefined') {
         if (iconEl) iconEl.style.display = 'none';
         if (tagEl) tagEl.style.display = 'none';
         titleEl.classList.add('topbar-modality-pill');
-        titleEl.textContent = 'Sesiones';
+        const count = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+          ? ClassroomData.getSavedSessions().length
+          : 0;
+        const max = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
+        titleEl.textContent = count > 0 ? `${count}/${max} Sesiones` : 'Sesiones';
         if (brandEl) {
           brandEl.style.cursor = 'default';
           brandEl.style.pointerEvents = 'none';
@@ -482,6 +486,7 @@ if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
+    window.openFlow = openFlow;
 
     function openBranchFlow(branch) {
       window.isViewingSavedSessionsMode = false;

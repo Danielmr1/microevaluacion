@@ -979,8 +979,12 @@
         return;
       }
 
-      stripEl.style.display = 'block';
+      stripEl.style.display = 'flex';
       listEl.innerHTML = '';
+
+      if (window.isViewingSavedSessionsMode && typeof updateTopbarModeTitle === 'function') {
+        updateTopbarModeTitle('saved-sessions');
+      }
 
       // Determinar cuál es la sesión activa
       let currentActiveId = activeSessionId;

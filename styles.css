@@ -6089,15 +6089,15 @@
     .summary-sessions-strip {
       position: sticky;
       top: 60px;
-      z-index: 90;
+      z-index: 95;
       width: fit-content;
       max-width: 92vw;
-      margin: 14px auto 14px auto;
+      margin: 4px auto 8px auto;
       background: rgba(255, 255, 255, 0.95);
       border: 1.5px solid #e2e8f0;
       border-radius: 9999px;
-      padding: 6px 14px;
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+      padding: 3px 10px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       box-sizing: border-box;
@@ -6109,20 +6109,26 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 2px 0;
+      gap: 7px;
+      overflow: visible;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 3px 4px;
+    }
+    .sessions-numbers-list::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
     }
     .session-num-btn {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
       border-radius: 9999px;
       border: 1.5px solid #cbd5e1;
       background: #ffffff;
       color: #334155;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 800;
       cursor: pointer;
       display: inline-flex;
@@ -6141,8 +6147,9 @@
       background: #2563eb;
       border-color: #1d4ed8;
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
-      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+      font-weight: 900;
+      border-width: 2px;
     }
     .btn-session-add {
       display: inline-flex;
@@ -6356,10 +6363,16 @@
 
     /* Vista de Celular / Tablet: Diseño apilado con desplazamiento horizontal nativo */
     @media screen and (max-width: 900px) {
+      .teacher-panel,
+      .teacher-panel.has-active-split {
+        overflow: visible !important;
+      }
+
       .summary-sessions-strip {
-        top: 50px !important;
-        margin: 10px auto 10px auto !important;
-        padding: 4px 10px !important;
+        top: 58px !important;
+        z-index: 95 !important;
+        margin: 4px auto 8px auto !important;
+        padding: 2px 8px !important;
       }
       .session-num-btn {
         width: 32px !important;
