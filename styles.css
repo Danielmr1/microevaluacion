@@ -5991,36 +5991,71 @@
       box-sizing: border-box;
     }
 
-    /* Vista de Escritorio (PC / Laptop): Dos columnas lado a lado */
+    /* Vista de Escritorio (PC / Laptop): Dos columnas con fijación real y auto-escala */
     @media screen and (min-width: 901px) {
       .summary-split-layout.active-split {
-        display: grid !important;
-        grid-template-columns: 360px minmax(0, 1fr) !important;
-        align-items: start !important;
-        gap: 32px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 28px !important;
         width: 100% !important;
+        box-sizing: border-box !important;
       }
 
       .summary-sticky-sidebar {
+        flex: 0 0 340px !important;
+        width: 340px !important;
+        max-width: 340px !important;
         position: sticky !important;
-        top: 20px !important;
-        overflow: visible !important;
-        max-height: none !important;
-        padding-right: 0 !important;
+        top: 16px !important;
+        z-index: 20 !important;
+        box-sizing: border-box !important;
       }
 
       .summary-document-viewport {
-        overflow: visible !important;
-        padding-bottom: 40px !important;
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
         width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
         align-items: center !important;
+        gap: 24px !important;
+        padding-bottom: 50px !important;
+        box-sizing: border-box !important;
       }
 
-      /* Permitir que los contenedores de páginas y cuadernillos ocupen todo el ancho necesario para hojas A4 horizontales y verticales */
+      /* Auto-escala para que cualquier hoja A4 (vertical 210mm u horizontal 297mm) entre completa al 100% sin recortarse */
       .summary-document-viewport #pages-container,
       .summary-document-viewport #booklet-container {
-        max-width: 100% !important;
         width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+      }
+
+      .summary-document-viewport .sheet-a4,
+      .summary-document-viewport .sheet-a4-quad,
+      .summary-document-viewport .sheet-booklet-landscape,
+      .summary-document-viewport .sheet-booklet-quad,
+      .summary-document-viewport .sheet-booklet-portrait {
+        max-width: 100% !important;
+        height: auto !important;
+        aspect-ratio: auto !important;
+        box-sizing: border-box !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+
+      .summary-document-viewport .sheet-booklet-landscape,
+      .summary-document-viewport .sheet-a4-quad {
+        max-width: min(297mm, 100%) !important;
+      }
+
+      .summary-document-viewport .sheet-a4,
+      .summary-document-viewport .sheet-booklet-portrait {
+        max-width: min(210mm, 100%) !important;
       }
     }
 
@@ -6034,7 +6069,6 @@
       .summary-sticky-sidebar {
         position: static !important;
         width: 100% !important;
-        overflow: visible !important;
       }
 
       .summary-actions-stack {
@@ -6052,8 +6086,10 @@
     @media screen and (min-width: 901px) {
       .teacher-panel:has(.summary-split-layout.active-split),
       .teacher-panel.has-active-split {
-        max-width: 1540px !important;
-        width: 100% !important;
+        max-width: 96% !important;
+        width: 96% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
