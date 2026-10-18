@@ -243,7 +243,10 @@
       // 1. Ocultar la pantalla de resumen
       const summaryEl = document.getElementById('step-summary');
       const teacherPanelEl = summaryEl ? summaryEl.closest('.teacher-panel') : null;
+      const viewCreateEl = document.getElementById('view-create');
       if (teacherPanelEl) teacherPanelEl.classList.remove('has-active-split');
+      if (viewCreateEl) viewCreateEl.classList.remove('has-active-split');
+      document.body.classList.remove('has-active-split');
       if (summaryEl) {
         summaryEl.classList.remove('active-split');
         summaryEl.style.display = 'none';
@@ -392,7 +395,10 @@
         // Mostrar solo paso 5 (resumen)
         const summaryEl = document.getElementById('step-summary');
         const teacherPanelEl = summaryEl ? summaryEl.closest('.teacher-panel') : null;
+        const viewCreateEl = document.getElementById('view-create');
         if (teacherPanelEl) teacherPanelEl.classList.add('has-active-split');
+        if (viewCreateEl) viewCreateEl.classList.add('has-active-split');
+        document.body.classList.add('has-active-split');
         if (summaryEl) {
           summaryEl.classList.add('active-split');
           summaryEl.style.display = '';
@@ -642,6 +648,9 @@
         const pagesContainer = document.getElementById('pages-container');
         if (pagesContainer) pagesContainer.style.display = 'flex';
         renderAllPrintPages(wizardClassroomId, wizardEval);
+        if (typeof fitSummaryDocumentsToViewport === 'function') {
+          setTimeout(fitSummaryDocumentsToViewport, 50);
+        }
 
         // ── Estado del botón Guardar Sesión ──
         const btnSaveSess = document.getElementById('btn-save-session');
@@ -728,7 +737,10 @@
       if (fNew) fNew.style.display = 'none';
       const stepSummary = document.getElementById('step-summary');
       const teacherPanelEl = stepSummary ? stepSummary.closest('.teacher-panel') : null;
+      const viewCreateEl = document.getElementById('view-create');
       if (teacherPanelEl) teacherPanelEl.classList.remove('has-active-split');
+      if (viewCreateEl) viewCreateEl.classList.remove('has-active-split');
+      document.body.classList.remove('has-active-split');
       if (stepSummary) {
         stepSummary.classList.remove('active-split');
         stepSummary.style.display = 'none';

@@ -309,6 +309,7 @@ function renderAllPrintPages(classId, evaluation) {
         });
       }
     }
+    if (typeof fitSummaryDocumentsToViewport === 'function') fitSummaryDocumentsToViewport();
     return;
   }
 
@@ -382,6 +383,7 @@ function renderAllPrintPages(classId, evaluation) {
         });
       }
     }
+    if (typeof fitSummaryDocumentsToViewport === 'function') fitSummaryDocumentsToViewport();
     return;
   }
 
@@ -426,6 +428,7 @@ function renderAllPrintPages(classId, evaluation) {
         });
       }
     }
+    if (typeof fitSummaryDocumentsToViewport === 'function') fitSummaryDocumentsToViewport();
     return;
   }
 
@@ -473,6 +476,7 @@ function renderAllPrintPages(classId, evaluation) {
     }
 
     fitProblemText();
+    if (typeof fitSummaryDocumentsToViewport === 'function') fitSummaryDocumentsToViewport();
     return;
   }
 
@@ -526,6 +530,7 @@ function renderAllPrintPages(classId, evaluation) {
 
   // Ajustar el tamaño de fuente del enunciado a su ranura fija
   fitProblemText();
+  if (typeof fitSummaryDocumentsToViewport === 'function') fitSummaryDocumentsToViewport();
 }
 
 /**
@@ -1113,6 +1118,9 @@ function renderQuestionBooklet(classId, evaluation) {
       container.appendChild(sheetEl);
     }
   }
+  if (typeof fitSummaryDocumentsToViewport === 'function') {
+    fitSummaryDocumentsToViewport();
+  }
 }
 
 /**
@@ -1481,6 +1489,55 @@ function clearGeneratedPdfContainers() {
   }
 }
 
+/**
+ * Auto-escala las hojas de evaluación y cuadernillos para que quepan al 100%
+ * en el visor derecho (summary-document-viewport) en cualquier tamaño de pantalla
+ * (PC, laptop, tablet), sin recortarse ni generar desbordes horizontales,
+ * preservando la geometría física original para cuando se mande a imprimir.
+ */
+function fitSummaryDocumentsToViewport() {
+  const viewport = document.querySelector('.summary-document-viewport');
+  if (!viewport) return;
+  const availWidth = viewport.clientWidth - 24;
+  if (availWidth <= 50) return;
+
+  const sheets = viewport.querySelectorAll(
+    '.sheet-a4, .sheet-a4-quad, .sheet-a4-quad-v, .sheet-a4-split, ' +
+    '.sheet-a4-v-single, .sheet-a4-h-single, .sheet-booklet-landscape, ' +
+    '.sheet-booklet-quad, .sheet-booklet-portrait'
+  );
+
+  sheets.forEach(sheet => {
+    // Si estamos en modo impresión, no aplicar transformaciones en pantalla
+    if (document.body.classList.contains('print-mode-booklet') || document.body.classList.contains('print-mode-sheets')) {
+      sheet.style.zoom = '';
+      sheet.style.transform = '';
+      sheet.style.marginBottom = '';
+      return;
+    }
+
+    // Reset temporal para medir ancho natural
+    sheet.style.zoom = '';
+    sheet.style.transform = 'none';
+    sheet.style.marginBottom = '0px';
+
+    const naturalWidth = sheet.offsetWidth;
+    if (naturalWidth > 0 && naturalWidth > availWidth) {
+      const scale = availWidth / naturalWidth;
+      sheet.style.zoom = scale;
+
+      // Si el navegador no reduce offsetWidth con zoom, usar transform con compensación
+      if (sheet.offsetWidth > availWidth + 2) {
+        sheet.style.zoom = '';
+        sheet.style.transform = `scale(${scale})`;
+        sheet.style.transformOrigin = 'top center';
+        const heightDiff = sheet.offsetHeight * (1 - scale);
+        sheet.style.marginBottom = `-${heightDiff}px`;
+      }
+    }
+  });
+}
+
 // ── EXPOSICIÓN GLOBAL PARA RENDERIZADO EN EL ASISTENTE Y VISOR DE IMPRESIÓN ──
 if (typeof window !== 'undefined') {
   window.A5_GRID_COLS = A5_GRID_COLS;
@@ -1503,6 +1560,30 @@ if (typeof window !== 'undefined') {
   window.createA4Card = createA4Card;
   window.createA4VerticalCard = createA4VerticalCard;
   window.clearGeneratedPdfContainers = clearGeneratedPdfContainers;
+  window.fitSummaryDocumentsToViewport = fitSummaryDocumentsToViewport;
+
+  // Escuchar redimensionamiento de pantalla para mantener las hojas siempre ajustadas
+  let summaryResizeDebounce = null;
+  const onSummaryResize = () => {
+    clearTimeout(summaryResizeDebounce);
+    summaryResizeDebounce = setTimeout(fitSummaryDocumentsToViewport, 50);
+  };
+  window.addEventListener('resize', onSummaryResize);
+
+  if (typeof ResizeObserver !== 'undefined') {
+    const summaryRO = new ResizeObserver(() => {
+      onSummaryResize();
+    });
+    const attachObserver = () => {
+      const vp = document.querySelector('.summary-document-viewport');
+      if (vp) summaryRO.observe(vp);
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachObserver);
+    } else {
+      attachObserver();
+    }
+  }
 }
 
 
