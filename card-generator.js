@@ -282,7 +282,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = students.length;
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
+      printBtn.innerHTML = `🖨️ Imprimir Fichas`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -328,9 +328,9 @@ function renderAllPrintPages(classId, evaluation) {
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
       if (isR3) {
-        printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
+        printBtn.innerHTML = `🖨️ Imprimir Cartillas`;
       } else {
-        printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
+        printBtn.innerHTML = `🖨️ Imprimir Fichas`;
       }
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
@@ -392,7 +392,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
+      printBtn.innerHTML = `🖨️ Imprimir Cartillas`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -438,7 +438,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
+      printBtn.innerHTML = `🖨️ Imprimir Fichas`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -487,9 +487,9 @@ function renderAllPrintPages(classId, evaluation) {
     const isR3 = evaluation && evaluation.branch === 'rama3';
     const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
     if (isR3) {
-      printBtn.innerHTML = `🖨️ Guardar o Imprimir Cartillas (PDF)`;
+      printBtn.innerHTML = `🖨️ Imprimir Cartillas`;
     } else {
-      printBtn.innerHTML = `🖨️ Guardar o Imprimir Fichas (PDF)`;
+      printBtn.innerHTML = `🖨️ Imprimir Fichas`;
     }
     printBtn.onclick = () => printEvaluationSheets(classId);
   }
@@ -991,7 +991,7 @@ function renderQuestionBooklet(classId, evaluation) {
   // Actualizar texto del botón de descarga si existe
   const printBtn = document.getElementById('btn-print-booklet');
   if (printBtn) {
-    printBtn.innerHTML = `📄 Guardar o Imprimir Evaluación (PDF)`;
+    printBtn.innerHTML = `📄 Imprimir Examen`;
   }
 
   if (layout.level === 'quad') {

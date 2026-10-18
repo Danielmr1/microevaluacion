@@ -433,18 +433,18 @@
           if (isBranch3) {
             // RAMA 3: Visualización de Cartilla OMR
             qContainer.innerHTML = `
-              <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px;">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <strong style="color:#38bdf8; font-size:0.82rem; text-transform:uppercase;">📝 Pauta de Claves de la Cartilla (${qCount} Preguntas)</strong>
+                  <strong style="color:#0f172a; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla (${qCount} Preguntas)</strong>
                   ${(wizardEval && (wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))) ? '' : `
-                    <span style="background:rgba(2,132,199,0.2); color:#38bdf8; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #0284c7;">OMR Puro</span>
+                    <span style="background:#e0f2fe; color:#0284c7; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:6px; border:1px solid #bae6fd;">OMR Puro</span>
                   `}
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(75px, 1fr)); gap:6px; max-height:220px; overflow-y:auto; padding:2px;">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(64px, 1fr)); gap:5px; max-height:160px; overflow-y:auto; padding:1px;">
                   ${(wizardEval.questions || []).map((q, idx) => `
-                    <div style="background:#090d16; border:1px solid #334155; border-radius:6px; padding:4px 6px; display:flex; align-items:center; justify-content:space-between;">
-                      <span style="font-size:0.72rem; color:#94a3b8; font-weight:700;">P${(idx + 1).toString().padStart(2, '0')}</span>
-                      <span style="background:#0284c7; color:#fff; font-size:0.75rem; font-weight:800; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center;">${q.correct}</span>
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; padding:3px 6px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+                      <span style="font-size:0.7rem; color:#64748b; font-weight:700;">P${(idx + 1).toString().padStart(2, '0')}</span>
+                      <span style="background:#2563eb; color:#fff; font-size:0.72rem; font-weight:800; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center;">${q.correct}</span>
                     </div>
                   `).join('')}
                 </div>
@@ -453,22 +453,22 @@
           } else if (isBranch2) {
             // RAMA 2: Visualización de Focalizada (1 a 3 preguntas)
             qContainer.innerHTML = (wizardEval.questions || []).map((q, idx) => `
-              <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px; margin-bottom:6px;">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; margin-bottom:6px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <strong style="color:#6ee7b7; font-size:0.8rem; text-transform:uppercase;">📌 Pregunta ${idx + 1}</strong>
+                  <strong style="color:#047857; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta ${idx + 1}</strong>
                   ${isOMR ? `
-                    <span style="background:#166534; color:#4ade80; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px;">Clave: ${q.correct}</span>
+                    <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${q.correct}</span>
                   ` : `
-                    <span style="background:#166534; color:#4ade80; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px;">Rpta: ${escaparHtml(q.expectedAnswer || '')}</span>
+                    <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Rpta: ${escaparHtml(q.expectedAnswer || '')}</span>
                   `}
                 </div>
-                <div style="font-size:0.88rem; font-weight:600; color:#f1f5f9; margin-bottom:8px; line-height:1.4;">${escaparHtml(q.prompt)}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(q.prompt)}</div>
                 ${isOMR && q.options ? `
-                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem; color:#cbd5e1;">
-                    <div style="${q.correct === 'A' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>A)</strong> ${escaparHtml(q.options.A || '—')}</div>
-                    <div style="${q.correct === 'B' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>B)</strong> ${escaparHtml(q.options.B || '—')}</div>
-                    <div style="${q.correct === 'C' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>C)</strong> ${escaparHtml(q.options.C || '—')}</div>
-                    <div style="${q.correct === 'D' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>D)</strong> ${escaparHtml(q.options.D || '—')}</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
+                    <div style="${q.correct === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q.options.A || '—')}</div>
+                    <div style="${q.correct === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q.options.B || '—')}</div>
+                    <div style="${q.correct === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q.options.C || '—')}</div>
+                    <div style="${q.correct === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q.options.D || '—')}</div>
                   </div>
                 ` : ''}
               </div>
@@ -477,31 +477,31 @@
             const q1 = wizardEval.questions[0];
             const q2 = wizardEval.questions[1];
             qContainer.innerHTML = `
-              <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <strong style="color:#60a5fa; font-size:0.8rem; text-transform:uppercase;">📌 Pregunta 1</strong>
-                  <span style="background:#166534; color:#4ade80; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px;">Clave: ${q1.correct}</span>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; margin-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong style="color:#0284c7; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta 1</strong>
+                  <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${q1.correct}</span>
                 </div>
-                <div style="font-size:0.88rem; font-weight:600; color:#f1f5f9; margin-bottom:8px; line-height:1.4;">${escaparHtml(q1.prompt)}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem; color:#cbd5e1;">
-                  <div style="${q1.correct === 'A' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>A)</strong> ${escaparHtml(q1.options?.A || '—')}</div>
-                  <div style="${q1.correct === 'B' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>B)</strong> ${escaparHtml(q1.options?.B || '—')}</div>
-                  <div style="${q1.correct === 'C' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>C)</strong> ${escaparHtml(q1.options?.C || '—')}</div>
-                  <div style="${q1.correct === 'D' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>D)</strong> ${escaparHtml(q1.options?.D || '—')}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(q1.prompt)}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
+                  <div style="${q1.correct === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q1.options?.A || '—')}</div>
+                  <div style="${q1.correct === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q1.options?.B || '—')}</div>
+                  <div style="${q1.correct === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q1.options?.C || '—')}</div>
+                  <div style="${q1.correct === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q1.options?.D || '—')}</div>
                 </div>
               </div>
 
-              <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <strong style="color:#a78bfa; font-size:0.8rem; text-transform:uppercase;">📌 Pregunta 2</strong>
-                  <span style="background:#166534; color:#4ade80; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px;">Clave: ${q2.correct}</span>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong style="color:#6366f1; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta 2</strong>
+                  <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${q2.correct}</span>
                 </div>
-                <div style="font-size:0.88rem; font-weight:600; color:#f1f5f9; margin-bottom:8px; line-height:1.4;">${escaparHtml(q2.prompt)}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem; color:#cbd5e1;">
-                  <div style="${q2.correct === 'A' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>A)</strong> ${escaparHtml(q2.options?.A || '—')}</div>
-                  <div style="${q2.correct === 'B' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>B)</strong> ${escaparHtml(q2.options?.B || '—')}</div>
-                  <div style="${q2.correct === 'C' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>C)</strong> ${escaparHtml(q2.options?.C || '—')}</div>
-                  <div style="${q2.correct === 'D' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>D)</strong> ${escaparHtml(q2.options?.D || '—')}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(q2.prompt)}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
+                  <div style="${q2.correct === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q2.options?.A || '—')}</div>
+                  <div style="${q2.correct === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q2.options?.B || '—')}</div>
+                  <div style="${q2.correct === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q2.options?.C || '—')}</div>
+                  <div style="${q2.correct === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q2.options?.D || '—')}</div>
                 </div>
               </div>
             `;
@@ -510,17 +510,17 @@
             const correctKey = q.correct || (wizardEval.expectedAnswer ? wizardEval.expectedAnswer.replace(/[^ABCD]/g, '') : 'A');
             const opts = q.options || wizardEval.options || {};
             qContainer.innerHTML = `
-              <div style="background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <strong style="color:#60a5fa; font-size:0.8rem; text-transform:uppercase;">📌 Pregunta</strong>
-                  <span style="background:#166534; color:#4ade80; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:4px;">Clave: ${correctKey}</span>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong style="color:#0284c7; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta</strong>
+                  <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${correctKey}</span>
                 </div>
-                <div style="font-size:0.88rem; font-weight:600; color:#f1f5f9; margin-bottom:8px; line-height:1.4;">${escaparHtml(wizardEval.prompt)}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem; color:#cbd5e1;">
-                  <div style="${correctKey === 'A' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>A)</strong> ${escaparHtml(opts.A || '—')}</div>
-                  <div style="${correctKey === 'B' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>B)</strong> ${escaparHtml(opts.B || '—')}</div>
-                  <div style="${correctKey === 'C' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>C)</strong> ${escaparHtml(opts.C || '—')}</div>
-                  <div style="${correctKey === 'D' ? 'color:#4ade80; font-weight:700;' : ''}"><strong>D)</strong> ${escaparHtml(opts.D || '—')}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
+                  <div style="${correctKey === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(opts.A || '—')}</div>
+                  <div style="${correctKey === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(opts.B || '—')}</div>
+                  <div style="${correctKey === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(opts.C || '—')}</div>
+                  <div style="${correctKey === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(opts.D || '—')}</div>
                 </div>
               </div>
             `;
@@ -528,16 +528,16 @@
             // REGLA 1: Cero regresión en Respuesta Libre
             const tiene = !!(wizardEval.rubric);
             qContainer.innerHTML = `
-              <div style="margin-bottom:8px;">
-                <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Consigna</span>
-                <div style="font-size:0.88rem; font-weight:600; color:#f1f5f9; line-height:1.4;">${escaparHtml(wizardEval.prompt)}</div>
+              <div style="margin-bottom:6px;">
+                <span style="font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Consigna</span>
+                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
               </div>
-              <div style="margin-bottom:8px;">
-                <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Respuesta esperada</span>
-                <div style="font-size:0.88rem; font-weight:800; color:#22c55e;">${escaparHtml(wizardEval.expectedAnswer)}</div>
+              <div style="margin-bottom:6px;">
+                <span style="font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Respuesta esperada</span>
+                <div style="font-size:0.86rem; font-weight:800; color:#15803d;">${escaparHtml(wizardEval.expectedAnswer)}</div>
               </div>
-              <div style="padding:8px 12px; border-radius:8px; font-size:0.78rem; font-weight:700; ${tiene ? 'color:#4ade80; background:rgba(74,222,128,0.10); border:1px solid #166534;' : 'color:#fbbf24; background:rgba(245,158,11,0.10); border:1px solid #92400e;'}">
-                ${tiene ? '✅ Rúbrica lista — se puede corregir con IA' : '⚠️ Sin rúbrica — hace falta para corregir con IA (se genera al encender la cámara)'}
+              <div style="padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; ${tiene ? 'color:#15803d; background:#dcfce7; border:1px solid #86efac;' : 'color:#b45309; background:#fef3c7; border:1px solid #fcd34d;'}">
+                ${tiene ? '✅ Rúbrica lista con IA' : '⚠️ Sin rúbrica'}
               </div>
             `;
           }
@@ -573,73 +573,65 @@
         if (isBranch3) {
           if (modeIcon) modeIcon.textContent = '📝';
           if (modeTitle) {
-            modeTitle.textContent = 'Modo de corrección: OMR';
-            modeTitle.style.color = '#38bdf8';
+            modeTitle.textContent = 'OMR';
+            modeTitle.style.color = '#0284c7';
+            modeTitle.title = 'Escaneo rápido de alternativas marcadas.';
           }
-          if (modeSubtitle) {
-            modeSubtitle.textContent = 'Escaneo rápido de alternativas marcadas.';
-            modeSubtitle.style.display = 'block';
-          }
+          if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isBranch2) {
           if (modeIcon) modeIcon.textContent = '⚡';
           if (modeTitle) {
-            modeTitle.textContent = 'Modo de corrección: Directa de la respuesta (marcada o escrita) sin evaluar procedimiento.';
-            modeTitle.style.color = '#34d399';
+            modeTitle.textContent = 'Directa';
+            modeTitle.style.color = '#059669';
+            modeTitle.title = 'Corrección directa de respuesta sin evaluar procedimiento.';
           }
-          if (modeSubtitle) {
-            modeSubtitle.textContent = '';
-            modeSubtitle.style.display = 'none';
-          }
+          if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isOMR) {
           const currentMode = (session && session.correctionMode) || 'quick';
           if (currentMode === 'quick') {
             if (modeIcon) modeIcon.textContent = '⚡';
             if (modeTitle) {
-              modeTitle.textContent = 'Modo de corrección: Solo alternativa';
-              modeTitle.style.color = '#38bdf8';
-            }
-            if (modeSubtitle) {
-              modeSubtitle.textContent = 'Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.';
-              modeSubtitle.style.display = 'block';
+              modeTitle.textContent = 'OMR Rápido';
+              modeTitle.style.color = '#0284c7';
+              modeTitle.title = 'Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.';
             }
           } else {
             if (modeIcon) modeIcon.textContent = '🔬';
             if (modeTitle) {
-              modeTitle.textContent = 'Modo de corrección: Alternativa + procedimiento';
-              modeTitle.style.color = '#c084fc';
-            }
-            if (modeSubtitle) {
-              modeSubtitle.textContent = 'Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.';
-              modeSubtitle.style.display = 'block';
+              modeTitle.textContent = 'Formativa IA';
+              modeTitle.style.color = '#4f46e5';
+              modeTitle.title = 'Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.';
             }
           }
+          if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else {
           // Respuesta Libre tradicional
           if (modeIcon) modeIcon.textContent = '✍️';
           if (modeTitle) {
-            modeTitle.textContent = 'Corrección pedagógica por desarrollo libre';
-            modeTitle.style.color = '#4ade80';
+            modeTitle.textContent = 'Respuesta Libre';
+            modeTitle.style.color = '#059669';
+            modeTitle.title = 'Lectura de cuadrícula y respuesta manuscrita evaluadas mediante IA y rúbrica formativa.';
           }
-          if (modeSubtitle) {
-            modeSubtitle.textContent = 'Lectura de cuadrícula y respuesta manuscrita evaluadas mediante IA y rúbrica formativa.';
-            modeSubtitle.style.display = 'block';
-          }
+          if (modeSubtitle) modeSubtitle.style.display = 'none';
         }
 
         // ── Renderizar cuadernillo de preguntas si corresponde ──
         // EXCLUSIVO: Solo en Cartilla OMR (Rama 3) en Modo B (Preguntas del Banco)
         const btnBooklet = document.getElementById('btn-print-booklet');
         const bookletContainer = document.getElementById('booklet-container');
+        const printRow = document.getElementById('summary-print-buttons-row');
         const hasBookletQuestions = wizardEval && (
           wizardEval.branch === 'rama3' && (wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))
         );
         if (btnBooklet) {
           if (hasBookletQuestions && typeof renderQuestionBooklet === 'function') {
             btnBooklet.style.display = 'flex';
+            if (printRow) printRow.style.gridTemplateColumns = '1fr 1fr';
             renderQuestionBooklet(wizardClassroomId, wizardEval);
             if (bookletContainer) bookletContainer.style.display = 'flex';
           } else {
             btnBooklet.style.display = 'none';
+            if (printRow) printRow.style.gridTemplateColumns = '1fr';
             if (bookletContainer) bookletContainer.style.display = 'none';
           }
         }
@@ -656,8 +648,7 @@
         const btnSaveSess = document.getElementById('btn-save-session');
         if (btnSaveSess) {
           btnSaveSess.disabled = false;
-          btnSaveSess.style.background = '#d97706';
-          btnSaveSess.innerHTML = '💾 Guardar Sesión';
+          btnSaveSess.innerHTML = '💾 Guardar';
         }
 
         // ── Repoblar lo ya escaneado ──
