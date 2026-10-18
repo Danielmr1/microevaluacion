@@ -6143,6 +6143,7 @@
         align-items: center !important;
         gap: 24px !important;
         padding-bottom: 50px !important;
+        padding-right: 18px !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
       }
@@ -6172,7 +6173,7 @@
       }
     }
 
-    /* Vista de Celular / Tablet: Diseño apilado fluido */
+    /* Vista de Celular / Tablet: Diseño apilado con desplazamiento horizontal nativo */
     @media screen and (max-width: 900px) {
       .summary-split-layout.active-split {
         display: flex !important;
@@ -6188,12 +6189,41 @@
 
       .summary-actions-stack {
         display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
       }
 
       .summary-document-viewport {
         width: 100% !important;
+        max-width: 100% !important;
         overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 30px !important;
+        box-sizing: border-box !important;
+      }
+
+      .summary-document-viewport #pages-container,
+      .summary-document-viewport #booklet-container {
+        width: max-content !important;
+        min-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        box-sizing: border-box !important;
+      }
+
+      .summary-document-viewport .sheet-a4,
+      .summary-document-viewport .sheet-a4-quad,
+      .summary-document-viewport .sheet-a4-quad-v,
+      .summary-document-viewport .sheet-a4-split,
+      .summary-document-viewport .sheet-a4-v-single,
+      .summary-document-viewport .sheet-a4-h-single,
+      .summary-document-viewport .sheet-booklet-landscape,
+      .summary-document-viewport .sheet-booklet-quad,
+      .summary-document-viewport .sheet-booklet-portrait {
+        zoom: 1 !important;
+        transform: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
       }
     }
 

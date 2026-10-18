@@ -571,7 +571,7 @@
         if (configBadge) configBadge.style.display = 'none';
 
         if (isBranch3) {
-          if (modeIcon) modeIcon.textContent = '📝';
+          if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>';
           if (modeTitle) {
             modeTitle.textContent = 'OMR';
             modeTitle.style.color = '#0284c7';
@@ -579,7 +579,7 @@
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isBranch2) {
-          if (modeIcon) modeIcon.textContent = '⚡';
+          if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
           if (modeTitle) {
             modeTitle.textContent = 'Directa';
             modeTitle.style.color = '#059669';
@@ -589,14 +589,14 @@
         } else if (isOMR) {
           const currentMode = (session && session.correctionMode) || 'quick';
           if (currentMode === 'quick') {
-            if (modeIcon) modeIcon.textContent = '⚡';
+            if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
             if (modeTitle) {
               modeTitle.textContent = 'OMR Rápido';
               modeTitle.style.color = '#0284c7';
               modeTitle.title = 'Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.';
             }
           } else {
-            if (modeIcon) modeIcon.textContent = '🔬';
+            if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>';
             if (modeTitle) {
               modeTitle.textContent = 'Formativa IA';
               modeTitle.style.color = '#4f46e5';
@@ -606,7 +606,7 @@
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else {
           // Respuesta Libre tradicional
-          if (modeIcon) modeIcon.textContent = '✍️';
+          if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
           if (modeTitle) {
             modeTitle.textContent = 'Respuesta Libre';
             modeTitle.style.color = '#059669';
@@ -648,7 +648,7 @@
         const btnSaveSess = document.getElementById('btn-save-session');
         if (btnSaveSess) {
           btnSaveSess.disabled = false;
-          btnSaveSess.innerHTML = '💾 Guardar';
+          btnSaveSess.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar';
         }
 
         // ── Repoblar lo ya escaneado ──
@@ -924,7 +924,7 @@
         showToast(`✓ Sesión guardada con éxito (${res.count}/${maxSess})`);
         if (btnSave) {
           btnSave.style.background = '#059669';
-          btnSave.innerHTML = `✓ Sesión Guardada (${res.count}/${maxSess})`;
+          btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada (${res.count}/${maxSess})`;
         }
         if (typeof updateHubSavedSessionsBadge === 'function') {
           updateHubSavedSessionsBadge();
@@ -1227,7 +1227,7 @@
       const btnSave = document.getElementById('btn-save-session');
       if (btnSave) {
         btnSave.style.background = '#059669';
-        btnSave.innerHTML = '✓ Guardada';
+        btnSave.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada';
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1436,7 +1436,7 @@
             if (btnSave) {
               btnSave.style.background = '#059669';
               const maxSess = res.max || (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
-              btnSave.innerHTML = `✓ Sesión Guardada (${res.count}/${maxSess})`;
+              btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada (${res.count}/${maxSess})`;
             }
             if (typeof updateHubSavedSessionsBadge === 'function') {
               updateHubSavedSessionsBadge();

@@ -282,7 +282,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = students.length;
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      printBtn.innerHTML = `🖨️ Imprimir Fichas`;
+      printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Fichas`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -328,9 +328,9 @@ function renderAllPrintPages(classId, evaluation) {
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
       if (isR3) {
-        printBtn.innerHTML = `🖨️ Imprimir Cartillas`;
+        printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Cartillas`;
       } else {
-        printBtn.innerHTML = `🖨️ Imprimir Fichas`;
+        printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Fichas`;
       }
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
@@ -392,7 +392,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      printBtn.innerHTML = `🖨️ Imprimir Cartillas`;
+      printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Cartillas`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -438,7 +438,7 @@ function renderAllPrintPages(classId, evaluation) {
     const sheetCount = Math.ceil(students.length / 2);
     const printBtn = document.getElementById('btn-print-sheets');
     if (printBtn) {
-      printBtn.innerHTML = `🖨️ Imprimir Fichas`;
+      printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Fichas`;
       printBtn.onclick = () => printEvaluationSheets(classId);
     }
 
@@ -487,9 +487,9 @@ function renderAllPrintPages(classId, evaluation) {
     const isR3 = evaluation && evaluation.branch === 'rama3';
     const pageWord = sheetCount === 1 ? 'página A4' : 'páginas A4';
     if (isR3) {
-      printBtn.innerHTML = `🖨️ Imprimir Cartillas`;
+      printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Cartillas`;
     } else {
-      printBtn.innerHTML = `🖨️ Imprimir Fichas`;
+      printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir Fichas`;
     }
     printBtn.onclick = () => printEvaluationSheets(classId);
   }
@@ -991,7 +991,7 @@ function renderQuestionBooklet(classId, evaluation) {
   // Actualizar texto del botón de descarga si existe
   const printBtn = document.getElementById('btn-print-booklet');
   if (printBtn) {
-    printBtn.innerHTML = `📄 Imprimir Examen`;
+    printBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Imprimir Examen`;
   }
 
   if (layout.level === 'quad') {
@@ -1498,8 +1498,6 @@ function clearGeneratedPdfContainers() {
 function fitSummaryDocumentsToViewport() {
   const viewport = document.querySelector('.summary-document-viewport');
   if (!viewport) return;
-  const availWidth = viewport.clientWidth - 24;
-  if (availWidth <= 50) return;
 
   const sheets = viewport.querySelectorAll(
     '.sheet-a4, .sheet-a4-quad, .sheet-a4-quad-v, .sheet-a4-split, ' +
@@ -1507,33 +1505,34 @@ function fitSummaryDocumentsToViewport() {
     '.sheet-booklet-quad, .sheet-booklet-portrait'
   );
 
-  sheets.forEach(sheet => {
-    // Si estamos en modo impresión, no aplicar transformaciones en pantalla
-    if (document.body.classList.contains('print-mode-booklet') || document.body.classList.contains('print-mode-sheets')) {
+  // En modo móvil (<= 900px) o en modo impresión, no forzar zoom ni transformaciones
+  // para permitir lectura amplia y desplazamiento horizontal nativo por swipe/scroll
+  const isMobile = (typeof window !== 'undefined' && window.innerWidth <= 900);
+  const isPrintMode = document.body.classList.contains('print-mode-booklet') || document.body.classList.contains('print-mode-sheets');
+
+  if (isMobile || isPrintMode) {
+    sheets.forEach(sheet => {
       sheet.style.zoom = '';
       sheet.style.transform = '';
       sheet.style.marginBottom = '';
-      return;
-    }
+    });
+    return;
+  }
 
-    // Reset temporal para medir ancho natural
+  // En PC/Desktop (> 900px), ajustar zoom para que encaje al 100% sin recortar el margen derecho
+  // Se restan 36px de holgura preventiva (18px de padding a cada lado)
+  const availWidth = viewport.clientWidth - 36;
+  if (availWidth <= 50) return;
+
+  sheets.forEach(sheet => {
     sheet.style.zoom = '';
-    sheet.style.transform = 'none';
-    sheet.style.marginBottom = '0px';
+    sheet.style.transform = '';
+    sheet.style.marginBottom = '';
 
-    const naturalWidth = sheet.offsetWidth;
+    const naturalWidth = sheet.offsetWidth || sheet.getBoundingClientRect().width;
     if (naturalWidth > 0 && naturalWidth > availWidth) {
       const scale = availWidth / naturalWidth;
       sheet.style.zoom = scale;
-
-      // Si el navegador no reduce offsetWidth con zoom, usar transform con compensación
-      if (sheet.offsetWidth > availWidth + 2) {
-        sheet.style.zoom = '';
-        sheet.style.transform = `scale(${scale})`;
-        sheet.style.transformOrigin = 'top center';
-        const heightDiff = sheet.offsetHeight * (1 - scale);
-        sheet.style.marginBottom = `-${heightDiff}px`;
-      }
     }
   });
 }
