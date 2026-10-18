@@ -136,7 +136,7 @@ if (typeof window !== 'undefined') {
         if (iconEl) iconEl.style.display = 'none';
         if (tagEl) tagEl.style.display = 'none';
         titleEl.classList.add('topbar-modality-pill');
-        titleEl.textContent = 'Sesiones Guardadas';
+        titleEl.textContent = 'Sesiones';
         if (brandEl) {
           brandEl.style.cursor = 'default';
           brandEl.style.pointerEvents = 'none';
@@ -421,8 +421,12 @@ if (typeof window !== 'undefined') {
         updateHubSessionBadge();
         updateHubSavedSessionsBadge();
       } else if (flowName === 'eval') {
-        const curBranch = window.selectedBranch || (wizardEval && wizardEval.branch) || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
-        updateTopbarModeTitle(curBranch);
+        if (window.isViewingSavedSessionsMode) {
+          updateTopbarModeTitle('saved-sessions');
+        } else {
+          const curBranch = window.selectedBranch || (wizardEval && wizardEval.branch) || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
+          updateTopbarModeTitle(curBranch);
+        }
       } else if (flowName === 'classrooms') {
         updateTopbarModeTitle('classrooms');
       } else if (flowName === 'bank') {
@@ -434,6 +438,7 @@ if (typeof window !== 'undefined') {
 
     function openFlow(flowName) {
       if (flowName === 'eval') {
+        window.isViewingSavedSessionsMode = false;
         showView('eval');
         const session = ClassroomData.getActiveSession();
         if (!session || !session.classroomId) {
@@ -465,10 +470,12 @@ if (typeof window !== 'undefined') {
           ? ClassroomData.getSavedSessions()
           : [];
         if (sessions.length > 0) {
+          window.isViewingSavedSessionsMode = true;
           // Si hay sesiones guardadas, abrir directamente la vista de resumen con la primera sesión
           loadAndActivateSavedSession(sessions[0].id);
         } else {
           // Si no hay sesiones, mostrar aviso amigable y abrir creador de evaluación
+          window.isViewingSavedSessionsMode = false;
           showToast('ℹ️ No tienes sesiones guardadas todavía.');
           openBranchFlow('rama3');
         }
@@ -477,6 +484,7 @@ if (typeof window !== 'undefined') {
     }
 
     function openBranchFlow(branch) {
+      window.isViewingSavedSessionsMode = false;
       window.selectedBranch = branch;
       showView('eval');
 
@@ -550,6 +558,7 @@ if (typeof window !== 'undefined') {
       }
 
       // Limpiar sesión activa y reiniciar estado para nuevo inicio limpio
+      window.isViewingSavedSessionsMode = false;
       ClassroomData.setActiveSession(null);
       wizardClassroomId = null;
       wizardEval = null;

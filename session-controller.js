@@ -645,8 +645,22 @@
         }
 
         // ── Estado del botón Guardar Sesión y barra de sesiones ──
-        if (typeof renderSummarySessionsStrip === 'function') {
+        if (window.isViewingSavedSessionsMode && typeof renderSummarySessionsStrip === 'function') {
           renderSummarySessionsStrip();
+        } else {
+          const stripEl = document.getElementById('summary-sessions-strip');
+          if (stripEl) stripEl.style.display = 'none';
+          const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+            ? ClassroomData.getSavedSessions()
+            : [];
+          const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+          const curId = activeSess ? activeSess.id : null;
+          const curRef = (session && session.sessionRef) || (activeSess && activeSess.sessionRef) || null;
+          const evalId = (wizardEval && wizardEval.id) || (session && session.evalId) || null;
+          const isSaved = sessions.some(s => s.id === curId || (curRef && s.sessionRef === curRef) || (evalId && s.evalId === evalId && s.classroomId === wizardClassroomId));
+          if (typeof updateDiscardOrDeleteButtonState === 'function') {
+            updateDiscardOrDeleteButtonState(isSaved, curId);
+          }
         }
 
         // ── Repoblar lo ya escaneado ──
@@ -742,6 +756,7 @@
      * Vuelve al paso 2 y descarta la sesión activa.
      */
     function resetWizard() {
+      window.isViewingSavedSessionsMode = false;
       wizardEval = null;
       wizardEvalType = null;
       resetRubrica();
@@ -958,10 +973,15 @@
         badgeEl.textContent = `${sessions.length}/${maxSess}`;
       }
 
-      if (sessions.length === 0) {
+      const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      const curRef = (activeSess && activeSess.sessionRef) || null;
+      const evalId = (typeof wizardEval !== 'undefined' && wizardEval && wizardEval.id) || (activeSess && activeSess.evalId) || null;
+
+      if (sessions.length === 0 || !window.isViewingSavedSessionsMode) {
         stripEl.style.display = 'none';
         listEl.innerHTML = '';
-        updateDiscardOrDeleteButtonState(false);
+        const isCurrentSaved = sessions.some(s => s.id === activeSessionId || (curRef && s.sessionRef === curRef) || (evalId && s.evalId === evalId && s.classroomId === wizardClassroomId));
+        updateDiscardOrDeleteButtonState(isCurrentSaved, activeSessionId);
         return;
       }
 
@@ -971,11 +991,13 @@
       // Determinar cuál es la sesión activa
       let currentActiveId = activeSessionId;
       if (!currentActiveId) {
-        const activeSess = ClassroomData.getActiveSession();
         if (activeSess && activeSess.id) {
           currentActiveId = activeSess.id;
-        } else if (wizardClassroomId) {
-          const match = sessions.find(s => s.classroomId === wizardClassroomId);
+        } else if (curRef) {
+          const match = sessions.find(s => s.sessionRef === curRef);
+          if (match) currentActiveId = match.id;
+        } else if (evalId) {
+          const match = sessions.find(s => s.evalId === evalId);
           if (match) currentActiveId = match.id;
         }
       }
@@ -993,7 +1015,7 @@
         listEl.appendChild(btn);
       });
 
-      const isCurrentSaved = sessions.some(s => s.id === currentActiveId || (wizardClassroomId && s.classroomId === wizardClassroomId));
+      const isCurrentSaved = sessions.some(s => s.id === currentActiveId || (curRef && s.sessionRef === curRef) || (evalId && s.evalId === evalId && s.classroomId === wizardClassroomId));
       updateDiscardOrDeleteButtonState(isCurrentSaved, currentActiveId);
     }
     window.renderSummarySessionsStrip = renderSummarySessionsStrip;
@@ -1047,6 +1069,9 @@
         // Estado: Descartar (borrador no guardado)
         if (typeof resetWizard === 'function') {
           resetWizard();
+        }
+        if (typeof goHomeHub === 'function') {
+          goHomeHub();
         } else if (typeof showView === 'function') {
           showView('hub');
         }
@@ -1090,6 +1115,9 @@
           // No quedan sesiones, regresar limpiamente al inicio
           if (typeof resetWizard === 'function') {
             resetWizard();
+          }
+          if (typeof goHomeHub === 'function') {
+            goHomeHub();
           } else if (typeof showView === 'function') {
             showView('hub');
           }
@@ -1312,7 +1340,11 @@
 
       // 3. Cerrar modal y abrir vista de evaluación
       closeSavedSessionsModal();
+      window.isViewingSavedSessionsMode = true;
       showView('eval');
+      if (typeof updateTopbarModeTitle === 'function') {
+        updateTopbarModeTitle('saved-sessions');
+      }
       hideWizardSteps();
 
       // Restaurar estado completo de los constructores (Rama 3 o Simulador R1/R2)
