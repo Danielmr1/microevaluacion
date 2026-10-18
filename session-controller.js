@@ -300,14 +300,24 @@
         if (b3Opts) b3Opts.style.display = 'block';
 
         if (typeof r3State !== 'undefined' && ev) {
+          if (ev.r3State) {
+            Object.assign(r3State, JSON.parse(JSON.stringify(ev.r3State)));
+          }
           const qCount = ev.questionCount || (ev.questions ? ev.questions.length : 10);
           r3State.count = Math.min(Math.max(qCount, 5), 20);
-          r3State.mode = ev.mode || (ev.hasQuestionnaire ? 'bank' : ((ev.title && ev.title.includes('Evaluación')) ? 'bank' : ((ev.title && ev.title.includes('Solo Cartilla')) ? 'keys' : (r3State.mode || 'keys'))));
+
+          const hasExamQuestions = (Array.isArray(ev.questions) && ev.questions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim()) && !q.prompt.startsWith('[Pregunta'))) ||
+            (ev.r3State && Array.isArray(ev.r3State.bankQuestions) && ev.r3State.bankQuestions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())));
+          const isBankMode = ev.mode === 'bank' || (ev.wizardEval && ev.wizardEval.mode === 'bank') || (ev.r3State && ev.r3State.mode === 'bank') || ev.hasQuestionnaire === true || hasExamQuestions;
+          r3State.mode = isBankMode ? 'bank' : 'keys';
 
           if (Array.isArray(ev.questions) && ev.questions.length > 0) {
             ev.questions.forEach((q, idx) => {
               if (idx < 20) {
-                if (q.correct) r3State.keys[idx] = q.correct.toUpperCase();
+                if (q.correct) {
+                  r3State.keys[idx] = q.correct.toUpperCase();
+                  if (r3State.soloKeys) r3State.soloKeys[idx] = q.correct.toUpperCase();
+                }
                 if (q.prompt || q.options) {
                   r3State.bankQuestions[idx] = {
                     id: q.id || ('r3_q' + (idx + 1)),
@@ -321,7 +331,10 @@
           } else if (ev.expectedAnswer) {
             const keys = ev.expectedAnswer.trim().split(/\s+/);
             keys.forEach((k, idx) => {
-              if (idx < 20 && /^[A-D]$/i.test(k)) r3State.keys[idx] = k.toUpperCase();
+              if (idx < 20 && /^[A-D]$/i.test(k)) {
+                r3State.keys[idx] = k.toUpperCase();
+                if (r3State.soloKeys) r3State.soloKeys[idx] = k.toUpperCase();
+              }
             });
           }
         }
@@ -340,11 +353,15 @@
           const maxCount = (curBranch === 'rama2') ? 5 : 2;
           const qCount = ev.questionCount || (ev.questions ? ev.questions.length : 1);
           simState.count = Math.min(Math.max(1, qCount), maxCount);
-          simState.type = (ev.type === 'mc') ? 'mc' : 'free';
+
+          const isMC = (ev.type === 'mc' || ev.type === 'mc1' || ev.type === 'mc2' || ev.responseType === 'mc' || (ev.wizardEval && (ev.wizardEval.type === 'mc' || ev.wizardEval.type === 'mc1' || ev.wizardEval.type === 'mc2')));
+          simState.type = isMC ? 'mc' : 'free';
+
           simState.withGrid = (ev.withGrid !== undefined) ? !!ev.withGrid : (curBranch === 'rama1');
           if (typeof ev.gridStage === 'number') simState.gridStage = ev.gridStage;
           if (ev.cardFormat) simState.cardFormat = ev.cardFormat;
           if (ev.orientation) simState.orientation = ev.orientation;
+          if (ev.isPortrait !== undefined) simState.isPortrait = ev.isPortrait;
 
           if (Array.isArray(ev.questions) && ev.questions.length > 0) {
             ev.questions.forEach((q, idx) => {
@@ -359,6 +376,15 @@
                 };
               }
             });
+          } else if (ev.prompt) {
+            simState.questions[0] = {
+              prompt: ev.prompt || '',
+              options: ev.options ? { ...ev.options } : { A: '', B: '', C: '', D: '' },
+              correct: ev.correct || (ev.expectedAnswer && /^[A-D]$/i.test(ev.expectedAnswer.trim()) ? ev.expectedAnswer.trim().toUpperCase() : 'A'),
+              expectedAnswer: ev.expectedAnswer || '',
+              rubric: ev.rubric || null,
+              hasRubric: !!(ev.rubric || ev.rubrica)
+            };
           }
         }
 
@@ -831,11 +857,18 @@
           Object.assign(r3State, JSON.parse(JSON.stringify(session.r3State)));
         } else {
           r3State.count = Math.min(Math.max(qCount, 5), 20);
-          r3State.mode = session.mode || (evalObj.hasQuestionnaire ? 'bank' : ((session.title && session.title.includes('Evaluación')) ? 'bank' : 'keys'));
+          const hasExamQuestions = (Array.isArray(session.questions) && session.questions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim()) && !q.prompt.startsWith('[Pregunta'))) ||
+            (session.r3State && Array.isArray(session.r3State.bankQuestions) && session.r3State.bankQuestions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())));
+          const isBankMode = session.mode === 'bank' || (session.r3State && session.r3State.mode === 'bank') || evalObj.hasQuestionnaire === true || hasExamQuestions;
+          r3State.mode = isBankMode ? 'bank' : 'keys';
+
           if (Array.isArray(session.questions)) {
             session.questions.forEach((q, idx) => {
               if (idx < 20) {
-                if (q.correct) r3State.keys[idx] = q.correct.toUpperCase();
+                if (q.correct) {
+                  r3State.keys[idx] = q.correct.toUpperCase();
+                  if (r3State.soloKeys) r3State.soloKeys[idx] = q.correct.toUpperCase();
+                }
                 if (q.prompt || q.options) {
                   r3State.bankQuestions[idx] = {
                     id: q.id || ('r3_q' + (idx + 1)),
@@ -1337,7 +1370,8 @@
           title: sess.title,
           withGrid: sess.withGrid,
           cardOrientation: sess.cardOrientation,
-          gridSize: sess.gridSize
+          gridSize: sess.gridSize,
+          mode: sess.mode
         };
       }
 
@@ -1396,11 +1430,19 @@
         } else {
           const qCount = sess.questionCount || (sess.questions ? sess.questions.length : 10);
           r3State.count = Math.min(Math.max(qCount, 5), 20);
-          r3State.mode = (sess.wizardEval && sess.wizardEval.mode) || sess.mode || ((sess.branchTitle && sess.branchTitle.includes('Evaluación')) ? 'bank' : 'keys');
+
+          const hasExamQuestions = (Array.isArray(sess.questions) && sess.questions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim()) && !q.prompt.startsWith('[Pregunta'))) ||
+            (sess.r3State && Array.isArray(sess.r3State.bankQuestions) && sess.r3State.bankQuestions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())));
+          const isBankMode = sess.mode === 'bank' || (sess.wizardEval && sess.wizardEval.mode === 'bank') || (sess.r3State && sess.r3State.mode === 'bank') || sess.hasQuestionnaire === true || hasExamQuestions;
+          r3State.mode = isBankMode ? 'bank' : 'keys';
+
           if (Array.isArray(sess.questions)) {
             sess.questions.forEach((q, idx) => {
               if (idx < 20) {
-                if (q.correct) r3State.keys[idx] = q.correct.toUpperCase();
+                if (q.correct) {
+                  r3State.keys[idx] = q.correct.toUpperCase();
+                  if (r3State.soloKeys) r3State.soloKeys[idx] = q.correct.toUpperCase();
+                }
                 if (q.prompt || q.options) {
                   r3State.bankQuestions[idx] = {
                     id: q.id || ('r3_q' + (idx + 1)),
@@ -1414,7 +1456,10 @@
           } else if (sess.expectedAnswer) {
             const keys = sess.expectedAnswer.trim().split(/\s+/);
             keys.forEach((k, idx) => {
-              if (idx < 20 && /^[A-D]$/i.test(k)) r3State.keys[idx] = k.toUpperCase();
+              if (idx < 20 && /^[A-D]$/i.test(k)) {
+                r3State.keys[idx] = k.toUpperCase();
+                if (r3State.soloKeys) r3State.soloKeys[idx] = k.toUpperCase();
+              }
             });
           }
         }
@@ -1424,12 +1469,17 @@
         const maxQ = (sess.branch === 'rama2') ? 5 : 2;
         const qCount = sess.questionCount || (sess.questions ? sess.questions.length : 1);
         simState.count = Math.min(Math.max(1, qCount), maxQ);
-        simState.type = (sess.type === 'mc') ? 'mc' : 'free';
+
+        const isMC = (sess.type === 'mc' || sess.type === 'mc1' || sess.type === 'mc2' || sess.responseType === 'mc' || (sess.wizardEval && (sess.wizardEval.type === 'mc' || sess.wizardEval.type === 'mc1' || sess.wizardEval.type === 'mc2')));
+        simState.type = isMC ? 'mc' : 'free';
+
         simState.withGrid = (sess.withGrid !== undefined) ? !!sess.withGrid : (sess.branch === 'rama1');
         if (typeof sess.gridStage === 'number') simState.gridStage = sess.gridStage;
         if (sess.cardFormat) simState.cardFormat = sess.cardFormat;
         if (sess.cardOrientation) simState.orientation = sess.cardOrientation;
-        if (Array.isArray(sess.questions)) {
+        if (sess.isPortrait !== undefined) simState.isPortrait = sess.isPortrait;
+
+        if (Array.isArray(sess.questions) && sess.questions.length > 0) {
           sess.questions.forEach((q, idx) => {
             if (idx < 5) {
               simState.questions[idx] = {
@@ -1442,6 +1492,15 @@
               };
             }
           });
+        } else if (sess.prompt) {
+          simState.questions[0] = {
+            prompt: sess.prompt || '',
+            options: sess.options ? { ...sess.options } : { A: '', B: '', C: '', D: '' },
+            correct: sess.correct || (sess.expectedAnswer && /^[A-D]$/i.test(sess.expectedAnswer.trim()) ? sess.expectedAnswer.trim().toUpperCase() : 'A'),
+            expectedAnswer: sess.expectedAnswer || '',
+            rubric: sess.rubric || null,
+            hasRubric: !!(sess.rubric || sess.rubrica)
+          };
         }
         if (typeof updateSimToolbar === 'function') updateSimToolbar();
         if (typeof renderSimulatedCard === 'function') renderSimulatedCard();
@@ -1710,6 +1769,7 @@
             withGrid: session.withGrid !== undefined ? session.withGrid : true,
             gridSize: session.gridSize || 'normal',
             correctionMode: session.correctionMode || 'quick',
+            mode: (wizardEval && wizardEval.mode) || session.mode || ((typeof r3State !== 'undefined') ? r3State.mode : undefined),
             r3State: (typeof r3State !== 'undefined' && r3State) ? JSON.parse(JSON.stringify(r3State)) : null,
             wizardEval: wizardEval ? JSON.parse(JSON.stringify(wizardEval)) : JSON.parse(JSON.stringify(session))
           };
