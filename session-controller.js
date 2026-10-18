@@ -300,15 +300,36 @@
         if (b3Opts) b3Opts.style.display = 'block';
 
         if (typeof r3State !== 'undefined' && ev) {
-          if (ev.r3State) {
-            Object.assign(r3State, JSON.parse(JSON.stringify(ev.r3State)));
+          const sessList = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions) ? ClassroomData.getSavedSessions() : [];
+          const parentSess = sessList.find(s => (s.id && (s.id === ev.id || s.id === ev.evalId || (activeSess && (s.id === activeSess.id || s.id === activeSess.evalId)))) ||
+            (s.evalId && (s.evalId === ev.id || s.evalId === ev.evalId || (activeSess && (s.evalId === activeSess.id || s.evalId === activeSess.evalId)))));
+
+          const r3Source = (ev && ev.r3State) || (activeSess && activeSess.r3State) || (parentSess && (parentSess.r3State || (parentSess.data && parentSess.data.r3State))) || null;
+          if (r3Source) {
+            Object.assign(r3State, JSON.parse(JSON.stringify(r3Source)));
           }
-          const qCount = ev.questionCount || (ev.questions ? ev.questions.length : 10);
+          const qCount = ev.questionCount || (parentSess && (parentSess.questionCount || (parentSess.data && parentSess.data.questionCount))) || (ev.questions ? ev.questions.length : 10);
           r3State.count = Math.min(Math.max(qCount, 5), 20);
 
+          const rawExplicitMode = ev.mode || (wizardEval && wizardEval.mode) || (activeSess && activeSess.mode) || (parentSess && (parentSess.mode || (parentSess.data && parentSess.data.mode))) || (r3Source && r3Source.mode);
+
+          const bTitle = (ev && ev.branchTitle) || (wizardEval && wizardEval.branchTitle) || (activeSess && activeSess.branchTitle) || (parentSess && (parentSess.branchTitle || parentSess.branch_title)) || '';
+          const fullTitle = (ev && ev.title) || (wizardEval && wizardEval.title) || (activeSess && activeSess.title) || (parentSess && parentSess.title) || '';
+
+          const isExplicitSoloCartilla = (rawExplicitMode === 'keys') || bTitle.includes('Solo Cartilla') || fullTitle.includes('Solo Cartilla');
+          const isExplicitBank = (rawExplicitMode === 'bank') || bTitle.includes('Evaluación y Cartillas') || bTitle.includes('Evaluacion y Cartillas');
+
           const hasExamQuestions = (Array.isArray(ev.questions) && ev.questions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim()) && !q.prompt.startsWith('[Pregunta'))) ||
-            (ev.r3State && Array.isArray(ev.r3State.bankQuestions) && ev.r3State.bankQuestions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())));
-          const isBankMode = ev.mode === 'bank' || (ev.wizardEval && ev.wizardEval.mode === 'bank') || (ev.r3State && ev.r3State.mode === 'bank') || ev.hasQuestionnaire === true || hasExamQuestions;
+            (r3Source && Array.isArray(r3Source.bankQuestions) && r3Source.bankQuestions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())));
+
+          let isBankMode = false;
+          if (isExplicitSoloCartilla && !isExplicitBank) {
+            isBankMode = false;
+          } else if (isExplicitBank) {
+            isBankMode = true;
+          } else {
+            isBankMode = ev.hasQuestionnaire === true || (activeSess && activeSess.hasQuestionnaire === true) || hasExamQuestions;
+          }
           r3State.mode = isBankMode ? 'bank' : 'keys';
 
           if (Array.isArray(ev.questions) && ev.questions.length > 0) {
@@ -1358,6 +1379,15 @@
       wizardClassroomId = sess.classroomId;
       if (sess.wizardEval) {
         wizardEval = JSON.parse(JSON.stringify(sess.wizardEval));
+        if (!wizardEval.mode && (sess.mode || (sess.data && sess.data.mode) || (sess.r3State && sess.r3State.mode))) {
+          wizardEval.mode = sess.mode || (sess.data && sess.data.mode) || (sess.r3State && sess.r3State.mode);
+        }
+        if (!wizardEval.branchTitle && (sess.branchTitle || sess.branch_title)) {
+          wizardEval.branchTitle = sess.branchTitle || sess.branch_title;
+        }
+        if (!wizardEval.r3State && (sess.r3State || (sess.data && sess.data.r3State))) {
+          wizardEval.r3State = sess.r3State || (sess.data && sess.data.r3State);
+        }
       } else {
         wizardEval = {
           id: sess.evalId || sess.id,
@@ -1431,9 +1461,12 @@
           const qCount = sess.questionCount || (sess.questions ? sess.questions.length : 10);
           r3State.count = Math.min(Math.max(qCount, 5), 20);
 
+          const explicitMode = sess.mode || (sess.data && sess.data.mode) || (sess.wizardEval && sess.wizardEval.mode) || (sess.r3State && sess.r3State.mode);
+          const bTitle = sess.branchTitle || sess.branch_title || (sess.wizardEval && sess.wizardEval.branchTitle);
+          const isBankByBranchTitle = !!(bTitle && (bTitle.includes('Evaluación y Cartillas') || bTitle.includes('Evaluacion y Cartillas')));
           const hasExamQuestions = (Array.isArray(sess.questions) && sess.questions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim()) && !q.prompt.startsWith('[Pregunta'))) ||
             (sess.r3State && Array.isArray(sess.r3State.bankQuestions) && sess.r3State.bankQuestions.some(q => q && q.prompt && !/^Pregunta\s+\d+$/i.test(q.prompt.trim())));
-          const isBankMode = sess.mode === 'bank' || (sess.wizardEval && sess.wizardEval.mode === 'bank') || (sess.r3State && sess.r3State.mode === 'bank') || sess.hasQuestionnaire === true || hasExamQuestions;
+          const isBankMode = explicitMode === 'bank' || isBankByBranchTitle || sess.hasQuestionnaire === true || hasExamQuestions;
           r3State.mode = isBankMode ? 'bank' : 'keys';
 
           if (Array.isArray(sess.questions)) {
