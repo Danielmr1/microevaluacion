@@ -961,17 +961,11 @@
     function renderSummarySessionsStrip(activeSessionId) {
       const stripEl = document.getElementById('summary-sessions-strip');
       const listEl = document.getElementById('summary-sessions-numbers-list');
-      const badgeEl = document.getElementById('summary-sessions-count-badge');
       if (!stripEl || !listEl) return;
 
       const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
         ? ClassroomData.getSavedSessions()
         : [];
-      const maxSess = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
-
-      if (badgeEl) {
-        badgeEl.textContent = `${sessions.length}/${maxSess}`;
-      }
 
       const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
       const curRef = (activeSess && activeSess.sessionRef) || null;
@@ -1345,6 +1339,32 @@
       if (typeof updateTopbarModeTitle === 'function') {
         updateTopbarModeTitle('saved-sessions');
       }
+
+      // Desplazamiento suave al tope para restaurar el espacio visual superior solicitado
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Capturar clon para fundido cruzado (Crossfade simultáneo) si ya estamos en la vista de resumen
+      const summaryEl = document.getElementById('step-summary');
+      const isAlreadyVisible = summaryEl && window.getComputedStyle(summaryEl).display !== 'none';
+      let ghostClone = null;
+      if (isAlreadyVisible && summaryEl && summaryEl.parentNode) {
+        const prevGhost = document.getElementById('step-summary-crossfade-ghost');
+        if (prevGhost && prevGhost.parentNode) prevGhost.parentNode.removeChild(prevGhost);
+
+        ghostClone = summaryEl.cloneNode(true);
+        ghostClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+        ghostClone.id = 'step-summary-crossfade-ghost';
+        ghostClone.style.position = 'absolute';
+        ghostClone.style.top = summaryEl.offsetTop + 'px';
+        ghostClone.style.left = summaryEl.offsetLeft + 'px';
+        ghostClone.style.width = summaryEl.offsetWidth + 'px';
+        ghostClone.style.pointerEvents = 'none';
+        ghostClone.style.zIndex = '5';
+        ghostClone.style.transition = 'opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1)';
+        ghostClone.style.opacity = '1';
+        summaryEl.parentNode.insertBefore(ghostClone, summaryEl);
+      }
+
       hideWizardSteps();
 
       // Restaurar estado completo de los constructores (Rama 3 o Simulador R1/R2)
@@ -1434,7 +1454,12 @@
         updateScannerSessionBar(activeObj);
       }
 
-      // 5. Mostrar la pantalla de resumen confirmada
+      // 5. Mostrar la pantalla de resumen confirmada con Crossfade simultáneo
+      if (ghostClone && summaryEl) {
+        summaryEl.style.opacity = '0';
+        summaryEl.style.transition = 'opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1)';
+      }
+
       showSummary();
       updateClassroomActionsVisibility(sess.classroomId);
 
@@ -1445,7 +1470,22 @@
         updateDiscardOrDeleteButtonState(true, sess.id);
       }
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (ghostClone) {
+        setTimeout(() => {
+          ghostClone.style.opacity = '0';
+          if (summaryEl) summaryEl.style.opacity = '1';
+          setTimeout(() => {
+            if (ghostClone && ghostClone.parentNode) {
+              ghostClone.parentNode.removeChild(ghostClone);
+            }
+            if (summaryEl) {
+              summaryEl.style.transition = '';
+              summaryEl.style.opacity = '';
+            }
+          }, 240);
+        }, 16);
+      }
+
       showToast(`✓ Sesión cargada: ${cls.name} (${sess.branchTitle || 'Evaluación'})`);
     }
     window.loadAndActivateSavedSession = loadAndActivateSavedSession;

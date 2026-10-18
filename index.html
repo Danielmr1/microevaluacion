@@ -51,10 +51,10 @@
   <script src="card-focalizada.js?v=3.2.73"></script>
   <script src="card-cartilla.js?v=3.2.73"></script>
   <script src="card-generator.js?v=3.2.77"></script>
-  <script src="session-controller.js?v=3.2.80"></script>
-  <script src="app-navigation.js?v=3.2.80"></script>
+  <script src="session-controller.js?v=3.2.81"></script>
+  <script src="app-navigation.js?v=3.2.81"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.80">
+  <link rel="stylesheet" href="styles.css?v=3.2.81">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -364,7 +364,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.80</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.81</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1041,17 +1041,10 @@
         <input type="hidden" id="input-eval-unit">
       </div>
 
-      <!-- Barra Superior de Sesiones Guardadas (Selector Numérico en Fila: [ 1 ] [ 2 ] [ 3 ] ...) -->
+      <!-- Barra Superior de Sesiones Guardadas (Cápsula Flotante Centrada: [ 1 ] [ 2 ] [ 3 ] ...) -->
       <div id="summary-sessions-strip" class="summary-sessions-strip" style="display:none;">
-        <div class="sessions-strip-inner">
-          <div class="sessions-strip-label">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; color:#d97706;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <span style="font-size:0.75rem; font-weight:700; color:#475569;">Sesiones:</span>
-            <span id="summary-sessions-count-badge" class="sessions-count-pill">0/8</span>
-          </div>
-          <div id="summary-sessions-numbers-list" class="sessions-numbers-list">
-            <!-- Botones [ 1 ] [ 2 ] [ 3 ]... generados dinámicamente -->
-          </div>
+        <div id="summary-sessions-numbers-list" class="sessions-numbers-list">
+          <!-- Botones [ 1 ] [ 2 ] [ 3 ]... generados dinámicamente -->
         </div>
       </div>
 
