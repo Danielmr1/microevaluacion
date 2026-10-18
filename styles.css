@@ -5995,21 +5995,32 @@
     @media screen and (min-width: 901px) {
       .summary-split-layout.active-split {
         display: grid !important;
-        grid-template-columns: 380px minmax(0, 1fr) !important;
+        grid-template-columns: 360px minmax(0, 1fr) !important;
         align-items: start !important;
+        gap: 32px !important;
+        width: 100% !important;
       }
 
       .summary-sticky-sidebar {
         position: sticky !important;
         top: 20px !important;
-        max-height: calc(100vh - 40px) !important;
-        overflow-y: auto !important;
-        padding-right: 4px !important;
+        overflow: visible !important;
+        max-height: none !important;
+        padding-right: 0 !important;
       }
 
       .summary-document-viewport {
-        overflow-x: auto !important;
+        overflow: visible !important;
         padding-bottom: 40px !important;
+        width: 100% !important;
+        align-items: center !important;
+      }
+
+      /* Permitir que los contenedores de páginas y cuadernillos ocupen todo el ancho necesario para hojas A4 horizontales y verticales */
+      .summary-document-viewport #pages-container,
+      .summary-document-viewport #booklet-container {
+        max-width: 100% !important;
+        width: 100% !important;
       }
     }
 
@@ -6023,6 +6034,7 @@
       .summary-sticky-sidebar {
         position: static !important;
         width: 100% !important;
+        overflow: visible !important;
       }
 
       .summary-actions-stack {
@@ -6040,7 +6052,8 @@
     @media screen and (min-width: 901px) {
       .teacher-panel:has(.summary-split-layout.active-split),
       .teacher-panel.has-active-split {
-        max-width: 1320px !important;
+        max-width: 1540px !important;
+        width: 100% !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
