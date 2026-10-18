@@ -51,10 +51,10 @@
   <script src="card-focalizada.js?v=3.2.73"></script>
   <script src="card-cartilla.js?v=3.2.73"></script>
   <script src="card-generator.js?v=3.2.77"></script>
-  <script src="session-controller.js?v=3.2.77"></script>
-  <script src="app-navigation.js?v=3.2.73"></script>
+  <script src="session-controller.js?v=3.2.79"></script>
+  <script src="app-navigation.js?v=3.2.79"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.78">
+  <link rel="stylesheet" href="styles.css?v=3.2.79">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -364,7 +364,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.78</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.79</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1041,6 +1041,24 @@
         <input type="hidden" id="input-eval-unit">
       </div>
 
+      <!-- Barra Superior de Sesiones Guardadas (Selector Numérico en Fila: [ 1 ] [ 2 ] [ 3 ] ...) -->
+      <div id="summary-sessions-strip" class="summary-sessions-strip" style="display:none;">
+        <div class="sessions-strip-inner">
+          <div class="sessions-strip-label">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; color:#d97706;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span style="font-size:0.75rem; font-weight:700; color:#475569;">Sesiones:</span>
+            <span id="summary-sessions-count-badge" class="sessions-count-pill">0/8</span>
+          </div>
+          <div id="summary-sessions-numbers-list" class="sessions-numbers-list">
+            <!-- Botones [ 1 ] [ 2 ] [ 3 ]... generados dinámicamente -->
+          </div>
+          <button type="button" id="btn-summary-new-session" onclick="handleCreateNewSessionFromSummary()" class="btn-session-add" title="Crear nueva sesión">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Nueva</span>
+          </button>
+        </div>
+      </div>
+
       <!-- ── PASO 5: Resumen y Fichas Listas (Two-Pane Split Layout) ── -->
       <div id="step-summary" class="summary-split-layout" style="display:none;">
         <!-- Columna Izquierda: Información de sesión y botones de control (Sticky en PC) -->
@@ -1097,25 +1115,34 @@
                 </button>
               </div>
 
-              <!-- Fila 2: Acción Primaria Destacada -->
-              <button type="button" onclick="goToScannerWithSession()" class="btn-summary-primary" id="btn-goto-scan">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span>Ir al Escáner</span>
-              </button>
+              <!-- Bloque Asimétrico: Columna Izquierda (Guardar, Editar, Descartar/Eliminar) y Columna Derecha (Ir al Escáner alto) -->
+              <div id="summary-action-grid" class="summary-action-grid">
+                <!-- Columna Izquierda: 3 botones apilados -->
+                <div class="summary-secondary-stack">
+                  <button id="btn-save-session" type="button" onclick="handleSaveCurrentSession()" class="btn-summary-sub">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    <span>Guardar</span>
+                  </button>
+                  <button type="button" onclick="editarEvaluacion()" id="btn-change-eval" class="btn-summary-sub">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Editar</span>
+                  </button>
+                  <button type="button" onclick="handleDiscardOrDeleteSession()" id="btn-discard-session" class="btn-summary-sub btn-summary-sub-discard">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span>Descartar</span>
+                  </button>
+                </div>
 
-              <!-- Fila 3: Acciones secundarias en 2 columnas -->
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                <button id="btn-save-session" type="button" onclick="handleSaveCurrentSession()" class="btn-summary-secondary">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                  <span>Guardar</span>
-                </button>
-                <button type="button" onclick="editarEvaluacion()" id="btn-change-eval" class="btn-summary-secondary">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  <span>Editar</span>
+                <!-- Columna Derecha: Botón de Escáner alto (Hero Action) -->
+                <button type="button" onclick="goToScannerWithSession()" class="btn-summary-scan-card" id="btn-goto-scan">
+                  <div class="scan-card-icon-wrap">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </div>
+                  <span class="scan-card-label">Ir al Escáner</span>
                 </button>
               </div>
 
-              <!-- Fila 4: Resultados (si aplica) -->
+              <!-- Fila inferior: Resultados (si aplica) -->
               <button type="button" onclick="openResultsModal()" id="btn-summary-results" class="btn-summary-teal" style="display:none;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 <span>Ver Resultados</span>

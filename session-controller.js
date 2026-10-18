@@ -644,11 +644,9 @@
           setTimeout(fitSummaryDocumentsToViewport, 50);
         }
 
-        // ── Estado del botón Guardar Sesión ──
-        const btnSaveSess = document.getElementById('btn-save-session');
-        if (btnSaveSess) {
-          btnSaveSess.disabled = false;
-          btnSaveSess.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar';
+        // ── Estado del botón Guardar Sesión y barra de sesiones ──
+        if (typeof renderSummarySessionsStrip === 'function') {
+          renderSummarySessionsStrip();
         }
 
         // ── Repoblar lo ya escaneado ──
@@ -926,6 +924,12 @@
           btnSave.style.background = '#059669';
           btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada (${res.count}/${maxSess})`;
         }
+        if (typeof updateDiscardOrDeleteButtonState === 'function') {
+          updateDiscardOrDeleteButtonState(true, sessionPayload.id);
+        }
+        if (typeof renderSummarySessionsStrip === 'function') {
+          renderSummarySessionsStrip(sessionPayload.id);
+        }
         if (typeof updateHubSavedSessionsBadge === 'function') {
           updateHubSavedSessionsBadge();
         }
@@ -935,6 +939,184 @@
       }
     }
     window.handleSaveCurrentSession = handleSaveCurrentSession;
+
+    /**
+     * Renderiza la franja superior de sesiones guardadas ([ 1 ] [ 2 ] [ 3 ] ...)
+     */
+    function renderSummarySessionsStrip(activeSessionId) {
+      const stripEl = document.getElementById('summary-sessions-strip');
+      const listEl = document.getElementById('summary-sessions-numbers-list');
+      const badgeEl = document.getElementById('summary-sessions-count-badge');
+      if (!stripEl || !listEl) return;
+
+      const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+        ? ClassroomData.getSavedSessions()
+        : [];
+      const maxSess = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
+
+      if (badgeEl) {
+        badgeEl.textContent = `${sessions.length}/${maxSess}`;
+      }
+
+      if (sessions.length === 0) {
+        stripEl.style.display = 'none';
+        listEl.innerHTML = '';
+        updateDiscardOrDeleteButtonState(false);
+        return;
+      }
+
+      stripEl.style.display = 'block';
+      listEl.innerHTML = '';
+
+      // Determinar cuál es la sesión activa
+      let currentActiveId = activeSessionId;
+      if (!currentActiveId) {
+        const activeSess = ClassroomData.getActiveSession();
+        if (activeSess && activeSess.id) {
+          currentActiveId = activeSess.id;
+        } else if (wizardClassroomId) {
+          const match = sessions.find(s => s.classroomId === wizardClassroomId);
+          if (match) currentActiveId = match.id;
+        }
+      }
+
+      sessions.forEach((s, idx) => {
+        const num = idx + 1;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'session-num-btn' + (s.id === currentActiveId ? ' active' : '');
+        btn.textContent = String(num);
+        btn.title = `Sesión ${num}: ${s.classroomName || 'Salón'} (${s.branchTitle || 'Evaluación'})`;
+        btn.onclick = () => {
+          loadAndActivateSavedSession(s.id);
+        };
+        listEl.appendChild(btn);
+      });
+
+      const isCurrentSaved = sessions.some(s => s.id === currentActiveId || (wizardClassroomId && s.classroomId === wizardClassroomId));
+      updateDiscardOrDeleteButtonState(isCurrentSaved, currentActiveId);
+    }
+    window.renderSummarySessionsStrip = renderSummarySessionsStrip;
+
+    /**
+     * Actualiza el botón de Descartar / Eliminar según si la sesión actual está guardada o es borrador
+     */
+    function updateDiscardOrDeleteButtonState(isSaved, sessionId) {
+      const btn = document.getElementById('btn-discard-session');
+      const btnSave = document.getElementById('btn-save-session');
+      if (!btn) return;
+
+      if (isSaved) {
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg><span>Eliminar</span>`;
+        btn.className = 'btn-summary-sub btn-summary-sub-delete';
+        btn.title = 'Eliminar esta sesión guardada y liberar cupo';
+        btn.dataset.isSaved = 'true';
+        if (sessionId) btn.dataset.sessionId = sessionId;
+
+        if (btnSave) {
+          btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg><span>Guardada</span>`;
+          btnSave.style.background = '#059669';
+          btnSave.style.color = '#ffffff';
+          btnSave.style.borderColor = '#047857';
+        }
+      } else {
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Descartar</span>`;
+        btn.className = 'btn-summary-sub btn-summary-sub-discard';
+        btn.title = 'Descartar esta evaluación y volver al Inicio';
+        btn.dataset.isSaved = 'false';
+        delete btn.dataset.sessionId;
+
+        if (btnSave) {
+          btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span>Guardar</span>`;
+          btnSave.style.background = '';
+          btnSave.style.color = '';
+          btnSave.style.borderColor = '';
+        }
+      }
+    }
+    window.updateDiscardOrDeleteButtonState = updateDiscardOrDeleteButtonState;
+
+    /**
+     * Maneja el clic en Descartar (si no está guardada) o Eliminar (si está guardada)
+     */
+    function handleDiscardOrDeleteSession() {
+      const btn = document.getElementById('btn-discard-session');
+      const isSaved = btn && btn.dataset.isSaved === 'true';
+
+      if (!isSaved) {
+        // Estado: Descartar (borrador no guardado)
+        if (typeof resetWizard === 'function') {
+          resetWizard();
+        } else if (typeof showView === 'function') {
+          showView('hub');
+        }
+        return;
+      }
+
+      // Estado: Eliminar (sesión guardada)
+      const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+        ? ClassroomData.getSavedSessions()
+        : [];
+      let targetId = btn.dataset.sessionId;
+      if (!targetId) {
+        const activeSess = ClassroomData.getActiveSession();
+        if (activeSess && activeSess.id) targetId = activeSess.id;
+        else if (wizardClassroomId) {
+          const match = sessions.find(s => s.classroomId === wizardClassroomId);
+          if (match) targetId = match.id;
+        }
+      }
+
+      const targetSess = sessions.find(s => s.id === targetId);
+      const title = targetSess ? (targetSess.title || targetSess.classroomName || 'esta sesión') : 'esta sesión';
+
+      const seguro = confirm(`¿Eliminar la sesión guardada "${title}"?\n\nSe liberará 1 cupo para que puedas guardar otra sesión y se desbloqueará el salón y sus preguntas.`);
+      if (!seguro) return;
+
+      const res = ClassroomData.deleteSavedSession(targetId);
+      if (res && res.success) {
+        showToast('🗑️ Sesión eliminada. Cupo liberado.');
+        if (typeof updateHubSavedSessionsBadge === 'function') {
+          updateHubSavedSessionsBadge();
+        }
+
+        const remaining = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+          ? ClassroomData.getSavedSessions()
+          : [];
+        if (remaining.length > 0) {
+          // Cargar la primera sesión restante
+          loadAndActivateSavedSession(remaining[0].id);
+        } else {
+          // No quedan sesiones, regresar limpiamente al inicio
+          if (typeof resetWizard === 'function') {
+            resetWizard();
+          } else if (typeof showView === 'function') {
+            showView('hub');
+          }
+        }
+      } else {
+        showToast('⚠️ No se pudo eliminar la sesión.');
+      }
+    }
+    window.handleDiscardOrDeleteSession = handleDiscardOrDeleteSession;
+
+    /**
+     * Crear una nueva sesión directamente desde la barra superior de resumen
+     */
+    function handleCreateNewSessionFromSummary() {
+      const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions) ? ClassroomData.getSavedSessions() : [];
+      const maxSess = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
+      if (sessions.length >= maxSess) {
+        showToast(`⚠️ Ya tienes las ${maxSess} sesiones ocupadas. Elimina una para poder crear otra.`);
+        return;
+      }
+      if (typeof openBranchFlow === 'function') {
+        openBranchFlow('rama3');
+      } else if (typeof openFlow === 'function') {
+        openFlow('eval');
+      }
+    }
+    window.handleCreateNewSessionFromSummary = handleCreateNewSessionFromSummary;
 
     /**
      * Renderiza las tarjetas del modal de Sesiones Guardadas (hasta 8).
@@ -1224,10 +1406,11 @@
       showSummary();
       updateClassroomActionsVisibility(sess.classroomId);
 
-      const btnSave = document.getElementById('btn-save-session');
-      if (btnSave) {
-        btnSave.style.background = '#059669';
-        btnSave.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada';
+      if (typeof renderSummarySessionsStrip === 'function') {
+        renderSummarySessionsStrip(sess.id);
+      }
+      if (typeof updateDiscardOrDeleteButtonState === 'function') {
+        updateDiscardOrDeleteButtonState(true, sess.id);
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1437,6 +1620,12 @@
               btnSave.style.background = '#059669';
               const maxSess = res.max || (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
               btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada (${res.count}/${maxSess})`;
+            }
+            if (typeof updateDiscardOrDeleteButtonState === 'function') {
+              updateDiscardOrDeleteButtonState(true, sessionPayload.id);
+            }
+            if (typeof renderSummarySessionsStrip === 'function') {
+              renderSummarySessionsStrip(sessionPayload.id);
             }
             if (typeof updateHubSavedSessionsBadge === 'function') {
               updateHubSavedSessionsBadge();
