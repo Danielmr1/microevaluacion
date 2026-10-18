@@ -252,6 +252,15 @@
         summaryEl.style.display = 'none';
       }
 
+      // 1b. Salir del modo de sesiones guardadas y ocultar los números flotantes
+      window.isViewingSavedSessionsMode = false;
+      const stripEl = document.getElementById('summary-sessions-strip');
+      if (stripEl) {
+        stripEl.style.display = 'none';
+        const listEl = document.getElementById('summary-sessions-numbers-list');
+        if (listEl) listEl.innerHTML = '';
+      }
+
       // 2. Limpiar y ocultar los visores inferiores de PDF
       if (typeof clearGeneratedPdfContainers === 'function') {
         clearGeneratedPdfContainers();
@@ -280,6 +289,9 @@
       const ev = wizardEval || activeSess;
       const curBranch = (ev && ev.branch) || window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
       window.selectedBranch = curBranch;
+      if (typeof updateTopbarModeTitle === 'function') {
+        updateTopbarModeTitle(curBranch);
+      }
 
       if (curBranch === 'rama3') {
         const simContainer = document.getElementById('sheet-simulator-container');
@@ -650,6 +662,10 @@
         } else {
           const stripEl = document.getElementById('summary-sessions-strip');
           if (stripEl) stripEl.style.display = 'none';
+          const curBranch = (wizardEval && wizardEval.branch) || window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
+          if (typeof updateTopbarModeTitle === 'function') {
+            updateTopbarModeTitle(curBranch);
+          }
           const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
             ? ClassroomData.getSavedSessions()
             : [];
