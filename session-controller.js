@@ -242,7 +242,12 @@
 
       // 1. Ocultar la pantalla de resumen
       const summaryEl = document.getElementById('step-summary');
-      if (summaryEl) summaryEl.style.display = 'none';
+      const teacherPanelEl = summaryEl ? summaryEl.closest('.teacher-panel') : null;
+      if (teacherPanelEl) teacherPanelEl.classList.remove('has-active-split');
+      if (summaryEl) {
+        summaryEl.classList.remove('active-split');
+        summaryEl.style.display = 'none';
+      }
 
       // 2. Limpiar y ocultar los visores inferiores de PDF
       if (typeof clearGeneratedPdfContainers === 'function') {
@@ -386,7 +391,12 @@
 
         // Mostrar solo paso 5 (resumen)
         const summaryEl = document.getElementById('step-summary');
-        if (summaryEl) summaryEl.style.display = 'block';
+        const teacherPanelEl = summaryEl ? summaryEl.closest('.teacher-panel') : null;
+        if (teacherPanelEl) teacherPanelEl.classList.add('has-active-split');
+        if (summaryEl) {
+          summaryEl.classList.add('active-split');
+          summaryEl.style.display = '';
+        }
 
         // Salón seleccionado
         const clsInfo = document.getElementById('summary-classroom-info');
@@ -610,11 +620,6 @@
           }
         }
 
-        // ── Generar fichas automáticamente ──
-        const pagesContainer = document.getElementById('pages-container');
-        if (pagesContainer) pagesContainer.style.display = 'flex';
-        renderAllPrintPages(wizardClassroomId, wizardEval);
-
         // ── Renderizar cuadernillo de preguntas si corresponde ──
         // EXCLUSIVO: Solo en Cartilla OMR (Rama 3) en Modo B (Preguntas del Banco)
         const btnBooklet = document.getElementById('btn-print-booklet');
@@ -632,6 +637,11 @@
             if (bookletContainer) bookletContainer.style.display = 'none';
           }
         }
+
+        // ── Generar fichas / cartillas automáticamente ──
+        const pagesContainer = document.getElementById('pages-container');
+        if (pagesContainer) pagesContainer.style.display = 'flex';
+        renderAllPrintPages(wizardClassroomId, wizardEval);
 
         // ── Estado del botón Guardar Sesión ──
         const btnSaveSess = document.getElementById('btn-save-session');
@@ -717,7 +727,12 @@
       const fNew = document.getElementById('step-new-form');
       if (fNew) fNew.style.display = 'none';
       const stepSummary = document.getElementById('step-summary');
-      if (stepSummary) stepSummary.style.display = 'none';
+      const teacherPanelEl = stepSummary ? stepSummary.closest('.teacher-panel') : null;
+      if (teacherPanelEl) teacherPanelEl.classList.remove('has-active-split');
+      if (stepSummary) {
+        stepSummary.classList.remove('active-split');
+        stepSummary.style.display = 'none';
+      }
       const branchToKeep = window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
       if (typeof selectBranchMode === 'function') selectBranchMode(branchToKeep);
     }

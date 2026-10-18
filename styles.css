@@ -5959,4 +5959,91 @@
       }
     }
 
+    /* ── TWO-PANE SPLIT LAYOUT (PANTALLA DE RESUMEN Y DOCUMENTOS) ───── */
+    .summary-split-layout {
+      width: 100%;
+      box-sizing: border-box;
+      gap: 24px;
+      padding: 0;
+      display: none;
+    }
 
+    .summary-sticky-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-sizing: border-box;
+    }
+
+    .summary-actions-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .summary-document-viewport {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Vista de Escritorio (PC / Laptop): Dos columnas lado a lado */
+    @media screen and (min-width: 901px) {
+      .summary-split-layout.active-split {
+        display: grid !important;
+        grid-template-columns: 380px minmax(0, 1fr) !important;
+        align-items: start !important;
+      }
+
+      .summary-sticky-sidebar {
+        position: sticky !important;
+        top: 20px !important;
+        max-height: calc(100vh - 40px) !important;
+        overflow-y: auto !important;
+        padding-right: 4px !important;
+      }
+
+      .summary-document-viewport {
+        overflow-x: auto !important;
+        padding-bottom: 40px !important;
+      }
+    }
+
+    /* Vista de Celular / Tablet: Diseño apilado fluido */
+    @media screen and (max-width: 900px) {
+      .summary-split-layout.active-split {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      .summary-sticky-sidebar {
+        position: static !important;
+        width: 100% !important;
+      }
+
+      .summary-actions-stack {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+      }
+
+      .summary-document-viewport {
+        width: 100% !important;
+        overflow-x: auto !important;
+      }
+    }
+
+    /* Adaptación del panel contenedor para permitir ancho expandido en PC cuando el split está activo */
+    @media screen and (min-width: 901px) {
+      .teacher-panel:has(.summary-split-layout.active-split),
+      .teacher-panel.has-active-split {
+        max-width: 1320px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+    }

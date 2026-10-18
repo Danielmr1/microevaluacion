@@ -364,7 +364,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.71</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.72</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1041,91 +1041,97 @@
         <input type="hidden" id="input-eval-unit">
       </div>
 
-      <!-- ── PASO 5: Resumen y Fichas Listas ── -->
-      <div id="step-summary" style="display:none; padding:18px 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-          <div id="summary-header-mode-container" style="display:flex; align-items:center; gap:10px;">
-            <span id="summary-header-mode-icon" style="font-size:1.45rem; line-height:1;">🔬</span>
-            <div>
-              <label id="summary-header-mode-title" style="display:block; font-size:0.85rem; font-weight:800; color:#0f172a; letter-spacing:0.02em;">
-                Modo de corrección: Alternativa + procedimiento
-              </label>
-              <span id="summary-header-mode-subtitle" style="font-size:0.72rem; color:#64748b; display:block; margin-top:2px;">
-                Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.
-              </span>
+      <!-- ── PASO 5: Resumen y Fichas Listas (Two-Pane Split Layout) ── -->
+      <div id="step-summary" class="summary-split-layout" style="display:none;">
+        <!-- Columna Izquierda: Información de sesión y botones de control (Sticky en PC) -->
+        <aside class="summary-sticky-sidebar">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div id="summary-header-mode-container" style="display:flex; align-items:center; gap:10px;">
+              <span id="summary-header-mode-icon" style="font-size:1.45rem; line-height:1;">🔬</span>
+              <div>
+                <label id="summary-header-mode-title" style="display:block; font-size:0.85rem; font-weight:800; color:#0f172a; letter-spacing:0.02em;">
+                  Modo de corrección: Alternativa + procedimiento
+                </label>
+                <span id="summary-header-mode-subtitle" style="font-size:0.72rem; color:#64748b; display:block; margin-top:2px;">
+                  Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Tarjeta de Resumen -->
-        <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 16px rgba(15,23,42,0.05);">
-          <!-- Salón seleccionado -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; gap:8px;">
-            <div>
-              <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Salón de Clases</span>
-              <span id="summary-classroom-info" style="font-size:1.05rem; font-weight:800; color:#0284c7;"></span>
+          <!-- Tarjeta de Resumen -->
+          <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow:0 4px 16px rgba(15,23,42,0.05);">
+            <!-- Salón seleccionado -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; gap:8px;">
+              <div>
+                <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Salón de Clases</span>
+                <span id="summary-classroom-info" style="font-size:1.05rem; font-weight:800; color:#0284c7;"></span>
+              </div>
+              <span id="summary-grade-badge" style="font-size:0.75rem; font-weight:800; color:#15803d; background:#dcfce7; padding:4px 12px; border-radius:6px; border:1px solid #86efac;"></span>
             </div>
-            <span id="summary-grade-badge" style="font-size:0.75rem; font-weight:800; color:#15803d; background:#dcfce7; padding:4px 12px; border-radius:6px; border:1px solid #86efac;"></span>
+
+            <!-- Contenedor dinámico de Pregunta(s) -->
+            <div id="summary-questions-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:0;">
+              <div style="margin-bottom:8px;">
+                <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Consigna</span>
+                <div id="summary-prompt" style="font-size:0.88rem; font-weight:600; color:#1e293b; line-height:1.4;"></div>
+              </div>
+              <div style="margin-bottom:8px;">
+                <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Respuesta esperada</span>
+                <div id="summary-answer" style="font-size:0.88rem; font-weight:800; color:#15803d;"></div>
+              </div>
+              <div id="summary-rubric" style="padding:8px 12px; border-radius:8px; font-size:0.78rem; font-weight:700;"></div>
+            </div>
+
+            <!-- Configuración de corrección seleccionada (Oculta al haberse movido al encabezado) -->
+            <div id="summary-config-badge" style="display:none;"></div>
+
+            <!-- Selector de Modo de Corrección (Compatibilidad con toggle directo) -->
+            <div id="mc-correction-mode-selector" style="display:none; margin-top:12px;">
+              <input type="radio" name="mc-correction-mode" value="quick" checked onchange="updateCorrectionModeUI('quick')" style="display:none;">
+              <input type="radio" name="mc-correction-mode" value="full" onchange="updateCorrectionModeUI('full')" style="display:none;">
+            </div>
           </div>
 
-          <!-- Contenedor dinámico de Pregunta(s) -->
-          <div id="summary-questions-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:0;">
-            <div style="margin-bottom:8px;">
-              <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Consigna</span>
-              <div id="summary-prompt" style="font-size:0.88rem; font-weight:600; color:#1e293b; line-height:1.4;"></div>
-            </div>
-            <div style="margin-bottom:8px;">
-              <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Respuesta esperada</span>
-              <div id="summary-answer" style="font-size:0.88rem; font-weight:800; color:#15803d;"></div>
-            </div>
-            <div id="summary-rubric" style="padding:8px 12px; border-radius:8px; font-size:0.78rem; font-weight:700;"></div>
+          <!-- Acciones Principales: Botones de Acción -->
+          <div id="summary-main-actions" class="summary-actions-stack">
+            <button id="btn-print-booklet" type="button" onclick="printQuestionBooklet()" class="btn-print-action"
+              style="display:none; background:#0284c7; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(2,132,199,0.25); align-items:center; justify-content:center; gap:8px;">
+              📄 Guardar o Imprimir Evaluación (PDF)
+            </button>
+            <button id="btn-print-sheets" type="button" onclick="printEvaluationSheets()" class="btn-print-action"
+              style="background:#16a34a; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(22,163,74,0.25); display:flex; align-items:center; justify-content:center; gap:8px;">
+              🖨️ Guardar o Imprimir Fichas (PDF)
+            </button>
+            <button type="button" onclick="goToScannerWithSession()" class="btn-goto-scan"
+              style="background:#4f46e5; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(79,70,229,0.25); display:flex; align-items:center; justify-content:center; gap:8px;">
+              📷 Ir al Escáner
+            </button>
+            <button id="btn-save-session" type="button" onclick="handleSaveCurrentSession()"
+              style="background:#d97706; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(217,119,6,0.25); display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.15s;">
+              💾 Guardar Sesión
+            </button>
+            <button type="button" onclick="editarEvaluacion()" id="btn-change-eval"
+              style="background:#ffffff; border:1.5px solid #cbd5e1; color:#334155; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.15s;">
+              ✏️ Editar
+            </button>
+            <button type="button" onclick="openResultsModal()" id="btn-summary-results"
+              style="display:none; background:#0f766e; border:1.5px solid #14b8a6; color:#f0fdfa; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 10px rgba(20,184,166,0.3); align-items:center; justify-content:center; gap:8px; transition:all 0.15s;">
+              📊 Resultados de la Sesión
+            </button>
           </div>
+        </aside>
 
-          <!-- Configuración de corrección seleccionada (Oculta al haberse movido al encabezado) -->
-          <div id="summary-config-badge" style="display:none;"></div>
-
-          <!-- Selector de Modo de Corrección (Compatibilidad con toggle directo) -->
-          <div id="mc-correction-mode-selector" style="display:none; margin-top:12px;">
-            <input type="radio" name="mc-correction-mode" value="quick" checked onchange="updateCorrectionModeUI('quick')" style="display:none;">
-            <input type="radio" name="mc-correction-mode" value="full" onchange="updateCorrectionModeUI('full')" style="display:none;">
-          </div>
-        </div>
-
-        <!-- Acciones Principales: Botones Visibles en Móvil y Escritorio -->
-        <div id="summary-main-actions" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
-          <button id="btn-print-booklet" type="button" onclick="printQuestionBooklet()" class="btn-print-action"
-            style="display:none; background:#0284c7; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(2,132,199,0.25); align-items:center; justify-content:center; gap:8px;">
-            📄 Guardar o Imprimir Evaluación (PDF)
-          </button>
-          <button id="btn-print-sheets" type="button" onclick="printEvaluationSheets()" class="btn-print-action"
-            style="background:#16a34a; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(22,163,74,0.25); display:flex; align-items:center; justify-content:center; gap:8px;">
-            🖨️ Guardar o Imprimir Fichas (PDF)
-          </button>
-          <button type="button" onclick="goToScannerWithSession()" class="btn-goto-scan"
-            style="background:#4f46e5; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(79,70,229,0.25); display:flex; align-items:center; justify-content:center; gap:8px;">
-            📷 Ir al Escáner
-          </button>
-          <button id="btn-save-session" type="button" onclick="handleSaveCurrentSession()"
-            style="background:#d97706; border:none; color:#fff; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 8px rgba(217,119,6,0.25); display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.15s;">
-            💾 Guardar Sesión
-          </button>
-          <button type="button" onclick="editarEvaluacion()" id="btn-change-eval"
-            style="background:#ffffff; border:1.5px solid #cbd5e1; color:#334155; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.15s;">
-            ✏️ Editar
-          </button>
-          <button type="button" onclick="openResultsModal()" id="btn-summary-results"
-            style="display:none; background:#0f766e; border:1.5px solid #14b8a6; color:#f0fdfa; border-radius:10px; padding:14px 16px; font-size:0.92rem; font-weight:800; cursor:pointer; box-shadow:0 2px 10px rgba(20,184,166,0.3); align-items:center; justify-content:center; gap:8px; transition:all 0.15s;">
-            📊 Resultados de la Sesión
-          </button>
-        </div>
+        <!-- Columna Derecha: Visor de Documentos generados con Scroll (Cuadernillo + Fichas) -->
+        <main class="summary-document-viewport">
+          <!-- Contenedor dinámico del Cuadernillo de Preguntas (Examen para alumnos) -->
+          <div id="booklet-container" style="display:none;"></div>
+          <!-- Contenedor dinámico de las páginas A4 de cartillas para todos los alumnos -->
+          <div id="pages-container" style="display:none;"></div>
+        </main>
       </div>
 
     </div>
-
-    <!-- Contenedor dinámico del Cuadernillo de Preguntas (Examen para alumnos) -->
-    <div id="booklet-container" style="display:none;"></div>
-    <!-- Contenedor dinámico de las páginas A4 de cartillas para todos los alumnos -->
-    <div id="pages-container" style="display:none;"></div>
   </div>
 
   <!-- ========================================================= -->
