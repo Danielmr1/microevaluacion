@@ -1496,7 +1496,9 @@ function clearGeneratedPdfContainers() {
  * preservando la geometría física original para cuando se mande a imprimir.
  */
 function fitSummaryDocumentsToViewport() {
-  const viewport = document.querySelector('.summary-document-viewport');
+  const summaryEl = document.getElementById('step-summary');
+  if (!summaryEl) return;
+  const viewport = summaryEl.querySelector('.summary-document-viewport');
   if (!viewport) return;
 
   const sheets = viewport.querySelectorAll(
@@ -1525,14 +1527,20 @@ function fitSummaryDocumentsToViewport() {
   if (availWidth <= 50) return;
 
   sheets.forEach(sheet => {
-    sheet.style.zoom = '';
-    sheet.style.transform = '';
-    sheet.style.marginBottom = '';
-
-    const naturalWidth = sheet.offsetWidth || sheet.getBoundingClientRect().width;
+    const isLandscapeSheet = sheet.classList.contains('sheet-a4-split') ||
+                             sheet.classList.contains('sheet-a4-quad') ||
+                             sheet.classList.contains('sheet-booklet-landscape') ||
+                             sheet.classList.contains('sheet-a4-h-single');
+    const naturalWidth = sheet.offsetWidth || (isLandscapeSheet ? 1039.4 : 710.5);
     if (naturalWidth > 0 && naturalWidth > availWidth) {
       const scale = availWidth / naturalWidth;
       sheet.style.zoom = scale;
+      sheet.style.transform = '';
+      sheet.style.marginBottom = '';
+    } else {
+      sheet.style.zoom = '';
+      sheet.style.transform = '';
+      sheet.style.marginBottom = '';
     }
   });
 }

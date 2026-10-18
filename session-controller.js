@@ -1358,6 +1358,8 @@
         ghostClone = summaryEl.cloneNode(true);
         ghostClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
         ghostClone.id = 'step-summary-crossfade-ghost';
+        ghostClone.classList.remove('active-split');
+        ghostClone.classList.add('is-ghost-clone');
         ghostClone.style.position = 'absolute';
         ghostClone.style.top = summaryEl.offsetTop + 'px';
         ghostClone.style.left = summaryEl.offsetLeft + 'px';
@@ -1467,6 +1469,10 @@
       showSummary();
       updateClassroomActionsVisibility(sess.classroomId);
 
+      if (typeof fitSummaryDocumentsToViewport === 'function') {
+        setTimeout(fitSummaryDocumentsToViewport, 40);
+      }
+
       if (typeof renderSummarySessionsStrip === 'function') {
         renderSummarySessionsStrip(sess.id);
       }
@@ -1485,6 +1491,9 @@
             if (summaryEl) {
               summaryEl.style.transition = '';
               summaryEl.style.opacity = '';
+            }
+            if (typeof fitSummaryDocumentsToViewport === 'function') {
+              fitSummaryDocumentsToViewport();
             }
           }, 240);
         }, 16);

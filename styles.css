@@ -6330,6 +6330,7 @@
         flex-direction: column !important;
         align-items: center !important;
         gap: 24px !important;
+        padding-top: 0 !important;
         padding-bottom: 50px !important;
         padding-right: 18px !important;
         box-sizing: border-box !important;
@@ -6340,10 +6341,22 @@
       .summary-document-viewport #booklet-container {
         width: 100% !important;
         max-width: 100% !important;
-        display: flex !important;
+        display: flex;
         flex-direction: column !important;
         align-items: center !important;
         box-sizing: border-box !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      .summary-document-viewport #booklet-container:empty,
+      .summary-document-viewport #pages-container:empty {
+        display: none !important;
+      }
+
+      .summary-document-viewport #pages-container > :first-child,
+      .summary-document-viewport #booklet-container > :first-child {
+        margin-top: 0 !important;
       }
 
       .summary-document-viewport .sheet-a4,
