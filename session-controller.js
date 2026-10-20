@@ -735,6 +735,62 @@
     }
 
     /**
+     * Alterna la visualización del panel derecho entre PDF/Cartillas y Resultados de la Sesión.
+     * Si a la derecha se muestra el PDF, el botón izquierdo dice "📊 Resultados de la Sesión (X/Y evaluados)".
+     * Si a la derecha se muestran los Resultados, el botón izquierdo dice "📄 Mostrar PDF".
+     */
+    function toggleSummaryViewMode(targetMode) {
+      const inlineContainer = document.getElementById('summary-inline-results-container');
+      const pagesContainer = document.getElementById('pages-container');
+      const bookletContainer = document.getElementById('booklet-container');
+      const btnResults = document.getElementById('btn-summary-results');
+
+      const currentMode = window.currentSummaryViewMode || 'pdf';
+      const newMode = targetMode || (currentMode === 'pdf' ? 'results' : 'pdf');
+      window.currentSummaryViewMode = newMode;
+
+      const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+
+      if (newMode === 'results') {
+        if (pagesContainer) pagesContainer.style.setProperty('display', 'none', 'important');
+        if (bookletContainer) bookletContainer.style.setProperty('display', 'none', 'important');
+        if (inlineContainer) {
+          inlineContainer.style.display = 'flex';
+          inlineContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        if (btnResults) {
+          btnResults.classList.remove('btn-summary-teal');
+          btnResults.classList.add('btn-summary-blue');
+          btnResults.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>📄 Mostrar PDF</span>
+          `;
+        }
+        if (typeof loadAndRenderResultsTable === 'function') {
+          loadAndRenderResultsTable();
+        }
+      } else {
+        // Modo PDF
+        if (inlineContainer) inlineContainer.style.display = 'none';
+        if (pagesContainer) pagesContainer.style.display = 'flex';
+        if (bookletContainer && activeSess && activeSess.mode === 'bank') {
+          bookletContainer.style.display = 'flex';
+        }
+        if (btnResults) {
+          btnResults.classList.remove('btn-summary-blue');
+          btnResults.classList.add('btn-summary-teal');
+          const count = (window.lastEvaluatedResultsCount !== undefined) ? window.lastEvaluatedResultsCount : 0;
+          const total = (window.lastEvaluatedTotalStudents !== undefined) ? window.lastEvaluatedTotalStudents : 0;
+          btnResults.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>📊 Resultados de la Sesión (${count}${total ? '/' + total : ''} evaluados)</span>
+          `;
+        }
+      }
+    }
+    window.toggleSummaryViewMode = toggleSummaryViewMode;
+
+    /**
      * Lee los resultados ya guardados de una sesión y sincroniza los alumnos
      * evaluados. Si la sesión ya tiene al menos una foto/evaluación guardada,
      * oculta el botón Editar y muestra el botón "📊 Resultados de la Sesión".
@@ -764,16 +820,36 @@
         const cls = (typeof ClassroomData !== 'undefined' && classId) ? ClassroomData.getClassroom(classId) : null;
         const totalStudents = cls && cls.students ? cls.students.length : 0;
 
+        window.lastEvaluatedResultsCount = count;
+        window.lastEvaluatedTotalStudents = totalStudents;
+
         if (count > 0) {
           if (btnEdit) btnEdit.style.display = 'none';
           if (btnResults) {
             btnResults.style.display = 'flex';
-            btnResults.innerHTML = `📊 Resultados de la Sesión (${count}${totalStudents ? '/' + totalStudents : ''} evaluados)`;
+            if (window.currentSummaryViewMode === 'results') {
+              btnResults.classList.remove('btn-summary-teal');
+              btnResults.classList.add('btn-summary-blue');
+              btnResults.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>📄 Mostrar PDF</span>
+              `;
+            } else {
+              btnResults.classList.remove('btn-summary-blue');
+              btnResults.classList.add('btn-summary-teal');
+              btnResults.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>📊 Resultados de la Sesión (${count}${totalStudents ? '/' + totalStudents : ''} evaluados)</span>
+              `;
+            }
           }
           console.log(`[Sesión] ${count} resultado(s) guardados. Edición bloqueada.`);
         } else {
           if (btnEdit) btnEdit.style.display = 'flex';
           if (btnResults) btnResults.style.display = 'none';
+          if (window.currentSummaryViewMode === 'results') {
+            toggleSummaryViewMode('pdf');
+          }
         }
       } catch (e) {
         console.warn('[Sesión] No se pudieron leer los resultados guardados:', e && e.message);
@@ -1427,6 +1503,9 @@
       closeSavedSessionsModal();
       window.isViewingSavedSessionsMode = !asDirect;
       showView('eval');
+      if (typeof toggleSummaryViewMode === 'function') {
+        toggleSummaryViewMode('pdf');
+      }
       if (typeof updateTopbarModeTitle === 'function') {
         if (asDirect) {
           updateTopbarModeTitle(sess.branch || 'rama1');

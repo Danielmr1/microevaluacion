@@ -55,7 +55,7 @@
   <script src="app-navigation.js?v=3.2.84"></script>
   <script src="copilot-command.js?v=3.2.93"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.99">
+  <link rel="stylesheet" href="styles.css?v=3.3.0">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.2.99</span>
+              Versión <span id="user-profile-version-tag">v3.3.0</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1168,9 +1168,9 @@
               </div>
 
               <!-- Fila inferior: Resultados (si aplica) -->
-              <button type="button" onclick="openResultsModal()" id="btn-summary-results" class="btn-summary-teal" style="display:none;">
+              <button type="button" onclick="toggleSummaryViewMode()" id="btn-summary-results" class="btn-summary-teal" style="display:none;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                <span>Ver Resultados</span>
+                <span>Resultados de la Sesión</span>
               </button>
             </div>
 
@@ -1183,6 +1183,69 @@
           <div id="booklet-container" style="display:none;"></div>
           <!-- Contenedor dinámico de las páginas A4 de cartillas para todos los alumnos -->
           <div id="pages-container" style="display:none;"></div>
+
+          <!-- Contenedor Integrado en Columna Derecha: Resultados de la Sesión (sin modal emergente) -->
+          <div id="summary-inline-results-container" style="display:none; width:100%; max-width:980px; margin:0 auto; flex-direction:column; background:#0f172a; border:1.5px solid #334155; border-radius:16px; box-shadow:0 12px 32px rgba(0,0,0,0.3); overflow:hidden;">
+            <!-- Header de Resultados -->
+            <div style="padding:16px 20px; border-bottom:1px solid #1e293b; display:flex; align-items:flex-start; justify-content:space-between; background:#1e293b;">
+              <div>
+                <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#f8fafc;">Resultados de la Sesión</h3>
+                <div id="results-modal-subtitle" style="margin:3px 0 0; font-size:0.75rem; color:#94a3b8;">Nómina de alumnos y calificaciones de la evaluación activa.</div>
+              </div>
+              <button type="button" onclick="toggleSummaryViewMode('pdf')" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Volver al PDF">✕</button>
+            </div>
+
+            <!-- Métricas / KPIs de la Sesión -->
+            <div id="results-kpi-bar" style="padding:12px 20px; background:#0b0f19; border-bottom:1px solid #1e293b; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <div style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:6px 12px; min-width:110px;">
+                  <div style="font-size:0.65rem; color:#64748b; font-weight:700; text-transform:uppercase;">Evaluados</div>
+                  <div id="res-kpi-total" style="font-size:1.15rem; font-weight:800; color:#38bdf8;">0 / 0</div>
+                </div>
+                <div style="background:#0f172a; border:1px solid #166534; border-radius:8px; padding:6px 12px; min-width:110px;">
+                  <div style="font-size:0.65rem; color:#4ade80; font-weight:700; text-transform:uppercase;">Aciertos</div>
+                  <div id="res-kpi-correct" style="font-size:1.15rem; font-weight:800; color:#22c55e;">0 (0%)</div>
+                </div>
+                <div style="background:#0f172a; border:1px solid #991b1b; border-radius:8px; padding:6px 12px; min-width:110px;">
+                  <div style="font-size:0.65rem; color:#f87171; font-weight:700; text-transform:uppercase;">Errores</div>
+                  <div id="res-kpi-incorrect" style="font-size:1.15rem; font-weight:800; color:#ef4444;">0 (0%)</div>
+                </div>
+              </div>
+
+              <!-- Botones de Acción -->
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button id="btn-return-to-scan" type="button" onclick="goToScannerFromResults()"
+                  style="display:inline-flex; align-items:center; gap:6px; background:#0284c7; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #0284c730;"
+                  title="Ir al escáner de aula para evaluar fichas pendientes">
+                  📷 Ir al Escáner
+                </button>
+                <button id="btn-export-excel" type="button" onclick="exportResultsToExcel()"
+                  style="display:inline-flex; align-items:center; gap:6px; background:#16a34a; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #16a34a30;">
+                  📥 Descargar Excel (.xlsx)
+                </button>
+                <button id="btn-export-photos" type="button" onclick="downloadAllSessionPhotosZip()"
+                  style="display:inline-flex; align-items:center; gap:6px; background:#4f46e5; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #4f46e530;"
+                  title="Descargar todas las resoluciones en un archivo ZIP">
+                  📦 Descargar Fotos (.zip)
+                </button>
+                <button type="button" onclick="loadAndRenderResultsTable()"
+                  style="display:inline-flex; align-items:center; gap:4px; background:#1e293b; border:1px solid #334155; color:#cbd5e1; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:600; cursor:pointer;" title="Actualizar">
+                  🔄
+                </button>
+                <button id="btn-delete-all-results" type="button" onclick="handleDeleteAllSessionResults(this)"
+                  style="display:inline-flex; align-items:center; gap:6px; background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;" title="Borrar todos los resultados de esta sesión">
+                  🗑️ Reiniciar Sesión
+                </button>
+              </div>
+            </div>
+
+            <!-- Tabla de Alumnos -->
+            <div style="flex:1; overflow-y:auto; padding:16px 20px;">
+              <div id="results-table-container">
+                <!-- Generado por loadAndRenderResultsTable() -->
+              </div>
+            </div>
+          </div>
         </main>
       </div>
 
@@ -1763,72 +1826,7 @@
     </div>
   </div>
 
-  <!-- Modal: Resultados y Estadísticas de la Sesión -->
-  <div id="results-modal" onclick="if(event.target === this) closeResultsModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.88); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#0f172a; border:1.5px solid #334155; border-radius:16px; max-width:920px; width:100%; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.7); overflow:hidden;">
 
-      <!-- Header del Modal -->
-      <div style="padding:16px 20px; border-bottom:1px solid #1e293b; display:flex; align-items:flex-start; justify-content:space-between; background:#1e293b;">
-        <div>
-          <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#f8fafc;">Resultados de la Sesión</h3>
-          <div id="results-modal-subtitle" style="margin:3px 0 0; font-size:0.75rem; color:#94a3b8;">Nómina de alumnos y calificaciones de la evaluación activa.</div>
-        </div>
-        <button type="button" onclick="closeResultsModal()" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Cerrar">✕</button>
-      </div>
-
-      <!-- Métricas / KPIs de la Sesión -->
-      <div id="results-kpi-bar" style="padding:12px 20px; background:#0b0f19; border-bottom:1px solid #1e293b; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
-        <div style="display:flex; gap:12px; flex-wrap:wrap;">
-          <div style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:6px 12px; min-width:110px;">
-            <div style="font-size:0.65rem; color:#64748b; font-weight:700; text-transform:uppercase;">Evaluados</div>
-            <div id="res-kpi-total" style="font-size:1.15rem; font-weight:800; color:#38bdf8;">0 / 0</div>
-          </div>
-          <div style="background:#0f172a; border:1px solid #166534; border-radius:8px; padding:6px 12px; min-width:110px;">
-            <div style="font-size:0.65rem; color:#4ade80; font-weight:700; text-transform:uppercase;">Aciertos</div>
-            <div id="res-kpi-correct" style="font-size:1.15rem; font-weight:800; color:#22c55e;">0 (0%)</div>
-          </div>
-          <div style="background:#0f172a; border:1px solid #991b1b; border-radius:8px; padding:6px 12px; min-width:110px;">
-            <div style="font-size:0.65rem; color:#f87171; font-weight:700; text-transform:uppercase;">Errores</div>
-            <div id="res-kpi-incorrect" style="font-size:1.15rem; font-weight:800; color:#ef4444;">0 (0%)</div>
-          </div>
-        </div>
-
-        <!-- Botones de Acción -->
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <button id="btn-return-to-scan" type="button" onclick="goToScannerFromResults()"
-            style="display:inline-flex; align-items:center; gap:6px; background:#0284c7; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #0284c730;"
-            title="Ir al escáner de aula para evaluar fichas pendientes">
-            📷 Escáner de Aula
-          </button>
-          <button id="btn-export-excel" type="button" onclick="exportResultsToExcel()"
-            style="display:inline-flex; align-items:center; gap:6px; background:#16a34a; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #16a34a30;">
-            📥 Descargar Excel (.xlsx)
-          </button>
-          <button id="btn-export-photos" type="button" onclick="downloadAllSessionPhotosZip()"
-            style="display:inline-flex; align-items:center; gap:6px; background:#4f46e5; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #4f46e530;"
-            title="Descargar todas las resoluciones en un archivo ZIP">
-            📦 Descargar Fotos (.zip)
-          </button>
-          <button type="button" onclick="loadAndRenderResultsTable()"
-            style="display:inline-flex; align-items:center; gap:4px; background:#1e293b; border:1px solid #334155; color:#cbd5e1; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:600; cursor:pointer;" title="Actualizar">
-            🔄
-          </button>
-          <button id="btn-delete-all-results" type="button" onclick="handleDeleteAllSessionResults(this)"
-            style="display:inline-flex; align-items:center; gap:6px; background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;" title="Borrar todos los resultados de esta sesión">
-            🗑️ Reiniciar Sesión
-          </button>
-        </div>
-      </div>
-
-      <!-- Tabla de Alumnos -->
-      <div style="flex:1; overflow-y:auto; padding:16px 20px;">
-        <div id="results-table-container">
-          <!-- Generado por loadAndRenderResultsTable() -->
-        </div>
-      </div>
-
-    </div>
-  </div>
 
   <!-- Modal Lightbox: Visor de Foto de Resolución del Alumno -->
   <div id="photo-viewer-modal" onclick="if(event.target === this) closePhotoViewerModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:16px;">

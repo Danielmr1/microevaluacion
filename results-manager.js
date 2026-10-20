@@ -17,19 +17,30 @@
 let currentResultsCache = { session: null, results: [], classroom: null };
 let currentPhotoViewerData = null;
 
-// ── Apertura / cierre del modal de resultados ──────────────────────────────
+// ── Apertura / cierre del panel de resultados ──────────────────────────────
 
 function openResultsModal() {
+  if (typeof showView === 'function') showView('eval');
+  if (typeof toggleSummaryViewMode === 'function') {
+    toggleSummaryViewMode('results');
+    return;
+  }
   const modal = document.getElementById('results-modal');
-  if (!modal) return;
-  modal.style.display = 'flex';
-  loadAndRenderResultsTable();
+  if (modal) {
+    modal.style.display = 'flex';
+    loadAndRenderResultsTable();
+  }
 }
+window.openResultsModal = openResultsModal;
 
 function closeResultsModal() {
+  if (typeof toggleSummaryViewMode === 'function') {
+    toggleSummaryViewMode('pdf');
+  }
   const modal = document.getElementById('results-modal');
   if (modal) modal.style.display = 'none';
 }
+window.closeResultsModal = closeResultsModal;
 
 function goToSessionResults() {
   if (typeof closeModal === 'function') closeModal();
@@ -39,7 +50,10 @@ function goToSessionResults() {
   if (screen.orientation && screen.orientation.unlock) {
     try { screen.orientation.unlock(); } catch (e) {}
   }
-  openResultsModal();
+  if (typeof showView === 'function') showView('eval');
+  if (typeof toggleSummaryViewMode === 'function') {
+    toggleSummaryViewMode('results');
+  }
 }
 window.goToSessionResults = goToSessionResults;
 
@@ -47,6 +61,8 @@ function goToScannerFromResults() {
   closeResultsModal();
   if (typeof switchTab === 'function') {
     switchTab('scan');
+  } else if (typeof goToScannerWithSession === 'function') {
+    goToScannerWithSession();
   }
 }
 window.goToScannerFromResults = goToScannerFromResults;

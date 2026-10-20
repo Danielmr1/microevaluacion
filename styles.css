@@ -6185,6 +6185,27 @@
       border-color: #4ade80;
     }
 
+    .btn-summary-blue {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      color: #1d4ed8;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+    .btn-summary-blue:hover {
+      background: #dbeafe;
+      border-color: #3b82f6;
+    }
+
     /* ── BARRA SUPERIOR DE SESIONES GUARDADAS ([ 1 ] [ 2 ] [ 3 ] ...) ── */
     .summary-sessions-strip {
       position: sticky;
