@@ -55,7 +55,7 @@
   <script src="app-navigation.js?v=3.2.84"></script>
   <script src="copilot-command.js?v=3.2.93"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.96">
+  <link rel="stylesheet" href="styles.css?v=3.2.97">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.2.96</span>
+              Versión <span id="user-profile-version-tag">v3.2.97</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2172,15 +2172,59 @@
             <!-- Renderizado dinámico de las sesiones -->
           </div>
 
-          <div id="saved-sessions-empty" style="display:none; text-align:center; padding:40px 20px;">
-            <div style="font-size:2.5rem; margin-bottom:12px;">📭</div>
-            <h4 style="color:#f8fafc; font-size:1rem; font-weight:800; margin:0 0 6px;">No tienes sesiones guardadas todavía</h4>
-            <p style="color:#94a3b8; font-size:0.8rem; max-width:440px; margin:0 auto 16px; line-height:1.4;">
-              Cuando elijas un salón y confirmes una evaluación (Formativa con IA, Focalizada en la Respuesta o Cartilla OMR), haz clic en el botón <strong>"Guardar Sesión"</strong> para tenerla lista aquí y escanearla cuando quieras.
+          <div id="saved-sessions-empty" style="display:none; text-align:center; padding:30px 16px;">
+            <div style="font-size:2.4rem; margin-bottom:10px;">📭</div>
+            <h4 style="color:#f8fafc; font-size:1.05rem; font-weight:800; margin:0 0 6px;">No tienes sesiones guardadas todavía</h4>
+            <p style="color:#94a3b8; font-size:0.82rem; max-width:500px; margin:0 auto 20px; line-height:1.4;">
+              Para preparar una nueva sesión, primero <strong>elige la modalidad</strong> de trabajo. A continuación seleccionarás tu salón con alumnos y las preguntas de la evaluación para generar el PDF y guardar tu sesión:
             </p>
-            <button type="button" onclick="openBranchFlow('rama1')" style="background:#2563eb; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-weight:700; font-size:0.84rem; cursor:pointer;">
-              ➕ Preparar Nueva Evaluación
-            </button>
+
+            <!-- Selector directo de las 3 modalidades -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; max-width:780px; margin:0 auto; text-align:left;">
+              
+              <!-- Modalidad 1: Formativa con IA -->
+              <div onclick="openBranchFlow('rama1')" style="background:#1e293b; border:1.5px solid #3b82f6; border-radius:12px; padding:16px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;" onmouseover="this.style.borderColor='#60a5fa'" onmouseout="this.style.borderColor='#3b82f6'">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                  <span style="font-size:1.3rem;">🧠</span>
+                  <span style="color:#60a5fa; font-weight:800; font-size:0.9rem;">Formativa con IA</span>
+                </div>
+                <div style="color:#cbd5e1; font-size:0.75rem; line-height:1.35; margin-bottom:10px;">
+                  Rúbrica de corrección pedagógica y análisis profundo de procedimientos manuscritos.
+                </div>
+                <div style="color:#38bdf8; font-size:0.72rem; font-weight:700;">
+                  ➔ Iniciar: Salón ➔ Preguntas ➔ PDF
+                </div>
+              </div>
+
+              <!-- Modalidad 2: Focalizada en la Respuesta -->
+              <div onclick="openBranchFlow('rama2')" style="background:#1e293b; border:1.5px solid #10b981; border-radius:12px; padding:16px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;" onmouseover="this.style.borderColor='#34d399'" onmouseout="this.style.borderColor='#10b981'">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                  <span style="font-size:1.3rem;">⚡</span>
+                  <span style="color:#34d399; font-weight:800; font-size:0.9rem;">Focalizada en la Respuesta</span>
+                </div>
+                <div style="color:#cbd5e1; font-size:0.75rem; line-height:1.35; margin-bottom:10px;">
+                  Validación directa de la respuesta final del alumno con área de cálculo/borrador.
+                </div>
+                <div style="color:#4ade80; font-size:0.72rem; font-weight:700;">
+                  ➔ Iniciar: Salón ➔ Preguntas ➔ PDF
+                </div>
+              </div>
+
+              <!-- Modalidad 3: Cartilla OMR -->
+              <div onclick="openBranchFlow('rama3')" style="background:#1e293b; border:1.5px solid #f59e0b; border-radius:12px; padding:16px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;" onmouseover="this.style.borderColor='#fbbf24'" onmouseout="this.style.borderColor='#f59e0b'">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                  <span style="font-size:1.3rem;">📝</span>
+                  <span style="color:#fbbf24; font-weight:800; font-size:0.9rem;">Cartilla OMR</span>
+                </div>
+                <div style="color:#cbd5e1; font-size:0.75rem; line-height:1.35; margin-bottom:10px;">
+                  Cartillas compactas A6/A5 con burbujas de respuesta y lectura instantánea de claves.
+                </div>
+                <div style="color:#fde047; font-size:0.72rem; font-weight:700;">
+                  ➔ Iniciar: Salón ➔ Claves/Banco ➔ PDF
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
 
