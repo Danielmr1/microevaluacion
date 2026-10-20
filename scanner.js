@@ -1892,6 +1892,29 @@
       studentObj = ClassroomData.getStudent(currentClassroomId, studentId);
     }
 
+    // Tanda 2: Validación estricta de sesión entre la ficha física y la sesión activa en el celular
+    let isSessionMismatch = false;
+    let mismatchDetail = '';
+    if (sheetSessionRef && activeSession) {
+      const clean = s => String(s || '').replace(/[^a-zA-Z0-9_:-]/g, '_').toLowerCase();
+      const sheet = clean(sheetSessionRef);
+      const actRef = clean(activeSession.sessionRef);
+      const actId = clean(activeSession.id);
+      const actEvalId = clean(activeSession.evalId);
+
+      const isMatch = (sheet === actRef || sheet === actId || sheet === actEvalId
+        || (actRef && actRef.includes(sheet))
+        || (actEvalId && sheet.includes(actEvalId))
+        || (actRef && sheet.includes(actRef)));
+
+      if (!isMatch) {
+        isSessionMismatch = true;
+        const curName = activeSession.title || activeSession.classroomName || 'otra evaluación';
+        mismatchDetail = `Esta ficha pertenece a otra evaluación. La sesión activa en tu celular es "${curName}".`;
+        console.warn(`[Scanner Tanda 2] ⚠️ Ficha de otra sesión detectada: Hoja=${sheetSessionRef} | Celular=${activeSession.sessionRef || activeSession.id}`);
+      }
+    }
+
     const expectedAns = (activeSession && activeSession.expectedAnswer)
                      || (activeEval && activeEval.expectedAnswer)
                      || 'A';
@@ -1900,12 +1923,14 @@
     let alreadyEvaluated = false;
     if (studentObj) {
       studentName = studentObj.name;
-      // Verificar ANTES de agregar si este alumno ya fue registrado en esta sesión
-      alreadyEvaluated = evaluatedStudentIds.has(studentId);
-      evaluatedStudentIds.add(studentId);
-      updateSessionCounter();
-    } else if (studentId) {
-      studentName = 'ALUMNO (' + studentId + ')';
+      // Solo registrar y evaluar si la ficha corresponde a esta sesión activa
+      if (!isSessionMismatch) {
+        alreadyEvaluated = evaluatedStudentIds.has(studentId);
+        evaluatedStudentIds.add(studentId);
+        updateSessionCounter();
+      }
+    } else if (studentId && studentId !== 'MANUAL') {
+      studentName = isSessionMismatch ? 'ALUMNO (' + studentId + ')' : '⚠️ NO EN ESTE SALÓN (' + studentId + ')';
     } else {
       studentName = '⚠️ QR NO LEÍDO';
       studentId = 'MANUAL';
@@ -1923,14 +1948,31 @@
         const imgEl = document.getElementById('captured-img');
         if (imgEl && resolutionPreviewUrl && !isOMR) imgEl.src = resolutionPreviewUrl;
 
-        // Advertencia de duplicado: banner naranja + nombre en color distinto
+        // Tanda 2: Advertencia de discrepancia de sesión
+        const mismatchBanner = document.getElementById('res-session-mismatch-warning');
+        const mismatchText = document.getElementById('res-session-mismatch-text');
+        if (mismatchBanner) mismatchBanner.style.display = isSessionMismatch ? 'flex' : 'none';
+        if (mismatchText && isSessionMismatch) mismatchText.textContent = mismatchDetail;
+
+        const modalHeaderTitle = document.getElementById('modal-header-title-text');
+        if (modalHeaderTitle) {
+          if (isSessionMismatch) {
+            modalHeaderTitle.innerHTML = '⚠️ ¡FICHA DE OTRA SESIÓN!';
+            modalHeaderTitle.style.color = '#ef4444';
+          } else {
+            modalHeaderTitle.innerHTML = '📸 ¡FICHA CAPTURADA!';
+            modalHeaderTitle.style.color = '#22c55e';
+          }
+        }
+
+        // Advertencia de duplicado: visible solo cuando NO hay discrepancia y el alumno ya fue evaluado
         const dupBanner = document.getElementById('res-duplicate-warning');
-        if (dupBanner) dupBanner.style.display = alreadyEvaluated ? 'flex' : 'none';
+        if (dupBanner) dupBanner.style.display = (!isSessionMismatch && alreadyEvaluated) ? 'flex' : 'none';
 
         const nameEl = document.getElementById('res-student-name');
         if (nameEl) {
           nameEl.textContent = studentName.toUpperCase();
-          nameEl.style.color = alreadyEvaluated ? '#f97316' : (qrSuccess ? '#f8fafc' : '#f59e0b');
+          nameEl.style.color = isSessionMismatch ? '#f87171' : (alreadyEvaluated ? '#f97316' : (qrSuccess ? '#f8fafc' : '#f59e0b'));
         }
 
         const idEl = document.getElementById('res-student-id');
@@ -2173,20 +2215,24 @@
             } else if (resolutionPreviewUrl) {
               omrGridDataUrl = resolutionPreviewUrl;
             }
-            persistCapture(studentId, studentName, lastOMRInfo, {
-              answerImage: null,
-              gridImage: omrGridDataUrl,
-              omrCrops: omrCrops
-            });
+            if (!isSessionMismatch) {
+              persistCapture(studentId, studentName, lastOMRInfo, {
+                answerImage: null,
+                gridImage: omrGridDataUrl,
+                omrCrops: omrCrops
+              });
+            }
           }
           if (hwContainer) hwContainer.style.display = 'none';
         } else {
           lastOMRInfo = null;
-          persistCapture(studentId, studentName, null, {
-            answerImage: answerPreviewUrl,
-            gridImage: resolutionPreviewUrl,
-            strokeInfo: gridStrokeInfo
-          });
+          if (!isSessionMismatch) {
+            persistCapture(studentId, studentName, null, {
+              answerImage: answerPreviewUrl,
+              gridImage: resolutionPreviewUrl,
+              strokeInfo: gridStrokeInfo
+            });
+          }
           if (omrContainer) omrContainer.style.display = 'none';
           if (hwContainer) hwContainer.style.display = 'block';
 
@@ -2241,6 +2287,7 @@
           alumno: studentId + (studentObj ? ' (' + studentObj.name + ')' : ''),
           qrTexto: qrText || '',
           sesionFicha: sheetSessionRef || null,
+          sesionDiscrepante: isSessionMismatch,
           intentoQr: qrIntento === 0 ? 'ninguno (no se leyo)' : ('intento ' + qrIntento + ' de 3'),
           cobertura: typeof coverage !== 'undefined' ? coverage : 0,
           nitidez: sharpness,
