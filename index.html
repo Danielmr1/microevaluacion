@@ -55,7 +55,7 @@
   <script src="app-navigation.js?v=3.2.84"></script>
   <script src="copilot-command.js?v=3.2.93"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.3.0">
+  <link rel="stylesheet" href="styles.css?v=3.3.1">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.3.0</span>
+              Versión <span id="user-profile-version-tag">v3.3.1</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1140,17 +1140,13 @@
                 </button>
               </div>
 
-              <!-- Bloque Asimétrico: Columna Izquierda (Guardar, Editar, Descartar/Eliminar) y Columna Derecha (Ir al Escáner alto) -->
+              <!-- Bloque Asimétrico: Columna Izquierda (Guardar, Descartar/Eliminar) y Columna Derecha (Ir al Escáner alto) -->
               <div id="summary-action-grid" class="summary-action-grid">
-                <!-- Columna Izquierda: 3 botones apilados -->
+                <!-- Columna Izquierda: 2 botones apilados (Guardar y Descartar/Eliminar) -->
                 <div class="summary-secondary-stack">
                   <button id="btn-save-session" type="button" onclick="handleSaveCurrentSession()" class="btn-summary-sub">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                     <span>Guardar</span>
-                  </button>
-                  <button type="button" onclick="editarEvaluacion()" id="btn-change-eval" class="btn-summary-sub">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    <span>Editar</span>
                   </button>
                   <button type="button" onclick="handleDiscardOrDeleteSession()" id="btn-discard-session" class="btn-summary-sub btn-summary-sub-discard">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1167,10 +1163,10 @@
                 </button>
               </div>
 
-              <!-- Fila inferior: Resultados (si aplica) -->
-              <button type="button" onclick="toggleSummaryViewMode()" id="btn-summary-results" class="btn-summary-teal" style="display:none;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                <span>Resultados de la Sesión</span>
+              <!-- Fila inferior: Botón dinámico de 3 estados (Editar / Mostrar Resultados / Mostrar PDF) -->
+              <button type="button" onclick="handleSummaryBottomAction()" id="btn-summary-results" class="btn-summary-neutral">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Editar</span>
               </button>
             </div>
 

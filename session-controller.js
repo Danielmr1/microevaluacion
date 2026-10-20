@@ -736,14 +736,12 @@
 
     /**
      * Alterna la visualización del panel derecho entre PDF/Cartillas y Resultados de la Sesión.
-     * Si a la derecha se muestra el PDF, el botón izquierdo dice "📊 Resultados de la Sesión (X/Y evaluados)".
-     * Si a la derecha se muestran los Resultados, el botón izquierdo dice "📄 Mostrar PDF".
      */
     function toggleSummaryViewMode(targetMode) {
       const inlineContainer = document.getElementById('summary-inline-results-container');
       const pagesContainer = document.getElementById('pages-container');
       const bookletContainer = document.getElementById('booklet-container');
-      const btnResults = document.getElementById('btn-summary-results');
+      const btnBottom = document.getElementById('btn-summary-results');
 
       const currentMode = window.currentSummaryViewMode || 'pdf';
       const newMode = targetMode || (currentMode === 'pdf' ? 'results' : 'pdf');
@@ -758,12 +756,12 @@
           inlineContainer.style.display = 'flex';
           inlineContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        if (btnResults) {
-          btnResults.classList.remove('btn-summary-teal');
-          btnResults.classList.add('btn-summary-blue');
-          btnResults.innerHTML = `
+        window.currentSummaryBottomState = 'pdf';
+        if (btnBottom) {
+          btnBottom.className = 'btn-summary-blue';
+          btnBottom.innerHTML = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            <span>📄 Mostrar PDF</span>
+            <span>Mostrar PDF</span>
           `;
         }
         if (typeof loadAndRenderResultsTable === 'function') {
@@ -776,32 +774,63 @@
         if (bookletContainer && activeSess && activeSess.mode === 'bank') {
           bookletContainer.style.display = 'flex';
         }
-        if (btnResults) {
-          btnResults.classList.remove('btn-summary-blue');
-          btnResults.classList.add('btn-summary-teal');
-          const count = (window.lastEvaluatedResultsCount !== undefined) ? window.lastEvaluatedResultsCount : 0;
-          const total = (window.lastEvaluatedTotalStudents !== undefined) ? window.lastEvaluatedTotalStudents : 0;
-          btnResults.innerHTML = `
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <span>📊 Resultados de la Sesión (${count}${total ? '/' + total : ''} evaluados)</span>
-          `;
+        const count = (window.lastEvaluatedResultsCount !== undefined) ? window.lastEvaluatedResultsCount : 0;
+        const total = (window.lastEvaluatedTotalStudents !== undefined) ? window.lastEvaluatedTotalStudents : 0;
+        if (count > 0) {
+          window.currentSummaryBottomState = 'results';
+          if (btnBottom) {
+            btnBottom.className = 'btn-summary-teal';
+            btnBottom.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <span>Resultados de la Sesión (${count}${total ? '/' + total : ''} evaluados)</span>
+            `;
+          }
+        } else {
+          window.currentSummaryBottomState = 'edit';
+          if (btnBottom) {
+            btnBottom.className = 'btn-summary-neutral';
+            btnBottom.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Editar</span>
+            `;
+          }
         }
       }
     }
     window.toggleSummaryViewMode = toggleSummaryViewMode;
 
     /**
-     * Lee los resultados ya guardados de una sesión y sincroniza los alumnos
-     * evaluados. Si la sesión ya tiene al menos una foto/evaluación guardada,
-     * oculta el botón Editar y muestra el botón "📊 Resultados de la Sesión".
+     * Manejador del botón inferior dinámico (Editar / Mostrar Resultados / Mostrar PDF)
+     */
+    function handleSummaryBottomAction() {
+      const mode = window.currentSummaryBottomState || 'edit';
+      if (mode === 'edit') {
+        if (typeof editarEvaluacion === 'function') {
+          editarEvaluacion();
+        }
+      } else if (mode === 'results') {
+        toggleSummaryViewMode('results');
+      } else if (mode === 'pdf') {
+        toggleSummaryViewMode('pdf');
+      }
+    }
+    window.handleSummaryBottomAction = handleSummaryBottomAction;
+
+    /**
+     * Sincroniza el estado del botón inferior dinámico según la cantidad de alumnos evaluados.
      */
     async function refreshEvaluatedFromResults(sessionRef) {
-      const btnEdit = document.getElementById('btn-change-eval');
-      const btnResults = document.getElementById('btn-summary-results');
+      const btnBottom = document.getElementById('btn-summary-results');
 
       if (!sessionRef) {
-        if (btnEdit) btnEdit.style.display = 'flex';
-        if (btnResults) btnResults.style.display = 'none';
+        if (btnBottom) {
+          window.currentSummaryBottomState = 'edit';
+          btnBottom.className = 'btn-summary-neutral';
+          btnBottom.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>Editar</span>
+          `;
+        }
         return;
       }
 
@@ -824,29 +853,34 @@
         window.lastEvaluatedTotalStudents = totalStudents;
 
         if (count > 0) {
-          if (btnEdit) btnEdit.style.display = 'none';
-          if (btnResults) {
-            btnResults.style.display = 'flex';
+          if (btnBottom) {
             if (window.currentSummaryViewMode === 'results') {
-              btnResults.classList.remove('btn-summary-teal');
-              btnResults.classList.add('btn-summary-blue');
-              btnResults.innerHTML = `
+              window.currentSummaryBottomState = 'pdf';
+              btnBottom.className = 'btn-summary-blue';
+              btnBottom.innerHTML = `
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                <span>📄 Mostrar PDF</span>
+                <span>Mostrar PDF</span>
               `;
             } else {
-              btnResults.classList.remove('btn-summary-blue');
-              btnResults.classList.add('btn-summary-teal');
-              btnResults.innerHTML = `
+              window.currentSummaryBottomState = 'results';
+              btnBottom.className = 'btn-summary-teal';
+              btnBottom.innerHTML = `
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                <span>📊 Resultados de la Sesión (${count}${totalStudents ? '/' + totalStudents : ''} evaluados)</span>
+                <span>Resultados de la Sesión (${count}${totalStudents ? '/' + totalStudents : ''} evaluados)</span>
               `;
             }
           }
           console.log(`[Sesión] ${count} resultado(s) guardados. Edición bloqueada.`);
         } else {
-          if (btnEdit) btnEdit.style.display = 'flex';
-          if (btnResults) btnResults.style.display = 'none';
+          // 0 evaluados: se mantiene en Editar
+          if (btnBottom) {
+            window.currentSummaryBottomState = 'edit';
+            btnBottom.className = 'btn-summary-neutral';
+            btnBottom.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Editar</span>
+            `;
+          }
           if (window.currentSummaryViewMode === 'results') {
             toggleSummaryViewMode('pdf');
           }
@@ -907,10 +941,15 @@
       updateClassroomActionsVisibility(sel ? sel.value : null);
       if (typeof updateHubSessionBadge === 'function') updateHubSessionBadge();
 
-      const btnEdit = document.getElementById('btn-change-eval');
-      if (btnEdit) btnEdit.style.display = 'flex';
       const btnResults = document.getElementById('btn-summary-results');
-      if (btnResults) btnResults.style.display = 'none';
+      if (btnResults) {
+        window.currentSummaryBottomState = 'edit';
+        btnResults.className = 'btn-summary-neutral';
+        btnResults.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span>Editar</span>
+        `;
+      }
     }
 
     /**
@@ -1631,9 +1670,10 @@
 
       // 4. Activar sesión en ClassroomData y Escáner
       const activeObj = {
-        sessionRef: sess.classroomId + '::' + (wizardEval.id || sess.id),
+        sessionRef: sess.sessionRef || (sess.classroomId + '::' + (wizardEval.id || sess.id)),
+        id: sess.id,
         classroomId: sess.classroomId,
-        evalId: wizardEval.id || sess.id,
+        evalId: sess.evalId || wizardEval.id || sess.id,
         branch: sess.branch,
         withGrid: wizardEval.withGrid !== undefined ? wizardEval.withGrid : true,
         title: sess.title,
