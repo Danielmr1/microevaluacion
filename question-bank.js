@@ -445,7 +445,7 @@ function handleDeleteQuestionFromBank(target, displayText, optionalId) {
 
 /* ── GESTOR DEL BANCO DE PREGUNTAS POR GRADO (MODAL) ── */
 let bankManagerActiveStage = 'primaria';
-let bankManagerActiveGrade = null; // { stage: 'primaria', level: 4, label: '4° Primaria', value: 'primaria:4' }
+let bankManagerActiveGrade = null; // { stage: 'primaria', level: 4, label: '4° Pri.', fullLabel: '4° Primaria', value: 'primaria:4' }
 let bankManagerFilterType = 'all'; // 'all' | 'rubric' | 'quick'
 let bankManagerSearchQuery = '';
 
@@ -455,10 +455,13 @@ function openBankManagerModal() {
   if (wizardClassroomId) {
     const clsGrade = ClassroomData.getClassroomGrade(wizardClassroomId);
     if (clsGrade && clsGrade.stage && clsGrade.level) {
+      const isSec = clsGrade.stage === 'secundaria';
+      const shortLabel = isSec ? `${clsGrade.level}° Sec.` : `${clsGrade.level}° Pri.`;
       initialGrade = {
         stage: clsGrade.stage,
         level: Number(clsGrade.level),
-        label: ClassroomData.formatGrade(clsGrade.stage, clsGrade.level) || `${clsGrade.level}° Primaria`,
+        label: shortLabel,
+        fullLabel: ClassroomData.formatGrade(clsGrade.stage, clsGrade.level) || `${clsGrade.level}° Primaria`,
         value: `${clsGrade.stage}:${clsGrade.level}`
       };
       bankManagerActiveStage = clsGrade.stage;
@@ -466,7 +469,7 @@ function openBankManagerModal() {
   }
 
   if (!initialGrade) {
-    initialGrade = { stage: 'primaria', level: 4, label: '4° Primaria', value: 'primaria:4' };
+    initialGrade = { stage: 'primaria', level: 4, label: '4° Pri.', fullLabel: '4° Primaria', value: 'primaria:4' };
     bankManagerActiveStage = 'primaria';
   }
 
@@ -522,11 +525,14 @@ function renderBankManagerStageTabs() {
       const entry = catalog.find(c => c.stage === s.stage);
       const grades = (entry && entry.grades) ? entry.grades : (s.stage === 'secundaria' ? [1,2,3,4,5] : [4,5,6]);
       const firstLevel = grades[0] || (s.stage === 'secundaria' ? 1 : 4);
+      const isSec = s.stage === 'secundaria';
+      const shortLabel = isSec ? `${firstLevel}° Sec.` : `${firstLevel}° Pri.`;
 
       bankManagerActiveGrade = {
         stage: s.stage,
         level: firstLevel,
-        label: `${firstLevel}° ${s.label}`,
+        label: shortLabel,
+        fullLabel: `${firstLevel}° ${s.label}`,
         value: `${s.stage}:${firstLevel}`
       };
 
@@ -554,7 +560,8 @@ function renderBankManagerGradeTabs() {
 
   entry.grades.forEach(lvl => {
     const isActive = bankManagerActiveGrade && bankManagerActiveGrade.stage === entry.stage && Number(bankManagerActiveGrade.level) === Number(lvl);
-    const label = `${lvl}° ${entry.label}`;
+    const shortLabel = entry.stage === 'secundaria' ? `${lvl}° Sec.` : `${lvl}° Pri.`;
+    const fullLabel = `${lvl}° ${entry.label}`;
 
     // Obtener conteo de preguntas para este grado
     const qList = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
@@ -564,7 +571,7 @@ function renderBankManagerGradeTabs() {
 
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = `${label} (${count})`;
+    btn.textContent = `${shortLabel} (${count})`;
     btn.style.cssText = [
       'padding:6px 14px',
       'border-radius:20px',
@@ -583,7 +590,7 @@ function renderBankManagerGradeTabs() {
     }
 
     btn.onclick = () => {
-      bankManagerActiveGrade = { stage: entry.stage, level: lvl, label: label, value: `${entry.stage}:${lvl}` };
+      bankManagerActiveGrade = { stage: entry.stage, level: lvl, label: shortLabel, fullLabel: fullLabel, value: `${entry.stage}:${lvl}` };
       renderBankManagerGradeTabs();
       renderBankManagerQuestions();
       toggleBankManagerAddForm(false);
@@ -598,18 +605,33 @@ function renderBankManagerFilterPills() {
   container.innerHTML = '';
 
   const filters = [
-    { key: 'all', label: 'Todas' },
-    { key: 'rubric', label: '🤖 Con Rúbrica IA' },
-    { key: 'quick', label: '⚡ Sin Rúbrica (Rápidas)' }
+    {
+      key: 'all',
+      label: 'Todas',
+      iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>'
+    },
+    {
+      key: 'rubric',
+      label: 'Con Rúbrica IA',
+      iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>'
+    },
+    {
+      key: 'quick',
+      label: 'Sin Rúbrica (Rápidas)',
+      iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
+    }
   ];
 
   filters.forEach(f => {
     const isActive = bankManagerFilterType === f.key;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = f.label;
+    btn.innerHTML = `${f.iconSvg}<span>${f.label}</span>`;
     btn.style.cssText = [
-      'padding:4px 12px',
+      'display:inline-flex',
+      'align-items:center',
+      'gap:5px',
+      'padding:5px 12px',
       'border-radius:16px',
       'font-size:0.75rem',
       'font-weight:700',
@@ -679,44 +701,34 @@ function renderBankManagerQuestions() {
     const isSearching = !!bankManagerSearchQuery || bankManagerFilterType !== 'all';
     container.innerHTML = `
       <div style="text-align:center; padding:36px 20px; background:#ffffff; border:1.5px dashed #cbd5e1; border-radius:12px; color:#64748b;">
-        <span style="font-size:2rem; display:block; margin-bottom:8px;">${isSearching ? '🔍' : '📭'}</span>
+        <span style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:#f1f5f9; color:#64748b; margin-bottom:10px;">
+          ${isSearching
+            ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
+            : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>'}
+        </span>
         <div style="font-size:0.92rem; font-weight:700; color:#1e293b; margin-bottom:4px;">
           ${isSearching ? 'No se encontraron preguntas con los filtros aplicados' : `No hay preguntas para ${bankManagerActiveGrade.label}`}
         </div>
         <div style="font-size:0.75rem; color:#64748b;">
-          ${isSearching ? 'Prueba cambiando el término de búsqueda o seleccionando "Todas".' : 'Haz clic en "➕ Nueva Pregunta para este Grado" para agregar preguntas con o sin rúbrica de IA.'}
+          ${isSearching ? 'Prueba cambiando el término de búsqueda o seleccionando "Todas".' : 'Haz clic en "Nueva Pregunta para este Grado" para agregar preguntas al banco.'}
         </div>
       </div>
     `;
     return;
   }
 
-  // Renderizar preguntas de forma clara y unificada
+  // Renderizar preguntas de forma clara y unificada (sin textos redundantes sobre el enunciado)
   filtered.forEach(q => {
     const card = document.createElement('div');
     card.style.cssText = 'background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; box-shadow:0 2px 6px rgba(15,23,42,0.03);';
 
+    // Cabecera superior: exclusivamente acciones a la derecha
     const header = document.createElement('div');
-    header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;';
+    header.style.cssText = 'display:flex; justify-content:flex-end; align-items:center; gap:6px;';
 
     const hasRubric = !!(q.hasRubric || q.rubric);
 
-    // Badge de tipo a la izquierda
-    const titleBox = document.createElement('div');
-    titleBox.style.cssText = 'display:flex; align-items:center; gap:8px; flex:1; min-width:0;';
-    if (hasRubric) {
-      titleBox.innerHTML = `
-        <span style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; white-space:nowrap;">🤖 Con Rúbrica IA</span>
-        <span style="font-size:0.75rem; font-weight:600; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Procedimiento y Clave (Ramas 1, 2 y 3)</span>
-      `;
-    } else {
-      titleBox.innerHTML = `
-        <span style="background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; white-space:nowrap;">⚡ Pregunta Rápida</span>
-        <span style="font-size:0.75rem; font-weight:600; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Solo Clave (Ramas 2 y 3)</span>
-      `;
-    }
-
-    // Acciones de la derecha: Borrado vs En uso
+    // Acciones de la derecha: Borrado vs En uso con iconos SVG profesionales
     const actionsBox = document.createElement('div');
     actionsBox.style.cssText = 'display:flex; align-items:center; gap:6px; flex-wrap:wrap;';
 
@@ -727,16 +739,16 @@ function renderBankManagerQuestions() {
     if (inSavedSessions && inSavedSessions.length > 0) {
       // Bloqueada por estar en sesiones
       const lockedBadge = document.createElement('span');
-      lockedBadge.style.cssText = 'background:#f1f5f9; border:1px solid #cbd5e1; color:#64748b; border-radius:7px; padding:4px 8px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;';
-      lockedBadge.textContent = '🔒 En uso';
+      lockedBadge.style.cssText = 'background:#f1f5f9; border:1px solid #cbd5e1; color:#64748b; border-radius:7px; padding:4px 9px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px;';
+      lockedBadge.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>En uso</span>';
       actionsBox.appendChild(lockedBadge);
 
       inSavedSessions.forEach(s => {
         const btnLink = document.createElement('button');
         btnLink.type = 'button';
-        btnLink.textContent = `🔗 Ir a Sesión ${s.sessionNumber}`;
+        btnLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>Ir a Sesión ${s.sessionNumber}</span>`;
         btnLink.title = `Abrir la vista de evaluación de la sesión "${s.title}"`;
-        btnLink.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;';
+        btnLink.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
         btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#dbeafe'; btnLink.style.borderColor = '#93c5fd'; });
         btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#eff6ff'; btnLink.style.borderColor = '#bfdbfe'; });
         btnLink.onclick = () => {
@@ -752,8 +764,8 @@ function renderBankManagerQuestions() {
       // Disponible para eliminar
       const btnDel = document.createElement('button');
       btnDel.type = 'button';
-      btnDel.innerHTML = '🗑️ Eliminar';
-      btnDel.style.cssText = 'background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;';
+      btnDel.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span>Eliminar</span>';
+      btnDel.style.cssText = 'background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
       btnDel.addEventListener('mouseenter', () => { btnDel.style.background = '#dc2626'; btnDel.style.color = '#ffffff'; });
       btnDel.addEventListener('mouseleave', () => { btnDel.style.background = '#fef2f2'; btnDel.style.color = '#dc2626'; });
       btnDel.onclick = () => {
@@ -762,12 +774,11 @@ function renderBankManagerQuestions() {
       actionsBox.appendChild(btnDel);
     }
 
-    header.appendChild(titleBox);
     header.appendChild(actionsBox);
 
     // Enunciado
     const promptText = document.createElement('div');
-    promptText.style.cssText = 'font-size:0.86rem; color:#1e293b; font-weight:600; line-height:1.45;';
+    promptText.style.cssText = 'font-size:0.88rem; color:#1e293b; font-weight:600; line-height:1.45;';
     promptText.textContent = q.prompt;
 
     // Alternativas en 2 columnas
@@ -784,14 +795,14 @@ function renderBankManagerQuestions() {
       optsGrid.appendChild(optDiv);
     });
 
-    // Pie de la tarjeta: Ver rúbrica o Generar rúbrica
+    // Pie de la tarjeta: Ver rúbrica o Generar rúbrica con iconos SVG
     const footer = document.createElement('div');
     footer.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:2px; flex-wrap:wrap; gap:8px;';
 
     if (hasRubric) {
       const btnRubric = document.createElement('button');
       btnRubric.type = 'button';
-      btnRubric.innerHTML = '📋 Ver Rúbrica de IA';
+      btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Ver Rúbrica de IA</span>';
       btnRubric.title = 'Ver la solución canónica, criterios y errores frecuentes generados por la IA';
       btnRubric.style.cssText = 'background:#f5f3ff; border:1px solid #ddd6fe; color:#6d28d9; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
       btnRubric.addEventListener('mouseenter', () => { btnRubric.style.background = '#6d28d9'; btnRubric.style.color = '#ffffff'; });
@@ -802,12 +813,12 @@ function renderBankManagerQuestions() {
       footer.appendChild(btnRubric);
     } else {
       const labelNoRubric = document.createElement('span');
-      labelNoRubric.style.cssText = 'font-size:0.72rem; color:#64748b; display:inline-flex; align-items:center; gap:4px;';
-      labelNoRubric.innerHTML = '⚡ <em>Sin análisis de procedimiento</em>';
+      labelNoRubric.style.cssText = 'font-size:0.72rem; color:#64748b; display:inline-flex; align-items:center; gap:5px;';
+      labelNoRubric.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Sin análisis de procedimiento</span>';
 
       const btnUpgrade = document.createElement('button');
       btnUpgrade.type = 'button';
-      btnUpgrade.innerHTML = '✨ Generar Rúbrica IA';
+      btnUpgrade.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg><span>Generar Rúbrica IA</span>';
       btnUpgrade.title = 'Analizar este problema con Gemini para habilitarlo en la Rama 1 (evaluación de procedimiento)';
       btnUpgrade.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
       btnUpgrade.addEventListener('mouseenter', () => { btnUpgrade.style.background = '#1d4ed8'; btnUpgrade.style.color = '#ffffff'; });
@@ -1027,11 +1038,18 @@ function toggleBankManagerAddForm(show) {
   const isVisible = form.style.display !== 'none';
   const target = (typeof show === 'boolean') ? show : !isVisible;
   form.style.display = target ? 'block' : 'none';
-  if (btn) btn.textContent = target ? '✕ Ocultar Formulario' : '➕ Nueva Pregunta para este Grado';
+  if (btn) {
+    btn.innerHTML = target
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span>Ocultar Formulario</span>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span>Nueva Pregunta para este Grado</span>';
+  }
   if (target) {
     const title = document.getElementById('bank-manager-form-title');
     if (title && bankManagerActiveGrade) {
-      title.textContent = `✏️ Redactar Pregunta de Alternativas para ${bankManagerActiveGrade.label}`;
+      title.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        <span>Redactar Pregunta de Alternativas para ${bankManagerActiveGrade.label}</span>
+      `;
     }
     const promptInput = document.getElementById('bm-prompt');
     if (promptInput) promptInput.focus();
