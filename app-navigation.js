@@ -108,68 +108,48 @@ if (typeof window !== 'undefined') {
     window.onBrandClick = onBrandClick;
 
     function updateTopbarModeTitle(branch) {
+      const mainActionsEl = document.getElementById('topbar-main-actions');
       const titleEl = document.getElementById('topbar-app-title');
       const iconEl = document.getElementById('topbar-brand-icon');
       const tagEl = document.getElementById('topbar-version-tag');
       const brandEl = document.getElementById('topbar-island-brand');
-      if (!titleEl) return;
 
-      if (branch === 'classrooms') {
-        if (iconEl) iconEl.style.display = 'none';
-        if (tagEl) tagEl.style.display = 'none';
-        titleEl.classList.add('topbar-modality-pill');
-        titleEl.textContent = 'Salones';
+      if (branch === 'classrooms' || branch === 'bank' || branch === 'saved-sessions' || branch === 'rama3' || branch === 'rama2' || branch === 'rama1') {
+        if (mainActionsEl) mainActionsEl.style.display = 'none';
         if (brandEl) {
+          brandEl.style.display = 'flex';
           brandEl.style.cursor = 'default';
           brandEl.style.pointerEvents = 'none';
         }
-      } else if (branch === 'bank') {
         if (iconEl) iconEl.style.display = 'none';
         if (tagEl) tagEl.style.display = 'none';
-        titleEl.classList.add('topbar-modality-pill');
-        titleEl.textContent = 'Banco de Preguntas';
-        if (brandEl) {
-          brandEl.style.cursor = 'default';
-          brandEl.style.pointerEvents = 'none';
-        }
-      } else if (branch === 'saved-sessions') {
-        if (iconEl) iconEl.style.display = 'none';
-        if (tagEl) tagEl.style.display = 'none';
-        titleEl.classList.add('topbar-modality-pill');
-        const count = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
-          ? ClassroomData.getSavedSessions().length
-          : 0;
-        const max = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
-        titleEl.textContent = count > 0 ? `${count}/${max} Sesiones` : 'Sesiones';
-        if (brandEl) {
-          brandEl.style.cursor = 'default';
-          brandEl.style.pointerEvents = 'none';
-        }
-      } else if (branch === 'rama3' || branch === 'rama2' || branch === 'rama1') {
-        if (iconEl) iconEl.style.display = 'none';
-        if (tagEl) tagEl.style.display = 'none';
-        titleEl.classList.add('topbar-modality-pill');
 
-        if (branch === 'rama3') {
-          titleEl.textContent = 'Cartilla OMR';
-        } else if (branch === 'rama2') {
-          titleEl.textContent = 'Focalizada en la respuesta';
-        } else if (branch === 'rama1') {
-          titleEl.textContent = 'Formativa con IA';
-        }
-        if (brandEl) {
-          brandEl.style.cursor = 'default';
-          brandEl.style.pointerEvents = 'none';
+        if (titleEl) {
+          titleEl.style.display = 'inline-flex';
+          titleEl.classList.add('topbar-modality-pill');
+          if (branch === 'classrooms') {
+            titleEl.textContent = 'Salones';
+          } else if (branch === 'bank') {
+            titleEl.textContent = 'Banco de Preguntas';
+          } else if (branch === 'saved-sessions') {
+            const count = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+              ? ClassroomData.getSavedSessions().length
+              : 0;
+            const max = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
+            titleEl.textContent = count > 0 ? `${count}/${max} Sesiones` : 'Sesiones';
+          } else if (branch === 'rama3') {
+            titleEl.textContent = 'Cartilla OMR';
+          } else if (branch === 'rama2') {
+            titleEl.textContent = 'Focalizada en la respuesta';
+          } else if (branch === 'rama1') {
+            titleEl.textContent = 'Formativa con IA';
+          }
         }
       } else {
-        if (iconEl) iconEl.style.display = 'flex';
-        if (tagEl) tagEl.style.display = 'inline-block';
-        titleEl.classList.remove('topbar-modality-pill');
-        titleEl.textContent = 'MICROEVAL';
-        if (brandEl) {
-          brandEl.style.cursor = 'pointer';
-          brandEl.style.pointerEvents = 'auto';
-        }
+        // En el Hub de inicio: mostramos los 3 botones principales de barra superior y ocultamos el indicador de modalidad
+        if (mainActionsEl) mainActionsEl.style.display = 'inline-flex';
+        if (brandEl) brandEl.style.display = 'none';
+        if (titleEl) titleEl.style.display = 'none';
       }
     }
     window.updateTopbarModeTitle = updateTopbarModeTitle;

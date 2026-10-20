@@ -55,7 +55,7 @@
   <script src="app-navigation.js?v=3.2.84"></script>
   <script src="copilot-command.js?v=3.2.93"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.93">
+  <link rel="stylesheet" href="styles.css?v=3.2.94">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -356,16 +356,28 @@
   <header class="header-light">
     <div class="island-topbar">
       
-      <!-- Brand / Logo Izquierda -->
-      <div class="island-brand" id="topbar-island-brand" onclick="onBrandClick()">
-        <div class="island-brand-icon" id="topbar-brand-icon">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
-        </div>
-        <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.93</span>
+      <!-- Botones Principales de Navegación en Barra Superior (Reemplaza MICROEVAL y sube desde la fila flotante) -->
+      <div class="topbar-nav-buttons" id="topbar-main-actions">
+        <button type="button" class="topbar-nav-btn" onclick="openFlow('classrooms')" title="Salones y Alumnos">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          <span>Salones y alumnos</span>
+        </button>
+
+        <button type="button" class="topbar-nav-btn" onclick="openFlow('bank')" title="Banco de Preguntas">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Banco de preguntas</span>
+        </button>
+
+        <button type="button" class="topbar-nav-btn" onclick="openFlow('saved-sessions')" title="Sesiones">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span>Sesiones</span>
+          <span id="hub-saved-sessions-badge" class="nav-count-badge" style="display:none;">0/8</span>
+        </button>
+      </div>
+
+      <!-- Título de Modalidad (Visible solo al entrar a un flujo secundario como wizard o salones) -->
+      <div class="island-brand" id="topbar-island-brand" style="display:none;">
+        <span class="island-brand-title topbar-modality-pill" id="topbar-app-title" style="display:none;"></span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -398,6 +410,11 @@
                 <div id="user-email" style="font-size:0.7rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
               </div>
             </div>
+            <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
+            <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
+              Versión <span id="user-profile-version-tag">v3.2.94</span>
+            </div>
+
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
               ↪ Salir
             </button>
@@ -452,33 +469,8 @@
   <!-- VISTA 0: PANTALLA DE INICIO (HUB PRINCIPAL — OPCIÓN B)     -->
   <!-- ========================================================= -->
   <div id="view-hub" class="view-content active">
-    
-    <!-- 1. BARRA SUPERIOR DE ACCIONES RÁPIDAS (SOLO ÍCONOS CON TOOLTIP) -->
-    <div class="hub-top-strip">
-      <button type="button" class="top-strip-icon-btn" onclick="openFlow('classrooms')" title="Salones y Alumnos" aria-label="Salones y Alumnos">
-        <div class="strip-card-icon icon-sky">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
-        </div>
-        <span class="hub-tooltip">Salones y Alumnos</span>
-      </button>
 
-      <button type="button" class="top-strip-icon-btn" onclick="openFlow('bank')" title="Banco de Preguntas" aria-label="Banco de Preguntas">
-        <div class="strip-card-icon icon-indigo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        </div>
-        <span class="hub-tooltip">Banco de Preguntas</span>
-      </button>
-
-      <button type="button" class="top-strip-icon-btn" onclick="openFlow('saved-sessions')" title="Sesiones" aria-label="Sesiones">
-        <div class="strip-card-icon icon-amber">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <span id="hub-saved-sessions-badge" class="nav-count-badge" style="display:none;">0/8</span>
-        <span class="hub-tooltip">Sesiones</span>
-      </button>
-    </div>
-
-    <!-- 2. HÉROE PRINCIPAL: EVA CENTRADO CON FICHA ARUCO TRANSLÚCIDA DETRÁS -->
+    <!-- 1. HÉROE PRINCIPAL: EVA CENTRADO CON FICHA ARUCO TRANSLÚCIDA DETRÁS -->
     <div class="cyber-hub-container">
       <div class="hero-center-stage">
         

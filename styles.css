@@ -57,6 +57,60 @@
       gap: 16px;
     }
 
+    /* ── Botones de Navegación en Barra Superior (Reemplaza MICROEVAL - v3.2.94) ── */
+    .topbar-nav-buttons {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      color: #334155;
+      font-size: 0.82rem;
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .topbar-nav-btn:hover {
+      background: #f0f9ff;
+      border-color: #0284c7;
+      color: #0284c7;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+    }
+
+    .topbar-nav-btn:active {
+      transform: translateY(0);
+    }
+
+    .topbar-nav-btn svg {
+      color: #0284c7;
+      flex-shrink: 0;
+    }
+
+    .topbar-nav-btn .nav-count-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 9999px;
+      background: #e0f2fe;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+      line-height: 1.2;
+    }
+
     .island-brand {
       display: flex;
       align-items: center;
@@ -4116,12 +4170,13 @@
       max-width: 1040px;
       margin: 0 auto;
       width: 100%;
-      min-height: auto;
-      padding: 8px 24px 20px;
+      min-height: calc(100vh - 56px);
+      box-sizing: border-box;
+      padding: 12px 24px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
       position: relative;
     }
 
@@ -4573,7 +4628,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-top: 36px;
+      margin-top: auto;
+      margin-bottom: 12px;
       font-size: 0.74rem;
       font-weight: 750;
       text-transform: uppercase;
@@ -5005,7 +5061,19 @@
 
     @media (max-width: 640px) {
       .island-topbar {
-        gap: 8px;
+        gap: 6px;
+      }
+      .topbar-nav-buttons {
+        gap: 4px;
+      }
+      .topbar-nav-btn {
+        padding: 5px 9px;
+        font-size: 0.72rem;
+      }
+      .topbar-nav-btn span {
+        max-width: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .island-brand-title {
         font-size: 0.82rem;
@@ -5018,11 +5086,10 @@
         font-size: 0.72rem;
       }
       .hub-top-strip {
-        padding: 12px 14px 0;
-        gap: 12px;
+        display: none !important;
       }
       .cyber-hub-container {
-        padding: 20px 14px 30px;
+        padding: 12px 12px 16px;
         min-height: calc(100svh - 60px);
       }
       .hero-center-stage {
