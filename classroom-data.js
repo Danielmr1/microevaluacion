@@ -763,7 +763,15 @@
         const raw = window.localStorage.getItem(STORAGE_KEY_SAVED_SESSIONS);
         if (raw) {
           const arr = JSON.parse(raw);
-          if (Array.isArray(arr)) return arr.slice(0, MAX_SAVED_SESSIONS);
+          if (Array.isArray(arr)) {
+            // Guardarraíl estricto: solo sesiones con salón que tenga al menos 1 alumno
+            return arr.filter(s => {
+              if (!s || !s.classroomId) return false;
+              const cls = getClassroom(s.classroomId);
+              if (cls && (!cls.students || cls.students.length === 0)) return false;
+              return true;
+            }).slice(0, MAX_SAVED_SESSIONS);
+          }
         }
       } catch (e) {
         console.error('[getSavedSessions Error]', e);
@@ -1070,6 +1078,89 @@
     return matched;
   }
 
+  /**
+   * Purga rigurosa de datos no conformes (Guardarraíles del Sistema - MANUAL_SISTEMA.md):
+   * 1. Elimina salones con 0 alumnos (no existe salón sin alumnos).
+   * 2. Elimina sesiones guardadas asociadas a salones sin alumnos o inexistentes.
+   * 3. Elimina preguntas del banco incompletas o sin rúbrica de IA (Regla 6).
+   */
+  function purgeNonCompliantData() {
+    // 1. Purga salones vacíos en memoria
+    Object.keys(CLASSROOMS).forEach(id => {
+      const cls = CLASSROOMS[id];
+      if (!cls || !cls.students || cls.students.length === 0) {
+        delete CLASSROOMS[id];
+      }
+    });
+
+    // 2. Purga sesiones guardadas vacías o con salones sin alumnos
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY_SAVED_SESSIONS);
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) {
+            const clean = arr.filter(s => {
+              if (!s || !s.classroomId) return false;
+              const cls = CLASSROOMS[s.classroomId];
+              if (!cls || !cls.students || cls.students.length === 0) {
+                // Borrar también de la nube si está conectado
+                if (window.SupabaseClient && typeof window.SupabaseClient.deleteSessionFromCloud === 'function' && s.id) {
+                  window.SupabaseClient.deleteSessionFromCloud(s.id).catch(() => {});
+                }
+                return false;
+              }
+              return true;
+            });
+            window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(clean));
+          }
+        }
+      } catch (e) {
+        console.warn('[purgeNonCompliantData sessions]', e);
+      }
+    }
+
+    // 3. Purga preguntas del banco sin rúbrica o sin alternativas completas (Regla 6)
+    Object.keys(EVALUATIONS).forEach(id => {
+      const ev = EVALUATIONS[id];
+      if (!ev) return;
+      if (ev.type === 'mc' && (!ev.options || !ev.correct)) {
+        delete EVALUATIONS[id];
+        return;
+      }
+      if (!ev.rubric && !ev.rubrica) {
+        delete EVALUATIONS[id];
+      }
+    });
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const rawBank = window.localStorage.getItem(STORAGE_KEY_BANK);
+        if (rawBank) {
+          const bank = JSON.parse(rawBank);
+          if (Array.isArray(bank)) {
+            const cleanBank = bank.filter(ev => {
+              if (ev.type === 'mc' && (!ev.options || !ev.correct)) return false;
+              return !!(ev.rubric || ev.rubrica);
+            });
+            window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(cleanBank));
+          }
+        }
+      } catch (e) {
+        console.warn('[purgeNonCompliantData bank]', e);
+      }
+    }
+
+    // 4. Si la sesión activa en memoria no cumple, anularla
+    const active = getActiveSession();
+    if (active && active.classroomId) {
+      const cls = CLASSROOMS[active.classroomId];
+      if (!cls || !cls.students || cls.students.length === 0) {
+        setActiveSession(null);
+      }
+    }
+  }
+
   // Exportación universal
   const ClassroomData = {
     CLASSROOMS,
@@ -1106,6 +1197,7 @@
     getQuestionSavedSessions,
     MAX_SAVED_SESSIONS,
     flushSyncQueue,
+    purgeNonCompliantData,
 
     updateStudent(classroomId, studentCode, fullName, shortName) {
       const cls = CLASSROOMS[classroomId];

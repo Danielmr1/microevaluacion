@@ -863,8 +863,12 @@
     appendMessage('user', displayText);
 
     if (type === 'classroom') {
-      pendingState.classroomId = value;
       const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(value) : null;
+      if (!cls || !cls.students || cls.students.length === 0) {
+        appendMessage('ai', `⚠️ <b>El salón "${displayText}" no tiene alumnos registrados.</b> No es posible preparar una evaluación para un salón vacío. Carga la lista de estudiantes primero.`);
+        return;
+      }
+      pendingState.classroomId = value;
       pendingState.classroomName = cls ? cls.name : value;
 
       if (!pendingState.branch) {
@@ -901,13 +905,14 @@
    */
   function showClassroomClarification(customList) {
     const list = customList || (typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroomList() : []);
-    if (!list || list.length === 0) {
-      appendMessage('ai', 'No tienes salones registrados todavía. <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip(\'action\', \'classrooms\', \'Crear Salón\')">🏫 Crear primer salón</button>');
+    const validList = list.filter(c => c.count > 0);
+    if (!validList || validList.length === 0) {
+      appendMessage('ai', 'No tienes salones con alumnos registrados todavía. Recuerda que según las reglas de Microevaluación no es posible evaluar un salón vacío. <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip(\'action\', \'classrooms\', \'Crear Salón\')">🏫 Crear primer salón con alumnos</button>');
       return;
     }
 
     let chipsHtml = '<div class="copilot-clarify-chips">';
-    list.forEach(c => {
+    validList.forEach(c => {
       chipsHtml += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('classroom', '${c.id}', '${c.name}')">${c.name} (${c.count} alum.)</button>`;
     });
     chipsHtml += '</div>';
@@ -1029,6 +1034,122 @@
     const norm = normalizeText(trimmed);
 
     // =========================================================================
+    // GUARDARRAÍL 1: ESPERA DE NÓMINA SI SE INTENTÓ CREAR SALÓN VACÍO
+    // =========================================================================
+    if (pendingState.action === 'create_classroom_pending_students' && pendingState.createClassData) {
+      const rawList = trimmed.split(/[,;\n]+/);
+      const students = rawList
+        .map(s => s.trim().replace(/^[\d.\-\s]+/, ''))
+        .filter(s => s.length > 2)
+        .map((name, i) => {
+          const parts = name.split(/\s+/);
+          const shortName = parts[0] || `ALUMNO_${i + 1}`;
+          return {
+            id: `alu_${Date.now()}_${i + 1}`,
+            name: name.toUpperCase(),
+            shortName: shortName.toUpperCase(),
+            position: i + 1
+          };
+        });
+
+      if (students.length === 0) {
+        appendMessage('ai', '⚠️ No detecté nombres válidos. Por favor escribe o pega al menos el nombre de un estudiante (ej. <i>"Juan Pérez, María Gómez"</i>):');
+        return;
+      }
+
+      pendingState.createClassData.students = students;
+      pendingState.action = null;
+      renderClassroomPreviewCard(pendingState.createClassData);
+      return;
+    }
+
+    // =========================================================================
+    // GUARDARRAÍL 4: BASE DE CONOCIMIENTO Y MANUAL DEL SISTEMA (MANUAL_SISTEMA.md)
+    // =========================================================================
+
+    // Pregunta: ¿Por qué se necesitan alumnos / Salón sin alumnos?
+    if (/(?:por que|razon).*(?:alumnos|nomina)|salon sin alumnos|no existe salon sin alumnos|por que se necesitan alumnos/.test(norm)) {
+      appendMessage('ai', `
+        <b>Principio Fundacional de Microevaluación:</b><br>
+        En este sistema <b>no existe salón sin alumnos</b> (se requiere como mínimo 1 estudiante registrado).<br><br>
+        <b>¿Por qué es obligatorio?</b><br>
+        Cada ficha física impresa es nominal y personalizada: lleva impreso el nombre del alumno y un <b>código QR único</b> para su identificación instantánea en el escáner de alta velocidad.<br><br>
+        Sin alumnos, el generador no puede crear fichas en el PDF y el escáner no tiene a quién evaluar.
+      `);
+      return;
+    }
+
+    // Pregunta: ¿Cómo funciona la Cartilla OMR? (Rama 3)
+    if (/como funciona.*cartilla|que es.*cartilla|que es.*omr|como usar.*cartilla/.test(norm)) {
+      appendMessage('ai', `
+        <b>Modalidad: Cartilla OMR (Rama 3)</b><br>
+        Diseñada para evaluaciones masivas y simulacros de <b>6 a 20 preguntas</b>.<br><br>
+        • <b>Modo A (Solo Cartilla):</b> Se imprimen solo las hojas de burbujas OMR y el examen se proyecta o dicta.<br>
+        • <b>Modo B (Cartilla + Cuadernillo):</b> Se imprimen las cartillas junto con un cuadernillo impreso A4 con enunciados y alternativas extraídas del Banco de Preguntas.<br>
+        • <b>Corrección:</b> Instantánea y 100% local por visión computacional (< 100 ms por ficha, sin consumo de IA).
+      `);
+      return;
+    }
+
+    // Pregunta: ¿Cómo funciona Formativa con IA? (Rama 1)
+    if (/como funciona.*formativa|que es.*formativa|formativa con ia/.test(norm)) {
+      appendMessage('ai', `
+        <b>Modalidad: Formativa con IA (Rama 1)</b><br>
+        Diseñada para el diagnóstico profundo del aprendizaje en <b>1 a 2 preguntas</b>.<br><br>
+        • <b>Cuadrícula de cálculo manuscrita:</b> Los estudiantes desarrollan a mano sus operaciones paso a paso.<br>
+        • <b>Corrección pedagógica:</b> Gemini analiza el razonamiento cualitativo, detecta errores conceptuales típicos y califica según una rúbrica formativa ponderada.
+      `);
+      return;
+    }
+
+    // Pregunta: ¿Cómo funciona Focalizada en la Respuesta? (Rama 2)
+    if (/como funciona.*focalizada|que es.*focalizada/.test(norm)) {
+      appendMessage('ai', `
+        <b>Modalidad: Focalizada en la Respuesta (Rama 2)</b><br>
+        Diseñada para verificar respuestas directas o alternativas en <b>1 a 5 preguntas</b>.<br><br>
+        • <b>Formato físico:</b> Fichas A5 (1 a 2 preguntas) o A4 (5 preguntas).<br>
+        • <b>Corrección:</b> Determinista e inmediata sobre las opciones marcadas, sin calificar el borrador.
+      `);
+      return;
+    }
+
+    // Pregunta: ¿Cómo se crea una sesión / Pasos de evaluación?
+    if (/como se crea una sesion|pasos para.*evaluacion|como evaluar|flujo de evaluacion/.test(norm)) {
+      appendMessage('ai', `
+        <b>Secuencia Obligatoria de Creación de una Evaluación:</b><br>
+        1. <b>Salón con alumnos:</b> Seleccionar un salón con nómina activa (mínimo 1 alumno).<br>
+        2. <b>Modalidad:</b> Elegir Formativa IA, Focalizada o Cartilla OMR.<br>
+        3. <b>Parámetros:</b> Cantidad de preguntas según la modalidad.<br>
+        4. <b>Contenido:</b> Preguntas completas con alternativas (A-D), clave correcta y rúbrica de IA.<br>
+        5. <b>Vista de Resumen:</b> Se genera el PDF como <b>borrador activo</b>. El docente decide si pulsa <i>[ 💾 Guardar Sesión ]</i> para almacenarla en sus 8 cupos o va directo al escáner.
+      `);
+      return;
+    }
+
+    // Pregunta: ¿Cómo funciona el Banco de Preguntas?
+    if (/como funciona el banco|banco de preguntas|guardar en el banco/.test(norm)) {
+      appendMessage('ai', `
+        <b>Banco de Preguntas (Regla 6 de Integridad):</b><br>
+        Toda pregunta que ingrese al banco debe contar obligatoriamente con:<br>
+        1. Enunciado claro.<br>
+        2. Sus 4 alternativas completas (A, B, C, D) con su clave correcta.<br>
+        3. Análisis pedagógico completo generado por IA (solución canónica, procedimiento y errores previsibles).<br><br>
+        <i>Queda prohibido guardar preguntas incompletas o sin análisis.</i>
+      `);
+      return;
+    }
+
+    // Pregunta: ¿Cuántas sesiones se pueden guardar?
+    if (/cuantas sesiones.*guardar|cupos de sesiones|limite de sesiones/.test(norm)) {
+      appendMessage('ai', `
+        <b>Gestión de Cupos de Sesiones Guardadas:</b><br>
+        El sistema permite almacenar hasta <b>8 sesiones guardadas simultáneas</b> para acceso rápido en el aula sin internet.<br><br>
+        Al eliminar una sesión guardada, se libera de inmediato el cupo correspondiente.
+      `);
+      return;
+    }
+
+    // =========================================================================
     // FASE 3: INTERFACES GENERATIVAS Y ANALÍTICA EN EL CHAT
     // =========================================================================
 
@@ -1113,9 +1234,15 @@
       return;
     }
 
-    // 3. Crear Salón Asistido (con o sin nómina)
+    // 3. Crear Salón Asistido (OBLIGATORIO: con nómina de alumnos - Guardarraíl 1)
     if (/crear salon|nuevo salon|crea salon|crea el salon|agregar salon|agrega salon|crear aula|crea aula/.test(norm)) {
       const classData = parseClassroomCreation(trimmed, norm);
+      if (!classData.students || classData.students.length === 0) {
+        pendingState.action = 'create_classroom_pending_students';
+        pendingState.createClassData = classData;
+        appendMessage('ai', `⚠️ <b>Guardarraíl de Aula:</b> Para crear el salón <b>"${classData.name}"</b> es obligatorio registrar sus alumnos (según las reglas de Microevaluación no existe salón sin alumnos porque cada ficha física requiere el nombre y código QR del estudiante).<br><br>Por favor escribe o pega aquí los nombres de los estudiantes (separados por coma o uno por línea):`);
+        return;
+      }
       renderClassroomPreviewCard(classData);
       return;
     }
@@ -1172,6 +1299,13 @@
     if (branch) pendingState.branch = branch;
     if (qCount) pendingState.questionCount = qCount;
     if (clsRes.match) {
+      const fullCls = (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom)
+        ? ClassroomData.getClassroom(clsRes.match.id)
+        : clsRes.match;
+      if (!fullCls || !fullCls.students || fullCls.students.length === 0) {
+        appendMessage('ai', `⚠️ <b>El salón "${clsRes.match.name}" no tiene alumnos registrados.</b><br>No es posible preparar una evaluación para un salón vacío porque cada ficha física requiere el nombre y código QR del estudiante.<br><br>Por favor ingresa a <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('action', 'classrooms', 'Salones y Alumnos')">🏫 Salones y Alumnos</button> para cargar su nómina primero.`);
+        return;
+      }
       pendingState.classroomId = clsRes.match.id;
       pendingState.classroomName = clsRes.match.name;
     }

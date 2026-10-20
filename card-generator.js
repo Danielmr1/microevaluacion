@@ -262,7 +262,18 @@ function renderAllPrintPages(classId, evaluation) {
   container.style.display = 'flex';
   const classroom = ClassroomData.getClassroom(classId);
   if (!classroom || !classroom.students || classroom.students.length === 0) {
-    container.innerHTML = '';
+    container.innerHTML = `
+      <div style="margin: 40px auto; padding: 24px 32px; background: #ffffff; border: 1.5px dashed #cbd5e1; border-radius: 16px; text-align: center; max-width: 480px; box-shadow: 0 4px 16px rgba(15,23,42,0.04);">
+        <div style="font-size: 2.2rem; margin-bottom: 8px;">⚠️</div>
+        <h3 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">Este salón no tiene alumnos registrados</h3>
+        <p style="margin: 0 0 16px; font-size: 0.82rem; color: #64748b; line-height: 1.5;">
+          En Microevaluación cada ficha física se genera de forma nominal con el nombre y código QR del estudiante. Para generar las fichas imprimibles, primero debes cargar la lista de alumnos en el salón.
+        </p>
+        <button type="button" onclick="openFlow('classrooms')" style="background: #0284c7; color: #fff; border: none; padding: 8px 18px; border-radius: 9999px; font-size: 0.82rem; font-weight: 750; cursor: pointer;">
+          🏫 Ir a Salones y Alumnos
+        </button>
+      </div>
+    `;
     console.warn('[Fichas] No se pudieron generar: el salón no existe o no tiene alumnos.', classId);
     return;
   }

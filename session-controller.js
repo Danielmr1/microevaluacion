@@ -993,6 +993,12 @@
           wizardEval: wizardEval ? JSON.parse(JSON.stringify(wizardEval)) : (activeSession ? JSON.parse(JSON.stringify(activeSession)) : null)
         };
 
+        const clsCheck = ClassroomData.getClassroom(sessionPayload.classroomId);
+        if (!clsCheck || !clsCheck.students || clsCheck.students.length === 0) {
+          showToast('⚠️ No se puede guardar una sesión de un salón sin alumnos.');
+          return;
+        }
+
         const res = ClassroomData.saveSession(sessionPayload);
         if (!res.success) {
           if (res.reason === 'limit_reached') {
@@ -1371,8 +1377,8 @@
         return;
       }
       const cls = ClassroomData.getClassroom(sess.classroomId);
-      if (!cls) {
-        showToast('⚠️ El salón asignado a esta sesión ya no existe.');
+      if (!cls || !cls.students || cls.students.length === 0) {
+        showToast('⚠️ El salón asignado a esta sesión no tiene alumnos o ya no existe.');
         return;
       }
 
@@ -1669,6 +1675,12 @@
         return null;
       }
 
+      const clsCheck = ClassroomData.getClassroom(classId);
+      if (!clsCheck || !clsCheck.students || clsCheck.students.length === 0) {
+        showToast('⚠️ No se puede activar una sesión para un salón sin alumnos.');
+        return null;
+      }
+
       // 1. Guardar en el banco local del docente. Se REUTILIZA el id de la
       //    evaluación en curso cuando existe
       const g = gradoDelSalon(classId);
@@ -1820,7 +1832,13 @@
             wizardEval: wizardEval ? JSON.parse(JSON.stringify(wizardEval)) : JSON.parse(JSON.stringify(session))
           };
 
-          const res = ClassroomData.saveSession(sessionPayload);
+          const clsCheck = ClassroomData.getClassroom(sessionPayload.classroomId);
+        if (!clsCheck || !clsCheck.students || clsCheck.students.length === 0) {
+          showToast('⚠️ No se puede guardar una sesión de un salón sin alumnos.');
+          return;
+        }
+
+        const res = ClassroomData.saveSession(sessionPayload);
           if (res && res.success) {
             const btnSave = document.getElementById('btn-save-session');
             if (btnSave) {

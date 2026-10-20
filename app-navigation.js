@@ -784,6 +784,9 @@ if (typeof window !== 'undefined') {
         }))
       }));
       ClassroomData.setClassrooms(mapped);
+      if (typeof ClassroomData.purgeNonCompliantData === 'function') {
+        ClassroomData.purgeNonCompliantData();
+      }
     }
 
 
@@ -791,6 +794,9 @@ if (typeof window !== 'undefined') {
 
     // ── Inicialización al cargar la página ──
     document.addEventListener('DOMContentLoaded', () => {
+      if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.purgeNonCompliantData === 'function') {
+        ClassroomData.purgeNonCompliantData();
+      }
       // Mostrar overlay de login por defecto hasta verificar sesión
       showLoginOverlay();
       initScrollTransitions();
