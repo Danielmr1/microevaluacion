@@ -6556,6 +6556,21 @@
         box-sizing: border-box !important;
       }
 
+      .summary-document-viewport.viewing-results-mode {
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+      }
+
+      #summary-inline-results-container {
+        border-radius: 12px !important;
+        overflow: visible !important;
+      }
+
+      #summary-inline-results-container > div:last-child {
+        overflow-y: visible !important;
+        max-height: none !important;
+      }
+
       .summary-document-viewport #pages-container,
       .summary-document-viewport #booklet-container {
         width: max-content !important;

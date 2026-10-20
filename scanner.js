@@ -967,6 +967,12 @@
     if (screen.orientation && screen.orientation.unlock) {
       try { screen.orientation.unlock(); } catch (e) {}
     }
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+      if (exit) {
+        try { exit.call(document).catch(() => {}); } catch (e) {}
+      }
+    }
     resetHUD();
   }
 

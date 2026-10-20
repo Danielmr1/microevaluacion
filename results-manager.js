@@ -47,10 +47,47 @@ function goToSessionResults() {
   if (typeof stopCamera === 'function') {
     try { stopCamera(); } catch (e) {}
   }
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (exit) {
+      try { exit.call(document).catch(() => {}); } catch (e) {}
+    }
+  }
   if (screen.orientation && screen.orientation.unlock) {
     try { screen.orientation.unlock(); } catch (e) {}
   }
-  if (typeof showView === 'function') showView('eval');
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
+
+  // Salir formalmente del modo Sesiones Guardadas para volver a la modalidad normal
+  window.isViewingSavedSessionsMode = false;
+  const stripEl = document.getElementById('summary-sessions-strip');
+  if (stripEl) stripEl.style.display = 'none';
+
+  if (typeof switchTab === 'function') {
+    switchTab('create');
+  } else if (typeof showView === 'function') {
+    showView('eval');
+  }
+
+  // Asegurar que step-summary y el layout de dos columnas/apilado estén activos
+  const summaryEl = document.getElementById('step-summary');
+  const teacherPanelEl = summaryEl ? summaryEl.closest('.teacher-panel') : null;
+  const viewCreateEl = document.getElementById('view-create');
+  if (teacherPanelEl) teacherPanelEl.classList.add('has-active-split');
+  if (viewCreateEl) viewCreateEl.classList.add('has-active-split');
+  document.body.classList.add('has-active-split');
+  if (summaryEl) {
+    summaryEl.classList.add('active-split');
+    summaryEl.style.display = '';
+  }
+
+  // Actualizar topbar al nombre de la modalidad de la sesión activa (no 'Sesiones')
+  if (typeof updateTopbarModeTitle === 'function') {
+    const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+    updateTopbarModeTitle(activeSess?.branch || window.selectedBranch || 'rama1');
+  }
+
   if (typeof toggleSummaryViewMode === 'function') {
     toggleSummaryViewMode('results');
   }

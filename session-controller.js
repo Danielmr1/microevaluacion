@@ -748,8 +748,10 @@
       window.currentSummaryViewMode = newMode;
 
       const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      const viewport = document.querySelector('.summary-document-viewport');
 
       if (newMode === 'results') {
+        if (viewport) viewport.classList.add('viewing-results-mode');
         if (pagesContainer) pagesContainer.style.setProperty('display', 'none', 'important');
         if (bookletContainer) bookletContainer.style.setProperty('display', 'none', 'important');
         if (inlineContainer) {
@@ -769,6 +771,7 @@
         }
       } else {
         // Modo PDF
+        if (viewport) viewport.classList.remove('viewing-results-mode');
         if (inlineContainer) inlineContainer.style.display = 'none';
         if (pagesContainer) pagesContainer.style.display = 'flex';
         if (bookletContainer && activeSess && activeSess.mode === 'bank') {
@@ -1906,9 +1909,19 @@
 
     function goToScannerWithSession() {
       try {
+        // Al ir al escáner, se abandona el modo de exploración de sesiones guardadas
+        window.isViewingSavedSessionsMode = false;
+        const stripEl = document.getElementById('summary-sessions-strip');
+        if (stripEl) stripEl.style.display = 'none';
+
         // 1. Asegurar que la sesión esté generada y activada
         const session = generateAndActivateSession();
         if (!session) return;
+
+        // Actualizar barra superior a la modalidad de la evaluación (no 'saved-sessions')
+        if (typeof updateTopbarModeTitle === 'function') {
+          updateTopbarModeTitle(session.branch || window.selectedBranch || 'rama1');
+        }
 
         // 2. Auto-guardar la sesión automáticamente
         if (typeof ClassroomData !== 'undefined' && ClassroomData.saveSession) {
