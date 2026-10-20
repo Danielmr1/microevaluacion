@@ -53,8 +53,9 @@
   <script src="card-generator.js?v=3.2.84"></script>
   <script src="session-controller.js?v=3.2.84"></script>
   <script src="app-navigation.js?v=3.2.84"></script>
+  <script src="copilot-command.js?v=3.2.90"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.84">
+  <link rel="stylesheet" href="styles.css?v=3.2.90">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -364,7 +365,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.89</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.90</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -509,6 +510,51 @@
           </div>
           <h1 class="eva-hero-title">EVA</h1>
           <p class="eva-hero-subtitle">Evaluación Formativa y Escaneo de alta velocidad</p>
+
+          <!-- Copilot Command Bar: Fase 1 Barra Inteligente & Chat -->
+          <div id="copilot-command-stage" class="copilot-stage">
+            <div class="copilot-input-wrapper">
+              <div class="copilot-input-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </div>
+              <input type="text" id="copilot-input" class="copilot-input" placeholder="¿Qué deseas evaluar o consultar hoy? (ej. 4to A con cartillas)" autocomplete="off">
+              <button type="button" id="copilot-submit-btn" class="copilot-submit-btn" title="Enviar consulta" aria-label="Enviar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Chips de acceso rápido -->
+            <div class="copilot-quick-chips" id="copilot-quick-chips">
+              <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cartilla OMR para 4° A')">📝 Cartilla 4° A</button>
+              <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Escanear sesión guardada')">📷 Escanear Sesión</button>
+              <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Banco de preguntas')">📚 Banco de Preguntas</button>
+              <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Ver salones y alumnos')">🏫 Ver Salones</button>
+            </div>
+
+            <!-- Panel de diálogo interactivo desplegable -->
+            <div id="copilot-chat-drawer" class="copilot-chat-drawer" style="display: none;">
+              <div class="copilot-chat-header">
+                <div class="copilot-chat-title">
+                  <span class="copilot-status-dot"></span>
+                  <span>Asistente EVA</span>
+                </div>
+                <div class="copilot-chat-actions">
+                  <button type="button" class="copilot-header-btn" onclick="CopilotCommand.clearChat()" title="Limpiar conversación">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                  <button type="button" class="copilot-header-btn" onclick="CopilotCommand.toggleChat(false)" title="Minimizar">✕</button>
+                </div>
+              </div>
+              <div id="copilot-messages" class="copilot-messages">
+                <!-- Mensajes dinámicos aquí -->
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
