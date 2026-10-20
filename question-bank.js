@@ -397,16 +397,16 @@ function handleDeleteQuestionFromBank(target, displayText, optionalId) {
     icon: '🗑️',
     title: '¿Eliminar pregunta del banco?',
     bodyHtml: `
-      <p style="color:#e2e8f0; font-size:0.88rem; margin:0 0 10px 0;">¿Estás seguro de que deseas eliminar esta pregunta del banco de evaluaciones?</p>
-      <div style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:10px; font-size:0.8rem; color:#94a3b8; font-style:italic; max-height:100px; overflow-y:auto; word-break:break-word;">
+      <p style="color:#1e293b; font-size:0.88rem; margin:0 0 10px 0;">¿Estás seguro de que deseas eliminar esta pregunta del banco de evaluaciones?</p>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; font-size:0.8rem; color:#475569; font-style:italic; max-height:100px; overflow-y:auto; word-break:break-word;">
         "${escaparHtml(promptPreview)}"
       </div>
-      <p style="color:#f87171; font-size:0.75rem; margin:10px 0 0 0;">Esta acción borrará la pregunta del banco en esta sesión y en la base de datos.</p>
+      <p style="color:#dc2626; font-size:0.75rem; margin:10px 0 0 0;">Esta acción borrará la pregunta del banco en esta sesión y en la base de datos.</p>
     `,
     buttons: [
       {
         label: 'Cancelar',
-        style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #475569; background:#1e293b; color:#cbd5e1;',
+        style: 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:1px solid #cbd5e1; background:#ffffff; color:#475569;',
         onClick: () => {}
       },
       {
@@ -444,7 +444,10 @@ function handleDeleteQuestionFromBank(target, displayText, optionalId) {
 }
 
 /* ── GESTOR DEL BANCO DE PREGUNTAS POR GRADO (MODAL) ── */
-let bankManagerActiveGrade = null; // { stage: 'primaria', level: 4, label: '4° Primaria' }
+let bankManagerActiveStage = 'primaria';
+let bankManagerActiveGrade = null; // { stage: 'primaria', level: 4, label: '4° Primaria', value: 'primaria:4' }
+let bankManagerFilterType = 'all'; // 'all' | 'rubric' | 'quick'
+let bankManagerSearchQuery = '';
 
 function openBankManagerModal() {
   // Determinar grado inicial: el del salón seleccionado o el primer grado habilitado en el catálogo
@@ -454,30 +457,29 @@ function openBankManagerModal() {
     if (clsGrade && clsGrade.stage && clsGrade.level) {
       initialGrade = {
         stage: clsGrade.stage,
-        level: clsGrade.level,
+        level: Number(clsGrade.level),
         label: ClassroomData.formatGrade(clsGrade.stage, clsGrade.level) || `${clsGrade.level}° Primaria`,
         value: `${clsGrade.stage}:${clsGrade.level}`
       };
+      bankManagerActiveStage = clsGrade.stage;
     }
   }
 
   if (!initialGrade) {
-    const gradeOptions = ClassroomData.getGradeOptions();
-    if (gradeOptions && gradeOptions.length > 0) {
-      initialGrade = {
-        stage: gradeOptions[0].stage,
-        level: gradeOptions[0].level,
-        label: gradeOptions[0].label,
-        value: gradeOptions[0].value
-      };
-    } else {
-      initialGrade = { stage: 'primaria', level: 4, label: '4° Primaria', value: 'primaria:4' };
-    }
+    initialGrade = { stage: 'primaria', level: 4, label: '4° Primaria', value: 'primaria:4' };
+    bankManagerActiveStage = 'primaria';
   }
 
   bankManagerActiveGrade = initialGrade;
+  bankManagerFilterType = 'all';
+  bankManagerSearchQuery = '';
+  const searchInput = document.getElementById('bm-search-input');
+  if (searchInput) searchInput.value = '';
+
   toggleBankManagerAddForm(false);
+  renderBankManagerStageTabs();
   renderBankManagerGradeTabs();
+  renderBankManagerFilterPills();
   renderBankManagerQuestions();
 }
 
@@ -486,17 +488,83 @@ function closeBankManagerModal() {
   if (typeof renderBankCards === 'function') renderBankCards();
 }
 
+function renderBankManagerStageTabs() {
+  const container = document.getElementById('bank-manager-stage-tabs');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const stages = [
+    { stage: 'primaria', label: 'Primaria' },
+    { stage: 'secundaria', label: 'Secundaria' }
+  ];
+
+  stages.forEach(s => {
+    const isActive = bankManagerActiveStage === s.stage;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = s.label;
+    btn.style.cssText = [
+      'padding:5px 16px',
+      'border-radius:7px',
+      'font-size:0.8rem',
+      'font-weight:700',
+      'cursor:pointer',
+      'border:none',
+      'transition:all 0.15s',
+      isActive
+        ? 'background:#0284c7; color:#ffffff; box-shadow:0 1px 4px rgba(2,132,199,0.3);'
+        : 'background:transparent; color:#64748b;'
+    ].join(';');
+
+    btn.onclick = () => {
+      bankManagerActiveStage = s.stage;
+      const catalog = (typeof ClassroomData !== 'undefined' && ClassroomData.GRADE_CATALOG) || [];
+      const entry = catalog.find(c => c.stage === s.stage);
+      const grades = (entry && entry.grades) ? entry.grades : (s.stage === 'secundaria' ? [1,2,3,4,5] : [4,5,6]);
+      const firstLevel = grades[0] || (s.stage === 'secundaria' ? 1 : 4);
+
+      bankManagerActiveGrade = {
+        stage: s.stage,
+        level: firstLevel,
+        label: `${firstLevel}° ${s.label}`,
+        value: `${s.stage}:${firstLevel}`
+      };
+
+      renderBankManagerStageTabs();
+      renderBankManagerGradeTabs();
+      renderBankManagerQuestions();
+      toggleBankManagerAddForm(false);
+    };
+
+    container.appendChild(btn);
+  });
+}
+
 function renderBankManagerGradeTabs() {
   const container = document.getElementById('bank-manager-grade-tabs');
   if (!container) return;
   container.innerHTML = '';
 
-  const gradeOptions = ClassroomData.getGradeOptions();
-  gradeOptions.forEach(g => {
-    const isActive = bankManagerActiveGrade && bankManagerActiveGrade.stage === g.stage && Number(bankManagerActiveGrade.level) === Number(g.level);
+  const catalog = (typeof ClassroomData !== 'undefined' && ClassroomData.GRADE_CATALOG) || [];
+  const entry = catalog.find(c => c.stage === bankManagerActiveStage) || {
+    stage: bankManagerActiveStage,
+    label: bankManagerActiveStage === 'secundaria' ? 'Secundaria' : 'Primaria',
+    grades: bankManagerActiveStage === 'secundaria' ? [1, 2, 3, 4, 5] : [4, 5, 6]
+  };
+
+  entry.grades.forEach(lvl => {
+    const isActive = bankManagerActiveGrade && bankManagerActiveGrade.stage === entry.stage && Number(bankManagerActiveGrade.level) === Number(lvl);
+    const label = `${lvl}° ${entry.label}`;
+
+    // Obtener conteo de preguntas para este grado
+    const qList = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
+      ? ClassroomData.getIndividualMCQuestions(entry.stage, lvl)
+      : [];
+    const count = qList.length;
+
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = g.label;
+    btn.textContent = `${label} (${count})`;
     btn.style.cssText = [
       'padding:6px 14px',
       'border-radius:20px',
@@ -504,11 +572,18 @@ function renderBankManagerGradeTabs() {
       'font-weight:700',
       'cursor:pointer',
       'transition:all 0.15s',
-      isActive ? 'background:#2563eb; color:#ffffff; border:1.5px solid #3b82f6;' : 'background:#1e293b; color:#94a3b8; border:1.5px solid #334155;'
+      isActive
+        ? 'background:#0284c7; color:#ffffff; border:1.5px solid #0284c7; box-shadow:0 2px 6px rgba(2,132,199,0.25);'
+        : 'background:#f8fafc; color:#475569; border:1.5px solid #e2e8f0;'
     ].join(';');
 
+    if (!isActive) {
+      btn.addEventListener('mouseenter', () => { btn.style.background = '#f1f5f9'; btn.style.borderColor = '#cbd5e1'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = '#f8fafc'; btn.style.borderColor = '#e2e8f0'; });
+    }
+
     btn.onclick = () => {
-      bankManagerActiveGrade = { stage: g.stage, level: g.level, label: g.label, value: g.value };
+      bankManagerActiveGrade = { stage: entry.stage, level: lvl, label: label, value: `${entry.stage}:${lvl}` };
       renderBankManagerGradeTabs();
       renderBankManagerQuestions();
       toggleBankManagerAddForm(false);
@@ -516,6 +591,50 @@ function renderBankManagerGradeTabs() {
     container.appendChild(btn);
   });
 }
+
+function renderBankManagerFilterPills() {
+  const container = document.getElementById('bank-manager-filter-pills');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const filters = [
+    { key: 'all', label: 'Todas' },
+    { key: 'rubric', label: '🤖 Con Rúbrica IA' },
+    { key: 'quick', label: '⚡ Sin Rúbrica (Rápidas)' }
+  ];
+
+  filters.forEach(f => {
+    const isActive = bankManagerFilterType === f.key;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = f.label;
+    btn.style.cssText = [
+      'padding:4px 12px',
+      'border-radius:16px',
+      'font-size:0.75rem',
+      'font-weight:700',
+      'cursor:pointer',
+      'transition:all 0.15s',
+      isActive
+        ? 'background:#e0f2fe; color:#0369a1; border:1.5px solid #0284c7;'
+        : 'background:#ffffff; color:#64748b; border:1.5px solid #e2e8f0;'
+    ].join(';');
+
+    btn.onclick = () => {
+      bankManagerFilterType = f.key;
+      renderBankManagerFilterPills();
+      renderBankManagerQuestions();
+    };
+
+    container.appendChild(btn);
+  });
+}
+
+function onBankManagerSearchInput(val) {
+  bankManagerSearchQuery = (val || '').trim().toLowerCase();
+  renderBankManagerQuestions();
+}
+window.onBankManagerSearchInput = onBankManagerSearchInput;
 
 function renderBankManagerQuestions() {
   const container = document.getElementById('bank-manager-questions-container');
@@ -526,70 +645,132 @@ function renderBankManagerQuestions() {
   const stage = bankManagerActiveGrade.stage;
   const level = Number(bankManagerActiveGrade.level);
 
-  // Todas las preguntas del banco tienen 4 alternativas y rúbrica de IA
-  const questions = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
+  // Todas las preguntas del banco para este grado
+  const allGradeQuestions = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
     ? ClassroomData.getIndividualMCQuestions(stage, level)
     : [];
 
-  const countWithRubric = questions.filter(q => !!(q.hasRubric || q.rubric)).length;
-  const countQuick = questions.length - countWithRubric;
+  const totalInGrade = allGradeQuestions.length;
+  const countWithRubric = allGradeQuestions.filter(q => !!(q.hasRubric || q.rubric)).length;
+  const countQuick = totalInGrade - countWithRubric;
 
-  if (summaryText) {
-    summaryText.textContent = `${questions.length} pregunta${questions.length === 1 ? '' : 's'} en ${bankManagerActiveGrade.label} (${countWithRubric} con Rúbrica IA · ${countQuick} rápidas)`;
+  // Filtrado por tipo (todas / rúbrica / rápida)
+  let filtered = allGradeQuestions;
+  if (bankManagerFilterType === 'rubric') {
+    filtered = filtered.filter(q => !!(q.hasRubric || q.rubric));
+  } else if (bankManagerFilterType === 'quick') {
+    filtered = filtered.filter(q => !(q.hasRubric || q.rubric));
   }
 
-  if (questions.length === 0) {
+  // Filtrado por buscador
+  if (bankManagerSearchQuery) {
+    filtered = filtered.filter(q => {
+      const p = (q.prompt || '').toLowerCase();
+      const opts = q.options ? Object.values(q.options).join(' ').toLowerCase() : '';
+      return p.includes(bankManagerSearchQuery) || opts.includes(bankManagerSearchQuery);
+    });
+  }
+
+  if (summaryText) {
+    summaryText.textContent = `${totalInGrade} pregunta${totalInGrade === 1 ? '' : 's'} en ${bankManagerActiveGrade.label} (${countWithRubric} con Rúbrica IA · ${countQuick} rápidas)` + (filtered.length !== totalInGrade ? ` — Mostrando ${filtered.length}` : '');
+  }
+
+  if (filtered.length === 0) {
+    const isSearching = !!bankManagerSearchQuery || bankManagerFilterType !== 'all';
     container.innerHTML = `
-      <div style="text-align:center; padding:36px 20px; background:#1e293b50; border:1px dashed #334155; border-radius:12px; color:#94a3b8;">
-        <span style="font-size:2rem; display:block; margin-bottom:8px;">📭</span>
-        <div style="font-size:0.92rem; font-weight:700; color:#cbd5e1; margin-bottom:4px;">No hay preguntas para ${bankManagerActiveGrade.label}</div>
-        <div style="font-size:0.75rem; color:#64748b;">Haz clic en "➕ Nueva Pregunta para este Grado" para agregar preguntas con o sin rúbrica de IA.</div>
+      <div style="text-align:center; padding:36px 20px; background:#ffffff; border:1.5px dashed #cbd5e1; border-radius:12px; color:#64748b;">
+        <span style="font-size:2rem; display:block; margin-bottom:8px;">${isSearching ? '🔍' : '📭'}</span>
+        <div style="font-size:0.92rem; font-weight:700; color:#1e293b; margin-bottom:4px;">
+          ${isSearching ? 'No se encontraron preguntas con los filtros aplicados' : `No hay preguntas para ${bankManagerActiveGrade.label}`}
+        </div>
+        <div style="font-size:0.75rem; color:#64748b;">
+          ${isSearching ? 'Prueba cambiando el término de búsqueda o seleccionando "Todas".' : 'Haz clic en "➕ Nueva Pregunta para este Grado" para agregar preguntas con o sin rúbrica de IA.'}
+        </div>
       </div>
     `;
     return;
   }
 
-  // Renderizar preguntas de forma unificada (con sus 4 alternativas y distintivo de rúbrica)
-  questions.forEach(q => {
+  // Renderizar preguntas de forma clara y unificada
+  filtered.forEach(q => {
     const card = document.createElement('div');
-    card.style.cssText = 'background:#1e293b; border:1.5px solid #334155; border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;';
+    card.style.cssText = 'background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; box-shadow:0 2px 6px rgba(15,23,42,0.03);';
 
     const header = document.createElement('div');
-    header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px;';
+    header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;';
 
     const hasRubric = !!(q.hasRubric || q.rubric);
 
+    // Badge de tipo a la izquierda
     const titleBox = document.createElement('div');
     titleBox.style.cssText = 'display:flex; align-items:center; gap:8px; flex:1; min-width:0;';
     if (hasRubric) {
       titleBox.innerHTML = `
-        <span style="background:#4c1d95; color:#c4b5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;">🤖 Con Rúbrica IA</span>
-        <span style="font-size:0.82rem; font-weight:700; color:#e2e8f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Procedimiento y Clave (Ramas 1, 2 y 3)</span>
+        <span style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; white-space:nowrap;">🤖 Con Rúbrica IA</span>
+        <span style="font-size:0.75rem; font-weight:600; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Procedimiento y Clave (Ramas 1, 2 y 3)</span>
       `;
     } else {
       titleBox.innerHTML = `
-        <span style="background:#065f46; color:#6ee7b7; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px; white-space:nowrap;">⚡ Pregunta Rápida</span>
-        <span style="font-size:0.82rem; font-weight:700; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Solo Clave (Ramas 2 y 3)</span>
+        <span style="background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; white-space:nowrap;">⚡ Pregunta Rápida</span>
+        <span style="font-size:0.75rem; font-weight:600; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Solo Clave (Ramas 2 y 3)</span>
       `;
     }
 
-    const btnDel = document.createElement('button');
-    btnDel.type = 'button';
-    btnDel.innerHTML = '🗑️ Eliminar';
-    btnDel.style.cssText = 'background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#ef4444; border-radius:6px; padding:4px 9px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; flex:0 0 auto;';
-    btnDel.addEventListener('mouseenter', () => { btnDel.style.background = '#ef4444'; btnDel.style.color = '#fff'; });
-    btnDel.addEventListener('mouseleave', () => { btnDel.style.background = 'rgba(239,68,68,0.15)'; btnDel.style.color = '#ef4444'; });
-    btnDel.onclick = () => {
-      handleDeleteQuestionFromBank(q.prompt, q.prompt, q.id);
-    };
+    // Acciones de la derecha: Borrado vs En uso
+    const actionsBox = document.createElement('div');
+    actionsBox.style.cssText = 'display:flex; align-items:center; gap:6px; flex-wrap:wrap;';
+
+    const inSavedSessions = (typeof ClassroomData !== 'undefined' && typeof ClassroomData.getQuestionSavedSessions === 'function')
+      ? ClassroomData.getQuestionSavedSessions(q.id, q.prompt)
+      : [];
+
+    if (inSavedSessions && inSavedSessions.length > 0) {
+      // Bloqueada por estar en sesiones
+      const lockedBadge = document.createElement('span');
+      lockedBadge.style.cssText = 'background:#f1f5f9; border:1px solid #cbd5e1; color:#64748b; border-radius:7px; padding:4px 8px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;';
+      lockedBadge.textContent = '🔒 En uso';
+      actionsBox.appendChild(lockedBadge);
+
+      inSavedSessions.forEach(s => {
+        const btnLink = document.createElement('button');
+        btnLink.type = 'button';
+        btnLink.textContent = `🔗 Ir a Sesión ${s.sessionNumber}`;
+        btnLink.title = `Abrir la vista de evaluación de la sesión "${s.title}"`;
+        btnLink.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;';
+        btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#dbeafe'; btnLink.style.borderColor = '#93c5fd'; });
+        btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#eff6ff'; btnLink.style.borderColor = '#bfdbfe'; });
+        btnLink.onclick = () => {
+          if (typeof window.openSessionFromBank === 'function') {
+            window.openSessionFromBank(s.sessionId);
+          } else if (typeof loadAndActivateSavedSession === 'function') {
+            loadAndActivateSavedSession(s.sessionId, { asDirectModalityView: true });
+          }
+        };
+        actionsBox.appendChild(btnLink);
+      });
+    } else {
+      // Disponible para eliminar
+      const btnDel = document.createElement('button');
+      btnDel.type = 'button';
+      btnDel.innerHTML = '🗑️ Eliminar';
+      btnDel.style.cssText = 'background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:4px;';
+      btnDel.addEventListener('mouseenter', () => { btnDel.style.background = '#dc2626'; btnDel.style.color = '#ffffff'; });
+      btnDel.addEventListener('mouseleave', () => { btnDel.style.background = '#fef2f2'; btnDel.style.color = '#dc2626'; });
+      btnDel.onclick = () => {
+        handleDeleteQuestionFromBank(q.prompt, q.prompt, q.id);
+      };
+      actionsBox.appendChild(btnDel);
+    }
 
     header.appendChild(titleBox);
-    header.appendChild(btnDel);
+    header.appendChild(actionsBox);
 
+    // Enunciado
     const promptText = document.createElement('div');
-    promptText.style.cssText = 'font-size:0.82rem; color:#cbd5e1; line-height:1.4;';
+    promptText.style.cssText = 'font-size:0.86rem; color:#1e293b; font-weight:600; line-height:1.45;';
     promptText.textContent = q.prompt;
 
+    // Alternativas en 2 columnas
     const optsGrid = document.createElement('div');
     optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.75rem;';
     ['A', 'B', 'C', 'D'].forEach(letter => {
@@ -597,39 +778,40 @@ function renderBankManagerQuestions() {
       const optVal = q.options ? q.options[letter] : '';
       const optDiv = document.createElement('div');
       optDiv.style.cssText = isCorrect
-        ? 'color:#4ade80; font-weight:800; background:rgba(34,197,94,0.1); padding:4px 8px; border-radius:6px; border:1px solid rgba(34,197,94,0.25);'
-        : 'color:#94a3b8; padding:4px 8px; background:#0f172a; border-radius:6px; border:1px solid #1e293b;';
+        ? 'color:#15803d; font-weight:800; background:#dcfce7; padding:6px 10px; border-radius:6px; border:1.5px solid #86efac;'
+        : 'color:#475569; padding:6px 10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;';
       optDiv.textContent = `${letter}) ${optVal || '—'}` + (isCorrect ? ' ✓ (Clave)' : '');
       optsGrid.appendChild(optDiv);
     });
 
+    // Pie de la tarjeta: Ver rúbrica o Generar rúbrica
     const footer = document.createElement('div');
-    footer.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:4px; flex-wrap:wrap; gap:8px;';
+    footer.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:2px; flex-wrap:wrap; gap:8px;';
 
     if (hasRubric) {
       const btnRubric = document.createElement('button');
       btnRubric.type = 'button';
       btnRubric.innerHTML = '📋 Ver Rúbrica de IA';
       btnRubric.title = 'Ver la solución canónica, criterios y errores frecuentes generados por la IA';
-      btnRubric.style.cssText = 'background:rgba(124,58,237,0.15); border:1px solid rgba(124,58,237,0.4); color:#c4b5fd; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
-      btnRubric.addEventListener('mouseenter', () => { btnRubric.style.background = '#7c3aed'; btnRubric.style.color = '#fff'; });
-      btnRubric.addEventListener('mouseleave', () => { btnRubric.style.background = 'rgba(124,58,237,0.15)'; btnRubric.style.color = '#c4b5fd'; });
+      btnRubric.style.cssText = 'background:#f5f3ff; border:1px solid #ddd6fe; color:#6d28d9; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
+      btnRubric.addEventListener('mouseenter', () => { btnRubric.style.background = '#6d28d9'; btnRubric.style.color = '#ffffff'; });
+      btnRubric.addEventListener('mouseleave', () => { btnRubric.style.background = '#f5f3ff'; btnRubric.style.color = '#6d28d9'; });
       btnRubric.onclick = () => {
         handleViewQuestionRubric(q);
       };
       footer.appendChild(btnRubric);
     } else {
       const labelNoRubric = document.createElement('span');
-      labelNoRubric.style.cssText = 'font-size:0.72rem; color:#94a3b8; display:inline-flex; align-items:center; gap:4px;';
+      labelNoRubric.style.cssText = 'font-size:0.72rem; color:#64748b; display:inline-flex; align-items:center; gap:4px;';
       labelNoRubric.innerHTML = '⚡ <em>Sin análisis de procedimiento</em>';
 
       const btnUpgrade = document.createElement('button');
       btnUpgrade.type = 'button';
       btnUpgrade.innerHTML = '✨ Generar Rúbrica IA';
       btnUpgrade.title = 'Analizar este problema con Gemini para habilitarlo en la Rama 1 (evaluación de procedimiento)';
-      btnUpgrade.style.cssText = 'background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#60a5fa; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
-      btnUpgrade.addEventListener('mouseenter', () => { btnUpgrade.style.background = '#2563eb'; btnUpgrade.style.color = '#fff'; });
-      btnUpgrade.addEventListener('mouseleave', () => { btnUpgrade.style.background = 'rgba(59,130,246,0.15)'; btnUpgrade.style.color = '#60a5fa'; });
+      btnUpgrade.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
+      btnUpgrade.addEventListener('mouseenter', () => { btnUpgrade.style.background = '#1d4ed8'; btnUpgrade.style.color = '#ffffff'; });
+      btnUpgrade.addEventListener('mouseleave', () => { btnUpgrade.style.background = '#eff6ff'; btnUpgrade.style.color = '#1d4ed8'; });
       btnUpgrade.onclick = () => {
         handleUpgradeQuestionWithRubric(q);
       };
@@ -671,13 +853,13 @@ function handleViewQuestionRubric(q) {
       bodyHtml: `
         <div style="text-align:center; padding:18px 8px;">
           <div style="font-size:2.2rem; margin-bottom:8px;">📝</div>
-          <div style="font-size:0.95rem; font-weight:800; color:#f1f5f9; margin-bottom:6px;">Esta pregunta no tiene rúbrica cargada aún</div>
-          <div style="font-size:0.78rem; color:#94a3b8; line-height:1.45; max-width:400px; margin:0 auto;">
+          <div style="font-size:0.95rem; font-weight:800; color:#1e293b; margin-bottom:6px;">Esta pregunta no tiene rúbrica cargada aún</div>
+          <div style="font-size:0.78rem; color:#64748b; line-height:1.45; max-width:400px; margin:0 auto;">
             Las preguntas creadas con el asistente incluyen automáticamente su análisis canónico, criterios de evaluación y errores previsibles de IA.
           </div>
         </div>
       `,
-      buttons: [{ label: 'Entendido', onClick: () => {} }]
+      buttons: [{ label: 'Entendido', style: 'padding:8px 16px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#0284c7; color:#fff;', onClick: () => {} }]
     });
     return;
   }
@@ -700,7 +882,7 @@ function handleViewQuestionRubric(q) {
           const isCorrect = (q.correct || 'A').toUpperCase() === l;
           const val = escaparHtml(q.options[l] || '');
           return `
-            <div style="padding:4px 8px; border-radius:6px; ${isCorrect ? 'background:rgba(34,197,94,0.15); color:#4ade80; font-weight:800; border:1px solid rgba(34,197,94,0.3);' : 'background:#0f172a; color:#94a3b8; border:1px solid #1e293b;'}">
+            <div style="padding:5px 8px; border-radius:6px; ${isCorrect ? 'background:#dcfce7; color:#15803d; font-weight:800; border:1.5px solid #86efac;' : 'background:#ffffff; color:#475569; border:1px solid #e2e8f0;'}">
               ${l}) ${val} ${isCorrect ? '✓ (Clave Correcta)' : ''}
             </div>
           `;
@@ -710,9 +892,9 @@ function handleViewQuestionRubric(q) {
   }
 
   const questionBlock = `
-    <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:12px; margin-bottom:14px;">
-      <div style="font-size:0.65rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Enunciado del Problema</div>
-      <div style="font-size:0.86rem; color:#f8fafc; font-weight:600; line-height:1.45;">${promptText}</div>
+    <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:14px;">
+      <div style="font-size:0.68rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Enunciado del Problema</div>
+      <div style="font-size:0.88rem; color:#0f172a; font-weight:600; line-height:1.45;">${promptText}</div>
       ${optsHtml}
     </div>
   `;
@@ -721,25 +903,25 @@ function handleViewQuestionRubric(q) {
 
   if (typeof r === 'object' && r !== null) {
     const canonica = r.respuesta_canonica || r.solucion || r.canonical_answer || (q.options && q.correct ? q.options[q.correct] : '');
-    const unidad = r.unidad ? `<div style="text-align:right;"><span style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; display:block;">Unidad</span><strong style="color:#93c5fd; font-size:0.85rem;">${escaparHtml(r.unidad)}</strong></div>` : '';
+    const unidad = r.unidad ? `<div style="text-align:right;"><span style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; display:block;">Unidad</span><strong style="color:#0284c7; font-size:0.85rem;">${escaparHtml(r.unidad)}</strong></div>` : '';
 
     // Criterios de evaluación
     let criteriosHtml = '';
     if (Array.isArray(r.criterios) && r.criterios.length > 0) {
       criteriosHtml = `
         <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
+          <div style="font-size:0.68rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
             Criterios de Evaluación ${r.puntaje_total ? `· Total ${escaparHtml(String(r.puntaje_total))} pt` : ''}
           </div>
           <div style="display:flex; flex-direction:column; gap:6px;">
             ${r.criterios.map(c => `
-              <div style="display:flex; gap:8px; align-items:flex-start; padding:6px 8px; background:#0f172a; border:1px solid #1e293b; border-radius:6px;">
-                <span style="flex:0 0 auto; background:#0c4a6e; color:#7dd3fc; border-radius:6px; padding:2px 7px; font-size:0.7rem; font-weight:800; white-space:nowrap;">
+              <div style="display:flex; gap:8px; align-items:flex-start; padding:8px 10px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px;">
+                <span style="flex:0 0 auto; background:#e0f2fe; color:#0369a1; border-radius:6px; padding:2px 7px; font-size:0.7rem; font-weight:800; white-space:nowrap;">
                   ${escaparHtml(String(c.peso || '1'))} pt
                 </span>
                 <span style="flex:1; min-width:0;">
-                  <div style="font-size:0.78rem; font-weight:700; color:#e2e8f0;">${escaparHtml(c.nombre || '')}</div>
-                  <div style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">${escaparHtml(c.que_se_espera || c.descripcion || '')}</div>
+                  <div style="font-size:0.78rem; font-weight:700; color:#0f172a;">${escaparHtml(c.nombre || '')}</div>
+                  <div style="font-size:0.72rem; color:#475569; line-height:1.4;">${escaparHtml(c.que_se_espera || c.descripcion || '')}</div>
                 </span>
               </div>
             `).join('')}
@@ -753,11 +935,11 @@ function handleViewQuestionRubric(q) {
     if (Array.isArray(r.solucion_pasos) && r.solucion_pasos.length > 0) {
       pasosHtml = `
         <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Procedimiento de Resolución</div>
-          <div style="display:flex; flex-direction:column; gap:4px; background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:10px;">
+          <div style="font-size:0.68rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Procedimiento de Resolución</div>
+          <div style="display:flex; flex-direction:column; gap:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
             ${r.solucion_pasos.map((p, i) => `
-              <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.45;">
-                <span style="color:#a78bfa; font-weight:800;">${i + 1}.</span> ${escaparHtml(p)}
+              <div style="font-size:0.78rem; color:#334155; line-height:1.45;">
+                <span style="color:#7c3aed; font-weight:800;">${i + 1}.</span> ${escaparHtml(p)}
               </div>
             `).join('')}
           </div>
@@ -766,8 +948,8 @@ function handleViewQuestionRubric(q) {
     } else if (r.procedimiento_esperado) {
       pasosHtml = `
         <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Procedimiento Esperado</div>
-          <div style="font-size:0.78rem; color:#cbd5e1; background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:10px; line-height:1.45;">
+          <div style="font-size:0.68rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Procedimiento Esperado</div>
+          <div style="font-size:0.78rem; color:#334155; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; line-height:1.45;">
             ${escaparHtml(r.procedimiento_esperado)}
           </div>
         </div>
@@ -779,11 +961,11 @@ function handleViewQuestionRubric(q) {
     if (Array.isArray(r.errores_previsibles) && r.errores_previsibles.length > 0) {
       erroresHtml = `
         <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#f87171; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Errores Previsibles Detectados por IA</div>
+          <div style="font-size:0.68rem; font-weight:800; color:#dc2626; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Errores Previsibles Detectados por IA</div>
           <div style="display:flex; flex-direction:column; gap:5px;">
             ${r.errores_previsibles.map(e => `
-              <div style="font-size:0.75rem; color:#cbd5e1; background:#0f172a; border:1px solid #1e293b; border-radius:6px; padding:6px 10px; line-height:1.4;">
-                <span style="background:#7f1d1d; color:#fca5a5; border-radius:4px; padding:1px 6px; font-size:0.65rem; font-weight:800; margin-right:6px;">${escaparHtml(e.tipo || 'Error')}</span>
+              <div style="font-size:0.75rem; color:#334155; background:#ffffff; border:1px solid #fecaca; border-radius:6px; padding:6px 10px; line-height:1.4;">
+                <span style="background:#fee2e2; color:#dc2626; border-radius:4px; padding:1px 6px; font-size:0.65rem; font-weight:800; margin-right:6px;">${escaparHtml(e.tipo || 'Error')}</span>
                 ${escaparHtml(e.descripcion || '')}
               </div>
             `).join('')}
@@ -795,22 +977,22 @@ function handleViewQuestionRubric(q) {
     // Confianza del modelo
     const confVal = r.confianza ? Math.round(Number(r.confianza) <= 1 ? Number(r.confianza) * 100 : Number(r.confianza)) : null;
     const confBadge = confVal != null
-      ? `<div style="margin-top:12px; padding-top:8px; border-top:1px solid #334155; font-size:0.7rem; color:#64748b; display:flex; justify-content:space-between; align-items:center;">
+      ? `<div style="margin-top:12px; padding-top:8px; border-top:1px solid #e2e8f0; font-size:0.7rem; color:#64748b; display:flex; justify-content:space-between; align-items:center;">
            <span>Análisis pedagógico generado por IA (Gemini)</span>
-           <span>Confianza: <strong style="color:${confVal >= 70 ? '#4ade80' : confVal >= 40 ? '#fbbf24' : '#f87171'};">${confVal}%</strong></span>
+           <span>Confianza: <strong style="color:${confVal >= 70 ? '#16a34a' : confVal >= 40 ? '#d97706' : '#dc2626'};">${confVal}%</strong></span>
          </div>`
       : '';
 
     rubricContentHtml = `
-      <div style="border:1.5px solid #4c1d95; border-radius:10px; background:#131d33; padding:14px;">
-        <div style="font-size:0.72rem; font-weight:800; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+      <div style="border:1.5px solid #d8b4fe; border-radius:10px; background:#faf5ff; padding:14px;">
+        <div style="font-size:0.72rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
           <span>📋</span> Rúbrica Pedagógica de Corrección
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px 14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px;">
           <div>
-            <span style="font-size:0.65rem; color:#94a3b8; font-weight:800; text-transform:uppercase;">Respuesta Canónica</span>
-            <div style="font-size:1.25rem; font-weight:900; color:#22c55e;">${escaparHtml(canonica || '—')}</div>
+            <span style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase;">Respuesta Canónica</span>
+            <div style="font-size:1.25rem; font-weight:900; color:#16a34a;">${escaparHtml(canonica || '—')}</div>
           </div>
           ${unidad}
         </div>
@@ -823,7 +1005,7 @@ function handleViewQuestionRubric(q) {
     `;
   } else {
     rubricContentHtml = `
-      <div style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:12px; font-size:0.8rem; color:#cbd5e1; white-space:pre-wrap; line-height:1.5;">
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:0.8rem; color:#334155; white-space:pre-wrap; line-height:1.5;">
         ${escaparHtml(String(r))}
       </div>
     `;
@@ -834,7 +1016,7 @@ function handleViewQuestionRubric(q) {
     title: 'Rúbrica y Análisis Pedagógico (IA)',
     bodyHtml: questionBlock + rubricContentHtml,
     maxWidth: '650px',
-    buttons: [{ label: 'Cerrar', style: 'padding:8px 18px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#3b82f6; color:#fff;', onClick: () => {} }]
+    buttons: [{ label: 'Cerrar', style: 'padding:8px 18px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#0284c7; color:#fff;', onClick: () => {} }]
   });
 }
 
@@ -2255,8 +2437,11 @@ if (typeof window !== 'undefined') {
   window.copiarDiagnostico = copiarDiagnostico;
   window.openBankManagerModal = openBankManagerModal;
   window.closeBankManagerModal = closeBankManagerModal;
+  window.renderBankManagerStageTabs = renderBankManagerStageTabs;
   window.renderBankManagerGradeTabs = renderBankManagerGradeTabs;
+  window.renderBankManagerFilterPills = renderBankManagerFilterPills;
   window.renderBankManagerQuestions = renderBankManagerQuestions;
+  window.onBankManagerSearchInput = onBankManagerSearchInput;
   window.handleViewQuestionRubric = handleViewQuestionRubric;
   window.toggleBankManagerAddForm = toggleBankManagerAddForm;
   window.updateBMPromptCounter = updateBMPromptCounter;

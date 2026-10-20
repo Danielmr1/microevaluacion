@@ -1362,7 +1362,8 @@
     }
     window.handleDeleteSavedSession = handleDeleteSavedSession;
 
-    function loadAndActivateSavedSession(sessionId) {
+    function loadAndActivateSavedSession(sessionId, options) {
+      const asDirect = !!(options && options.asDirectModalityView);
       const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions) ? ClassroomData.getSavedSessions() : [];
       const sess = sessions.find(s => s.id === sessionId);
       if (!sess) {
@@ -1418,10 +1419,14 @@
 
       // 3. Cerrar modal y abrir vista de evaluación
       closeSavedSessionsModal();
-      window.isViewingSavedSessionsMode = true;
+      window.isViewingSavedSessionsMode = !asDirect;
       showView('eval');
       if (typeof updateTopbarModeTitle === 'function') {
-        updateTopbarModeTitle('saved-sessions');
+        if (asDirect) {
+          updateTopbarModeTitle(sess.branch || 'rama1');
+        } else {
+          updateTopbarModeTitle('saved-sessions');
+        }
       }
 
       // Desplazamiento suave al tope para restaurar el espacio visual superior solicitado
@@ -1581,8 +1586,13 @@
         setTimeout(fitSummaryDocumentsToViewport, 40);
       }
 
-      if (typeof renderSummarySessionsStrip === 'function') {
-        renderSummarySessionsStrip(sess.id);
+      const stripEl = document.getElementById('summary-sessions-strip');
+      if (asDirect) {
+        if (stripEl) stripEl.style.display = 'none';
+      } else {
+        if (typeof renderSummarySessionsStrip === 'function') {
+          renderSummarySessionsStrip(sess.id);
+        }
       }
       if (typeof updateDiscardOrDeleteButtonState === 'function') {
         updateDiscardOrDeleteButtonState(true, sess.id);
@@ -1610,6 +1620,9 @@
       showToast(`✓ Sesión cargada: ${cls.name} (${sess.branchTitle || 'Evaluación'})`);
     }
     window.loadAndActivateSavedSession = loadAndActivateSavedSession;
+    window.openSessionFromBank = function (sessionId) {
+      loadAndActivateSavedSession(sessionId, { asDirectModalityView: true });
+    };
 
     function updateHubSavedSessionsBadge() {
       const badge = document.getElementById('hub-saved-sessions-badge');

@@ -364,7 +364,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.86</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.87</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1971,89 +1971,113 @@
     <div class="mgr-content-wrapper" style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px;">
       
       <!-- Contenedor Maestro: Banco de Preguntas -->
-      <div style="background:#0f172a; border:1.5px solid #334155; border-radius:18px; box-shadow:0 12px 32px rgba(0,0,0,0.3); overflow:hidden; display:flex; flex-direction:column;">
+      <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 18px; box-shadow: 0 4px 20px rgba(15,23,42,0.06); overflow: hidden; display: flex; flex-direction: column;">
         
-        <!-- Header del Banco: Solo botón de acción sin textos duplicados -->
-        <div style="padding:14px 22px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:flex-end; background:#1e293b;">
+        <!-- Header del Banco: Nivel (Primaria / Secundaria) y Botón Nueva Pregunta -->
+        <div style="padding: 16px 22px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: #f8fafc;">
+          
+          <!-- Selector de Nivel (Primaria / Secundaria) -->
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Nivel:</span>
+            <div id="bank-manager-stage-tabs" style="display: flex; background: #e2e8f0; padding: 3px; border-radius: 10px; gap: 4px;">
+              <!-- Botones Primaria / Secundaria generados por JS -->
+            </div>
+          </div>
+
+          <!-- Botón de acción: ➕ Nueva Pregunta para este Grado -->
           <button id="btn-toggle-add-question" type="button" onclick="toggleBankManagerAddForm()"
-            style="display:inline-flex; align-items:center; gap:6px; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:8px 16px; font-size:0.80rem; font-weight:700; cursor:pointer; transition:all 0.15s; box-shadow:0 2px 8px rgba(37,99,235,0.3);">
+            style="display: inline-flex; align-items: center; gap: 6px; background: #0284c7; border: none; color: #ffffff; border-radius: 9px; padding: 8px 16px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 6px rgba(2,132,199,0.25);">
             ➕ Nueva Pregunta para este Grado
           </button>
         </div>
 
-        <!-- Grade Tabs -->
-        <div style="padding:14px 22px; background:#0f172a; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-          <div id="bank-manager-grade-tabs" style="display:flex; gap:8px; flex-wrap:wrap;">
-            <!-- Tabs dinámicos (4° Primaria, 5° Primaria, 6° Primaria...) -->
+        <!-- Fila de Grados (Dinámicos según el nivel activo) -->
+        <div style="padding: 12px 22px; background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div id="bank-manager-grade-tabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <!-- Tabs dinámicos (4° Primaria, 5° Primaria, etc.) -->
+          </div>
+        </div>
+
+        <!-- Fila de Filtros y Búsqueda -->
+        <div style="padding: 10px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <!-- Filtro de tipo: Todas / Con Rúbrica / Sin Rúbrica -->
+          <div id="bank-manager-filter-pills" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <!-- Píldoras generadas por JS -->
+          </div>
+
+          <!-- Buscador por texto -->
+          <div style="position: relative; min-width: 240px; flex: 1; max-width: 340px;">
+            <input type="text" id="bm-search-input" placeholder="🔍 Buscar preguntas por palabra clave..." oninput="onBankManagerSearchInput(this.value)"
+              style="width: 100%; box-sizing: border-box; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; color: #0f172a; outline: none; transition: border-color 0.15s;">
           </div>
         </div>
 
         <!-- Body de Preguntas -->
-        <div style="padding:22px; display:flex; flex-direction:column; gap:16px;">
+        <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #f8fafc;">
           
           <!-- Formulario Crear Pregunta para el Grado (colapsable) -->
-          <div id="bank-manager-add-form" style="display:none; background:#1e293b; border:1.5px solid #3b82f6; border-radius:14px; padding:18px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-              <h4 id="bank-manager-form-title" style="margin:0; font-size:0.95rem; font-weight:800; color:#60a5fa;">
+          <div id="bank-manager-add-form" style="display: none; background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 14px; padding: 18px; box-shadow: 0 4px 14px rgba(2,132,199,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <h4 id="bank-manager-form-title" style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #0369a1;">
                 ✏️ Redactar Pregunta de Alternativas con IA
               </h4>
-              <button type="button" onclick="toggleBankManagerAddForm(false)" style="background:transparent; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;" title="Cerrar">✕</button>
+              <button type="button" onclick="toggleBankManagerAddForm(false)" style="background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; padding: 4px;" title="Cerrar">✕</button>
             </div>
 
-            <label style="display:block; font-size:0.75rem; font-weight:700; color:#e2e8f0; margin-bottom:4px;">
-              Enunciado del problema <span style="color:#f59e0b;">*</span>
+            <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 4px;">
+              Enunciado del problema <span style="color: #dc2626;">*</span>
             </label>
             <textarea id="bm-prompt" class="form-control" rows="3" maxlength="240" oninput="updateBMPromptCounter()"
               placeholder="Ej: Si una bolsa de arroz pesa 3/4 de kg, ¿cuántos kg pesan 6 bolsas iguales?"
-              style="font-size:0.88rem; width:100%; box-sizing:border-box; margin-bottom:4px;"></textarea>
-            <div style="display:flex; justify-content:space-between; margin-bottom:14px; font-size:0.7rem;">
-              <span id="bm-prompt-hint" style="color:#64748b;">Máximo 3 líneas en la ficha</span>
-              <span id="bm-prompt-counter" style="color:#64748b; font-weight:700;">0 / 240</span>
+              style="font-size: 0.88rem; width: 100%; box-sizing: border-box; margin-bottom: 4px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; color: #0f172a;"></textarea>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 0.72rem;">
+              <span id="bm-prompt-hint" style="color: #64748b;">Máximo 3 líneas en la ficha</span>
+              <span id="bm-prompt-counter" style="color: #64748b; font-weight: 700;">0 / 240</span>
             </div>
 
-            <label style="display:block; font-size:0.75rem; font-weight:700; color:#e2e8f0; margin-bottom:6px;">
-              4 Alternativas y Clave Correcta <span style="color:#f59e0b;">*</span>
+            <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+              4 Alternativas y Clave Correcta <span style="color: #dc2626;">*</span>
             </label>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
-              <div style="display:flex; align-items:center; gap:8px; background:#0f172a; padding:8px 10px; border-radius:8px; border:1px solid #334155;">
-                <input type="radio" id="bm-rad-a" name="bm-correct" value="A" checked style="accent-color:#22c55e; cursor:pointer;">
-                <label for="bm-rad-a" style="font-weight:800; color:#93c5fd; font-size:0.82rem; cursor:pointer; min-width:18px;">A)</label>
-                <input type="text" id="bm-opt-a" class="form-control" placeholder="Alternativa A" style="font-size:0.82rem; padding:5px 8px; flex:1;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <input type="radio" id="bm-rad-a" name="bm-correct" value="A" checked style="accent-color: #16a34a; cursor: pointer;">
+                <label for="bm-rad-a" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">A)</label>
+                <input type="text" id="bm-opt-a" class="form-control" placeholder="Alternativa A" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
-              <div style="display:flex; align-items:center; gap:8px; background:#0f172a; padding:8px 10px; border-radius:8px; border:1px solid #334155;">
-                <input type="radio" id="bm-rad-b" name="bm-correct" value="B" style="accent-color:#22c55e; cursor:pointer;">
-                <label for="bm-rad-b" style="font-weight:800; color:#93c5fd; font-size:0.82rem; cursor:pointer; min-width:18px;">B)</label>
-                <input type="text" id="bm-opt-b" class="form-control" placeholder="Alternativa B" style="font-size:0.82rem; padding:5px 8px; flex:1;">
+              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <input type="radio" id="bm-rad-b" name="bm-correct" value="B" style="accent-color: #16a34a; cursor: pointer;">
+                <label for="bm-rad-b" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">B)</label>
+                <input type="text" id="bm-opt-b" class="form-control" placeholder="Alternativa B" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
-              <div style="display:flex; align-items:center; gap:8px; background:#0f172a; padding:8px 10px; border-radius:8px; border:1px solid #334155;">
-                <input type="radio" id="bm-rad-c" name="bm-correct" value="C" style="accent-color:#22c55e; cursor:pointer;">
-                <label for="bm-rad-c" style="font-weight:800; color:#93c5fd; font-size:0.82rem; cursor:pointer; min-width:18px;">C)</label>
-                <input type="text" id="bm-opt-c" class="form-control" placeholder="Alternativa C" style="font-size:0.82rem; padding:5px 8px; flex:1;">
+              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <input type="radio" id="bm-rad-c" name="bm-correct" value="C" style="accent-color: #16a34a; cursor: pointer;">
+                <label for="bm-rad-c" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">C)</label>
+                <input type="text" id="bm-opt-c" class="form-control" placeholder="Alternativa C" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
-              <div style="display:flex; align-items:center; gap:8px; background:#0f172a; padding:8px 10px; border-radius:8px; border:1px solid #334155;">
-                <input type="radio" id="bm-rad-d" name="bm-correct" value="D" style="accent-color:#22c55e; cursor:pointer;">
-                <label for="bm-rad-d" style="font-weight:800; color:#93c5fd; font-size:0.82rem; cursor:pointer; min-width:18px;">D)</label>
-                <input type="text" id="bm-opt-d" class="form-control" placeholder="Alternativa D" style="font-size:0.82rem; padding:5px 8px; flex:1;">
+              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <input type="radio" id="bm-rad-d" name="bm-correct" value="D" style="accent-color: #16a34a; cursor: pointer;">
+                <label for="bm-rad-d" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">D)</label>
+                <input type="text" id="bm-opt-d" class="form-control" placeholder="Alternativa D" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-              <span id="bm-status-hint" style="font-size:0.75rem; color:#94a3b8;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <span id="bm-status-hint" style="font-size: 0.75rem; color: #64748b;">
                 ℹ️ Selecciona la clave correcta. Usa "⚡ Pregunta Rápida" para evaluación directa (Ramas 2 y 3) o "✨ Analizar con IA" para rúbrica de procedimiento (Rama 1).
               </span>
-              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                 <button type="button" onclick="toggleBankManagerAddForm(false)"
-                  style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:8px; padding:8px 14px; font-size:0.82rem; font-weight:700; cursor:pointer;">
+                  style="background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
                   Cancelar
                 </button>
                 <button id="btn-bm-save-quick" type="button" onclick="handleSaveQuickQuestionFromManager()"
                   title="Guarda de inmediato las 4 alternativas y la clave sin consultar a la IA. Apta para Rama 2 y Rama 3."
-                  style="background:#065f46; border:1px solid #10b981; color:#a7f3d0; border-radius:8px; padding:8px 14px; font-size:0.82rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s;">
+                  style="background: #059669; border: none; color: #ffffff; border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; box-shadow: 0 2px 6px rgba(5,150,105,0.2);">
                   ⚡ Guardar Pregunta Rápida
                 </button>
                 <button id="btn-bm-save" type="button" onclick="handleSaveQuestionFromManager()"
                   title="Genera la solución canónica, criterios pedagógicos y errores frecuentes con Gemini. Obligatorio para evaluar procedimiento en Rama 1."
-                  style="background:linear-gradient(135deg, #2563eb, #7c3aed); border:none; color:#fff; border-radius:8px; padding:8px 16px; font-size:0.82rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s;">
+                  style="background: #2563eb; border: none; color: #ffffff; border-radius: 8px; padding: 8px 16px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; box-shadow: 0 2px 6px rgba(37,99,235,0.25);">
                   ✨ Analizar con IA y Guardar
                 </button>
               </div>
@@ -2061,13 +2085,13 @@
           </div>
 
           <!-- Lista de Preguntas para el Grado -->
-          <div id="bank-manager-questions-container" style="display:flex; flex-direction:column; gap:12px;">
+          <div id="bank-manager-questions-container" style="display: flex; flex-direction: column; gap: 12px;">
             <!-- Renderizado dinámico de tarjetas -->
           </div>
 
           <!-- Barra de Información Inferior -->
-          <div style="padding-top:12px; border-top:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
-            <span id="bank-manager-summary-text" style="font-size:0.75rem; color:#94a3b8;"></span>
+          <div style="padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span id="bank-manager-summary-text" style="font-size: 0.78rem; color: #64748b; font-weight: 600;"></span>
           </div>
 
         </div>

@@ -36,7 +36,7 @@
   // "etapa todavía no habilitada": la etapa no aparece en el selector.
   const GRADE_CATALOG = [
     { stage: 'primaria',   label: 'Primaria',   grades: [4, 5, 6] },
-    { stage: 'secundaria', label: 'Secundaria', grades: [] }
+    { stage: 'secundaria', label: 'Secundaria', grades: [1, 2, 3, 4, 5] }
   ];
 
   // Etapa por defecto cuando el salón no tiene grado cargado.
@@ -922,38 +922,52 @@
   /**
    * Verifica si una pregunta (por ID o prompt) está presente en alguna sesión guardada
    * @param {string} identifier
+   * @param {string} [optionalPrompt]
    * @returns {{inUse: boolean, sessionTitle?: string, sessionId?: string}}
    */
-  function isQuestionInSavedSession(identifier) {
-    if (!identifier) return { inUse: false };
-    const target = String(identifier).trim().toLowerCase();
-    if (target.length < 2) return { inUse: false };
+  function isQuestionInSavedSession(identifier, optionalPrompt) {
+    if (!identifier && !optionalPrompt) return { inUse: false };
+    const targets = [];
+    if (identifier) {
+      const t1 = String(identifier).trim().toLowerCase();
+      if (t1.length >= 2) {
+        targets.push(t1);
+        const baseId = t1.replace(/_q\d+$/, '');
+        if (baseId !== t1 && baseId.length >= 2) targets.push(baseId);
+      }
+    }
+    if (optionalPrompt) {
+      const t2 = String(optionalPrompt).trim().toLowerCase();
+      if (t2.length >= 2 && !targets.includes(t2)) targets.push(t2);
+    }
+    if (targets.length === 0) return { inUse: false };
+
     const list = getSavedSessions();
 
     for (const sess of list) {
       const sessTitle = sess.title || (sess.branchTitle ? `${sess.branchTitle} (${sess.classroomName || 'Salón'})` : (sess.classroomName || 'Sesión guardada'));
+      const sEvalId = sess.evalId ? String(sess.evalId).trim().toLowerCase() : '';
+      const sPrompt = sess.prompt ? String(sess.prompt).trim().toLowerCase() : '';
 
-      if (sess.evalId && String(sess.evalId).trim().toLowerCase() === target) {
-        return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
-      }
-      if (sess.prompt && String(sess.prompt).trim().toLowerCase() === target) {
-        return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
-      }
-      if (sess.prompt && target.length > 15 && (String(sess.prompt).toLowerCase().includes(target) || target.includes(String(sess.prompt).trim().toLowerCase()))) {
-        return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+      for (const target of targets) {
+        if (sEvalId && sEvalId === target) return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+        if (sPrompt && (sPrompt === target || (target.length > 15 && (sPrompt.includes(target) || target.includes(sPrompt))))) {
+          return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+        }
       }
 
       if (Array.isArray(sess.questions)) {
         for (const q of sess.questions) {
           if (!q) continue;
-          if (q.id && String(q.id).trim().toLowerCase() === target) {
-            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
-          }
-          if (q.prompt && String(q.prompt).trim().toLowerCase() === target) {
-            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
-          }
-          if (q.prompt && target.length > 15 && (String(q.prompt).toLowerCase().includes(target) || target.includes(String(q.prompt).trim().toLowerCase()))) {
-            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          const qId = q.id ? String(q.id).trim().toLowerCase() : '';
+          const qPrompt = q.prompt ? String(q.prompt).trim().toLowerCase() : '';
+          for (const target of targets) {
+            if (qId && (qId === target || qId.replace(/_q\d+$/, '') === target)) {
+              return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+            }
+            if (qPrompt && (qPrompt === target || (target.length > 15 && (qPrompt.includes(target) || target.includes(qPrompt))))) {
+              return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+            }
           }
         }
       }
@@ -961,19 +975,99 @@
       if (sess.wizardEval && Array.isArray(sess.wizardEval.questions)) {
         for (const q of sess.wizardEval.questions) {
           if (!q) continue;
-          if (q.id && String(q.id).trim().toLowerCase() === target) {
-            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
-          }
-          if (q.prompt && String(q.prompt).trim().toLowerCase() === target) {
-            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
-          }
-          if (q.prompt && target.length > 15 && (String(q.prompt).toLowerCase().includes(target) || target.includes(String(q.prompt).trim().toLowerCase()))) {
-            return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+          const qId = q.id ? String(q.id).trim().toLowerCase() : '';
+          const qPrompt = q.prompt ? String(q.prompt).trim().toLowerCase() : '';
+          for (const target of targets) {
+            if (qId && (qId === target || qId.replace(/_q\d+$/, '') === target)) {
+              return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+            }
+            if (qPrompt && (qPrompt === target || (target.length > 15 && (qPrompt.includes(target) || target.includes(qPrompt))))) {
+              return { inUse: true, sessionTitle: sessTitle, sessionId: sess.id };
+            }
           }
         }
       }
     }
     return { inUse: false };
+  }
+
+  /**
+   * Devuelve todas las sesiones guardadas donde se esté utilizando una pregunta.
+   * @param {string} identifier ID o enunciado de la pregunta
+   * @param {string} [optionalPrompt] Enunciado adicional de la pregunta
+   * @returns {Array<{sessionId: string, sessionNumber: number, title: string, classroomName: string, branch: string}>}
+   */
+  function getQuestionSavedSessions(identifier, optionalPrompt) {
+    if (!identifier && !optionalPrompt) return [];
+    const targets = [];
+    if (identifier) {
+      const t1 = String(identifier).trim().toLowerCase();
+      if (t1.length >= 2) {
+        targets.push(t1);
+        const baseId = t1.replace(/_q\d+$/, '');
+        if (baseId !== t1 && baseId.length >= 2) targets.push(baseId);
+      }
+    }
+    if (optionalPrompt) {
+      const t2 = String(optionalPrompt).trim().toLowerCase();
+      if (t2.length >= 2 && !targets.includes(t2)) targets.push(t2);
+    }
+    if (targets.length === 0) return [];
+
+    const list = getSavedSessions();
+    const matched = [];
+
+    list.forEach((sess, idx) => {
+      let inUse = false;
+      const sessNum = idx + 1;
+      const sessTitle = sess.title || (sess.branchTitle ? `${sess.branchTitle} (${sess.classroomName || 'Salón'})` : (sess.classroomName || `Sesión ${sessNum}`));
+      const sEvalId = sess.evalId ? String(sess.evalId).trim().toLowerCase() : '';
+      const sPrompt = sess.prompt ? String(sess.prompt).trim().toLowerCase() : '';
+
+      for (const target of targets) {
+        if (sEvalId && sEvalId === target) inUse = true;
+        else if (sPrompt && (sPrompt === target || (target.length > 15 && (sPrompt.includes(target) || target.includes(sPrompt))))) inUse = true;
+        if (inUse) break;
+      }
+
+      if (!inUse && Array.isArray(sess.questions)) {
+        for (const q of sess.questions) {
+          if (!q) continue;
+          const qId = q.id ? String(q.id).trim().toLowerCase() : '';
+          const qPrompt = q.prompt ? String(q.prompt).trim().toLowerCase() : '';
+          for (const target of targets) {
+            if (qId && (qId === target || qId.replace(/_q\d+$/, '') === target)) { inUse = true; break; }
+            if (qPrompt && (qPrompt === target || (target.length > 15 && (qPrompt.includes(target) || target.includes(qPrompt))))) { inUse = true; break; }
+          }
+          if (inUse) break;
+        }
+      }
+
+      if (!inUse && sess.wizardEval && Array.isArray(sess.wizardEval.questions)) {
+        for (const q of sess.wizardEval.questions) {
+          if (!q) continue;
+          const qId = q.id ? String(q.id).trim().toLowerCase() : '';
+          const qPrompt = q.prompt ? String(q.prompt).trim().toLowerCase() : '';
+          for (const target of targets) {
+            if (qId && (qId === target || qId.replace(/_q\d+$/, '') === target)) { inUse = true; break; }
+            if (qPrompt && (qPrompt === target || (target.length > 15 && (qPrompt.includes(target) || target.includes(qPrompt))))) { inUse = true; break; }
+          }
+          if (inUse) break;
+        }
+      }
+
+      if (inUse) {
+        matched.push({
+          sessionId: sess.id,
+          sessionNumber: sessNum,
+          title: sessTitle,
+          classroomName: sess.classroomName || 'Salón',
+          branch: sess.branch || 'rama1'
+        });
+      }
+    });
+
+    return matched;
   }
 
   // Exportación universal
@@ -1009,6 +1103,7 @@
     deleteSavedSession,
     isClassroomInSavedSession,
     isQuestionInSavedSession,
+    getQuestionSavedSessions,
     MAX_SAVED_SESSIONS,
     flushSyncQueue,
 
