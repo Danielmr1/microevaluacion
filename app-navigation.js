@@ -457,6 +457,20 @@ if (typeof window !== 'undefined') {
           window.isViewingSavedSessionsMode = true;
           loadAndActivateSavedSession(sessions[0].id);
           window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          // Sincronización en segundo plano con Supabase para incorporar sesiones creadas en otros dispositivos (ej. celular)
+          if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.syncSessionsWithCloud === 'function') {
+            ClassroomData.syncSessionsWithCloud().then(syncedList => {
+              if (syncedList && syncedList.length !== sessions.length) {
+                if (typeof renderSummarySessionsStrip === 'function') {
+                  renderSummarySessionsStrip(sessions[0].id);
+                }
+                if (typeof updateHubSavedSessionsBadge === 'function') {
+                  updateHubSavedSessionsBadge();
+                }
+              }
+            }).catch(() => {});
+          }
           return;
         }
 
