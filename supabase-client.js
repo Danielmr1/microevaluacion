@@ -50,12 +50,25 @@
    */
   async function signInWithGoogle() {
     const client = getClient();
-    if (!client) return;
-    const { error } = await client.auth.signInWithOAuth({
+    if (!client) {
+      throw new Error('No se pudo inicializar la conexión con el servidor. Verifica tu conexión y recarga.');
+    }
+    const redirectUrl = (typeof window !== 'undefined' && window.location && window.location.origin)
+      ? (window.location.origin + window.location.pathname)
+      : 'https://danielmr1.github.io/microevaluacion/';
+
+    const { data, error } = await client.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: 'https://danielmr1.github.io/microevaluacion/' }
+      options: { redirectTo: redirectUrl }
     });
-    if (error) console.error('[Auth] Error al iniciar con Google:', error.message);
+
+    if (error) {
+      console.error('[Auth] Error al iniciar con Google:', error.message);
+      throw error;
+    }
+    if (data && data.url) {
+      window.location.href = data.url;
+    }
   }
 
   /**

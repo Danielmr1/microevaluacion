@@ -736,12 +736,19 @@ if (typeof window !== 'undefined') {
       if (btn) { btn.style.opacity = '0.6'; btn.disabled = true; }
       if (err) err.style.display = 'none';
       try {
+        if (typeof SupabaseClient === 'undefined' || !SupabaseClient.signInWithGoogle) {
+          throw new Error('El servicio de autenticación aún está cargando. Espera un momento y vuelve a presionar.');
+        }
         await SupabaseClient.signInWithGoogle();
       } catch (e) {
-        if (err) { err.textContent = 'Error al conectar con Google. Intentá de nuevo.'; err.style.display = 'block'; }
+        if (err) {
+          err.textContent = (e && e.message) || 'Error al conectar con Google. Intentá de nuevo.';
+          err.style.display = 'block';
+        }
         if (btn) { btn.style.opacity = '1'; btn.disabled = false; }
       }
     }
+    window.handleSignIn = handleSignIn;
 
     async function handleSignOut() {
       // Limpiar sesión local
@@ -758,9 +765,12 @@ if (typeof window !== 'undefined') {
         pages.style.display = 'none';
       }
       // Cerrar sesión Supabase
-      await SupabaseClient.signOut();
+      if (typeof SupabaseClient !== 'undefined' && SupabaseClient.signOut) {
+        await SupabaseClient.signOut();
+      }
       showLoginOverlay();
     }
+    window.handleSignOut = handleSignOut;
 
     /**
      * Carga los salones del docente desde Supabase y puebla el selector.
