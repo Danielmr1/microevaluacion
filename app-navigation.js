@@ -450,10 +450,18 @@ if (typeof window !== 'undefined') {
         openBankManagerModal();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (flowName === 'saved-sessions') {
-        window.isViewingSavedSessionsMode = false;
-        showView('saved-sessions');
-        if (typeof openSavedSessionsModal === 'function') {
-          openSavedSessionsModal();
+        const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+          ? ClassroomData.getSavedSessions()
+          : [];
+        if (sessions.length > 0) {
+          window.isViewingSavedSessionsMode = true;
+          loadAndActivateSavedSession(sessions[0].id);
+        } else {
+          window.isViewingSavedSessionsMode = false;
+          showView('saved-sessions');
+          if (typeof openSavedSessionsModal === 'function') {
+            openSavedSessionsModal();
+          }
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
