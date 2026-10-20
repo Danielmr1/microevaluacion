@@ -32,6 +32,27 @@ const A6_V_GRID_COLS = 9;
 const A6_V_GRID_ROWS = 9;
 const GRID_CELLS_A6_V = new Array(A6_V_GRID_COLS * A6_V_GRID_ROWS).fill('<i></i>').join('');
 
+/**
+ * TANDA 1: Genera el payload estructurado del código QR para una ficha física.
+ * Formato compacto: ALUM_XX|SES:sessionRef
+ * - Conserva total compatibilidad con lectores y tests que buscan ALUM_\d{2}.
+ * - Integra la huella digital de la sesión para validación de autoría y prevención de errores en aula.
+ */
+function getCardQRPayload(studentId, evaluation) {
+  const std = (studentId || '').toUpperCase().trim();
+  const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+  const sessRef = (evaluation && (evaluation.sessionRef || evaluation.id))
+               || (activeSess && (activeSess.sessionRef || activeSess.id))
+               || '';
+
+  if (!sessRef) {
+    return std;
+  }
+  const cleanRef = String(sessRef).replace(/[^a-zA-Z0-9_:-]/g, '_');
+  return `${std}|SES:${cleanRef}`;
+}
+window.getCardQRPayload = getCardQRPayload;
+
 function createA5Card(student, classroom, evaluation) {
   const isOMR = evaluation.type === 'mc';
   const qCount = evaluation.questionCount || (evaluation.questions ? evaluation.questions.length : 1);
@@ -313,7 +334,7 @@ function renderAllPrintPages(classId, evaluation) {
       container.appendChild(sheetEl);
 
       if (typeof QRCode !== 'undefined' && QRCode.toString) {
-        QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+        QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
           if (err) return;
           const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
           if (el) el.innerHTML = svg;
@@ -386,7 +407,7 @@ function renderAllPrintPages(classId, evaluation) {
       // Generar códigos QR para los alumnos presentes en esta hoja
       if (typeof QRCode !== 'undefined' && QRCode.toString) {
         [sTL, sTR, sBL, sBR].filter(Boolean).forEach(st => {
-          QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+          QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
             const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
             if (el) el.innerHTML = svg;
@@ -431,7 +452,7 @@ function renderAllPrintPages(classId, evaluation) {
       // Generar códigos QR para los alumnos presentes en esta hoja
       if (typeof QRCode !== 'undefined' && QRCode.toString) {
         [sLeft, sRight].filter(Boolean).forEach(st => {
-          QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+          QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
             const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
             if (el) el.innerHTML = svg;
@@ -477,7 +498,7 @@ function renderAllPrintPages(classId, evaluation) {
       // Generar códigos QR para los alumnos presentes en esta hoja
       if (typeof QRCode !== 'undefined' && QRCode.toString) {
         [sLeft, sRight].filter(Boolean).forEach(st => {
-          QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+          QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
             const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
             if (el) el.innerHTML = svg;
@@ -527,10 +548,10 @@ function renderAllPrintPages(classId, evaluation) {
     `;
     container.appendChild(sheetEl);
 
-    // Generar el QR (ALUM_01) de cada alumno que va en esta hoja
+    // Generar el QR de cada alumno que va en esta hoja con identificador de sesión
     if (typeof QRCode !== 'undefined' && QRCode.toString) {
       [sTop, sBot].filter(Boolean).forEach(st => {
-        QRCode.toString(st.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+        QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
           if (err) return;
           const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
           if (el) el.innerHTML = svg;

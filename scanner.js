@@ -1859,18 +1859,31 @@
       }
     }
 
-    // Decodificación del alumno desde el payload QR (Soporta formato nuevo 'ALUM_01' y legado 'MATEVAL|ALUM_01|...')
+    // Decodificación del alumno y sesión desde el payload QR
+    // Soporta:
+    //   - Formato Tanda 1 estructurado: 'ALUM_01|SES:1a::eval_123'
+    //   - Formato simple: 'ALUM_01'
+    //   - Formato legado: 'MATEVAL|ALUM_01|...'
     let studentId = null;
+    let sheetSessionRef = null;
     let qrSuccess = false;
 
     if (qrText) {
+      // 1. Extraer ID del estudiante
       const match = qrText.match(/ALUM_\d{2}/i);
       if (match) {
         studentId = match[0].toUpperCase();
         qrSuccess = true;
       } else if (qrText.trim().startsWith('ALUM_')) {
-        studentId = qrText.trim().toUpperCase();
+        const parts = qrText.trim().split('|');
+        studentId = parts[0].toUpperCase();
         qrSuccess = true;
+      }
+
+      // 2. Extraer Identificador de Sesión (Tanda 1)
+      const sesMatch = qrText.match(/SES:([a-zA-Z0-9_:-]+)/i);
+      if (sesMatch) {
+        sheetSessionRef = sesMatch[1].trim();
       }
     }
 
@@ -2227,6 +2240,7 @@
           momento: new Date().toLocaleTimeString(),
           alumno: studentId + (studentObj ? ' (' + studentObj.name + ')' : ''),
           qrTexto: qrText || '',
+          sesionFicha: sheetSessionRef || null,
           intentoQr: qrIntento === 0 ? 'ninguno (no se leyo)' : ('intento ' + qrIntento + ' de 3'),
           cobertura: typeof coverage !== 'undefined' ? coverage : 0,
           nitidez: sharpness,

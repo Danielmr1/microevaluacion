@@ -635,7 +635,8 @@ function renderRama3KeysCartilla() {
   if (cardHTML) {
     host.innerHTML = cardHTML;
     if (typeof QRCode !== 'undefined' && QRCode.toString) {
-      QRCode.toString(sampleStudent.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+      const qrPayload = (typeof getCardQRPayload === 'function') ? getCardQRPayload(sampleStudent.id, evalMock) : sampleStudent.id;
+      QRCode.toString(qrPayload, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
         if (!err && svg) {
           const qrBox = host.querySelector('[data-qr-id="' + sampleStudent.id + '"]') || host.querySelector('#qr-box-' + sampleStudent.id);
           if (qrBox) qrBox.innerHTML = svg;
@@ -978,7 +979,8 @@ function renderRama3CartillaPreview() {
     host.innerHTML = cardHTML;
     // Generar código QR para la muestra
     if (typeof QRCode !== 'undefined' && QRCode.toString) {
-      QRCode.toString(sampleStudent.id, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
+      const qrPayload = (typeof getCardQRPayload === 'function') ? getCardQRPayload(sampleStudent.id, evalMock) : sampleStudent.id;
+      QRCode.toString(qrPayload, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
         if (!err && svg) {
           const qrBox = host.querySelector('[data-qr-id="' + sampleStudent.id + '"]') || host.querySelector('#qr-box-' + sampleStudent.id);
           if (qrBox) qrBox.innerHTML = svg;
