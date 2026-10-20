@@ -784,8 +784,14 @@ if (typeof window !== 'undefined') {
         }))
       }));
       ClassroomData.setClassrooms(mapped);
-      if (typeof ClassroomData.purgeNonCompliantData === 'function') {
+      if (mapped.length > 0 && typeof ClassroomData.purgeNonCompliantData === 'function') {
         ClassroomData.purgeNonCompliantData();
+      }
+      if (typeof ClassroomData !== 'undefined' && ClassroomData.syncSessionsWithCloud) {
+        ClassroomData.syncSessionsWithCloud().then(() => {
+          if (typeof updateHubSavedSessionsBadge === 'function') updateHubSavedSessionsBadge();
+          if (typeof renderSavedSessionsModal === 'function') renderSavedSessionsModal();
+        }).catch(() => {});
       }
     }
 
@@ -794,9 +800,6 @@ if (typeof window !== 'undefined') {
 
     // ── Inicialización al cargar la página ──
     document.addEventListener('DOMContentLoaded', () => {
-      if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.purgeNonCompliantData === 'function') {
-        ClassroomData.purgeNonCompliantData();
-      }
       // Mostrar overlay de login por defecto hasta verificar sesión
       showLoginOverlay();
       initScrollTransitions();

@@ -1085,10 +1085,15 @@
    * 3. Elimina preguntas del banco incompletas o sin rúbrica de IA (Regla 6).
    */
   function purgeNonCompliantData() {
-    // 1. Purga salones vacíos en memoria
+    // Si los salones aún no han terminado de cargarse desde Supabase, no purgar
+    if (Object.keys(CLASSROOMS).length === 0) return;
+
+    // 1. Purga salones vacíos en memoria y registra sus IDs
+    const emptyClassroomIds = new Set();
     Object.keys(CLASSROOMS).forEach(id => {
       const cls = CLASSROOMS[id];
-      if (!cls || !cls.students || cls.students.length === 0) {
+      if (cls && (!cls.students || cls.students.length === 0)) {
+        emptyClassroomIds.add(id);
         delete CLASSROOMS[id];
       }
     });
@@ -1102,12 +1107,10 @@
           if (Array.isArray(arr)) {
             const clean = arr.filter(s => {
               if (!s || !s.classroomId) return false;
+              if (emptyClassroomIds.has(s.classroomId)) return false;
               const cls = CLASSROOMS[s.classroomId];
-              if (!cls || !cls.students || cls.students.length === 0) {
-                // Borrar también de la nube si está conectado
-                if (window.SupabaseClient && typeof window.SupabaseClient.deleteSessionFromCloud === 'function' && s.id) {
-                  window.SupabaseClient.deleteSessionFromCloud(s.id).catch(() => {});
-                }
+              // Solo purgar si el salón existe en memoria pero tiene 0 alumnos
+              if (cls && (!cls.students || cls.students.length === 0)) {
                 return false;
               }
               return true;
