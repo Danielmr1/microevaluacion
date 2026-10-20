@@ -709,6 +709,8 @@
         } else {
           const stripEl = document.getElementById('summary-sessions-strip');
           if (stripEl) stripEl.style.display = 'none';
+          const btnShare = document.getElementById('btn-share-session');
+          if (btnShare) btnShare.style.display = 'none';
           const curBranch = (wizardEval && wizardEval.branch) || window.selectedBranch || (typeof currentBranchMode !== 'undefined' ? currentBranchMode : 'rama1');
           if (typeof updateTopbarModeTitle === 'function') {
             updateTopbarModeTitle(curBranch);
@@ -724,6 +726,12 @@
           if (typeof updateDiscardOrDeleteButtonState === 'function') {
             updateDiscardOrDeleteButtonState(isSaved, curId);
           }
+        }
+
+        const badgeImported = document.getElementById('summary-imported-badge');
+        if (badgeImported) {
+          const activeSess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+          badgeImported.style.display = (activeSess && activeSess.isImported) ? 'inline-block' : 'none';
         }
 
         // ── Repoblar lo ya escaneado ──
@@ -807,6 +815,10 @@
      */
     function handleSummaryBottomAction() {
       const mode = window.currentSummaryBottomState || 'edit';
+      if (mode === 'locked') {
+        showToast('🔒 Esta evaluación fue compartida. Solo está habilitada para impresión y escaneo.');
+        return;
+      }
       if (mode === 'edit') {
         if (typeof editarEvaluacion === 'function') {
           editarEvaluacion();
@@ -857,6 +869,9 @@
 
         if (count > 0) {
           if (btnBottom) {
+            btnBottom.disabled = false;
+            btnBottom.style.opacity = '1';
+            btnBottom.style.cursor = 'pointer';
             if (window.currentSummaryViewMode === 'results') {
               window.currentSummaryBottomState = 'pdf';
               btnBottom.className = 'btn-summary-blue';
@@ -875,14 +890,25 @@
           }
           console.log(`[Sesión] ${count} resultado(s) guardados. Edición bloqueada.`);
         } else {
-          // 0 evaluados: se mantiene en Editar
+          // 0 evaluados: si es importada se bloquea para solo escaneo; si es propia permite Editar
           if (btnBottom) {
-            window.currentSummaryBottomState = 'edit';
-            btnBottom.className = 'btn-summary-neutral';
-            btnBottom.innerHTML = `
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              <span>Editar</span>
-            `;
+            if (activeSess && activeSess.isImported) {
+              window.currentSummaryBottomState = 'locked';
+              btnBottom.className = 'btn-summary-neutral';
+              btnBottom.style.opacity = '0.75';
+              btnBottom.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Sesión Compartida (Solo Escaneo)</span>
+              `;
+            } else {
+              window.currentSummaryBottomState = 'edit';
+              btnBottom.className = 'btn-summary-neutral';
+              btnBottom.style.opacity = '1';
+              btnBottom.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Editar</span>
+              `;
+            }
           }
           if (window.currentSummaryViewMode === 'results') {
             toggleSummaryViewMode('pdf');
@@ -1165,9 +1191,12 @@
       const curRef = (activeSess && activeSess.sessionRef) || null;
       const evalId = (typeof wizardEval !== 'undefined' && wizardEval && wizardEval.id) || (activeSess && activeSess.evalId) || null;
 
+      const btnShare = document.getElementById('btn-share-session');
+
       if (sessions.length === 0 || !window.isViewingSavedSessionsMode) {
         stripEl.style.display = 'none';
         listEl.innerHTML = '';
+        if (btnShare) btnShare.style.display = 'none';
         const isCurrentSaved = sessions.some(s => s.id === activeSessionId || (curRef && s.sessionRef === curRef) || (evalId && s.evalId === evalId && s.classroomId === wizardClassroomId));
         updateDiscardOrDeleteButtonState(isCurrentSaved, activeSessionId);
         return;
@@ -1175,6 +1204,9 @@
 
       stripEl.style.display = 'flex';
       listEl.innerHTML = '';
+      if (btnShare) {
+        btnShare.style.display = window.isViewingSavedSessionsMode ? 'inline-flex' : 'none';
+      }
 
       if (window.isViewingSavedSessionsMode && typeof updateTopbarModeTitle === 'function') {
         updateTopbarModeTitle('saved-sessions');
@@ -1424,6 +1456,7 @@
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                   <span style="font-size:1.05rem; font-weight:800; color:${clsColor};">${escaparHtml(sess.classroomName || 'Salón')}</span>
                   ${sess.gradeText ? `<span style="background:#064e3b; border:1px solid #10b981; color:#a7f3d0; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:6px;">${escaparHtml(sess.gradeText)}</span>` : ''}
+                  ${sess.isImported ? `<span style="background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#34d399; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:6px;">👥 Compartida</span>` : ''}
                 </div>
                 <div style="font-size:0.72rem; color:#64748b; margin-top:3px;">
                   Guardada el: ${escaparHtml(sess.savedAt || '')}
@@ -1440,6 +1473,10 @@
               <button type="button" onclick="handleDeleteSavedSession('${sess.id}')"
                 style="background:#1e293b; border:1px solid #7f1d1d; color:#f87171; border-radius:8px; padding:8px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
                 🗑️ Eliminar
+              </button>
+              <button type="button" onclick="openShareSessionModal('${sess.id}')"
+                style="background:#1e1b4b; border:1px solid #6366f1; color:#c7d2fe; border-radius:8px; padding:8px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                📤 Compartir
               </button>
               <button type="button" onclick="loadAndActivateSavedSession('${sess.id}')"
                 style="background:#2563eb; border:none; color:#fff; border-radius:8px; padding:8px 18px; font-size:0.82rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(37,99,235,0.4);">
@@ -1676,6 +1713,8 @@
         sessionRef: sess.sessionRef || (sess.classroomId + '::' + (wizardEval.id || sess.id)),
         id: sess.id,
         classroomId: sess.classroomId,
+        classroomSnapshot: sess.classroomSnapshot || null,
+        isImported: !!sess.isImported,
         evalId: sess.evalId || wizardEval.id || sess.id,
         branch: sess.branch,
         withGrid: wizardEval.withGrid !== undefined ? wizardEval.withGrid : true,
@@ -1709,6 +1748,11 @@
 
       showSummary();
       updateClassroomActionsVisibility(sess.classroomId);
+
+      const badgeImported = document.getElementById('summary-imported-badge');
+      if (badgeImported) {
+        badgeImported.style.display = sess.isImported ? 'inline-block' : 'none';
+      }
 
       if (typeof fitSummaryDocumentsToViewport === 'function') {
         setTimeout(fitSummaryDocumentsToViewport, 40);
@@ -1997,5 +2041,276 @@
       switchTab('scan');
     }
     window.goToScannerWithSession = goToScannerWithSession;
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // COMPARTIR E IMPORTAR SESIONES (TANDA 3)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Genera la cápsula autónoma de la sesión con su snapshot de salón y preguntas
+     */
+    function generateSharePayload(session) {
+      if (!session) return null;
+      let cls = session.classroomSnapshot;
+      if (!cls && session.classroomId && typeof ClassroomData !== 'undefined') {
+        cls = ClassroomData.getClassroom(session.classroomId);
+      }
+
+      const classroomSnapshot = cls ? {
+        id: cls.id,
+        name: cls.name,
+        gradeStage: cls.gradeStage || '',
+        gradeLevel: cls.gradeLevel || '',
+        students: Array.isArray(cls.students) ? cls.students.map(s => ({
+          id: s.id,
+          name: s.name,
+          numero: s.numero || ''
+        })) : []
+      } : {
+        id: session.classroomId || 'CLASS_SHARED',
+        name: session.classroomName || 'Salón Compartido',
+        gradeStage: '',
+        gradeLevel: '',
+        students: []
+      };
+
+      return {
+        version: 'meval_v1',
+        sessionRef: session.sessionRef || (session.classroomId + '::' + (session.evalId || session.id)),
+        title: session.title || 'Evaluación del Día',
+        prompt: session.prompt || '',
+        expectedAnswer: session.expectedAnswer || '',
+        type: session.type || 'free',
+        questionCount: session.questionCount || 1,
+        questions: session.questions ? JSON.parse(JSON.stringify(session.questions)) : [],
+        branch: session.branch || 'rama1',
+        branchTitle: session.branchTitle || 'Evaluación',
+        cardFormat: session.cardFormat || 'a5',
+        cardOrientation: session.cardOrientation || 'horizontal',
+        withGrid: session.withGrid !== undefined ? session.withGrid : true,
+        gridSize: session.gridSize || 'normal',
+        correctionMode: session.correctionMode || 'quick',
+        mode: session.mode,
+        r3State: session.r3State ? JSON.parse(JSON.stringify(session.r3State)) : null,
+        wizardEval: session.wizardEval ? JSON.parse(JSON.stringify(session.wizardEval)) : null,
+        classroomSnapshot: classroomSnapshot,
+        gradeText: session.gradeText || (cls ? (cls.gradeLevel + ' ' + (cls.gradeStage || '')) : '')
+      };
+    }
+    window.generateSharePayload = generateSharePayload;
+
+    function encodeSharePayload(payload) {
+      const jsonStr = JSON.stringify(payload);
+      const utf8Bytes = encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+        return String.fromCharCode('0x' + p1);
+      });
+      return btoa(utf8Bytes);
+    }
+
+    function decodeSharePayload(str) {
+      if (!str || typeof str !== 'string') return null;
+      const raw = str.trim();
+      if (!raw) return null;
+      try {
+        if (raw.startsWith('{') && raw.endsWith('}')) {
+          return JSON.parse(raw);
+        }
+        const decoded = atob(raw);
+        const jsonStr = decodeURIComponent(Array.prototype.map.call(decoded, c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonStr);
+      } catch (err) {
+        console.warn('[decodeSharePayload] Error decodificando:', err);
+        return null;
+      }
+    }
+
+    function openShareSessionModal(sessionId) {
+      let targetSession = null;
+      if (sessionId && typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions) {
+        targetSession = ClassroomData.getSavedSessions().find(s => s.id === sessionId);
+      }
+      if (!targetSession && typeof ClassroomData !== 'undefined') {
+        targetSession = ClassroomData.getActiveSession();
+      }
+      if (!targetSession) {
+        showToast('⚠️ No hay ninguna sesión activa o seleccionada para compartir.');
+        return;
+      }
+
+      const payload = generateSharePayload(targetSession);
+      if (!payload) {
+        showToast('⚠️ No se pudo generar la información de la sesión.');
+        return;
+      }
+
+      window._currentSharePayload = payload;
+      const encoded = encodeSharePayload(payload);
+
+      const modal = document.getElementById('modal-share-session');
+      const textarea = document.getElementById('share-code-textarea');
+      const subtitle = document.getElementById('share-modal-subtitle');
+
+      if (textarea) textarea.value = encoded;
+      if (subtitle) {
+        const clsName = (payload.classroomSnapshot && payload.classroomSnapshot.name) || 'Salón';
+        subtitle.textContent = `${clsName} — ${payload.branchTitle || 'Evaluación'} (${payload.classroomSnapshot ? payload.classroomSnapshot.students.length : 0} alumnos)`;
+      }
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+    window.openShareSessionModal = openShareSessionModal;
+
+    function closeShareSessionModal() {
+      const modal = document.getElementById('modal-share-session');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeShareSessionModal = closeShareSessionModal;
+
+    function copyShareCode() {
+      const textarea = document.getElementById('share-code-textarea');
+      if (!textarea || !textarea.value) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textarea.value).then(() => {
+          showToast('📋 ¡Código copiado al portapapeles! Envíalo a tu colega.');
+        }).catch(() => {
+          textarea.select();
+          document.execCommand('copy');
+          showToast('📋 ¡Código copiado al portapapeles!');
+        });
+      } else {
+        textarea.select();
+        document.execCommand('copy');
+        showToast('📋 ¡Código copiado al portapapeles!');
+      }
+    }
+    window.copyShareCode = copyShareCode;
+
+    function downloadShareFile() {
+      const payload = window._currentSharePayload;
+      if (!payload) {
+        showToast('⚠️ No hay datos para descargar.');
+        return;
+      }
+      const dataStr = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(payload, null, 2));
+      const downloadAnchor = document.createElement('a');
+      const safeName = ((payload.classroomSnapshot && payload.classroomSnapshot.name) || 'sesion')
+        .replace(/[^a-zA-Z0-9_\-]/g, '_');
+      downloadAnchor.setAttribute('href', dataStr);
+      downloadAnchor.setAttribute('download', `sesion_${safeName}_${Date.now()}.meval`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('💾 Archivo .meval descargado con éxito.');
+    }
+    window.downloadShareFile = downloadShareFile;
+
+    function openImportSessionModal() {
+      const modal = document.getElementById('modal-import-session');
+      const textarea = document.getElementById('import-code-textarea');
+      if (textarea) textarea.value = '';
+      if (modal) modal.style.display = 'flex';
+    }
+    window.openImportSessionModal = openImportSessionModal;
+
+    function closeImportSessionModal() {
+      const modal = document.getElementById('modal-import-session');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeImportSessionModal = closeImportSessionModal;
+
+    function handleImportFileInput(event) {
+      const file = event && event.target && event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        const textarea = document.getElementById('import-code-textarea');
+        if (textarea) {
+          textarea.value = content;
+          handleImportSession();
+        }
+      };
+      reader.readAsText(file);
+    }
+    window.handleImportFileInput = handleImportFileInput;
+
+    function handleImportSession() {
+      const textarea = document.getElementById('import-code-textarea');
+      const rawText = textarea ? textarea.value.trim() : '';
+      if (!rawText) {
+        showToast('⚠️ Por favor pega el código compartido o sube un archivo .meval');
+        return;
+      }
+
+      const payload = decodeSharePayload(rawText);
+      if (!payload || !payload.sessionRef || !payload.classroomSnapshot) {
+        showToast('⚠️ El código o archivo no tiene un formato válido de sesión compartida.');
+        return;
+      }
+
+      const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+        ? ClassroomData.getSavedSessions()
+        : [];
+      const maxSess = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
+
+      // Verificar si ya existe una sesión guardada con este mismo sessionRef
+      const existing = sessions.find(s => s.sessionRef === payload.sessionRef);
+      if (existing) {
+        closeImportSessionModal();
+        window.isViewingSavedSessionsMode = true;
+        loadAndActivateSavedSession(existing.id);
+        showToast('ℹ️ Esta sesión ya estaba guardada en tu cuenta y ha sido activada.');
+        return;
+      }
+
+      if (sessions.length >= maxSess) {
+        showToast(`⚠️ Has alcanzado el límite de ${maxSess} sesiones. Elimina una para importar esta.`);
+        return;
+      }
+
+      const importedSession = {
+        id: 'sess_imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        sessionRef: payload.sessionRef,
+        title: payload.title || 'Evaluación Compartida',
+        prompt: payload.prompt || '',
+        expectedAnswer: payload.expectedAnswer || '',
+        type: payload.type || 'free',
+        questionCount: payload.questionCount || 1,
+        questions: payload.questions || [],
+        branch: payload.branch || 'rama1',
+        branchTitle: payload.branchTitle || 'Evaluación',
+        cardFormat: payload.cardFormat || 'a5',
+        cardOrientation: payload.cardOrientation || 'horizontal',
+        withGrid: payload.withGrid !== undefined ? payload.withGrid : true,
+        gridSize: payload.gridSize || 'normal',
+        correctionMode: payload.correctionMode || 'quick',
+        mode: payload.mode,
+        r3State: payload.r3State,
+        wizardEval: payload.wizardEval,
+        classroomId: payload.classroomSnapshot.id,
+        classroomName: payload.classroomSnapshot.name,
+        classroomSnapshot: payload.classroomSnapshot,
+        gradeText: payload.gradeText || (payload.classroomSnapshot.gradeLevel ? (payload.classroomSnapshot.gradeLevel + ' ' + (payload.classroomSnapshot.gradeStage || '')) : ''),
+        isImported: true,
+        savedAt: new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }),
+        timestamp: Date.now()
+      };
+
+      const res = ClassroomData.saveSession(importedSession);
+      if (!res || !res.success) {
+        showToast('⚠️ No se pudo guardar la sesión importada: ' + ((res && res.error) || 'Error desconocido'));
+        return;
+      }
+
+      closeImportSessionModal();
+      window.isViewingSavedSessionsMode = true;
+      loadAndActivateSavedSession(importedSession.id);
+      showToast(`✓ ¡Sesión compartida importada con éxito! (${payload.classroomSnapshot.students.length} alumnos listos para escanear)`);
+    }
+    window.handleImportSession = handleImportSession;
 
     // ── Helpers de auth UI & Menú de Usuario ──
