@@ -53,9 +53,9 @@
   <script src="card-generator.js?v=3.2.84"></script>
   <script src="session-controller.js?v=3.2.84"></script>
   <script src="app-navigation.js?v=3.2.84"></script>
-  <script src="copilot-command.js?v=3.2.92"></script>
+  <script src="copilot-command.js?v=3.2.93"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.2.92">
+  <link rel="stylesheet" href="styles.css?v=3.2.93">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -365,7 +365,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.92</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.93</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -525,9 +525,9 @@
 
             <!-- Chips de sugerencias inteligentes para EVA -->
             <div class="copilot-quick-chips" id="copilot-quick-chips">
+              <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cuadro comparativo de mis salones')">📊 Cuadro Comparativo</button>
               <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cartilla OMR para 4° A')">📝 Cartilla 4° A</button>
               <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Crear pregunta de fracciones para 4° Pri con clave B')">⚡ Crear Pregunta IA</button>
-              <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Escanear sesión guardada')">📷 Escanear Sesión</button>
               <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Crear salón 5° B de primaria con alumnos: Mateo, Lucía')">🏫 Crear Salón</button>
             </div>
 
