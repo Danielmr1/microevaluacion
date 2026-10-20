@@ -450,18 +450,10 @@ if (typeof window !== 'undefined') {
         openBankManagerModal();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (flowName === 'saved-sessions') {
-        const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
-          ? ClassroomData.getSavedSessions()
-          : [];
-        if (sessions.length > 0) {
-          window.isViewingSavedSessionsMode = true;
-          // Si hay sesiones guardadas, abrir directamente la vista de resumen con la primera sesión
-          loadAndActivateSavedSession(sessions[0].id);
-        } else {
-          // Si no hay sesiones, mostrar aviso amigable y abrir creador de evaluación
-          window.isViewingSavedSessionsMode = false;
-          showToast('ℹ️ No tienes sesiones guardadas todavía.');
-          openBranchFlow('rama3');
+        window.isViewingSavedSessionsMode = false;
+        showView('saved-sessions');
+        if (typeof openSavedSessionsModal === 'function') {
+          openSavedSessionsModal();
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
