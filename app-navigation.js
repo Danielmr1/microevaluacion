@@ -71,6 +71,10 @@ if (typeof window !== 'undefined') {
           updateScannerSessionBar(session);
         }
 
+        if (typeof showScannerOrientationHint === 'function') {
+          showScannerOrientationHint();
+        }
+
         // La línea del estado vacío sale del MISMO control que usa el botón de la
         // cámara, así no pueden contradecirse.
         updatePlaceholderHint();

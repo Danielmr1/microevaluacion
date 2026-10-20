@@ -887,6 +887,62 @@
     }
   }
 
+  // --- ORIENTACIÓN DE LA EVALUACIÓN Y AVISO AL DOCENTE ---
+  function isSessionVertical(sess) {
+    if (!sess) return false;
+    if (sess.cardOrientation === 'vertical' || sess.isPortrait === true || sess.orientation === 'vertical') {
+      return true;
+    }
+    if (sess.cardFormat === 'a5_vertical' || sess.cardFormat === 'a4_vertical') {
+      return true;
+    }
+    const qCount = parseInt(sess.questionCount || (sess.questions ? sess.questions.length : 1), 10);
+    if (sess.branch === 'rama3' && qCount > 10) {
+      return true;
+    }
+    if (sess.cardFormat === 'a6' && (sess.orientation === 'vertical' || sess.isPortrait === true)) {
+      return true;
+    }
+    return false;
+  }
+  global.isSessionVertical = isSessionVertical;
+
+  function showScannerOrientationHint() {
+    const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+    const isVert = isSessionVertical(sess);
+
+    const toast = document.getElementById('scanner-orientation-toast');
+    const icon = document.getElementById('scanner-orientation-icon');
+    const text = document.getElementById('scanner-orientation-text');
+    if (!toast || !icon || !text) return;
+
+    if (isVert) {
+      icon.textContent = '📱';
+      text.textContent = 'Dispositivo en VERTICAL';
+      toast.style.borderColor = '#10b981';
+      toast.style.color = '#a7f3d0';
+    } else {
+      icon.textContent = '🔄';
+      text.textContent = 'Dispositivo en HORIZONTAL';
+      toast.style.borderColor = '#38bdf8';
+      toast.style.color = '#bae6fd';
+    }
+
+    toast.style.display = 'flex';
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+
+    if (window._orientationToastTimer) clearTimeout(window._orientationToastTimer);
+    window._orientationToastTimer = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(-8px)';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 400);
+    }, 2500);
+  }
+  global.showScannerOrientationHint = showScannerOrientationHint;
+
   // --- CONTROL DE CÁMARA ---
   async function toggleCamera() {
     if (isScanning) {
@@ -894,20 +950,26 @@
     } else {
       if (!checkDependencies()) return;
       enterFullscreen();
-      // Bloquear en horizontal exclusivamente para el escaneo de la ficha física A5
+      const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      const isVert = isSessionVertical(sess);
+      const targetOri = isVert ? 'portrait' : 'landscape';
       if (screen.orientation && screen.orientation.lock) {
-        try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+        try { screen.orientation.lock(targetOri).catch(() => {}); } catch (e) {}
       }
+      showScannerOrientationHint();
       await startCamera();
     }
   }
 
   async function startCamera() {
     try {
-      // Garantizar orientación horizontal para capturar video panorámico 16:9 (1920x1080)
+      const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      const isVert = isSessionVertical(sess);
+      const targetOri = isVert ? 'portrait' : 'landscape';
       if (screen.orientation && screen.orientation.lock) {
-        try { await screen.orientation.lock('landscape'); } catch (e) {}
+        try { await screen.orientation.lock(targetOri); } catch (e) {}
       }
+      showScannerOrientationHint();
 
       const constraints = {
         video: {
@@ -2290,7 +2352,9 @@
     onEvaluationChanged,
     assignManualStudent,
     handleFile,
-    diagnostico
+    diagnostico,
+    showScannerOrientationHint,
+    isSessionVertical
   };
 
   // Bindings directos para eventos onclick / onchange en HTML
@@ -2306,5 +2370,7 @@
   global.onClassroomChanged = onClassroomChanged;
   global.onEvaluationChanged = onEvaluationChanged;
   global.assignManualStudent = assignManualStudent;
+  global.showScannerOrientationHint = showScannerOrientationHint;
+  global.isSessionVertical = isSessionVertical;
 
 })(typeof window !== 'undefined' ? window : this);

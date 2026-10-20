@@ -55,7 +55,7 @@
   <script src="app-navigation.js?v=3.2.84"></script>
   <script src="copilot-command.js?v=3.2.93"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.3.3">
+  <link rel="stylesheet" href="styles.css?v=3.3.4">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.3.3</span>
+              Versión <span id="user-profile-version-tag">v3.3.4</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1350,6 +1350,12 @@
     <div class="viewport-container" id="viewport">
       <video id="video-feed" playsinline autoplay muted></video>
       <canvas id="overlay-canvas" class="overlay"></canvas>
+
+      <!-- Aviso directo de orientación del dispositivo (2.5s) -->
+      <div id="scanner-orientation-toast" style="display:none; position:absolute; top:18px; left:50%; transform:translateX(-50%); z-index:45; background:rgba(15,23,42,0.92); border:1.5px solid #38bdf8; color:#bae6fd; padding:7px 18px; border-radius:9999px; font-size:0.84rem; font-weight:800; box-shadow:0 8px 24px rgba(0,0,0,0.5); backdrop-filter:blur(8px); pointer-events:none; transition:opacity 0.4s ease, transform 0.4s ease; align-items:center; gap:8px; white-space:nowrap;">
+        <span id="scanner-orientation-icon" style="font-size:1.05rem;">🔄</span>
+        <span id="scanner-orientation-text">Dispositivo en HORIZONTAL</span>
+      </div>
 
       <!-- Estado vacío del visor cuando la cámara está apagada.
            Antes decía "Escáner Listo para el Salón", explicaba un botón que ya
