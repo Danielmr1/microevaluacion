@@ -456,12 +456,39 @@ if (typeof window !== 'undefined') {
         if (sessions.length > 0) {
           window.isViewingSavedSessionsMode = true;
           loadAndActivateSavedSession(sessions[0].id);
-        } else {
-          window.isViewingSavedSessionsMode = false;
-          showView('saved-sessions');
-          if (typeof openSavedSessionsModal === 'function') {
-            openSavedSessionsModal();
-          }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        // Resiliencia: si la caché local no las tenía aún, consultar Supabase antes de abrir estado vacío
+        if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.syncSessionsWithCloud === 'function') {
+          ClassroomData.syncSessionsWithCloud().then(cloudSess => {
+            if (cloudSess && cloudSess.length > 0) {
+              window.isViewingSavedSessionsMode = true;
+              loadAndActivateSavedSession(cloudSess[0].id);
+            } else {
+              window.isViewingSavedSessionsMode = false;
+              showView('saved-sessions');
+              if (typeof openSavedSessionsModal === 'function') {
+                openSavedSessionsModal();
+              }
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }).catch(() => {
+            window.isViewingSavedSessionsMode = false;
+            showView('saved-sessions');
+            if (typeof openSavedSessionsModal === 'function') {
+              openSavedSessionsModal();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+          return;
+        }
+
+        window.isViewingSavedSessionsMode = false;
+        showView('saved-sessions');
+        if (typeof openSavedSessionsModal === 'function') {
+          openSavedSessionsModal();
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
