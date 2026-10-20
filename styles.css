@@ -6753,3 +6753,140 @@
         max-height: 220px;
       }
     }
+
+
+    /* ==========================================================================
+       EVA COPILOT: TARJETAS INTERACTIVAS Y GESTIÓN ASISTIDA (FASE 2 - v3.2.91)
+       ========================================================================== */
+    .copilot-action-card {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 10px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .copilot-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.74rem;
+      font-weight: 750;
+      padding: 2px 8px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    .copilot-card-badge.badge-blue {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .copilot-card-badge.badge-green {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .copilot-card-badge.badge-red {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .copilot-card-title {
+      font-size: 0.92rem;
+      font-weight: 750;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .copilot-card-details {
+      font-size: 0.8rem;
+      color: #475569;
+      line-height: 1.45;
+    }
+
+    .copilot-card-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin: 6px 0;
+    }
+
+    .copilot-card-opt {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 0.78rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .copilot-card-opt.is-correct {
+      background: #ecfdf5;
+      border-color: #34d399;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .copilot-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .copilot-card-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 750;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .copilot-card-btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+    }
+
+    .copilot-card-btn-primary:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .copilot-card-btn-secondary {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    .copilot-card-btn-secondary:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .copilot-card-btn-danger {
+      background: #ef4444;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+    }
+
+    .copilot-card-btn-danger:hover {
+      background: #dc2626;
+    }
