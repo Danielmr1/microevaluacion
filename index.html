@@ -364,7 +364,7 @@
           </svg>
         </div>
         <span class="island-brand-title" id="topbar-app-title">MICROEVAL</span>
-        <span class="version-tag" id="topbar-version-tag">v3.2.88</span>
+        <span class="version-tag" id="topbar-version-tag">v3.2.89</span>
       </div>
 
       <!-- Cápsula Oscura Flotante al Centro (Estilo Imagen 1 AIROBOTS) -->
@@ -1973,9 +1973,8 @@
       <!-- Contenedor Maestro: Banco de Preguntas -->
       <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 18px; box-shadow: 0 4px 20px rgba(15,23,42,0.06); overflow: hidden; display: flex; flex-direction: column;">
         
-        <!-- Header del Banco: Nivel (Primaria / Secundaria) y Botón Nueva Pregunta -->
-        <div style="padding: 16px 22px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: #f8fafc;">
-          
+        <!-- Header del Banco: Nivel (Primaria / Secundaria) -->
+        <div style="padding: 16px 22px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: flex-start; background: #f8fafc;">
           <!-- Selector de Nivel (Primaria / Secundaria) -->
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Nivel:</span>
@@ -1983,13 +1982,6 @@
               <!-- Botones Primaria / Secundaria generados por JS -->
             </div>
           </div>
-
-          <!-- Botón de acción: Nueva Pregunta para este Grado -->
-          <button id="btn-toggle-add-question" type="button" onclick="toggleBankManagerAddForm()"
-            style="display: inline-flex; align-items: center; gap: 7px; background: #0284c7; border: none; color: #ffffff; border-radius: 9px; padding: 8px 16px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 6px rgba(2,132,199,0.25);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Nueva Pregunta para este Grado</span>
-          </button>
         </div>
 
         <!-- Fila de Grados (Dinámicos según el nivel activo) -->
@@ -1999,20 +1991,30 @@
           </div>
         </div>
 
-        <!-- Fila de Filtros y Búsqueda -->
+        <!-- Fila de Filtros, Búsqueda y Botón Nueva Pregunta (debajo de los grados) -->
         <div style="padding: 10px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
           <!-- Filtro de tipo: Todas / Con Rúbrica / Sin Rúbrica -->
           <div id="bank-manager-filter-pills" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
             <!-- Píldoras generadas por JS con iconos SVG -->
           </div>
 
-          <!-- Buscador por texto con icono SVG profesional -->
-          <div style="position: relative; min-width: 240px; flex: 1; max-width: 340px;">
-            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none; color: #94a3b8;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </span>
-            <input type="text" id="bm-search-input" placeholder="Buscar preguntas..." oninput="onBankManagerSearchInput(this.value)"
-              style="width: 100%; box-sizing: border-box; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 6px 12px 6px 32px; font-size: 0.8rem; color: #0f172a; outline: none; transition: border-color 0.15s;">
+          <!-- Lado derecho: Buscador + Botón Nueva Pregunta para este Grado -->
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
+            <!-- Buscador por texto con icono SVG profesional -->
+            <div style="position: relative; min-width: 200px; flex: 1; max-width: 280px;">
+              <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none; color: #94a3b8;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" id="bm-search-input" placeholder="Buscar preguntas..." oninput="onBankManagerSearchInput(this.value)"
+                style="width: 100%; box-sizing: border-box; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 6px 12px 6px 32px; font-size: 0.8rem; color: #0f172a; outline: none; transition: border-color 0.15s;">
+            </div>
+
+            <!-- Botón de acción: Nueva Pregunta para este Grado (ubicado debajo de los grados) -->
+            <button id="btn-toggle-add-question" type="button" onclick="toggleBankManagerAddForm()"
+              style="display: inline-flex; align-items: center; gap: 7px; background: #0284c7; border: none; color: #ffffff; border-radius: 9px; padding: 8px 16px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 6px rgba(2,132,199,0.25); white-space: nowrap;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Nueva Pregunta para este Grado</span>
+            </button>
           </div>
         </div>
 

@@ -612,12 +612,12 @@ function renderBankManagerFilterPills() {
     },
     {
       key: 'rubric',
-      label: 'Con Rúbrica IA',
+      label: 'Con Rúbrica',
       iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>'
     },
     {
       key: 'quick',
-      label: 'Sin Rúbrica (Rápidas)',
+      label: 'Sin Rúbrica',
       iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
     }
   ];
@@ -694,7 +694,7 @@ function renderBankManagerQuestions() {
   }
 
   if (summaryText) {
-    summaryText.textContent = `${totalInGrade} pregunta${totalInGrade === 1 ? '' : 's'} en ${bankManagerActiveGrade.label} (${countWithRubric} con Rúbrica IA · ${countQuick} rápidas)` + (filtered.length !== totalInGrade ? ` — Mostrando ${filtered.length}` : '');
+    summaryText.textContent = `${totalInGrade} pregunta${totalInGrade === 1 ? '' : 's'} en ${bankManagerActiveGrade.label} (${countWithRubric} con Rúbrica · ${countQuick} sin Rúbrica)` + (filtered.length !== totalInGrade ? ` — Mostrando ${filtered.length}` : '');
   }
 
   if (filtered.length === 0) {
@@ -728,7 +728,7 @@ function renderBankManagerQuestions() {
 
     const hasRubric = !!(q.hasRubric || q.rubric);
 
-    // Acciones de la derecha: Borrado vs En uso con iconos SVG profesionales
+    // Acciones de la derecha: Borrado vs Enlaces a sesión con iconos SVG profesionales
     const actionsBox = document.createElement('div');
     actionsBox.style.cssText = 'display:flex; align-items:center; gap:6px; flex-wrap:wrap;';
 
@@ -737,12 +737,7 @@ function renderBankManagerQuestions() {
       : [];
 
     if (inSavedSessions && inSavedSessions.length > 0) {
-      // Bloqueada por estar en sesiones
-      const lockedBadge = document.createElement('span');
-      lockedBadge.style.cssText = 'background:#f1f5f9; border:1px solid #cbd5e1; color:#64748b; border-radius:7px; padding:4px 9px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px;';
-      lockedBadge.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>En uso</span>';
-      actionsBox.appendChild(lockedBadge);
-
+      // Bloqueada por estar en sesiones: solo botones directos a la sesión (sin etiqueta "En uso")
       inSavedSessions.forEach(s => {
         const btnLink = document.createElement('button');
         btnLink.type = 'button';
