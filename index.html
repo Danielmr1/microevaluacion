@@ -356,21 +356,24 @@
   <header class="header-light">
     <div class="island-topbar">
       
-      <!-- Botones Principales de Navegación en Barra Superior (Reemplaza MICROEVAL y sube desde la fila flotante) -->
+      <!-- Botones Principales de Navegación en Barra Superior (Solo Íconos) -->
       <div class="topbar-nav-buttons" id="topbar-main-actions">
-        <button type="button" class="topbar-nav-btn" onclick="openFlow('classrooms')" title="Salones y Alumnos">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
-          <span>Salones y alumnos</span>
+        <button type="button" class="topbar-nav-btn" onclick="openFlow('classrooms')" title="Salones y Alumnos" aria-label="Salones y Alumnos">
+          <div class="strip-card-icon icon-sky">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          </div>
         </button>
 
-        <button type="button" class="topbar-nav-btn" onclick="openFlow('bank')" title="Banco de Preguntas">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span>Banco de preguntas</span>
+        <button type="button" class="topbar-nav-btn" onclick="openFlow('bank')" title="Banco de Preguntas" aria-label="Banco de Preguntas">
+          <div class="strip-card-icon icon-indigo">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
         </button>
 
-        <button type="button" class="topbar-nav-btn" onclick="openFlow('saved-sessions')" title="Sesiones">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          <span>Sesiones</span>
+        <button type="button" class="topbar-nav-btn" onclick="openFlow('saved-sessions')" title="Sesiones" aria-label="Sesiones">
+          <div class="strip-card-icon icon-amber">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
           <span id="hub-saved-sessions-badge" class="nav-count-badge" style="display:none;">0/8</span>
         </button>
       </div>
