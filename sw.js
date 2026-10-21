@@ -1,11 +1,11 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.3.7
+// Service Worker para Microevaluación A5 (PWA) — v3.3.8
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.3.7';
+const CACHE_NAME = 'microeval-cache-v3.3.8';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './styles.css?v=3.3.7',
+  './styles.css?v=3.3.8',
   './manifest.json',
   './icon-192.png',
   // Librerías de soporte (100% locales / self-hosted)
@@ -19,21 +19,21 @@ const PRECACHE_ASSETS = [
   './jsqr.min.js?v=3.0.6',
   './warp_math.js',
   // Módulos de la aplicación
-  './classroom-data.js?v=3.3.7',
-  './supabase-client.js?v=3.3.7',
+  './classroom-data.js?v=3.3.8',
+  './supabase-client.js?v=3.3.8',
   './roi-processor.js?v=3.2.50',
-  './scanner.js?v=3.3.7',
+  './scanner.js?v=3.3.8',
   './results-manager.js?v=3.1.90',
   './classroom-manager.js?v=3.2.70',
   './question-bank.js?v=3.2.71',
   './card-simulator.js?v=3.2.61',
-  './card-exam-builder.js?v=3.3.7',
+  './card-exam-builder.js?v=3.3.8',
   './card-formativa.js?v=3.2.73',
   './card-focalizada.js?v=3.2.73',
   './card-cartilla.js?v=3.2.73',
-  './card-generator.js?v=3.3.7',
-  './session-controller.js?v=3.3.7',
-  './app-navigation.js?v=3.3.7',
+  './card-generator.js?v=3.3.8',
+  './session-controller.js?v=3.3.8',
+  './app-navigation.js?v=3.3.8',
   './copilot-command.js?v=3.2.93',
   './qrcode.bundle.js?v=3.0.6'
 ];

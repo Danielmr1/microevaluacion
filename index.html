@@ -35,27 +35,27 @@
     }
   </script>
 
-  <script src="classroom-data.js?v=3.3.7"></script>
-  <script src="supabase-client.js?v=3.3.7"></script>
+  <script src="classroom-data.js?v=3.3.8"></script>
+  <script src="supabase-client.js?v=3.3.8"></script>
   <script src="qrcode.bundle.js?v=3.0.6"></script>
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
   <script src="roi-processor.js?v=3.2.50"></script>
-  <script src="scanner.js?v=3.3.7"></script>
+  <script src="scanner.js?v=3.3.8"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.2.70"></script>
   <script src="question-bank.js?v=3.2.71"></script>
   <script src="card-simulator.js?v=3.2.61"></script>
-  <script src="card-exam-builder.js?v=3.3.7"></script>
+  <script src="card-exam-builder.js?v=3.3.8"></script>
   <script src="card-formativa.js?v=3.2.73"></script>
   <script src="card-focalizada.js?v=3.2.73"></script>
   <script src="card-cartilla.js?v=3.2.73"></script>
-  <script src="card-generator.js?v=3.3.7"></script>
-  <script src="session-controller.js?v=3.3.7"></script>
-  <script src="app-navigation.js?v=3.3.7"></script>
+  <script src="card-generator.js?v=3.3.8"></script>
+  <script src="session-controller.js?v=3.3.8"></script>
+  <script src="app-navigation.js?v=3.3.8"></script>
   <script src="copilot-command.js?v=3.2.93"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.3.7">
+  <link rel="stylesheet" href="styles.css?v=3.3.8">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.3.7</span>
+              Versión <span id="user-profile-version-tag">v3.3.8</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1077,14 +1077,11 @@
         <input type="hidden" id="input-eval-unit">
       </div>
 
-      <!-- Barra Superior de Sesiones Guardadas (Cápsula Flotante Centrada: [ 1 ] [ 2 ] [ 3 ] ... + Importar) -->
+      <!-- Barra Superior de Sesiones Guardadas (Cápsula Flotante Centrada: [ 1 ] [ 2 ] [ 3 ] ...) -->
       <div id="summary-sessions-strip" class="summary-sessions-strip" style="display:none;">
         <div id="summary-sessions-numbers-list" class="sessions-numbers-list">
           <!-- Botones [ 1 ] [ 2 ] [ 3 ]... generados dinámicamente -->
         </div>
-        <button type="button" onclick="openImportSessionModal()" style="background:#064e3b; border:1px solid #10b981; color:#a7f3d0; border-radius:8px; padding:4px 10px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; margin-left:6px;" title="Importar una evaluación compartida por otro docente">
-          📥 <span>Importar</span>
-        </button>
       </div>
 
       <!-- ── PASO 5: Resumen y Fichas Listas (Two-Pane Split Layout) ── -->
@@ -1098,7 +1095,6 @@
               <div>
                 <span style="font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:1px;">Salón de Clases</span>
                 <span id="summary-classroom-info" style="font-size:1.02rem; font-weight:800; color:#0284c7;"></span>
-                <span id="summary-imported-badge" style="display:none; font-size:0.68rem; font-weight:800; color:#065f46; background:#d1fae5; border:1px solid #34d399; padding:2px 7px; border-radius:5px; margin-top:3px;">👥 Compartida</span>
               </div>
               <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
                 <span id="summary-grade-badge" style="font-size:0.72rem; font-weight:800; color:#15803d; background:#dcfce7; padding:3px 10px; border-radius:6px; border:1px solid #86efac;"></span>
@@ -1171,12 +1167,6 @@
               <button type="button" onclick="handleSummaryBottomAction()" id="btn-summary-results" class="btn-summary-neutral">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 <span>Editar</span>
-              </button>
-
-              <!-- Botón Compartir Sesión (Visible EXCLUSIVAMENTE al entrar desde el botón "Sesiones" - Tanda 3) -->
-              <button type="button" onclick="openShareSessionModal()" id="btn-share-session" class="btn-summary-neutral" style="display:none; background:#1e1b4b; border-color:#6366f1; color:#c7d2fe; margin-top:2px;" title="Compartir esta sesión para que otro docente evalúe en su celular">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                <span>Compartir Sesión</span>
               </button>
             </div>
 
@@ -1594,71 +1584,6 @@
       </div>
       <div id="ai-dialog-actions" style="padding:12px 18px; background:#0f172a; border-top:1px solid #334155; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
         <!-- Botones dinámicos -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Compartir Sesión con otro Docente (Tanda 3) -->
-  <div id="modal-share-session" onclick="if(event.target === this) closeShareSessionModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#1e293b; border:1.5px solid #475569; border-radius:18px; width:100%; max-width:540px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); overflow:hidden; display:flex; flex-direction:column;">
-      <div style="padding:16px 20px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; background:#0f172a;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:1.3rem;">🔗</span>
-          <div>
-            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#f8fafc;">Compartir Sesión</h3>
-            <span id="share-modal-subtitle" style="font-size:0.75rem; color:#94a3b8;">Comparte esta evaluación con otro docente para que escanee en su celular.</span>
-          </div>
-        </div>
-        <button type="button" onclick="closeShareSessionModal()" style="background:transparent; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; padding:2px 6px; line-height:1;" title="Cerrar">✕</button>
-      </div>
-
-      <div style="padding:18px 20px; display:flex; flex-direction:column; gap:14px; font-size:0.85rem; color:#cbd5e1;">
-        <div>
-          <label style="font-size:0.72rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:5px;">Código de Sesión para Copiar</label>
-          <textarea id="share-code-textarea" readonly onclick="this.select()" style="width:100%; height:95px; background:#0b0f19; border:1px solid #334155; border-radius:8px; padding:10px; color:#38bdf8; font-family:monospace; font-size:0.75rem; resize:none; box-sizing:border-box; outline:none;"></textarea>
-        </div>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" onclick="copyShareCode()" class="btn-summary-teal" style="flex:1; padding:9px 14px; font-size:0.84rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
-            📋 <span>Copiar Código</span>
-          </button>
-          <button type="button" onclick="downloadShareFile()" class="btn-summary-neutral" style="flex:1; padding:9px 14px; font-size:0.84rem; font-weight:700; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:#1e1b4b; border-color:#6366f1; color:#c7d2fe;">
-            💾 <span>Descargar (.meval)</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Importar Sesión Compartida (Tanda 3) -->
-  <div id="modal-import-session" onclick="if(event.target === this) closeImportSessionModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#1e293b; border:1.5px solid #475569; border-radius:18px; width:100%; max-width:540px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); overflow:hidden; display:flex; flex-direction:column;">
-      <div style="padding:16px 20px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center; background:#0f172a;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:1.3rem;">📥</span>
-          <div>
-            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#f8fafc;">Importar Sesión Compartida</h3>
-            <span style="font-size:0.75rem; color:#94a3b8;">Carga una evaluación compartida para calificar fichas en tu celular.</span>
-          </div>
-        </div>
-        <button type="button" onclick="closeImportSessionModal()" style="background:transparent; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; padding:2px 6px; line-height:1;" title="Cerrar">✕</button>
-      </div>
-
-      <div style="padding:18px 20px; display:flex; flex-direction:column; gap:14px; font-size:0.85rem; color:#cbd5e1;">
-        <div>
-          <label style="font-size:0.72rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:5px;">Pega el código compartido:</label>
-          <textarea id="import-code-textarea" placeholder="Pega aquí el código que te envió el otro docente..." style="width:100%; height:95px; background:#0b0f19; border:1px solid #334155; border-radius:8px; padding:10px; color:#f8fafc; font-family:monospace; font-size:0.75rem; resize:none; box-sizing:border-box; outline:none;"></textarea>
-        </div>
-
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-          <label style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:0.78rem; color:#38bdf8; font-weight:700;">
-            📁 O subir archivo .meval
-            <input type="file" id="import-file-input" accept=".meval,.json" onchange="handleImportFileInput(event)" style="display:none;">
-          </label>
-          <button type="button" onclick="handleImportSession()" class="btn-summary-teal" style="padding:9px 18px; font-size:0.84rem; font-weight:700; border-radius:8px;">
-            📥 Cargar y Abrir Sesión
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -2238,7 +2163,7 @@
       <div style="background:#0f172a; border:1.5px solid #334155; border-radius:18px; box-shadow:0 12px 32px rgba(0,0,0,0.3); overflow:hidden; display:flex; flex-direction:column;">
         
         <!-- Header de Sesiones -->
-        <div style="padding:18px 22px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; background:#1e293b; flex-wrap:wrap; gap:12px;">
+        <div style="padding:18px 22px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; background:#1e293b;">
           <div style="display:flex; align-items:center; gap:12px;">
             <span style="font-size:1.6rem; line-height:1;">📁</span>
             <div>
@@ -2248,9 +2173,6 @@
               </div>
             </div>
           </div>
-          <button type="button" onclick="openImportSessionModal()" style="background:#0284c7; border:none; color:#ffffff; font-size:0.8rem; font-weight:800; padding:7px 14px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(2,132,199,0.4);">
-            📥 Importar Sesión
-          </button>
         </div>
 
         <!-- Body de Sesiones -->
@@ -2262,14 +2184,9 @@
           <div id="saved-sessions-empty" style="display:none; text-align:center; padding:30px 16px;">
             <div style="font-size:2.4rem; margin-bottom:10px;">📭</div>
             <h4 style="color:#f8fafc; font-size:1.05rem; font-weight:800; margin:0 0 6px;">No tienes sesiones guardadas todavía</h4>
-            <p style="color:#94a3b8; font-size:0.82rem; max-width:500px; margin:0 auto 16px; line-height:1.4;">
-              Para preparar una nueva sesión, primero <strong>elige la modalidad</strong> de trabajo. También puedes importar una sesión compartida por otro colega:
+            <p style="color:#94a3b8; font-size:0.82rem; max-width:500px; margin:0 auto 20px; line-height:1.4;">
+              Para preparar una nueva sesión, primero <strong>elige la modalidad</strong> de trabajo. A continuación seleccionarás tu salón con alumnos y las preguntas de la evaluación para generar el PDF y guardar tu sesión:
             </p>
-            <div style="margin-bottom:24px;">
-              <button type="button" onclick="openImportSessionModal()" style="background:#0284c7; border:none; color:#ffffff; font-size:0.84rem; font-weight:800; padding:8px 18px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(2,132,199,0.4);">
-                📥 Importar Sesión Compartida (.meval o código)
-              </button>
-            </div>
 
             <!-- Selector directo de las 3 modalidades -->
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; max-width:780px; margin:0 auto; text-align:left;">

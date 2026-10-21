@@ -438,15 +438,7 @@
    * quien llama a decidir, y los llamadores ya lo verifican.
    */
   function getClassroom(classroomId) {
-    if (CLASSROOMS[classroomId]) return CLASSROOMS[classroomId];
-    const active = getActiveSession();
-    if (active && active.classroomSnapshot && (active.classroomId === classroomId || !classroomId)) {
-      return active.classroomSnapshot;
-    }
-    const saved = getSavedSessions();
-    const match = saved.find(s => s && s.classroomSnapshot && s.classroomId === classroomId);
-    if (match) return match.classroomSnapshot;
-    return null;
+    return CLASSROOMS[classroomId] || null;
   }
 
   /**
@@ -520,12 +512,7 @@
   function getClassroomGrade(classroomId) {
     const cls = getClassroom(classroomId);
     if (!cls) return null;
-    const formatted = formatGrade(cls.gradeStage, cls.gradeLevel);
-    if (formatted) return formatted;
-    if (cls.gradeText) return cls.gradeText;
-    const active = getActiveSession();
-    if (active && active.gradeText) return active.gradeText;
-    return null;
+    return formatGrade(cls.gradeStage, cls.gradeLevel);
   }
 
   /**
