@@ -191,76 +191,86 @@ function construirPromptEvaluacion(params: {
 }
 
 /**
- * Llama a la API de Gemini con las imágenes y el prompt estructurado.
+ * Llama a la API de Gemini con las imágenes y el prompt estructurado con sistema de cascada.
  */
 async function llamarGemini(params: {
   promptText: string;
   images: Array<{ mimeType: string; data: string }>;
   clave: string;
-  modelo: string;
+  modeloPreferido?: string;
 }) {
-  const { promptText, images, clave, modelo } = params;
+  const { promptText, images, clave, modeloPreferido } = params;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
+  const modelosCascada = [
+    modeloPreferido || 'gemini-2.5-flash',
+    'gemini-3.5-flash',
+    'gemini-2.5-flash-lite'
+  ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
-  const parts: any[] = [{ text: promptText }];
-  for (const img of images) {
-    parts.push({
-      inlineData: {
-        mimeType: img.mimeType,
-        data: img.data
-      }
-    });
-  }
-
-  const cuerpo = JSON.stringify({
-    contents: [{ parts }],
-    generationConfig: {
-      temperature: 0.1,
-      responseMimeType: 'application/json',
-      responseSchema: ESQUEMA_RESPUESTA
-    }
-  });
-
-  const ESPERAS_MS = [800, 2000];
   let ultimoRechazo: any = null;
 
-  for (let intento = 0; intento <= ESPERAS_MS.length; intento++) {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
-      body: cuerpo
-    });
+  for (const modelo of modelosCascada) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
 
-    const texto = await res.text();
-    let datos: any = null;
-    try { datos = JSON.parse(texto); } catch { datos = null; }
-
-    if (res.ok) {
-      if (!datos) throw new Error('El proveedor de IA no devolvió un JSON válido.');
-      const candidato = (datos.candidates || [])[0];
-      if (!candidato) throw new Error('El proveedor no devolvió ningún candidato (filtro de seguridad).');
-
-      const jsonEvaluacion = extraerJSON(candidato);
-
-      return {
-        evaluacion: jsonEvaluacion,
-        finishReason: candidato.finishReason || null,
-        uso: datos.usageMetadata || null,
-        reintentos: intento
-      };
+    const parts: any[] = [{ text: promptText }];
+    for (const img of images) {
+      parts.push({
+        inlineData: {
+          mimeType: img.mimeType,
+          data: img.data
+        }
+      });
     }
 
-    const detalle = (datos && datos.error && datos.error.message) || texto.slice(0, 300);
-    ultimoRechazo = { status: res.status, detalle };
+    const cuerpo = JSON.stringify({
+      contents: [{ parts }],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: 'application/json',
+        responseSchema: ESQUEMA_RESPUESTA
+      }
+    });
 
-    const esPasajero = [429, 500, 502, 503, 504].includes(res.status);
-    if (!esPasajero || intento === ESPERAS_MS.length) break;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
+        body: cuerpo
+      });
 
-    await new Promise(r => setTimeout(r, ESPERAS_MS[intento]));
+      const texto = await res.text();
+      let datos: any = null;
+      try { datos = JSON.parse(texto); } catch { datos = null; }
+
+      if (res.ok) {
+        if (!datos) throw new Error('El proveedor de IA no devolvió un JSON válido.');
+        const candidato = (datos.candidates || [])[0];
+        if (!candidato) throw new Error('El proveedor no devolvió ningún candidato (filtro de seguridad).');
+
+        const jsonEvaluacion = extraerJSON(candidato);
+
+        return {
+          evaluacion: jsonEvaluacion,
+          modeloUsado: modelo,
+          finishReason: candidato.finishReason || null,
+          uso: datos.usageMetadata || null
+        };
+      }
+
+      const detalle = (datos && datos.error && datos.error.message) || texto.slice(0, 300);
+      ultimoRechazo = { status: res.status, detalle, modelo };
+
+      const esRecuperable = [404, 429, 500, 502, 503, 504].includes(res.status);
+      console.warn(`[grade-sheet] Modelo ${modelo} devolvió ${res.status}: ${detalle}. ${esRecuperable ? 'Saltando al siguiente modelo de respaldo...' : ''}`);
+      if (!esRecuperable) break;
+
+    } catch (netErr: any) {
+      ultimoRechazo = { status: 502, detalle: netErr?.message || 'Error de red', modelo };
+      console.warn(`[grade-sheet] Fallo de red con modelo ${modelo}: ${netErr?.message}. Saltando a respaldo...`);
+    }
   }
 
-  throw new Error(`Error del proveedor de IA (${ultimoRechazo.status}): ${ultimoRechazo.detalle}`);
+  throw new Error(`Error del proveedor de IA (${ultimoRechazo?.status}): ${ultimoRechazo?.detalle}`);
 }
 
 Deno.serve(async (req) => {
@@ -322,15 +332,14 @@ Deno.serve(async (req) => {
       promptText,
       images: imagenes,
       clave,
-      modelo
+      modeloPreferido: modelo
     });
 
     return responder({
       ok: true,
       data: resultado.evaluacion,
-      modelo,
+      modelo: resultado.modeloUsado || modelo,
       prompt_version: PROMPT_VERSION,
-      reintentos: resultado.reintentos,
       ms: Date.now() - inicio
     });
 

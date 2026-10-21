@@ -13,7 +13,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-const PROMPT_VERSION = 'super-worker-v4';
+const PROMPT_VERSION = 'super-worker-v5';
 
 const TAXONOMIA = [
   'vacio_conceptual',
@@ -254,53 +254,63 @@ function extraerJSON(candidato) {
 
 async function llamarGemini(promptText, schema, temperature = 0.2) {
   const clave = Deno.env.get('GEMINI_API_KEY');
-  const modeloCrudo = String(Deno.env.get('AI_MODEL') || 'gemini-2.5-flash').trim();
-  const modelo = modeloCrudo.replace(/^models\//i, '').trim() || 'gemini-2.5-flash';
-
   if (!clave) throw new Error('Falta el secreto GEMINI_API_KEY en Supabase.');
 
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
-    encodeURIComponent(modelo) + ':generateContent';
+  const envModelo = String(Deno.env.get('AI_MODEL') || '').replace(/^models\//i, '').trim();
+  const modelosCascada = [
+    envModelo || 'gemini-2.5-flash',
+    'gemini-3.5-flash',
+    'gemini-2.5-flash-lite'
+  ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
-  const cuerpo = JSON.stringify({
-    contents: [{ parts: [{ text: promptText }] }],
-    generationConfig: {
-      temperature: temperature,
-      responseMimeType: 'application/json',
-      responseSchema: schema
-    }
-  });
-
-  const ESPERAS_MS = [800, 2500];
   let ultimoRechazo = null;
 
-  for (let intento = 0; intento <= ESPERAS_MS.length; intento++) {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
-      body: cuerpo
+  for (const modelo of modelosCascada) {
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
+      encodeURIComponent(modelo) + ':generateContent';
+
+    const cuerpo = JSON.stringify({
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: {
+        temperature: temperature,
+        responseMimeType: 'application/json',
+        responseSchema: schema
+      }
     });
 
-    const texto = await res.text();
-    let datos = null;
-    try { datos = JSON.parse(texto); } catch { datos = null; }
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
+        body: cuerpo
+      });
 
-    if (res.ok) {
-      if (!datos) throw new Error('El proveedor devolvió algo que no es JSON.');
-      const candidato = (datos.candidates || [])[0];
-      if (!candidato) throw new Error('El proveedor no devolvió candidatos.');
-      return extraerJSON(candidato);
+      const texto = await res.text();
+      let datos = null;
+      try { datos = JSON.parse(texto); } catch { datos = null; }
+
+      if (res.ok) {
+        if (!datos) throw new Error('El proveedor devolvió algo que no es JSON.');
+        const candidato = (datos.candidates || [])[0];
+        if (!candidato) throw new Error('El proveedor no devolvió candidatos.');
+        return extraerJSON(candidato);
+      }
+
+      const detalle = (datos && datos.error && datos.error.message) || texto.slice(0, 300);
+      ultimoRechazo = { status: res.status, detalle: detalle, modelo: modelo };
+
+      // Si falló por modelo no disponible (404), límite de cuota (429) o saturación (500, 502, 503, 504), salta de inmediato al siguiente modelo
+      const esRecuperable = [404, 429, 500, 502, 503, 504].includes(res.status);
+      console.warn(`[super-worker] Modelo ${modelo} devolvió ${res.status}: ${detalle}. ${esRecuperable ? 'Probando siguiente modelo de respaldo...' : ''}`);
+      if (!esRecuperable) break;
+
+    } catch (netErr: any) {
+      ultimoRechazo = { status: 502, detalle: netErr?.message || 'Error de red', modelo: modelo };
+      console.warn(`[super-worker] Fallo de red con modelo ${modelo}: ${netErr?.message}. Saltando a respaldo...`);
     }
-
-    const detalle = (datos && datos.error && datos.error.message) || texto.slice(0, 300);
-    ultimoRechazo = { status: res.status, detalle: detalle };
-    const esPasajero = [429, 500, 502, 503, 504].includes(res.status);
-    if (!esPasajero || intento === ESPERAS_MS.length) break;
-
-    await new Promise(r => setTimeout(r, ESPERAS_MS[intento]));
   }
 
-  throw new Error(`Error de IA (${ultimoRechazo.status}): ${ultimoRechazo.detalle}`);
+  throw new Error(`Error de IA (${ultimoRechazo?.status}): ${ultimoRechazo?.detalle}`);
 }
 
 const MAX_CRITERIOS = 3;
