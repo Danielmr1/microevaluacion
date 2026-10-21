@@ -1494,7 +1494,7 @@
       let actionBtn = '';
 
       if (aiRes.action === 'open_create_classroom') {
-        actionBtn = '<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="CopilotCommand.openCreateClassroomModalFromChat()">' + (aiRes.action_label || '🏫 Abrir ventana Crear Salón') + '</button></div>';
+        actionBtn = '<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="CopilotCommand.openCreateClassroomModalFromChat()">' + (aiRes.action_label || '➕ Agregar Nuevo Salón') + '</button></div>';
       } else if (aiRes.action === 'open_generate_session') {
         actionBtn = '<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="CopilotCommand.handleGenerateSession()">' + (aiRes.action_label || '⚡ Generar sesión') + '</button></div>';
       } else if (aiRes.action === 'open_bank') {
