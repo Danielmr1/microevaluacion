@@ -422,6 +422,58 @@
     }
   }
 
+  /**
+   * Genera una pregunta matemática inédita con alternativas y rúbrica usando Gemini en Supabase
+   * @param {object} payload { grado, tema }
+   * @returns {Promise<{ok: boolean, question?: object, error?: string}>}
+   */
+  async function generateQuestionWithAI(payload) {
+    const client = getClient();
+    if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
+
+    try {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado (40 s). La IA de Gemini no respondió a tiempo.')), 40000)
+      );
+
+      const invokePromise = (async () => {
+        return await client.functions.invoke('super-worker', {
+          body: Object.assign({ action: 'generate_question' }, payload)
+        });
+      })();
+
+      const res = await Promise.race([invokePromise, timeoutPromise]);
+      const { data, error } = res;
+
+      if (error) {
+        let detalle = error.message || String(error);
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const cuerpo = await error.context.json();
+            if (cuerpo && (cuerpo.error || cuerpo.message)) detalle = cuerpo.error || cuerpo.message;
+          }
+        } catch (e) {}
+        console.error('[SupabaseClient] generateQuestionWithAI falló:', detalle);
+        anotarLlamadaIA({ funcion: 'generate_question', ok: false, error: detalle });
+        return { ok: false, error: detalle };
+      }
+
+      if (!data || !data.ok || !data.question) {
+        anotarLlamadaIA({ funcion: 'generate_question', ok: false, error: 'Respuesta inválida de IA.' });
+        return { ok: false, error: (data && data.error) || 'La IA no devolvió una pregunta estructurada.' };
+      }
+
+      anotarLlamadaIA({ funcion: 'generate_question', ok: true });
+      return { ok: true, question: data.question };
+
+    } catch (e) {
+      console.error('[SupabaseClient] Error en llamada a generateQuestionWithAI:', e);
+      const msg = e && e.message ? e.message : 'Error al conectar con la IA.';
+      anotarLlamadaIA({ funcion: 'generate_question', ok: false, error: msg });
+      return { ok: false, error: msg };
+    }
+  }
+
   // ─────────────────────────────────────────────
   // BANCO DE EVALUACIONES (historial personal)
   // ─────────────────────────────────────────────
@@ -914,6 +966,7 @@
     updateStudent,
     deleteStudent,
     generateRubric,
+    generateQuestionWithAI,
     diagnosticoIA,
     saveEvaluation,
     deleteEvaluation,

@@ -1,11 +1,11 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.4.3
+// Service Worker para Microevaluación A5 (PWA) — v3.4.4
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.4.3';
+const CACHE_NAME = 'microeval-cache-v3.4.4';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './styles.css?v=3.4.3',
+  './styles.css?v=3.4.4',
   './manifest.json',
   './icon-192.png',
   // Librerías de soporte (100% locales / self-hosted)
@@ -20,7 +20,7 @@ const PRECACHE_ASSETS = [
   './warp_math.js',
   // Módulos de la aplicación
   './classroom-data.js?v=3.3.8',
-  './supabase-client.js?v=3.3.8',
+  './supabase-client.js?v=3.4.4',
   './roi-processor.js?v=3.2.50',
   './scanner.js?v=3.3.8',
   './results-manager.js?v=3.1.90',
@@ -34,7 +34,7 @@ const PRECACHE_ASSETS = [
   './card-generator.js?v=3.3.8',
   './session-controller.js?v=3.3.8',
   './app-navigation.js?v=3.3.8',
-  './copilot-command.js?v=3.4.3',
+  './copilot-command.js?v=3.4.4',
   './qrcode.bundle.js?v=3.0.6'
 ];
 

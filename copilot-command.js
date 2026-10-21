@@ -1156,11 +1156,51 @@
   }
 
   /**
-   * Renderiza la tarjeta de previsualización de pregunta con alternativas y rúbrica (Fase 2)
+   * Renderiza la tarjeta de previsualización de pregunta con alternativas y rúbrica generada por IA
    */
-  function renderQuestionPreviewCard(topic, stage, level, preferredKey, hasRubric) {
+  async function renderQuestionPreviewCard(topic, stage, level, preferredKey, hasRubric) {
     if (hasRubric === undefined) hasRubric = true;
-    const qData = generateQuestionWithRubric(topic, stage, level, preferredKey, hasRubric);
+    const stageLabel = stage === 'secundaria' ? 'Secundaria' : 'Primaria';
+    const gradeText = `${level}° de ${stageLabel}`;
+
+    const loadingId = `msg-loading-${Date.now()}`;
+    appendMessage('ai', `<div id="${loadingId}">⏳ <b>EVA y Gemini están redactando tu pregunta con IA...</b><br>Generando problema matemático, 4 alternativas con distractores de razonamiento y rúbrica para <b>${gradeText}</b> sobre <i>"${topic}"</i> (~5-10 seg).</div>`);
+
+    let qData = null;
+
+    if (typeof SupabaseClient !== 'undefined' && SupabaseClient.generateQuestionWithAI) {
+      try {
+        const res = await SupabaseClient.generateQuestionWithAI({ grado: gradeText, tema: topic });
+        if (res && res.ok && res.question) {
+          qData = {
+            title: res.question.title || `Problema sobre ${topic}`,
+            prompt: res.question.prompt,
+            options: res.question.options,
+            correct: res.question.correct,
+            rubric: hasRubric ? res.question.rubric : null,
+            hasRubric: !!hasRubric,
+            gradeStage: stage,
+            gradeLevel: level,
+            gradeText: gradeText
+          };
+        } else {
+          console.warn('[Copilot AI Generation Fallback]', res?.error);
+        }
+      } catch (err) {
+        console.warn('[Copilot AI Generation Error]', err);
+      }
+    }
+
+    // Fallback de resiliencia si la red o IA se desconecta
+    if (!qData) {
+      qData = generateQuestionWithRubric(topic, stage, level, preferredKey, hasRubric);
+    }
+
+    const loadEl = document.getElementById(loadingId);
+    if (loadEl && loadEl.parentElement) {
+      loadEl.parentElement.remove();
+    }
+
     const cardId = `card-q-${Date.now()}`;
     const encData = encodeURIComponent(JSON.stringify(qData));
     const encTopic = encodeURIComponent(topic || 'Matemática');
@@ -1175,7 +1215,7 @@
 
     const cardHtml = `
       <div class="copilot-action-card" id="${cardId}">
-        <span class="copilot-card-badge badge-green">📚 Nueva Pregunta para el Banco</span>
+        <span class="copilot-card-badge badge-green">🤖 Pregunta Inédita Generada con IA</span>
         <h4 class="copilot-card-title">${qData.gradeText} — ${qData.title}</h4>
         <div class="copilot-card-details">
           <b>Enunciado:</b> ${qData.prompt}
@@ -1189,22 +1229,22 @@
         ${rubricBadge}
         <div class="copilot-card-actions">
           <button type="button" class="copilot-card-btn copilot-card-btn-primary" onclick="CopilotCommand.confirmSaveQuestion('${encData}', '${cardId}')">💾 Guardar en el Banco</button>
-          <button type="button" class="copilot-card-btn" style="background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe;" onclick="CopilotCommand.regenerateQuestion('${encTopic}', '${stage}', ${level}, '${preferredKey || ''}', ${hasRubric}, '${cardId}')">🔄 Regenerar</button>
+          <button type="button" class="copilot-card-btn" style="background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe;" onclick="CopilotCommand.regenerateQuestion('${encTopic}', '${stage}', ${level}, '${preferredKey || ''}', ${hasRubric}, '${cardId}')">🔄 Regenerar con IA</button>
           <button type="button" class="copilot-card-btn copilot-card-btn-secondary" onclick="CopilotCommand.dismissCard('${cardId}')">❌ Descartar</button>
         </div>
       </div>
     `;
 
-    appendMessage('ai', `He redactado la pregunta completa para <b>${qData.gradeText}</b>:${cardHtml}`);
+    appendMessage('ai', `¡Pregunta matemática redactada por Gemini para <b>${qData.gradeText}</b>!${cardHtml}`);
   }
 
   /**
    * Regenera una pregunta con nuevas variantes manteniendo el grado, tema y modalidad de rúbrica
    */
-  function regenerateQuestion(encTopic, stage, level, preferredKey, hasRubric, oldCardId) {
+  async function regenerateQuestion(encTopic, stage, level, preferredKey, hasRubric, oldCardId) {
     dismissCard(oldCardId);
     const topic = decodeURIComponent(encTopic);
-    renderQuestionPreviewCard(topic, stage, parseInt(level, 10), preferredKey || null, !!hasRubric);
+    await renderQuestionPreviewCard(topic, stage, parseInt(level, 10), preferredKey || null, !!hasRubric);
   }
 
   /**
