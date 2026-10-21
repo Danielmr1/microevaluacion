@@ -1428,297 +1428,244 @@
     }
 
     // =========================================================================
-    // GUARDARRAÍL 4: BASE DE CONOCIMIENTO Y MANUAL DEL SISTEMA (MANUAL_SISTEMA.md)
+    // CHAT CONVERSACIONAL PEDAGÓGICO CON IA REAL (GEMINI)
     // =========================================================================
+    handleAIChatMessage(trimmed);
+  }
 
-    // Pregunta: ¿Por qué se necesitan alumnos / Salón sin alumnos?
-    if (/(?:por que|razon).*(?:alumnos|nomina)|salon sin alumnos|no existe salon sin alumnos|por que se necesitan alumnos/.test(norm)) {
-      appendMessage('ai', `
-        <b>Principio Fundacional de Microevaluación:</b><br>
-        En este sistema <b>no existe salón sin alumnos</b> (se requiere como mínimo 1 estudiante registrado).<br><br>
-        <b>¿Por qué es obligatorio?</b><br>
-        Cada ficha física impresa es nominal y personalizada: lleva impreso el nombre del alumno y un <b>código QR único</b> para su identificación instantánea en el escáner de alta velocidad.<br><br>
-        Sin alumnos, el generador no puede crear fichas en el PDF y el escáner no tiene a quién evaluar.
-      `);
+  /**
+   * Cierra el chat y abre la ventana modal de creación de salón
+   */
+  function openCreateClassroomModalFromChat() {
+    toggleChat(false);
+    if (typeof openAddClassroomModal === 'function') {
+      openAddClassroomModal();
+    } else if (typeof openFlow === 'function') {
+      openFlow('classrooms');
+    }
+  }
+
+  /**
+   * Procesa mensajes en lenguaje natural con IA real (Gemini en Supabase)
+   */
+  async function handleAIChatMessage(userText) {
+    const loadingId = 'msg-eva-thinking-' + Date.now();
+    appendMessage('ai', '<div id="' + loadingId + '" style="display:flex; align-items:center; gap:8px; color:#64748b; font-size:0.84rem;"><span class="copilot-spinner" style="display:inline-block; width:14px; height:14px; border:2px solid #cbd5e1; border-top-color:#0284c7; border-radius:50%; animation:spin 0.8s linear infinite;"></span><span>EVA está pensando...</span></div>');
+
+    const classrooms = (typeof ClassroomData !== 'undefined' && ClassroomData.getClassrooms) ? ClassroomData.getClassrooms() : [];
+    const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions) ? ClassroomData.getSavedSessions() : [];
+    const context = {
+      salonesRegistrados: classrooms.map(c => ({ id: c.id, nombre: c.name, alumnos: (c.students || []).length })),
+      sesionesGuardadasCount: sessions.length
+    };
+
+    let aiRes = null;
+    if (typeof SupabaseClient !== 'undefined' && SupabaseClient.chatWithAI) {
+      try {
+        aiRes = await SupabaseClient.chatWithAI(userText, context);
+      } catch (err) {
+        aiRes = { ok: false, error: err.message };
+      }
+    }
+
+    const loadEl = document.getElementById(loadingId);
+    if (loadEl) loadEl.remove();
+
+    if (aiRes && aiRes.ok) {
+      let replyText = (aiRes.reply || '').replace(/\n/g, '<br>');
+      let actionBtn = '';
+
+      if (aiRes.action === 'open_create_classroom') {
+        actionBtn = '<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="CopilotCommand.openCreateClassroomModalFromChat()">' + (aiRes.action_label || '🏫 Abrir ventana Crear Salón') + '</button></div>';
+      } else if (aiRes.action === 'open_generate_session') {
+        actionBtn = '<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="CopilotCommand.handleGenerateSession()">' + (aiRes.action_label || '⚡ Generar sesión') + '</button></div>';
+      } else if (aiRes.action === 'open_bank') {
+        actionBtn = '<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="openFlow(\'bank\'); CopilotCommand.toggleChat(false);">' + (aiRes.action_label || '📚 Ir al Banco de Preguntas') + '</button></div>';
+      } else if (aiRes.action === 'open_comparative_table') {
+        actionBtn = '<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="CopilotCommand.renderComparativeTable()">' + (aiRes.action_label || '📊 Ver Cuadro Comparativo') + '</button></div>';
+      }
+
+      appendMessage('ai', replyText + actionBtn);
       return;
     }
 
-    // Pregunta: ¿Cómo funciona la Cartilla OMR? (Rama 3)
-    if (/como funciona.*cartilla|que es.*cartilla|que es.*omr|como usar.*cartilla/.test(norm)) {
-      appendMessage('ai', `
-        <b>Modalidad: Cartilla OMR (Rama 3)</b><br>
-        Diseñada para evaluaciones masivas y simulacros de <b>6 a 20 preguntas</b>.<br><br>
-        • <b>Modo A (Solo Cartilla):</b> Se imprimen solo las hojas de burbujas OMR y el examen se proyecta o dicta.<br>
-        • <b>Modo B (Cartilla + Cuadernillo):</b> Se imprimen las cartillas junto con un cuadernillo impreso A4 con enunciados y alternativas extraídas del Banco de Preguntas.<br>
-        • <b>Corrección:</b> Instantánea y 100% local por visión computacional (< 100 ms por ficha, sin consumo de IA).
-      `);
-      return;
+    appendMessage('ai', '⚠️ <i>No pude conectar con el servicio de IA en este momento (' + ((aiRes && aiRes.error) || 'sin conexión') + ').</i><br><br>Puedes acceder directamente a las opciones del sistema:<div class="copilot-clarify-chips" style="margin-top:8px;"><button type="button" class="copilot-chip" onclick="CopilotCommand.openCreateClassroomModalFromChat()">🏫 Crear Salón</button><button type="button" class="copilot-chip" onclick="CopilotCommand.handleGenerateSession()">⚡ Generar sesión</button><button type="button" class="copilot-chip" onclick="CopilotCommand.startCreateQuestionFlow()">⚡ Crear Pregunta IA</button></div>');
+  }
+
+  /**
+   * Cierra el chat y navega a la vista de sesiones guardadas
+   */
+  function goToSavedSessions() {
+    toggleChat(false);
+    if (typeof openFlow === 'function') {
+      openFlow('saved-sessions');
     }
+  }
 
-    // Pregunta: ¿Cómo funciona Formativa con IA? (Rama 1)
-    if (/como funciona.*formativa|que es.*formativa|formativa con ia/.test(norm)) {
-      appendMessage('ai', `
-        <b>Modalidad: Formativa con IA (Rama 1)</b><br>
-        Diseñada para el diagnóstico profundo del aprendizaje en <b>1 a 2 preguntas</b>.<br><br>
-        • <b>Cuadrícula de cálculo manuscrita:</b> Los estudiantes desarrollan a mano sus operaciones paso a paso.<br>
-        • <b>Corrección pedagógica:</b> Gemini analiza el razonamiento cualitativo, detecta errores conceptuales típicos y califica según una rúbrica formativa ponderada.
-      `);
-      return;
+  /**
+   * Cierra el chat y arranca el flujo de la modalidad elegida
+   */
+  function selectBranchAndStart(branch) {
+    toggleChat(false);
+    if (typeof openBranchFlow === 'function') {
+      openBranchFlow(branch);
     }
+  }
 
-    // Pregunta: ¿Cómo funciona Focalizada en la Respuesta? (Rama 2)
-    if (/como funciona.*focalizada|que es.*focalizada/.test(norm)) {
-      appendMessage('ai', `
-        <b>Modalidad: Focalizada en la Respuesta (Rama 2)</b><br>
-        Diseñada para verificar respuestas directas o alternativas en <b>1 a 5 preguntas</b>.<br><br>
-        • <b>Formato físico:</b> Fichas A5 (1 a 2 preguntas) o A4 (5 preguntas).<br>
-        • <b>Corrección:</b> Determinista e inmediata sobre las opciones marcadas, sin calificar el borrador.
-      `);
-      return;
-    }
+  /**
+   * Inicia el flujo conversacional guiado para crear una pregunta IA en el Banco
+   * Paso 1: Grado curricular (asociado al grado, no a salones)
+   * Paso 2: Tema / competencia (sugerencias o texto libre en el chat)
+   * Paso 3: Rúbrica (Con Rúbrica Pedagógica para Formativa con IA / Sin Rúbrica para Focalizada y Cartillas OMR)
+   * Paso 4: Tarjeta de acción con alternativas, guardado en banco y opción de regenerar
+   */
+  function startCreateQuestionFlow() {
+    toggleChat(true);
+    pendingState = {
+      action: 'create_question_await_grade',
+      branch: null,
+      classroomId: null,
+      classroomName: null,
+      questionCount: null,
+      sessionId: null,
+      createClassData: null,
+      createQuestionData: {}
+    };
 
-    // Pregunta: ¿Cómo se crea una sesión / Pasos de evaluación?
-    if (/como se crea una sesion|pasos para.*evaluacion|como evaluar|flujo de evaluacion/.test(norm)) {
-      appendMessage('ai', `
-        <b>Secuencia Obligatoria de Creación de una Evaluación:</b><br>
-        1. <b>Salón con alumnos:</b> Seleccionar un salón con nómina activa (mínimo 1 alumno).<br>
-        2. <b>Modalidad:</b> Elegir Formativa IA, Focalizada o Cartilla OMR.<br>
-        3. <b>Parámetros:</b> Cantidad de preguntas según la modalidad.<br>
-        4. <b>Contenido:</b> Preguntas completas con alternativas (A-D), clave correcta y rúbrica de IA.<br>
-        5. <b>Vista de Resumen:</b> Se genera el PDF como <b>borrador activo</b>. El docente decide si pulsa <i>[ 💾 Guardar Sesión ]</i> para almacenarla en sus 8 cupos o va directo al escáner.
-      `);
-      return;
-    }
+    const stages = (typeof ClassroomData !== 'undefined' && ClassroomData.getGradeStages)
+      ? ClassroomData.getGradeStages()
+      : [
+          { stage: 'primaria', label: 'Primaria', grades: [4, 5, 6] },
+          { stage: 'secundaria', label: 'Secundaria', grades: [1, 2, 3, 4, 5] }
+        ];
 
-    // Pregunta: ¿Cómo funciona el Banco de Preguntas?
-    if (/como funciona el banco|banco de preguntas|guardar en el banco/.test(norm)) {
-      appendMessage('ai', `
-        <b>Banco de Preguntas (Regla 6 de Integridad):</b><br>
-        Toda pregunta que ingrese al banco debe contar obligatoriamente con:<br>
-        1. Enunciado claro.<br>
-        2. Sus 4 alternativas completas (A, B, C, D) con su clave correcta.<br>
-        3. Análisis pedagógico completo generado por IA (solución canónica, procedimiento y errores previsibles).<br><br>
-        <i>Queda prohibido guardar preguntas incompletas o sin análisis.</i>
-      `);
-      return;
-    }
+    let chipsGrade = '';
+    stages.forEach(st => {
+      const icon = st.stage === 'primaria' ? '🏫' : '🏛️';
+      chipsGrade += `<div style="font-size:0.75rem; font-weight:700; color:#475569; margin:8px 0 4px 0;">${icon} ${st.label}:</div><div class="copilot-clarify-chips">`;
+      st.grades.forEach(lvl => {
+        const shortLabel = `${lvl}° ${st.stage === 'primaria' ? 'Pri.' : 'Sec.'}`;
+        const fullLabel = `${lvl}° ${st.label}`;
+        chipsGrade += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', '${st.stage}:${lvl}', '${fullLabel}', this)">${shortLabel}</button>`;
+      });
+      chipsGrade += `</div>`;
+    });
 
-    // Pregunta: ¿Cuántas sesiones se pueden guardar?
-    if (/cuantas sesiones.*guardar|cupos de sesiones|limite de sesiones/.test(norm)) {
-      appendMessage('ai', `
-        <b>Gestión de Cupos de Sesiones Guardadas:</b><br>
-        El sistema permite almacenar hasta <b>8 sesiones guardadas simultáneas</b> para acceso rápido en el aula sin internet.<br><br>
-        Al eliminar una sesión guardada, se libera de inmediato el cupo correspondiente.
-      `);
-      return;
-    }
+    appendMessage('ai', `<b>¡Crear Nueva Pregunta con IA!</b><br>Toda pregunta en Microevaluación se asocia a un grado curricular para estar disponible en todos los salones de ese nivel.<br><br><b>Paso 1:</b> Selecciona el <b>grado</b> de la pregunta:${chipsGrade}`);
+  }
 
-    // =========================================================================
-    // FASE 3: INTERFACES GENERATIVAS Y ANALÍTICA EN EL CHAT
-    // =========================================================================
+  /**
+   * Renderiza la tarjeta de previsualización de pregunta con alternativas y rúbrica generada por IA
+   */
+  async function renderQuestionPreviewCard(topic, stage, level, preferredKey, hasRubric) {
+    if (hasRubric === undefined) hasRubric = true;
+    const stageLabel = stage === 'secundaria' ? 'Secundaria' : 'Primaria';
+    const gradeText = `${level}° de ${stageLabel}`;
 
-    // A. Cuadro Comparativo de Salones
-    if (/cuadro comparativo|comparar salones|comparativa|rendimiento general|comparar rendimiento|comparar aciertos|comparar aulas/.test(norm)) {
-      renderComparativeTable();
-      return;
-    }
+    const loadingId = `msg-loading-${Date.now()}`;
+    appendMessage('ai', `<div id="${loadingId}">⏳ <b>EVA y Gemini están redactando tu pregunta con IA...</b><br>Generando problema matemático, 4 alternativas con distractores de razonamiento y rúbrica para <b>${gradeText}</b> sobre <i>"${topic}"</i> (~5-10 seg).</div>`);
 
-    // B. Diagnóstico de Preguntas con Mayor Error
-    if (/(?:preguntas?|items?).*(?:error|errores|dificil|dificiles|fall|mas fallada)|analisis de error|dificultad de preguntas/.test(norm)) {
-      renderQuestionErrorAnalysis();
-      return;
-    }
+    let qData = null;
 
-    // C. Estudiantes Prioritarios para Refuerzo
-    if (/(?:quienes|alumnos?|estudiantes?).*(?:refuerzo|riesgo|bajo|apoyo|dificultad)|necesitan (?:apoyo|refuerzo)/.test(norm)) {
-      renderStudentsReinforcement();
-      return;
-    }
-
-    // =========================================================================
-    // FASE 2: GESTIÓN ASISTIDA (CREACIÓN Y ELIMINACIÓN)
-    // =========================================================================
-
-    // 1. Eliminar Salón con Guardarraíl de Seguridad
-    if (/eliminar salon|borrar salon|elimina el salon|borra el salon|elimina salon|borra salon/.test(norm)) {
-      const clsRes = matchClassroom(norm);
-      if (clsRes.match) {
-        const cls = clsRes.match;
-        const activeSess = typeof ClassroomData !== 'undefined' ? ClassroomData.getActiveSession() : null;
-        const savedRes = typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInSavedSession
-          ? ClassroomData.isClassroomInSavedSession(cls.id)
-          : null;
-        const isInSaved = !!(savedRes && savedRes.inUse);
-
-        if (isInSaved || (activeSess && activeSess.classroomId === cls.id)) {
-          appendMessage('ai', `⚠️ <b>Acción bloqueada por seguridad:</b> El salón <b>"${cls.name}"</b> tiene una evaluación activa o guardada en curso. Finaliza o elimina la sesión antes de borrar el salón.`);
-          return;
+    if (typeof SupabaseClient !== 'undefined' && SupabaseClient.generateQuestionWithAI) {
+      try {
+        const res = await SupabaseClient.generateQuestionWithAI({ grado: gradeText, tema: topic });
+        if (res && res.ok && res.question) {
+          qData = {
+            title: res.question.title || `Problema sobre ${topic}`,
+            prompt: res.question.prompt,
+            options: res.question.options,
+            correct: res.question.correct,
+            rubric: hasRubric ? res.question.rubric : null,
+            hasRubric: !!hasRubric,
+            gradeStage: stage,
+            gradeLevel: level,
+            gradeText: gradeText
+          };
+        } else {
+          console.warn('[Copilot AI Generation Fallback]', res?.error);
         }
-
-        renderClassroomDeleteCard(cls);
-        return;
-      }
-
-      if (clsRes.candidates.length > 0) {
-        appendMessage('ai', '¿Qué salón deseas eliminar?');
-        showClassroomClarification(clsRes.candidates);
-        return;
+      } catch (err) {
+        console.warn('[Copilot AI Generation Error]', err);
       }
     }
 
-    // 1b. Generar Sesión con verificación previa de cupo
-    if (/generar sesion|crear sesion|nueva sesion/.test(norm) && !/salones|alumnos|banco|pregunta/.test(norm)) {
-      handleGenerateSession();
-      return;
+    // Fallback de resiliencia si la red o IA se desconecta
+    if (!qData) {
+      qData = generateQuestionWithRubric(topic, stage, level, preferredKey, hasRubric);
     }
 
-    // 2. Crear Pregunta Asistida hacia el Banco de Preguntas (Regla 6)
-    if (/crear pregunta|nueva pregunta|genera una pregunta|redacta una pregunta|crea una pregunta|pregunta sobre/.test(norm)) {
-      const topicMatch = trimmed.match(/(?:sobre|de)\s+([^.\n]+)/i);
-      const keyMatch = norm.match(/\bclave\s*([a-d])\b/);
-      const preferredKey = keyMatch ? keyMatch[1].toUpperCase() : null;
-      const gradeMatch = norm.match(/\b([1-6])\b/);
-      const isSec = norm.includes('sec');
-      const stage = isSec ? 'secundaria' : 'primaria';
-
-      if (!topicMatch && !gradeMatch) {
-        startCreateQuestionFlow();
-        return;
-      }
-
-      if (gradeMatch && topicMatch) {
-        const level = parseInt(gradeMatch[1], 10);
-        const topic = topicMatch[1].trim();
-        renderQuestionPreviewCard(topic, stage, level, preferredKey, true);
-        return;
-      }
-
-      startCreateQuestionFlow();
-      return;
+    const loadEl = document.getElementById(loadingId);
+    if (loadEl && loadEl.parentElement) {
+      loadEl.parentElement.remove();
     }
 
-    // 3. Crear Salón Asistido (OBLIGATORIO: con nómina de alumnos - Guardarraíl 1)
-    if (/crear salon|nuevo salon|crea salon|crea el salon|agregar salon|agrega salon|crear aula|crea aula/.test(norm)) {
-      const classData = parseClassroomCreation(trimmed, norm);
-      if (!classData.students || classData.students.length === 0) {
-        pendingState.action = 'create_classroom_pending_students';
-        pendingState.createClassData = classData;
-        appendMessage('ai', `⚠️ <b>Guardarraíl de Aula:</b> Para crear el salón <b>"${classData.name}"</b> es obligatorio registrar sus alumnos (según las reglas de Microevaluación no existe salón sin alumnos porque cada ficha física requiere el nombre y código QR del estudiante).<br><br>Por favor escribe o pega aquí los nombres de los estudiantes (separados por coma o uno por línea):`);
-        return;
-      }
-      renderClassroomPreviewCard(classData);
-      return;
-    }
+    const cardId = `card-q-${Date.now()}`;
+    const encData = encodeURIComponent(JSON.stringify(qData));
+    const encTopic = encodeURIComponent(topic || 'Matemática');
 
-    // =========================================================================
-    // FASE 1: NAVEGACIÓN Y ACLARACIÓN DE SESIONES / EVALUACIONES
-    // =========================================================================
+    const rubricBadge = hasRubric
+      ? `<div class="copilot-card-details" style="font-size:0.75rem; color:#15803d; background:#f0fdf4; padding:6px 10px; border-radius:6px; border:1px solid #bbf7d0;">
+           ✨ <b>Rúbrica pedagógica de IA generada:</b> Solución canónica y criterios de evaluación ponderados listos para calificar el borrador en la modalidad Formativa con IA.
+         </div>`
+      : `<div class="copilot-card-details" style="font-size:0.75rem; color:#0369a1; background:#f0f9ff; padding:6px 10px; border-radius:6px; border:1px solid #bae6fd;">
+           ⚡ <b>Sin Rúbrica (Pregunta Rápida):</b> Calificación determinista inmediata por clave para las modalidades Focalizada y Cartillas OMR.
+         </div>`;
 
-    // 4. Detección directa: Banco de Preguntas
-    if (/banco|banco de preguntas|preguntas guardadas/.test(norm)) {
-      pendingState.action = 'bank';
-      executeNavigation(pendingState);
-      return;
-    }
-
-    // 5. Detección directa: Salones y Alumnos
-    if (/salones|alumnos|nomina|nominas|estudiantes|aulas|lista de alumnos/.test(norm) && !/cartilla|evaluar|prueba|examen/.test(norm)) {
-      pendingState.action = 'classrooms';
-      executeNavigation(pendingState);
-      return;
-    }
-
-    // 6. Detección directa: Sesiones Guardadas / Escanear Sesión
-    const sessionRes = matchSession(norm);
-    if (sessionRes.isSession) {
-      if (sessionRes.session) {
-        pendingState.action = 'saved-sessions';
-        pendingState.sessionId = sessionRes.session.id;
-        executeNavigation(pendingState);
-        return;
-      }
-      if (sessionRes.candidates.length > 0) {
-        let chipsHtml = '<div class="copilot-clarify-chips">';
-        sessionRes.candidates.forEach((s, idx) => {
-          const cls = typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroom(s.classroomId) : null;
-          const label = `Sesión ${idx + 1}: ${cls ? cls.name : 'Salón'} (${s.branchTitle || 'Evaluación'})`;
-          chipsHtml += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('session', '${s.id}', '${label}')">${label}</button>`;
-        });
-        chipsHtml += '</div>';
-        appendMessage('ai', `Tienes las siguientes sesiones guardadas listas para escanear:${chipsHtml}`);
-        return;
-      } else {
-        appendMessage('ai', 'No tienes sesiones guardadas todavía. ¿Deseas preparar una nueva evaluación ahora?');
-        showBranchClarification();
-        return;
-      }
-    }
-
-    // 7. Extracción de entidades para evaluación: Salón, Modalidad, Preguntas
-    const branch = matchBranch(norm);
-    const clsRes = matchClassroom(norm);
-    const qCount = matchQuestionCount(norm);
-
-    if (branch) pendingState.branch = branch;
-    if (qCount) pendingState.questionCount = qCount;
-    if (clsRes.match) {
-      const fullCls = (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom)
-        ? ClassroomData.getClassroom(clsRes.match.id)
-        : clsRes.match;
-      if (!fullCls || !fullCls.students || fullCls.students.length === 0) {
-        appendMessage('ai', `⚠️ <b>El salón "${clsRes.match.name}" no tiene alumnos registrados.</b><br>No es posible preparar una evaluación para un salón vacío porque cada ficha física requiere el nombre y código QR del estudiante.<br><br>Por favor ingresa a <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('action', 'classrooms', 'Salones y Alumnos')">🏫 Salones y Alumnos</button> para cargar su nómina primero.`);
-        return;
-      }
-      pendingState.classroomId = clsRes.match.id;
-      pendingState.classroomName = clsRes.match.name;
-    }
-
-    // Salón ambiguo
-    if (!clsRes.match && clsRes.candidates.length > 1) {
-      appendMessage('ai', `Encontré más de un salón para esa indicación. ¿A cuál te refieres?`);
-      showClassroomClarification(clsRes.candidates);
-      return;
-    }
-
-    // Modalidad y Salón listos -> Ejecución inmediata
-    if (pendingState.branch && pendingState.classroomId) {
-      pendingState.action = 'eval';
-      executeNavigation(pendingState);
-      return;
-    }
-
-    // Solo Modalidad
-    if (pendingState.branch && !pendingState.classroomId) {
-      const branchTitle = pendingState.branch === 'rama3' ? 'Cartilla OMR' : (pendingState.branch === 'rama2' ? 'Focalizada' : 'Formativa con IA');
-      appendMessage('ai', `¡Excelente! Vamos a preparar una evaluación con <b>${branchTitle}</b>.`);
-      showClassroomClarification();
-      return;
-    }
-
-    // Solo Salón
-    if (!pendingState.branch && pendingState.classroomId) {
-      appendMessage('ai', `Entendido, evaluaremos a <b>${pendingState.classroomName}</b>.`);
-      showBranchClarification();
-      return;
-    }
-
-    // Solo cantidad de preguntas
-    if (pendingState.questionCount && !pendingState.branch && !pendingState.classroomId) {
-      appendMessage('ai', `Para una evaluación de <b>${pendingState.questionCount} preguntas</b>, ¿qué modalidad y salón prefieres?`);
-      showBranchClarification();
-      return;
-    }
-
-    // Caso de ayuda / consulta abierta
-    appendMessage('ai', `
-      Puedo ayudarte a preparar evaluaciones, gestionar tu aula y analizar resultados. Prueba con:
-      <div class="copilot-clarify-chips" style="margin-top:8px;">
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cuadro comparativo de mis salones')">📊 Cuadro Comparativo</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('¿Qué preguntas tuvieron más errores?')">🎯 Preguntas Difíciles</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('¿Quiénes necesitan refuerzo?')">👥 Alumnos para Refuerzo</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.handleGenerateSession()">⚡ Generar sesión</button>
+    const cardHtml = `
+      <div class="copilot-action-card" id="${cardId}">
+        <span class="copilot-card-badge badge-green">🤖 Pregunta Inédita Generada con IA</span>
+        <h4 class="copilot-card-title">${qData.gradeText} — ${qData.title}</h4>
+        <div class="copilot-card-details">
+          <b>Enunciado:</b> ${qData.prompt}
+        </div>
+        <div class="copilot-card-options-grid">
+          <div class="copilot-card-opt ${qData.correct === 'A' ? 'is-correct' : ''}"><b>A)</b> ${qData.options.A}</div>
+          <div class="copilot-card-opt ${qData.correct === 'B' ? 'is-correct' : ''}"><b>B)</b> ${qData.options.B}</div>
+          <div class="copilot-card-opt ${qData.correct === 'C' ? 'is-correct' : ''}"><b>C)</b> ${qData.options.C}</div>
+          <div class="copilot-card-opt ${qData.correct === 'D' ? 'is-correct' : ''}"><b>D)</b> ${qData.options.D}</div>
+        </div>
+        ${rubricBadge}
+        <div class="copilot-card-actions">
+          <button type="button" class="copilot-card-btn copilot-card-btn-primary" onclick="CopilotCommand.confirmSaveQuestion('${encData}', '${cardId}')">💾 Guardar en el Banco</button>
+          <button type="button" class="copilot-card-btn" style="background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe;" onclick="CopilotCommand.regenerateQuestion('${encTopic}', '${stage}', ${level}, '${preferredKey || ''}', ${hasRubric}, '${cardId}')">🔄 Regenerar con IA</button>
+          <button type="button" class="copilot-card-btn copilot-card-btn-secondary" onclick="CopilotCommand.dismissCard('${cardId}')">❌ Descartar</button>
+        </div>
       </div>
-    `);
+    `;
+
+    appendMessage('ai', `¡Pregunta matemática redactada por Gemini para <b>${qData.gradeText}</b>!${cardHtml}`);
+  }
+
+  /**
+   * Regenera una pregunta con nuevas variantes manteniendo el grado, tema y modalidad de rúbrica
+   */
+  async function regenerateQuestion(encTopic, stage, level, preferredKey, hasRubric, oldCardId) {
+    dismissCard(oldCardId);
+    const topic = decodeURIComponent(encTopic);
+    await renderQuestionPreviewCard(topic, stage, parseInt(level, 10), preferredKey || null, !!hasRubric);
+  }
+
+  /**
+   * Renderiza la tarjeta de confirmación de eliminación segura (Fase 2)
+   */
+  function renderClassroomDeleteCard(cls) {
+    const cardId = `card-del-${Date.now()}`;
+    const cardHtml = `
+      <div class="copilot-action-card" id="${cardId}" style="border-color:#fecaca;">
+        <span class="copilot-card-badge badge-red">⚠️ Confirmación de Eliminación</span>
+        <h4 class="copilot-card-title" style="color:#b91c1c;">¿Eliminar el salón "${cls.name}"?</h4>
+        <div class="copilot-card-details">
+          Esta acción eliminará el salón y sus <b>${cls.students ? cls.students.length : cls.count || 0} estudiantes</b> registrados.
+        </div>
+        <div class="copilot-card-actions">
+          <button type="button" class="copilot-card-btn copilot-card-btn-danger" onclick="CopilotCommand.confirmDeleteClassroom('${cls.id}', '${cardId}')">🗑️ Sí, Eliminar Definitivamente</button>
+          <button type="button" class="copilot-card-btn copilot-card-btn-secondary" onclick="CopilotCommand.dismissCard('${cardId}')">Cancelar</button>
+        </div>
+      </div>
+    `;
+
+    appendMessage('ai', `Esta acción requiere confirmación:${cardHtml}`);
   }
 
   /**
@@ -1794,6 +1741,7 @@
     handleGenerateSession,
     goToSavedSessions,
     selectBranchAndStart,
+    openCreateClassroomModalFromChat,
     regenerateQuestion,
     confirmCreateClassroom,
     confirmSaveQuestion,

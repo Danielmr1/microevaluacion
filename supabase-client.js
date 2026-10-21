@@ -474,6 +474,63 @@
     }
   }
 
+  /**
+   * Conversación de texto libre con el Asistente EVA impulsado por Gemini
+   * @param {string} message - Texto escrito por el docente
+   * @param {object} [context] - Contexto actual del aula
+   * @returns {Promise<{ok: boolean, reply?: string, action?: string, action_label?: string, error?: string}>}
+   */
+  async function chatWithAI(message, context = {}) {
+    const client = getClient();
+    if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
+
+    try {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado (20 s).')), 20000)
+      );
+
+      const invokePromise = (async () => {
+        return await client.functions.invoke('super-worker', {
+          body: { action: 'chat', message, context }
+        });
+      })();
+
+      const res = await Promise.race([invokePromise, timeoutPromise]);
+      const { data, error } = res;
+
+      if (error) {
+        let detalle = error.message || String(error);
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const cuerpo = await error.context.json();
+            if (cuerpo && (cuerpo.error || cuerpo.message)) detalle = cuerpo.error || cuerpo.message;
+          }
+        } catch (e) {}
+        console.error('[SupabaseClient] chatWithAI falló:', detalle);
+        anotarLlamadaIA({ funcion: 'chat', ok: false, error: detalle });
+        return { ok: false, error: detalle };
+      }
+
+      if (!data || !data.ok) {
+        anotarLlamadaIA({ funcion: 'chat', ok: false, error: 'Respuesta inválida de IA.' });
+        return { ok: false, error: (data && data.error) || 'La IA no devolvió respuesta.' };
+      }
+
+      anotarLlamadaIA({ funcion: 'chat', ok: true });
+      return {
+        ok: true,
+        reply: data.reply || '',
+        action: data.action || 'none',
+        action_label: data.action_label || ''
+      };
+    } catch (e) {
+      console.error('[SupabaseClient] Error en llamada a chatWithAI:', e);
+      const msg = e && e.message ? e.message : 'Error al conectar con la IA.';
+      anotarLlamadaIA({ funcion: 'chat', ok: false, error: msg });
+      return { ok: false, error: msg };
+    }
+  }
+
   // ─────────────────────────────────────────────
   // BANCO DE EVALUACIONES (historial personal)
   // ─────────────────────────────────────────────
@@ -967,6 +1024,7 @@
     deleteStudent,
     generateRubric,
     generateQuestionWithAI,
+    chatWithAI,
     diagnosticoIA,
     saveEvaluation,
     deleteEvaluation,
