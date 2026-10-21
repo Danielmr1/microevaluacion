@@ -1133,25 +1133,24 @@
       createQuestionData: {}
     };
 
-    const chipsGrade = `
-      <div style="font-size:0.75rem; font-weight:700; color:#475569; margin:8px 0 4px 0;">🏫 Primaria:</div>
-      <div class="copilot-clarify-chips">
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:1', '1° Primaria')">1° Pri.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:2', '2° Primaria')">2° Pri.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:3', '3° Primaria')">3° Pri.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:4', '4° Primaria')">4° Pri.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:5', '5° Primaria')">5° Pri.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:6', '6° Primaria')">6° Pri.</button>
-      </div>
-      <div style="font-size:0.75rem; font-weight:700; color:#475569; margin:8px 0 4px 0;">🏛️ Secundaria:</div>
-      <div class="copilot-clarify-chips">
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:1', '1° Secundaria')">1° Sec.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:2', '2° Secundaria')">2° Sec.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:3', '3° Secundaria')">3° Sec.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:4', '4° Secundaria')">4° Sec.</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:5', '5° Secundaria')">5° Sec.</button>
-      </div>
-    `;
+    const stages = (typeof ClassroomData !== 'undefined' && ClassroomData.getGradeStages)
+      ? ClassroomData.getGradeStages()
+      : [
+          { stage: 'primaria', label: 'Primaria', grades: [4, 5, 6] },
+          { stage: 'secundaria', label: 'Secundaria', grades: [1, 2, 3, 4, 5] }
+        ];
+
+    let chipsGrade = '';
+    stages.forEach(st => {
+      const icon = st.stage === 'primaria' ? '🏫' : '🏛️';
+      chipsGrade += `<div style="font-size:0.75rem; font-weight:700; color:#475569; margin:8px 0 4px 0;">${icon} ${st.label}:</div><div class="copilot-clarify-chips">`;
+      st.grades.forEach(lvl => {
+        const shortLabel = `${lvl}° ${st.stage === 'primaria' ? 'Pri.' : 'Sec.'}`;
+        const fullLabel = `${lvl}° ${st.label}`;
+        chipsGrade += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', '${st.stage}:${lvl}', '${fullLabel}')">${shortLabel}</button>`;
+      });
+      chipsGrade += `</div>`;
+    });
 
     appendMessage('ai', `<b>¡Crear Nueva Pregunta con IA!</b><br>Toda pregunta en Microevaluación se asocia a un grado curricular para estar disponible en todos los salones de ese nivel.<br><br><b>Paso 1:</b> Selecciona el <b>grado</b> de la pregunta:${chipsGrade}`);
   }
@@ -1284,10 +1283,18 @@
       const numMatch = norm.match(/\b([1-6])\b/);
       if (numMatch) {
         const level = parseInt(numMatch[1], 10);
+        if (stage === 'primaria' && (level < 4 || level > 6)) {
+          appendMessage('ai', '⚠️ En Primaria el sistema está habilitado exclusivamente para <b>4°, 5° y 6° grado</b>.<br>Por favor selecciona uno de estos grados:');
+          return;
+        }
+        if (stage === 'secundaria' && (level < 1 || level > 5)) {
+          appendMessage('ai', '⚠️ En Secundaria el sistema está habilitado de <b>1° a 5° año</b>.<br>Por favor selecciona uno de estos grados:');
+          return;
+        }
         sendChip('cq_grade', `${stage}:${level}`, `${level}° ${stage === 'secundaria' ? 'Secundaria' : 'Primaria'}`);
         return;
       }
-      appendMessage('ai', 'Por favor selecciona o escribe el grado (ej. <i>"4° Primaria"</i> o <i>"2° Secundaria"</i>):');
+      appendMessage('ai', 'Por favor selecciona o escribe el grado oficial (ej. <i>"4° Primaria"</i> o <i>"2° Secundaria"</i>):');
       return;
     }
 

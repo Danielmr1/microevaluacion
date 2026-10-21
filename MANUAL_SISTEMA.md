@@ -112,7 +112,9 @@ Para que una pregunta ingrese al Banco de Preguntas, DEBE contener obligatoriame
 * **Prohibición absoluta:** No se permite guardar preguntas sin alternativas, sin clave o sin análisis de IA bajo ninguna circunstancia.
 
 ### 4.2. Filtrado y Grado Pedagógico
-* Las preguntas se organizan por etapa (Primaria / Secundaria) y grado (1° a 6° Primaria, 1° a 5° Secundaria).
+* Las preguntas se organizan por etapa (Primaria / Secundaria) y grado oficial habilitado en el sistema (`GRADE_CATALOG` en `classroom-data.js`):
+  * **Primaria:** 4°, 5° y 6° de Primaria (los grados 1°, 2° y 3° no están habilitados en el sistema).
+  * **Secundaria:** 1°, 2°, 3°, 4° y 5° de Secundaria.
 * En el banco de preguntas del Hub, solo se muestran preguntas compatibles con el grado del salón seleccionado.
 
 ---
