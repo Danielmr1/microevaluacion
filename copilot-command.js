@@ -27,6 +27,9 @@
     createQuestionData: null
   };
 
+  // Historial conversacional deslizante para memoria con Gemini
+  let chatHistory = [];
+
   /**
    * Limpia y normaliza texto para comparación difusa (tildes, mayúsculas, espacios)
    */
@@ -415,6 +418,7 @@
     const container = document.getElementById('copilot-messages');
     if (container) container.innerHTML = '';
     pendingState = { action: null, branch: null, classroomId: null, classroomName: null, questionCount: null, sessionId: null, createClassData: null, createQuestionData: null };
+    chatHistory = [];
     toggleChat(false);
   }
 
@@ -1458,7 +1462,7 @@
           nombre: c.name,
           grado: c.gradeLevel ? `${c.gradeLevel}° ${c.gradeStage}` : (c.gradeText || ''),
           totalAlumnos: (c.students || []).length,
-          primerosAlumnos: (c.students || []).map(s => s.shortName || s.name).slice(0, 5)
+          alumnos: (c.students || []).map(s => s.name || s.shortName)
         }))
       : [];
     const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
@@ -1480,7 +1484,7 @@
     let aiRes = null;
     if (typeof SupabaseClient !== 'undefined' && SupabaseClient.chatWithAI) {
       try {
-        aiRes = await SupabaseClient.chatWithAI(userText, context);
+        aiRes = await SupabaseClient.chatWithAI(userText, context, chatHistory);
       } catch (err) {
         aiRes = { ok: false, error: err.message };
       }
@@ -1490,6 +1494,13 @@
     if (loadEl) loadEl.remove();
 
     if (aiRes && aiRes.ok) {
+      // Registrar en el historial de memoria conversacional
+      chatHistory.push({ role: 'user', text: userText });
+      chatHistory.push({ role: 'assistant', text: aiRes.reply || '' });
+      if (chatHistory.length > 10) {
+        chatHistory = chatHistory.slice(-10);
+      }
+
       let replyText = (aiRes.reply || '').replace(/\n/g, '<br>');
       let actionBtn = '';
 

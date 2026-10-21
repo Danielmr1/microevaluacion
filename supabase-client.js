@@ -478,9 +478,10 @@
    * Conversación de texto libre con el Asistente EVA impulsado por Gemini
    * @param {string} message - Texto escrito por el docente
    * @param {object} [context] - Contexto actual del aula
+   * @param {Array} [history] - Historial reciente de la conversación
    * @returns {Promise<{ok: boolean, reply?: string, action?: string, action_label?: string, error?: string}>}
    */
-  async function chatWithAI(message, context = {}) {
+  async function chatWithAI(message, context = {}, history = []) {
     const client = getClient();
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
 
@@ -491,7 +492,7 @@
 
       const invokePromise = (async () => {
         return await client.functions.invoke('super-worker', {
-          body: { action: 'chat', message, context }
+          body: { action: 'chat', message, context, history }
         });
       })();
 
