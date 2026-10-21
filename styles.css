@@ -6884,6 +6884,13 @@
       color: #ffffff;
     }
 
+    .copilot-clarify-chips .copilot-chip.is-selected {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.35);
+    }
+
     .copilot-drawer-input-area {
       display: flex;
       align-items: center;

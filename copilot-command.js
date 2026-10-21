@@ -951,9 +951,26 @@
   }
 
   /**
-   * Responde cuando el usuario selecciona una opción de aclaración (chip)
+   * Responde cuando el usuario selecciona una opción de aclaración (chip).
+   * Poda y rebobina el chat si se pulsa una opción de un paso anterior.
    */
-  function sendChip(type, value, displayText) {
+  function sendChip(type, value, displayText, btnEl) {
+    // Rebobinar (Rollback): Si el chip pulsado proviene de un paso anterior,
+    // eliminamos todos los mensajes que se generaron después de ese mensaje.
+    const trigger = btnEl || (typeof window !== 'undefined' && window.event && window.event.target ? window.event.target : null);
+    if (trigger && typeof trigger.closest === 'function') {
+      const msgEl = trigger.closest('.copilot-msg-ai');
+      if (msgEl) {
+        while (msgEl.nextElementSibling) {
+          msgEl.nextElementSibling.remove();
+        }
+        const allChips = msgEl.querySelectorAll('.copilot-chip');
+        allChips.forEach(c => c.classList.remove('is-selected'));
+        const activeBtn = trigger.classList.contains('copilot-chip') ? trigger : trigger.closest('.copilot-chip');
+        if (activeBtn) activeBtn.classList.add('is-selected');
+      }
+    }
+
     appendMessage('user', displayText);
 
     if (type === 'classroom') {
@@ -1003,18 +1020,18 @@
       const topicChips = isSec
         ? `
           <div class="copilot-clarify-chips" style="margin-top:6px;">
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Ecuaciones lineales', '📐 Ecuaciones lineales')">📐 Ecuaciones lineales</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Porcentajes y descuentos', '🏷️ Porcentajes')">🏷️ Porcentajes</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetro y áreas geométricas', '📏 Geometría')">📏 Geometría</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Funciones y gráficas', '📈 Funciones')">📈 Funciones</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Ecuaciones lineales', '📐 Ecuaciones lineales', this)">📐 Ecuaciones lineales</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Porcentajes y descuentos', '🏷️ Porcentajes', this)">🏷️ Porcentajes</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetro y áreas geométricas', '📏 Geometría', this)">📏 Geometría</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Funciones y gráficas', '📈 Funciones', this)">📈 Funciones</button>
           </div>
         `
         : `
           <div class="copilot-clarify-chips" style="margin-top:6px;">
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Fracciones y partes', '🥧 Fracciones')">🥧 Fracciones</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Multiplicación y problemas cotidianos', '✖️ Multiplicación')">✖️ Multiplicación</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetros de figuras planas', '📐 Perímetros')">📐 Perímetros</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Ecuaciones y valor desconocido', '🔢 Ecuaciones')">🔢 Ecuaciones</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Fracciones y partes', '🥧 Fracciones', this)">🥧 Fracciones</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Multiplicación y problemas cotidianos', '✖️ Multiplicación', this)">✖️ Multiplicación</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetros de figuras planas', '📐 Perímetros', this)">📐 Perímetros</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Ecuaciones y valor desconocido', '🔢 Ecuaciones', this)">🔢 Ecuaciones</button>
           </div>
         `;
 
@@ -1026,11 +1043,11 @@
 
       const rubricChips = `
         <div class="copilot-clarify-chips" style="margin-top:6px; flex-direction:column; align-items:stretch; gap:6px;">
-          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'con_rubrica', '✨ Con Rúbrica Pedagógica')">
+          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'con_rubrica', '✨ Con Rúbrica Pedagógica', this)">
             <b>✨ Con Rúbrica Pedagógica</b><br>
             <span style="font-size:0.75rem; color:#475569;">Para la modalidad Formativa con IA. Genera solución canónica y criterios ponderados para calificar el borrador manuscrito.</span>
           </button>
-          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'sin_rubrica', '⚡ Sin Rúbrica (Pregunta Rápida)')">
+          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'sin_rubrica', '⚡ Sin Rúbrica (Pregunta Rápida)', this)">
             <b>⚡ Sin Rúbrica (Pregunta Rápida)</b><br>
             <span style="font-size:0.75rem; color:#475569;">Para la modalidad Focalizada y Cartillas OMR. Calificación determinista inmediata sólo por clave.</span>
           </button>
@@ -1046,8 +1063,8 @@
       const level = qData.level || 4;
       const preferredKey = qData.preferredKey || null;
 
-      renderQuestionPreviewCard(topic, stage, level, preferredKey, hasRubric);
       pendingState = { action: null, branch: null, classroomId: null, classroomName: null, questionCount: null, sessionId: null, createClassData: null, createQuestionData: null };
+      renderQuestionPreviewCard(topic, stage, level, preferredKey, hasRubric);
     }
   }
 
@@ -1058,13 +1075,13 @@
     const list = customList || (typeof ClassroomData !== 'undefined' ? ClassroomData.getClassroomList() : []);
     const validList = list.filter(c => c.count > 0);
     if (!validList || validList.length === 0) {
-      appendMessage('ai', 'No tienes salones con alumnos registrados todavía. Recuerda que según las reglas de Microevaluación no es posible evaluar un salón vacío. <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip(\'action\', \'classrooms\', \'Crear Salón\')">🏫 Crear primer salón con alumnos</button>');
+      appendMessage('ai', 'No tienes salones con alumnos registrados todavía. Recuerda que según las reglas de Microevaluación no es posible evaluar un salón vacío. <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip(\'action\', \'classrooms\', \'Crear Salón\', this)">🏫 Crear primer salón con alumnos</button>');
       return;
     }
 
     let chipsHtml = '<div class="copilot-clarify-chips">';
     validList.forEach(c => {
-      chipsHtml += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('classroom', '${c.id}', '${c.name}')">${c.name} (${c.count} alum.)</button>`;
+      chipsHtml += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('classroom', '${c.id}', '${c.name}', this)">${c.name} (${c.count} alum.)</button>`;
     });
     chipsHtml += '</div>';
 
@@ -1077,9 +1094,9 @@
   function showBranchClarification() {
     const chipsHtml = `
       <div class="copilot-clarify-chips">
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('branch', 'rama3', '📝 Cartilla OMR')">📝 Cartilla OMR (6 a 20 preg.)</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('branch', 'rama1', '🧠 Formativa con IA')">🧠 Formativa con IA (1 a 2 preg.)</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('branch', 'rama2', '⚡ Focalizada en la Respuesta')">⚡ Focalizada (1 a 5 preg.)</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('branch', 'rama3', '📝 Cartilla OMR', this)">📝 Cartilla OMR (6 a 20 preg.)</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('branch', 'rama1', '🧠 Formativa con IA', this)">🧠 Formativa con IA (1 a 2 preg.)</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('branch', 'rama2', '⚡ Focalizada en la Respuesta', this)">⚡ Focalizada (1 a 5 preg.)</button>
       </div>
     `;
     const clsInfo = pendingState.classroomName ? ` para <b>${pendingState.classroomName}</b>` : '';
@@ -1147,7 +1164,7 @@
       st.grades.forEach(lvl => {
         const shortLabel = `${lvl}° ${st.stage === 'primaria' ? 'Pri.' : 'Sec.'}`;
         const fullLabel = `${lvl}° ${st.label}`;
-        chipsGrade += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', '${st.stage}:${lvl}', '${fullLabel}')">${shortLabel}</button>`;
+        chipsGrade += `<button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', '${st.stage}:${lvl}', '${fullLabel}', this)">${shortLabel}</button>`;
       });
       chipsGrade += `</div>`;
     });
