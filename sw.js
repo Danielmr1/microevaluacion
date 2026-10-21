@@ -1,11 +1,11 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.4.6
+// Service Worker para Microevaluación A5 (PWA) — v3.4.7
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.4.6';
+const CACHE_NAME = 'microeval-cache-v3.4.7';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './styles.css?v=3.4.6',
+  './styles.css?v=3.4.7',
   './manifest.json',
   './icon-192.png',
   // Librerías de soporte (100% locales / self-hosted)
@@ -20,11 +20,11 @@ const PRECACHE_ASSETS = [
   './warp_math.js',
   // Módulos de la aplicación
   './classroom-data.js?v=3.3.8',
-  './supabase-client.js?v=3.4.6',
+  './supabase-client.js?v=3.4.7',
   './roi-processor.js?v=3.2.50',
   './scanner.js?v=3.3.8',
   './results-manager.js?v=3.1.90',
-  './classroom-manager.js?v=3.2.70',
+  './classroom-manager.js?v=3.4.7',
   './question-bank.js?v=3.2.71',
   './card-simulator.js?v=3.2.61',
   './card-exam-builder.js?v=3.3.8',
@@ -34,7 +34,7 @@ const PRECACHE_ASSETS = [
   './card-generator.js?v=3.3.8',
   './session-controller.js?v=3.3.8',
   './app-navigation.js?v=3.3.8',
-  './copilot-command.js?v=3.4.6',
+  './copilot-command.js?v=3.4.7',
   './qrcode.bundle.js?v=3.0.6'
 ];
 

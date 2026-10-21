@@ -1279,7 +1279,7 @@ function parseStudentLines(texto) {
     .map(l => l.trim())
     // Se descarta una fila de encabezado, por si alguien pega la plantilla
     // entera en el cuadro en vez de escribir solo los nombres.
-    .filter(l => l.length > 0 && !/^nombre\s+completo/i.test(l))
+    .filter(l => l.length > 0 && !/^"?nombre\s+completo/i.test(l))
     .map(linea => {
       const partes = linea.split(/[|,;\t]/).map(p => p.trim()).filter(Boolean);
       const fullName = cleanName(partes[0] || '');
@@ -1303,7 +1303,7 @@ function parseStudentLines(texto) {
  * que se degrade.
  */
 function downloadEmptyRosterTemplate() {
-  const contenido = '\uFEFFNombre Completo,Nombre Corto\n';
+  const contenido = '\uFEFF"Nombre Completo (Apellidos, Nombres)",Nombre Corto (Opcional)\n';
   try {
     const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
