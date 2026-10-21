@@ -404,11 +404,32 @@
 
   /**
    * Muestra u oculta el contenedor de diálogo interactivo (chat drawer)
+   * Opción A: Oculta la barra superior fija cuando el chat está abierto para evitar dos cajas de texto
    */
   function toggleChat(show) {
     const drawer = document.getElementById('copilot-chat-drawer');
+    const inputWrapper = document.querySelector('.copilot-input-wrapper');
+    const quickChips = document.getElementById('copilot-quick-chips');
+    const drawerInput = document.getElementById('copilot-drawer-input');
+
     if (!drawer) return;
-    drawer.style.display = show ? 'flex' : 'none';
+
+    if (show) {
+      drawer.style.display = 'flex';
+      if (inputWrapper) inputWrapper.style.display = 'none';
+      if (quickChips) quickChips.style.display = 'none';
+      if (drawerInput) {
+        setTimeout(() => drawerInput.focus(), 80);
+      }
+    } else {
+      drawer.style.display = 'none';
+      if (inputWrapper) inputWrapper.style.display = 'flex';
+      if (quickChips) quickChips.style.display = 'flex';
+      const mainInput = document.getElementById('copilot-input');
+      if (mainInput) {
+        setTimeout(() => mainInput.focus(), 80);
+      }
+    }
   }
 
   /**
@@ -484,6 +505,7 @@
    * Renderiza un Cuadro Comparativo interactivo entre salones (Fase 3)
    */
   function renderComparativeTable() {
+    toggleChat(true);
     const list = (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomList)
       ? ClassroomData.getClassroomList()
       : [];
@@ -592,6 +614,7 @@
    * Renderiza el análisis de dificultad y desglose de preguntas críticas (Fase 3)
    */
   function renderQuestionErrorAnalysis() {
+    toggleChat(true);
     const questionsData = [
       { q: 'Pregunta 1', prompt: 'Cálculo de adición homogénea', accuracy: 88, errorRate: 12, difficulty: 'Baja', distractor: 'A (8%)', tip: 'Dominio consolidado.' },
       { q: 'Pregunta 2', prompt: 'Perímetro y lados de cuadriláteros', accuracy: 42, errorRate: 58, difficulty: 'Crítica', distractor: 'C (44%)', tip: 'Confunden suma de lados con cálculo de área.' },
@@ -652,6 +675,7 @@
    * Renderiza el listado de alumnos prioritarios para refuerzo (Fase 3)
    */
   function renderStudentsReinforcement() {
+    toggleChat(true);
     const studentsData = [
       { name: 'MATEO GARCIA', salon: '4° A - Primaria', score: 38, focus: 'Perímetro y suma de fracciones' },
       { name: 'CARLOS DIAZ', salon: '5° B - Primaria', score: 42, focus: 'Comprensión de enunciados verbales' },
