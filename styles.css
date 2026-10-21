@@ -4224,11 +4224,11 @@
 
     .hero-backdrop-sheet {
       position: absolute;
-      top: 50%;
+      top: 0;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       width: 100%;
-      max-width: 780px;
+      max-width: 960px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -4238,8 +4238,9 @@
 
     .ghost-stage-sheet {
       width: 100%;
-      max-width: 720px;
-      min-height: 400px;
+      max-width: 920px;
+      height: 625px;
+      min-height: 625px;
       padding: 34px 32px;
       opacity: 0.28; /* Transparencia estética para que funcione como marca de agua viva */
       transform: perspective(900px) rotateY(-4deg) rotateX(2deg);
@@ -5126,7 +5127,12 @@
       .hero-center-stage {
         min-height: 290px;
       }
+      .hero-backdrop-sheet {
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
       .ghost-stage-sheet {
+        height: auto;
         max-width: 320px;
         min-height: 220px;
         opacity: 0.22;
