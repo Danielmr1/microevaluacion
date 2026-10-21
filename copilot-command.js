@@ -1006,7 +1006,7 @@
             <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Ecuaciones lineales', '📐 Ecuaciones lineales')">📐 Ecuaciones lineales</button>
             <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Porcentajes y descuentos', '🏷️ Porcentajes')">🏷️ Porcentajes</button>
             <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetro y áreas geométricas', '📏 Geometría')">📏 Geometría</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Comprensión y deducción textual', '📖 Comprensión lectora')">📖 Comprensión lectora</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Funciones y gráficas', '📈 Funciones')">📈 Funciones</button>
           </div>
         `
         : `
@@ -1014,7 +1014,7 @@
             <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Fracciones y partes', '🥧 Fracciones')">🥧 Fracciones</button>
             <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Multiplicación y problemas cotidianos', '✖️ Multiplicación')">✖️ Multiplicación</button>
             <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetros de figuras planas', '📐 Perímetros')">📐 Perímetros</button>
-            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Comprensión de lectura básica', '📖 Comprensión lectora')">📖 Comprensión lectora</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Ecuaciones y valor desconocido', '🔢 Ecuaciones')">🔢 Ecuaciones</button>
           </div>
         `;
 
@@ -1026,13 +1026,13 @@
 
       const rubricChips = `
         <div class="copilot-clarify-chips" style="margin-top:6px; flex-direction:column; align-items:stretch; gap:6px;">
-          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'con_rubrica', '✨ Con Rúbrica Pedagógica (Rama 1)')">
+          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'con_rubrica', '✨ Con Rúbrica Pedagógica')">
             <b>✨ Con Rúbrica Pedagógica</b><br>
-            <span style="font-size:0.75rem; color:#475569;">Para Formativa con IA (Rama 1). Genera solución canónica y criterios ponderados para calificar el borrador manuscrito.</span>
+            <span style="font-size:0.75rem; color:#475569;">Para la modalidad Formativa con IA. Genera solución canónica y criterios ponderados para calificar el borrador manuscrito.</span>
           </button>
-          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'sin_rubrica', '⚡ Sin Rúbrica (Ramas 2 y 3)')">
+          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'sin_rubrica', '⚡ Sin Rúbrica (Pregunta Rápida)')">
             <b>⚡ Sin Rúbrica (Pregunta Rápida)</b><br>
-            <span style="font-size:0.75rem; color:#475569;">Para Focalizada (Rama 2) y Cartillas OMR (Rama 3). Calificación determinista inmediata sólo por clave.</span>
+            <span style="font-size:0.75rem; color:#475569;">Para la modalidad Focalizada y Cartillas OMR. Calificación determinista inmediata sólo por clave.</span>
           </button>
         </div>
       `;
@@ -1117,7 +1117,7 @@
    * Inicia el flujo conversacional guiado para crear una pregunta IA en el Banco
    * Paso 1: Grado curricular (asociado al grado, no a salones)
    * Paso 2: Tema / competencia (sugerencias o texto libre en el chat)
-   * Paso 3: Rúbrica (Con Rúbrica Pedagógica para Rama 1 / Sin Rúbrica para Ramas 2 y 3)
+   * Paso 3: Rúbrica (Con Rúbrica Pedagógica para Formativa con IA / Sin Rúbrica para Focalizada y Cartillas OMR)
    * Paso 4: Tarjeta de acción con alternativas, guardado en banco y opción de regenerar
    */
   function startCreateQuestionFlow() {
@@ -1167,10 +1167,10 @@
 
     const rubricBadge = hasRubric
       ? `<div class="copilot-card-details" style="font-size:0.75rem; color:#15803d; background:#f0fdf4; padding:6px 10px; border-radius:6px; border:1px solid #bbf7d0;">
-           ✨ <b>Rúbrica pedagógica de IA generada:</b> Solución canónica y criterios de evaluación ponderados listos para corregir el borrador en Formativa con IA (Rama 1).
+           ✨ <b>Rúbrica pedagógica de IA generada:</b> Solución canónica y criterios de evaluación ponderados listos para calificar el borrador en la modalidad Formativa con IA.
          </div>`
       : `<div class="copilot-card-details" style="font-size:0.75rem; color:#0369a1; background:#f0f9ff; padding:6px 10px; border-radius:6px; border:1px solid #bae6fd;">
-           ⚡ <b>Sin Rúbrica (Pregunta Rápida):</b> Calificación determinista por clave para Focalizada (Rama 2) y Cartillas OMR (Rama 3).
+           ⚡ <b>Sin Rúbrica (Pregunta Rápida):</b> Calificación determinista inmediata por clave para las modalidades Focalizada y Cartillas OMR.
          </div>`;
 
     const cardHtml = `
