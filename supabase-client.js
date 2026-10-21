@@ -362,6 +362,14 @@
    * @returns {Promise<{ok: boolean, rubrica?: object, meta?: object, error?: string}>}
    */
   async function generateRubric(payload) {
+    // Guardarraíl Nivel 2: Límite diario de 6 rúbricas con IA
+    if (typeof DailyQuota !== 'undefined' && !DailyQuota.canConsume('rubrics')) {
+      return {
+        ok: false,
+        error: '⚠️ Has alcanzado el límite diario de 6 rúbricas con IA. Tu cuota se renovará automáticamente a las 00:00 (medianoche).'
+      };
+    }
+
     const client = getClient();
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
 
@@ -400,6 +408,9 @@
       if (!data || !data.rubrica) {
         anotarLlamadaIA({ funcion: 'rubric', ok: false, error: 'La función no devolvió una rúbrica estructurada.' });
         return { ok: false, error: 'La función no devolvió una rúbrica estructurada.' };
+      }
+      if (typeof DailyQuota !== 'undefined') {
+        DailyQuota.consume('rubrics');
       }
       anotarLlamadaIA({
         funcion: 'rubric',

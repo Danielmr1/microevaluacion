@@ -56,8 +56,23 @@ if (typeof window !== 'undefined') {
 
       // GUARDRAIL 7: Al entrar al tab de escáner, verificar si hay sesión configurada
       if (tabId === 'scan') {
-        // Hay sesión si localStorage tiene datos con prompt y expectedAnswer completos
         const session = ClassroomData.getActiveSession();
+        // Guardarraíl Nivel 3: Límite diario de 2 sesiones formativas completas con IA
+        if (session) {
+          const isFormativa = (session.branch === 'rama1') || (session.branchTitle && session.branchTitle.toLowerCase().includes('formativa')) || (session.correctionMode === 'ai' || (!session.branch && session.rubric && session.type !== 'mc'));
+          if (isFormativa) {
+            const sessId = session.id || session.sessionId || session.sessionRef || 'formativa_active';
+            if (typeof DailyQuota !== 'undefined' && !DailyQuota.canConsume('formativeSessions', sessId)) {
+              showToast('⚠️ Límite de 2 sesiones formativas con IA alcanzado por hoy.');
+              alert('⚠️ Límite Diario de Formativa con IA Alcanzado:\n\nHas utilizado tus 2 sesiones formativas completas de IA el día de hoy.\n\nPara continuar evaluando, te recomendamos utilizar la modalidad Cartilla OMR o Focalizada en la Respuesta, las cuales son 100% locales, ultrarrápidas y no consumen cuota de IA.');
+              switchTab('create');
+              return;
+            }
+            if (typeof DailyQuota !== 'undefined') {
+              DailyQuota.consume('formativeSessions', sessId);
+            }
+          }
+        }
         const sessionValid = !!(session && session.expectedAnswer && session.expectedAnswer.trim() !== ''
                              && session.prompt && session.prompt.trim() !== '');
 

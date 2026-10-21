@@ -391,6 +391,12 @@
   /**
    * Agrega un mensaje a la conversación del Copilot
    */
+  const MAX_VISIBLE_MESSAGES = 25;
+
+  /**
+   * Agrega un mensaje a la conversación del Copilot
+   * Guardarraíl de visualización: Mantiene un tope de los últimos 25 mensajes en pantalla
+   */
   function appendMessage(role, contentHtml) {
     const container = document.getElementById('copilot-messages');
     if (!container) return;
@@ -399,6 +405,12 @@
     msg.className = role === 'user' ? 'copilot-msg-user' : 'copilot-msg-ai';
     msg.innerHTML = contentHtml;
     container.appendChild(msg);
+
+    // Guardarraíl: Mantener solo los últimos 25 mensajes visibles en pantalla
+    while (container.children.length > MAX_VISIBLE_MESSAGES) {
+      container.firstElementChild.remove();
+    }
+
     container.scrollTop = container.scrollHeight;
   }
 
@@ -1286,6 +1298,12 @@
     const stageLabel = stage === 'secundaria' ? 'Secundaria' : 'Primaria';
     const gradeText = `${level}° de ${stageLabel}`;
 
+    // Guardarraíl Nivel 2: Límite de 6 rúbricas diarias con IA
+    if (hasRubric && typeof DailyQuota !== 'undefined' && !DailyQuota.canConsume('rubrics')) {
+      appendMessage('ai', '⚠️ <b>Límite de rúbricas alcanzado:</b> Has generado tus 6 rúbricas completas con IA de hoy. Puedes seguir utilizando todas las preguntas con rúbrica guardadas en tu Banco de Preguntas o generar nuevas a partir de las 00:00.');
+      return;
+    }
+
     const loadingId = `msg-loading-${Date.now()}`;
     appendMessage('ai', `<div id="${loadingId}">⏳ <b>EVA y Gemini están redactando tu pregunta con IA...</b><br>Generando problema matemático, 4 alternativas con distractores de razonamiento y rúbrica para <b>${gradeText}</b> sobre <i>"${topic}"</i> (~5-10 seg).</div>`);
 
@@ -1529,6 +1547,14 @@
       maxSesionesPermitidas: (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8
     };
 
+    // Guardarraíl Nivel 1: Límite diario de 15 consultas con IA
+    if (typeof DailyQuota !== 'undefined' && !DailyQuota.canConsume('chat')) {
+      const loadEl = document.getElementById(loadingId);
+      if (loadEl) loadEl.remove();
+      appendMessage('ai', '⏳ <b>Has completado tus 15 consultas de IA de hoy.</b><br><br>Tus consultas se renovarán automáticamente a las 00:00 (medianoche).<br><br>💡 <i>La navegación rápida del sistema (ej: "ir a salones", "abrir banco", "buscar salón") sigue 100% activa e ilimitada.</i>');
+      return;
+    }
+
     let aiRes = null;
     if (typeof SupabaseClient !== 'undefined' && SupabaseClient.chatWithAI) {
       try {
@@ -1542,6 +1568,9 @@
     if (loadEl) loadEl.remove();
 
     if (aiRes && aiRes.ok) {
+      if (typeof DailyQuota !== 'undefined') {
+        DailyQuota.consume('chat');
+      }
       // Registrar en el historial de memoria conversacional
       chatHistory.push({ role: 'user', text: userText });
       chatHistory.push({ role: 'assistant', text: aiRes.reply || '' });
@@ -1789,6 +1818,7 @@
   global.CopilotCommand = {
     init,
     handleInput,
+    appendMessage,
     sendChip,
     sendQuick,
     toggleChat,

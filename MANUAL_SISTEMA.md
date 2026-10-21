@@ -141,3 +141,40 @@ Cuando el docente interactúe con el chat interactivo, EVA debe seguir estas dir
 4. **Si el docente prepara una evaluación asistida:**
    * Respetar los 5 pasos obligatorios.
    * Conducir la sesión hacia la vista de preparación como **borrador**, sin auto-guardarla forzosamente en los 8 cupos.
+
+---
+
+## 7. Guardarraíles de Protección de Salones y Estudiantes
+
+Para garantizar la validez de las fichas impresas y la integridad de los resultados históricos, el sistema aplica una separación estricta entre ediciones cosméticas y estructurales:
+
+### 7.1. Edición Cosmética (Siempre Permitida)
+* **Alcance:** Corrección ortográfica o tipográfica de nombres completos (`fullName`) y nombres cortos (`shortName`) mediante el botón **✏️ Editar**.
+* **Comportamiento:** Como los códigos e identificadores internos del alumno (`student_code` / `id`) no cambian, las fichas físicas ya impresas en papel y los resultados ya registrados en la base de datos se mantienen 100% válidos.
+
+### 7.2. Edición Estructural (Bloqueada con Guardarraíl si hay Sesión Activa o Guardada)
+Si un salón se encuentra vinculado a una evaluación en curso o a cualquiera de las **8 Sesiones Guardadas**, el sistema bloquea preventivamente las siguientes acciones:
+1. **Eliminar salón:** Bloqueado en el Gestor de Salones, en el asistente EVA y en el constructor.
+2. **Eliminar alumno:** En la lista de estudiantes, el botón de papelera se sustituye por un candado `🔒` y la función rechaza la eliminación con una advertencia explicativa.
+3. **Sobrescribir nómina por Excel/CSV:** Si el docente intenta importar un archivo sobre un aula en uso, el sistema bloquea el reemplazo para evitar desfasar los códigos QR de las fichas impresas.
+
+---
+
+## 8. Política de Cuotas Diarias de Inteligencia Artificial (Límites por Nivel)
+
+Para proteger la cuota de la API de Gemini, evitar interrupciones de servicio y fomentar un uso planificado y pedagógico en el aula, el sistema implementa un esquema de cuotas diarias segmentado en tres (3) niveles independientes:
+
+| Nivel | Función | Límite Diario | Criterio de Consumo y Alternativa al Agotarse |
+| :--- | :--- | :---: | :--- |
+| **Nivel 1** | **Consultas con IA en Chat (EVA)** | **15 consultas / día** | Solo descuenta cuando se llama a Gemini. Navegación local (*«abrir salones»*, *«ir al banco»*) es ilimitada y gratuita. |
+| **Nivel 2** | **Generador de Rúbricas** | **6 rúbricas / día** | Cada rúbrica queda guardada permanentemente en el banco para reutilizarla todo el año sin costo adicional. |
+| **Nivel 3** | **Formativa con IA (Trazos manuscritos)** | **2 sesiones completas / día** | Corrige la cuadrícula manuscrita de los alumnos. Al agotarse, el docente puede usar la *Cartilla OMR* (corrección 100% local e ilimitada). |
+
+### 8.1. Buffer Visual del Chat (Tope de 25 Mensajes)
+* **Gestión de pantalla:** El cajón del chat mantiene visibles únicamente los **últimos 25 mensajes** en el DOM. Al ingresar un mensaje número 26, el mensaje más antiguo del inicio se retira suavemente de pantalla.
+* **Beneficio:** Mantiene el scroll ligero, rápido y sin saturar la memoria del navegador en jornadas extensas, preservando suficiente contexto para releer explicaciones recientes.
+
+### 8.2. Reinicio Automático de Cuotas
+* Las cuotas se calculan por fecha calendario local (`YYYY-MM-DD`).
+* Todos los contadores de cuota se restablecen a cero de forma automática cada día a las **00:00 (medianoche)**.
+

@@ -1966,6 +1966,17 @@ async function handleGenerateRubric() {
   const btn = document.getElementById('btn-rubric');
   const prompt = ta ? ta.value.trim() : '';
 
+  // GUARDARRAÍL NIVEL 2: Límite diario de 6 rúbricas con IA
+  if (typeof DailyQuota !== 'undefined' && !DailyQuota.canConsume('rubrics')) {
+    if (statusEl) {
+      statusEl.textContent = '⚠️ Límite diario de 6 rúbricas alcanzado';
+      statusEl.style.color = '#f59e0b';
+    }
+    showToast('⚠️ Has alcanzado el límite de 6 rúbricas diarias con IA.');
+    alert('⚠️ Límite Diario de Rúbricas Alcanzado:\n\nHas generado tus 6 rúbricas completas de IA el día de hoy.\n\nPuedes seguir utilizando todas las preguntas con rúbrica ya guardadas en tu Banco de Preguntas, o generar nuevas rúbricas mañana a partir de las 00:00.');
+    return;
+  }
+
   if (!prompt) {
     if (ta) { ta.style.borderColor = '#ef4444'; ta.focus(); }
     showToast('⚠️ Escribí primero el enunciado del problema.');

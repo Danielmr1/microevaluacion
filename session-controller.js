@@ -1917,6 +1917,17 @@
 
     function goToScannerWithSession() {
       try {
+        const currentActive = (typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession) ? ClassroomData.getActiveSession() : null;
+        const branch = (currentActive && currentActive.branch) || window.selectedBranch || (wizardEval && wizardEval.branch) || 'rama1';
+        const isFormativa = (branch === 'rama1') || (currentActive && currentActive.branchTitle && currentActive.branchTitle.toLowerCase().includes('formativa')) || (currentActive && currentActive.correctionMode === 'ai');
+        const sessId = (currentActive && (currentActive.id || currentActive.sessionId || currentActive.sessionRef)) || 'formativa_pending';
+
+        if (isFormativa && typeof DailyQuota !== 'undefined' && !DailyQuota.canConsume('formativeSessions', sessId)) {
+          showToast('⚠️ Límite de 2 sesiones formativas con IA alcanzado por hoy.');
+          alert('⚠️ Límite Diario de Formativa con IA Alcanzado:\n\nHas utilizado tus 2 sesiones formativas completas de IA el día de hoy.\n\nPara continuar evaluando, te recomendamos utilizar la modalidad Cartilla OMR o Focalizada en la Respuesta, las cuales son 100% locales, ultrarrápidas y no consumen cuota de IA.');
+          return;
+        }
+
         // Al ir al escáner, se abandona el modo de exploración de sesiones guardadas
         window.isViewingSavedSessionsMode = false;
         const stripEl = document.getElementById('summary-sessions-strip');
@@ -1999,6 +2010,12 @@
         }
       } catch (err) {
         console.warn('[goToScannerWithSession] Error en auto-guardado:', err);
+      }
+
+      // Registrar sesión formativa si aplica
+      const isFormativaSess = (session.branch === 'rama1') || (session.branchTitle && session.branchTitle.toLowerCase().includes('formativa')) || (session.correctionMode === 'ai' || (!session.branch && session.rubric && session.type !== 'mc'));
+      if (isFormativaSess && typeof DailyQuota !== 'undefined') {
+        DailyQuota.consume('formativeSessions', session.id || session.sessionId || session.sessionRef || 'formativa_active');
       }
 
       // 3. Cambiar a la pestaña de escáner
