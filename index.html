@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.5.3</span>
+              Versión <span id="user-profile-version-tag">v3.5.4</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1615,6 +1615,9 @@
         </div>
         <button type="button" onclick="closeClassroomModal()" style="background:transparent; border:none; color:#64748b; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Cerrar">✕</button>
       </div>
+
+      <!-- Banner de Advertencia cuando el salón está en uso en una sesión -->
+      <div id="mgr-modal-room-lock-banner" style="display:none; padding:10px 20px; background:#fffbeb; border-bottom:1px solid #fde68a; font-size:0.75rem; color:#92400e; font-weight:600; align-items:center; gap:8px;"></div>
 
       <!-- Barra de Herramientas del Salón -->
       <div style="padding:10px 20px; background:#f1f5f9; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">

@@ -917,13 +917,47 @@
   function isClassroomInSavedSession(classroomId) {
     if (!classroomId) return { inUse: false };
     const target = String(classroomId).trim().toLowerCase();
+    const cls = getClassroom(classroomId);
+    const clsName = cls?.name ? String(cls.name).trim().toLowerCase() : null;
     const list = getSavedSessions();
     for (const sess of list) {
-      if (sess.classroomId && String(sess.classroomId).trim().toLowerCase() === target) {
+      const matchId = sess.classroomId && String(sess.classroomId).trim().toLowerCase() === target;
+      const matchName = clsName && sess.classroomName && String(sess.classroomName).trim().toLowerCase() === clsName;
+      if (matchId || matchName) {
         const title = sess.title || (sess.branchTitle ? `${sess.branchTitle} (${sess.classroomName || 'Salón'})` : (sess.classroomName || 'Sesión guardada'));
-        return { inUse: true, sessionTitle: title, sessionId: sess.id };
+        return { inUse: true, sessionTitle: title, sessionId: sess.id, isSaved: true };
       }
     }
+    return { inUse: false };
+  }
+
+  /**
+   * Verifica si un salón está en uso (en evaluación activa o en sesiones guardadas)
+   * @param {string} classroomId
+   * @returns {{inUse: boolean, sessionTitle?: string, sessionId?: string, isActive?: boolean, isSaved?: boolean}}
+   */
+  function isClassroomInUse(classroomId) {
+    if (!classroomId) return { inUse: false };
+    const target = String(classroomId).trim().toLowerCase();
+    const cls = getClassroom(classroomId);
+    const clsName = cls?.name ? String(cls.name).trim().toLowerCase() : null;
+
+    // 1. Verificar si es la sesión activa en el escáner
+    const active = getActiveSession();
+    if (active && (
+      (active.classroomId && String(active.classroomId).trim().toLowerCase() === target) ||
+      (clsName && active.classroomName && String(active.classroomName).trim().toLowerCase() === clsName)
+    )) {
+      const title = active.title || (active.classroomName ? `Evaluación activa (${active.classroomName})` : 'Evaluación en curso');
+      return { inUse: true, sessionTitle: title, isActive: true };
+    }
+
+    // 2. Verificar sesiones guardadas
+    const savedCheck = isClassroomInSavedSession(classroomId);
+    if (savedCheck && savedCheck.inUse) {
+      return { inUse: true, sessionTitle: savedCheck.sessionTitle, sessionId: savedCheck.sessionId, isSaved: true };
+    }
+
     return { inUse: false };
   }
 
@@ -1196,6 +1230,7 @@
     saveSession,
     deleteSavedSession,
     isClassroomInSavedSession,
+    isClassroomInUse,
     isQuestionInSavedSession,
     getQuestionSavedSessions,
     MAX_SAVED_SESSIONS,

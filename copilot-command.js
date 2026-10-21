@@ -861,6 +861,23 @@
    */
   async function confirmDeleteClassroom(classroomId, cardId) {
     const cardEl = document.getElementById(cardId);
+    const inUse = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse)
+      ? ClassroomData.isClassroomInUse(classroomId)
+      : (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInSavedSession ? ClassroomData.isClassroomInSavedSession(classroomId) : { inUse: false });
+    if (inUse && inUse.inUse) {
+      if (cardEl) {
+        cardEl.innerHTML = `
+          <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:10px; color:#92400e; font-size:0.82rem;">
+            ⚠️ <b>No se puede eliminar este salón:</b> está en uso en "${inUse.sessionTitle}". Debes eliminar esa sesión en "Sesiones Guardadas" primero.
+          </div>
+        `;
+      }
+      if (typeof showToast === 'function') {
+        showToast(`⚠️ Salón en uso en la sesión "${inUse.sessionTitle}".`);
+      }
+      return;
+    }
+
     if (cardEl) {
       cardEl.innerHTML = '<span style="color:#ef4444; font-size:0.82rem; font-weight:700;">⏳ Eliminando salón...</span>';
     }
@@ -1357,6 +1374,13 @@
    * Renderiza la tarjeta de confirmación de eliminación segura (Fase 2)
    */
   function renderClassroomDeleteCard(cls) {
+    const inUse = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse)
+      ? ClassroomData.isClassroomInUse(cls.id)
+      : (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInSavedSession ? ClassroomData.isClassroomInSavedSession(cls.id) : { inUse: false });
+    if (inUse && inUse.inUse) {
+      appendMessage('ai', `⚠️ No puedo eliminar el salón <b>"${cls.name}"</b> porque está siendo utilizado en la sesión <b>"${inUse.sessionTitle}"</b>.<br><br>Para proteger los resultados y las fichas de evaluación impresas, elimina primero esa sesión en <i>Sesiones Guardadas</i>.`);
+      return;
+    }
     const cardId = `card-del-${Date.now()}`;
     const cardHtml = `
       <div class="copilot-action-card" id="${cardId}" style="border-color:#fecaca;">
@@ -1699,27 +1723,7 @@
     await renderQuestionPreviewCard(topic, stage, parseInt(level, 10), preferredKey || null, !!hasRubric);
   }
 
-  /**
-   * Renderiza la tarjeta de confirmación de eliminación segura (Fase 2)
-   */
-  function renderClassroomDeleteCard(cls) {
-    const cardId = `card-del-${Date.now()}`;
-    const cardHtml = `
-      <div class="copilot-action-card" id="${cardId}" style="border-color:#fecaca;">
-        <span class="copilot-card-badge badge-red">⚠️ Confirmación de Eliminación</span>
-        <h4 class="copilot-card-title" style="color:#b91c1c;">¿Eliminar el salón "${cls.name}"?</h4>
-        <div class="copilot-card-details">
-          Esta acción eliminará el salón y sus <b>${cls.students ? cls.students.length : cls.count || 0} estudiantes</b> registrados.
-        </div>
-        <div class="copilot-card-actions">
-          <button type="button" class="copilot-card-btn copilot-card-btn-danger" onclick="CopilotCommand.confirmDeleteClassroom('${cls.id}', '${cardId}')">🗑️ Sí, Eliminar Definitivamente</button>
-          <button type="button" class="copilot-card-btn copilot-card-btn-secondary" onclick="CopilotCommand.dismissCard('${cardId}')">Cancelar</button>
-        </div>
-      </div>
-    `;
 
-    appendMessage('ai', `Esta acción requiere confirmación:${cardHtml}`);
-  }
 
   /**
    * Enviar consulta rápida desde los chips de sugerencia
