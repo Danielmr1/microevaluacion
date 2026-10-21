@@ -1131,6 +1131,67 @@
   }
 
   /**
+   * Inicia el flujo de Generar Sesión con verificación previa de cupo (máx. 8 sesiones)
+   */
+  function handleGenerateSession() {
+    toggleChat(true);
+
+    const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+      ? ClassroomData.getSavedSessions()
+      : [];
+    const maxSess = (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
+
+    if (sessions.length >= maxSess) {
+      appendMessage('ai', `
+        ⚠️ <b>Límite de sesiones alcanzado (${sessions.length} de ${maxSess}).</b><br><br>
+        Ya tienes las ${maxSess} sesiones ocupadas. Para generar una nueva sesión, primero debes liberar espacio eliminando alguna que ya no utilices.
+        <div class="copilot-clarify-chips" style="margin-top:10px;">
+          <button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="CopilotCommand.goToSavedSessions()">📂 Ir a Sesiones Guardadas (${sessions.length}/${maxSess})</button>
+        </div>
+      `);
+      return;
+    }
+
+    appendMessage('ai', `
+      Para generar tu nueva sesión, elige una de las 3 modalidades de evaluación:
+      <div class="copilot-clarify-chips" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="copilot-chip" style="text-align:left; padding:9px 13px;" onclick="CopilotCommand.selectBranchAndStart('rama1')">
+          <b>🧠 Formativa con IA</b><br>
+          <span style="font-size:0.75rem; color:#475569;">1 a 2 preguntas. Rúbrica pedagógica y análisis de borradores manuscritos.</span>
+        </button>
+        <button type="button" class="copilot-chip" style="text-align:left; padding:9px 13px;" onclick="CopilotCommand.selectBranchAndStart('rama2')">
+          <b>⚡ Focalizada en la Respuesta</b><br>
+          <span style="font-size:0.75rem; color:#475569;">1 a 5 preguntas. Corrección inmediata y directa por clave o número.</span>
+        </button>
+        <button type="button" class="copilot-chip" style="text-align:left; padding:9px 13px;" onclick="CopilotCommand.selectBranchAndStart('rama3')">
+          <b>📝 Cartilla OMR</b><br>
+          <span style="font-size:0.75rem; color:#475569;">6 a 20 preguntas. Evaluación estándar con hoja de respuestas de burbujas.</span>
+        </button>
+      </div>
+    `);
+  }
+
+  /**
+   * Cierra el chat y navega a la vista de sesiones guardadas
+   */
+  function goToSavedSessions() {
+    toggleChat(false);
+    if (typeof openFlow === 'function') {
+      openFlow('saved-sessions');
+    }
+  }
+
+  /**
+   * Cierra el chat y arranca el flujo de la modalidad elegida
+   */
+  function selectBranchAndStart(branch) {
+    toggleChat(false);
+    if (typeof openBranchFlow === 'function') {
+      openBranchFlow(branch);
+    }
+  }
+
+  /**
    * Inicia el flujo conversacional guiado para crear una pregunta IA en el Banco
    * Paso 1: Grado curricular (asociado al grado, no a salones)
    * Paso 2: Tema / competencia (sugerencias o texto libre en el chat)
@@ -1505,6 +1566,12 @@
       }
     }
 
+    // 1b. Generar Sesión con verificación previa de cupo
+    if (/generar sesion|crear sesion|nueva sesion/.test(norm) && !/salones|alumnos|banco|pregunta/.test(norm)) {
+      handleGenerateSession();
+      return;
+    }
+
     // 2. Crear Pregunta Asistida hacia el Banco de Preguntas (Regla 6)
     if (/crear pregunta|nueva pregunta|genera una pregunta|redacta una pregunta|crea una pregunta|pregunta sobre/.test(norm)) {
       const topicMatch = trimmed.match(/(?:sobre|de)\s+([^.\n]+)/i);
@@ -1649,7 +1716,7 @@
         <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cuadro comparativo de mis salones')">📊 Cuadro Comparativo</button>
         <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('¿Qué preguntas tuvieron más errores?')">🎯 Preguntas Difíciles</button>
         <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('¿Quiénes necesitan refuerzo?')">👥 Alumnos para Refuerzo</button>
-        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cartilla OMR para 4° A')">📝 Cartilla 4° A</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.handleGenerateSession()">⚡ Generar sesión</button>
       </div>
     `);
   }
@@ -1724,6 +1791,9 @@
     clearChat,
     dismissCard,
     startCreateQuestionFlow,
+    handleGenerateSession,
+    goToSavedSessions,
+    selectBranchAndStart,
     regenerateQuestion,
     confirmCreateClassroom,
     confirmSaveQuestion,

@@ -36,7 +36,7 @@
   </script>
 
   <script src="classroom-data.js?v=3.3.8"></script>
-  <script src="supabase-client.js?v=3.4.5"></script>
+  <script src="supabase-client.js?v=3.4.6"></script>
   <script src="qrcode.bundle.js?v=3.0.6"></script>
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
@@ -53,9 +53,9 @@
   <script src="card-generator.js?v=3.3.8"></script>
   <script src="session-controller.js?v=3.3.8"></script>
   <script src="app-navigation.js?v=3.3.8"></script>
-  <script src="copilot-command.js?v=3.4.5"></script>
+  <script src="copilot-command.js?v=3.4.6"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.4.5">
+  <link rel="stylesheet" href="styles.css?v=3.4.6">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.4.5</span>
+              Versión <span id="user-profile-version-tag">v3.4.6</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -521,7 +521,7 @@
             <!-- Chips de sugerencias inteligentes para EVA -->
             <div class="copilot-quick-chips" id="copilot-quick-chips">
               <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cuadro comparativo de mis salones')">📊 Cuadro Comparativo</button>
-              <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Cartilla OMR para 4° A')">📝 Cartilla 4° A</button>
+              <button type="button" class="copilot-chip" onclick="CopilotCommand.handleGenerateSession()">⚡ Generar sesión</button>
               <button type="button" class="copilot-chip" onclick="CopilotCommand.startCreateQuestionFlow()">⚡ Crear Pregunta IA</button>
               <button type="button" class="copilot-chip" onclick="CopilotCommand.sendQuick('Crear salón 5° B de primaria con alumnos: Mateo, Lucía')">🏫 Crear Salón</button>
             </div>
