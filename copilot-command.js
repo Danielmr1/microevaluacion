@@ -213,14 +213,22 @@
   /**
    * Genera un problema estructurado para el banco con alternativas y rúbrica completa (Regla 6)
    */
-  function generateQuestionWithRubric(topic, stage, level, preferredKey) {
-    const correctKey = (preferredKey && ['A', 'B', 'C', 'D'].includes(preferredKey.toUpperCase()))
+  function generateQuestionWithRubric(topic, stage, level, preferredKey, hasRubric) {
+    if (hasRubric === undefined) hasRubric = true;
+
+    // Aleatorizar clave si no viene fija
+    const keys = ['A', 'B', 'C', 'D'];
+    const correctKey = (preferredKey && keys.includes(preferredKey.toUpperCase()))
       ? preferredKey.toUpperCase()
-      : 'B';
+      : keys[Math.floor(Math.random() * keys.length)];
 
     const cleanTopic = (topic || '').trim().toLowerCase();
     const isFrac = cleanTopic.includes('fraccion') || cleanTopic.includes('fracciones');
-    const isGeom = cleanTopic.includes('perimetro') || cleanTopic.includes('area') || cleanTopic.includes('triangulo');
+    const isGeom = cleanTopic.includes('perimetro') || cleanTopic.includes('area') || cleanTopic.includes('triangulo') || cleanTopic.includes('rectang') || cleanTopic.includes('geometria');
+    const isMult = cleanTopic.includes('multiplic') || cleanTopic.includes('division') || cleanTopic.includes('operacion') || cleanTopic.includes('calculo');
+    const isAlg = cleanTopic.includes('ecuacion') || cleanTopic.includes('algebra') || cleanTopic.includes('incognita') || cleanTopic.includes('variable');
+    const isPct = cleanTopic.includes('porcentaj') || cleanTopic.includes('tasa') || cleanTopic.includes('interes') || cleanTopic.includes('descuento');
+    const isComp = cleanTopic.includes('comprension') || cleanTopic.includes('lectura') || cleanTopic.includes('texto') || cleanTopic.includes('comunicacion') || cleanTopic.includes('verbo');
     const isSec = stage === 'secundaria';
 
     let prompt = '';
@@ -228,57 +236,141 @@
     let solucionCanonica = '';
     let procedimiento = '';
 
-    if (isSec) {
-      prompt = `En la ecuación lineal 3x + 12 = 36, ¿cuál es el valor de x?`;
-      const optMap = { A: '6', B: '8', C: '10', D: '12' };
-      if (correctKey !== 'B') {
-        const temp = optMap[correctKey];
-        optMap[correctKey] = '8';
-        optMap['B'] = temp;
-      }
+    if (isAlg || (isSec && !isGeom && !isPct && !isComp)) {
+      // Álgebra / Ecuaciones
+      const factor = Math.floor(Math.random() * 3) + 2; // 2, 3 o 4
+      const ans = Math.floor(Math.random() * 5) + 4; // 4 a 8
+      const constant = factor * 2;
+      const total = factor * ans + constant;
+      prompt = `En la ecuación lineal ${factor}x + ${constant} = ${total}, ¿cuál es el valor de x?`;
+      
+      const optMap = {};
+      optMap[correctKey] = String(ans);
+      const wrong = [String(ans - 2), String(ans + 2), String(ans + 4), String(ans - 1), String(ans + 1)].filter(v => v !== String(ans));
+      let wIdx = 0;
+      keys.forEach(k => {
+        if (k !== correctKey) {
+          optMap[k] = wrong[wIdx++];
+        }
+      });
       options = optMap;
-      solucionCanonica = `3x = 36 - 12 => 3x = 24 => x = 8.`;
-      procedimiento = `1. Restar 12 a ambos miembros: 3x = 24. 2. Dividir entre 3: x = 8.`;
+      solucionCanonica = `${factor}x = ${total} - ${constant} => ${factor}x = ${total - constant} => x = ${ans}.`;
+      procedimiento = `1. Restar ${constant} a ambos lados: ${factor}x = ${total - constant}. 2. Dividir entre ${factor}: x = ${ans}.`;
+    } else if (isPct) {
+      // Porcentajes
+      const base = 200;
+      const pct = 15;
+      const desc = 30;
+      const finalPrice = 170;
+      prompt = `Una prenda cuesta S/ ${base}. Si tiene un descuento especial del ${pct}%, ¿cuánto se paga finalmente?`;
+      const optMap = {};
+      optMap[correctKey] = `S/ ${finalPrice}`;
+      const wrong = ['S/ 185', 'S/ 160', 'S/ 175', 'S/ 165'].filter(v => v !== `S/ ${finalPrice}`);
+      let wIdx = 0;
+      keys.forEach(k => {
+        if (k !== correctKey) {
+          optMap[k] = wrong[wIdx++];
+        }
+      });
+      options = optMap;
+      solucionCanonica = `Descuento: ${pct}% de ${base} = S/ ${desc}. Precio final: ${base} - ${desc} = S/ ${finalPrice}.`;
+      procedimiento = `1. Calcular el 15% de 200: (15 * 200) / 100 = 30. 2. Restar del precio base: 200 - 30 = 170.`;
     } else if (isGeom) {
-      prompt = `Un terreno rectangular mide 15 metros de largo y 8 metros de ancho. ¿Cuál es su perímetro total?`;
-      const optMap = { A: '38 m', B: '46 m', C: '40 m', D: '52 m' };
-      if (correctKey !== 'B') {
-        const temp = optMap[correctKey];
-        optMap[correctKey] = '46 m';
-        optMap['B'] = temp;
-      }
+      // Geometría
+      const largo = 12 + Math.floor(Math.random() * 6);
+      const ancho = 6 + Math.floor(Math.random() * 4);
+      const perim = 2 * (largo + ancho);
+      prompt = `Un terreno rectangular mide ${largo} metros de largo y ${ancho} metros de ancho. ¿Cuál es su perímetro total?`;
+      const optMap = {};
+      optMap[correctKey] = `${perim} m`;
+      const wrong = [`${perim - 6} m`, `${perim + 4} m`, `${largo * ancho} m`, `${perim + 8} m`].filter(v => v !== `${perim} m`);
+      let wIdx = 0;
+      keys.forEach(k => {
+        if (k !== correctKey) {
+          optMap[k] = wrong[wIdx++];
+        }
+      });
       options = optMap;
-      solucionCanonica = `Perímetro = 2 * (15 + 8) = 2 * 23 = 46 metros.`;
-      procedimiento = `1. Sumar los 4 lados: 15 + 8 + 15 + 8 = 46 m.`;
+      solucionCanonica = `Perímetro = 2 * (${largo} + ${ancho}) = 2 * ${largo + ancho} = ${perim} metros.`;
+      procedimiento = `1. Sumar los 4 lados de la figura rectangular: ${largo} + ${ancho} + ${largo} + ${ancho} = ${perim} m.`;
+    } else if (isComp) {
+      // Comprensión / Comunicación
+      prompt = `Lee el texto: "Las abejas polinizan las flores al buscar néctar, permitiendo que las plantas produzcan frutos y semillas". Según el texto, ¿cuál es el beneficio directo para las plantas?`;
+      const correctText = 'Producir frutos y semillas';
+      const optMap = {};
+      optMap[correctKey] = correctText;
+      const wrong = [
+        'Construir panales en los árboles',
+        'Consumir las hojas de las flores',
+        'Impedir el crecimiento de malezas'
+      ];
+      let wIdx = 0;
+      keys.forEach(k => {
+        if (k !== correctKey) {
+          optMap[k] = wrong[wIdx++];
+        }
+      });
+      options = optMap;
+      solucionCanonica = `Identificación de causa-efecto explícita en el texto: la polinización permite producir frutos y semillas.`;
+      procedimiento = `1. Localizar la idea clave en la lectura. 2. Relacionar la acción de las abejas con la consecuencia directa señalada explícitamente.`;
+    } else if (isMult) {
+      // Multiplicación / división
+      const num1 = 15 + Math.floor(Math.random() * 10);
+      const num2 = 4 + Math.floor(Math.random() * 5);
+      const prod = num1 * num2;
+      prompt = `En una librería se compraron ${num2} paquetes de cuadernos. Si cada paquete contiene ${num1} cuadernos, ¿cuántos cuadernos hay en total?`;
+      const optMap = {};
+      optMap[correctKey] = `${prod} cuadernos`;
+      const wrong = [`${prod - 10} cuadernos`, `${prod + 10} cuadernos`, `${prod - 5} cuadernos`, `${prod + 15} cuadernos`].filter(v => v !== `${prod} cuadernos`);
+      let wIdx = 0;
+      keys.forEach(k => {
+        if (k !== correctKey) {
+          optMap[k] = wrong[wIdx++];
+        }
+      });
+      options = optMap;
+      solucionCanonica = `${num2} * ${num1} = ${prod} cuadernos en total.`;
+      procedimiento = `1. Reconocer la operación de producto repetido: ${num2} grupos de ${num1}. 2. Multiplicar ${num2} * ${num1} = ${prod}.`;
     } else {
-      prompt = `María tenía 3/4 de kilogramo de harina y utilizó 1/4 de kilogramo para preparar un pastel. ¿Cuánta harina le quedó?`;
-      const optMap = { A: '1/4 kg', B: '2/4 kg (1/2 kg)', C: '3/8 kg', D: '4/4 kg' };
-      if (correctKey !== 'B') {
-        const temp = optMap[correctKey];
-        optMap[correctKey] = '2/4 kg (1/2 kg)';
-        optMap['B'] = temp;
-      }
+      // Fracciones o tema general por defecto
+      const numTotal = 4;
+      const numResta = 1;
+      const numQueda = 3;
+      prompt = `María tenía ${numTotal}/5 de kilogramo de harina y utilizó ${numResta}/5 de kilogramo para preparar un pastel. ¿Cuánta harina le quedó?`;
+      const correctText = `${numQueda}/5 kg`;
+      const optMap = {};
+      optMap[correctKey] = correctText;
+      const wrong = ['2/5 kg', '1/5 kg', '4/5 kg', '5/5 kg'].filter(v => v !== correctText);
+      let wIdx = 0;
+      keys.forEach(k => {
+        if (k !== correctKey) {
+          optMap[k] = wrong[wIdx++];
+        }
+      });
       options = optMap;
-      solucionCanonica = `3/4 - 1/4 = (3 - 1) / 4 = 2/4 = 1/2 kg.`;
-      procedimiento = `1. Identificar fracciones homogéneas con denominador 4. 2. Restar numeradores: 3 - 1 = 2. 3. Resultado: 2/4 kg o 1/2 kg.`;
+      solucionCanonica = `${numTotal}/5 - ${numResta}/5 = (${numTotal} - ${numResta})/5 = ${numQueda}/5 kg.`;
+      procedimiento = `1. Identificar fracciones homogéneas con denominador 5. 2. Restar los numeradores: ${numTotal} - ${numResta} = ${numQueda}. 3. Mantener el denominador: ${numQueda}/5 kg.`;
     }
 
     const stageLabel = stage === 'secundaria' ? 'secundaria' : 'primaria';
     const gradeText = `${level}° de ${stageLabel}`;
 
-    const rubric = {
-      solucion_canonica: solucionCanonica,
-      procedimiento_paso_a_paso: procedimiento,
-      criterios_evaluacion: [
-        { criterio: 'Comprensión y planteamiento del problema', peso: 40 },
-        { criterio: 'Ejecución matemática del procedimiento', peso: 40 },
-        { criterio: 'Determinación exacta del resultado', peso: 20 }
-      ],
-      errores_comunes_previsibles: [
-        'Confusión en operaciones con signos o fracciones',
-        'Cálculo de área en vez de perímetro'
-      ]
-    };
+    let rubric = null;
+    if (hasRubric) {
+      rubric = {
+        solucion_canonica: solucionCanonica,
+        procedimiento_paso_a_paso: procedimiento,
+        criterios_evaluacion: [
+          { criterio: 'Comprensión y planteamiento del problema', peso: 40 },
+          { criterio: 'Ejecución matemática del procedimiento', peso: 40 },
+          { criterio: 'Determinación exacta del resultado', peso: 20 }
+        ],
+        errores_comunes_previsibles: [
+          'Confusión en operaciones con signos o fracciones',
+          'Omisión de pasos clave en el cálculo'
+        ]
+      };
+    }
 
     return {
       title: `Pregunta sobre ${topic || 'Matemática'}`,
@@ -286,6 +378,7 @@
       options,
       correct: correctKey,
       rubric,
+      hasRubric: !!hasRubric,
       gradeStage: stage,
       gradeLevel: level,
       gradeText
@@ -582,7 +675,7 @@
           ${itemsHtml}
         </div>
         <div class="copilot-card-actions" style="margin-top:10px;">
-          <button type="button" class="copilot-card-btn copilot-card-btn-primary" onclick="CopilotCommand.sendQuick('Crear pregunta de fracciones para 4° Pri con clave B')">📝 Preparar Evaluación de Refuerzo</button>
+          <button type="button" class="copilot-card-btn copilot-card-btn-primary" onclick="CopilotCommand.startCreateQuestionFlow()">📝 Crear Pregunta de Refuerzo con IA</button>
         </div>
       </div>
     `;
@@ -676,6 +769,7 @@
 
     try {
       const data = JSON.parse(decodeURIComponent(payloadStr));
+      const hasRubric = !!data.hasRubric;
 
       const evalObj = {
         title: data.title || 'Pregunta de alternativa',
@@ -692,11 +786,11 @@
           gradeStage: data.gradeStage,
           gradeLevel: Number(data.gradeLevel),
           gradeText: data.gradeText,
-          rubric: data.rubric,
-          hasRubric: true
+          rubric: hasRubric ? data.rubric : null,
+          hasRubric: hasRubric
         }],
-        rubric: data.rubric,
-        hasRubric: true,
+        rubric: hasRubric ? data.rubric : null,
+        hasRubric: hasRubric,
         gradeStage: data.gradeStage,
         gradeLevel: Number(data.gradeLevel),
         gradeText: data.gradeText
@@ -897,6 +991,63 @@
       const [stage, level] = value.split(':');
       const topic = pendingState.createQuestionData?.topic || 'Matemática';
       renderQuestionPreviewCard(topic, stage, parseInt(level, 10));
+    } else if (type === 'cq_grade') {
+      const [stage, level] = value.split(':');
+      if (!pendingState.createQuestionData) pendingState.createQuestionData = {};
+      pendingState.createQuestionData.stage = stage;
+      pendingState.createQuestionData.level = parseInt(level, 10);
+      pendingState.createQuestionData.gradeText = displayText;
+      pendingState.action = 'create_question_await_topic';
+
+      const isSec = stage === 'secundaria';
+      const topicChips = isSec
+        ? `
+          <div class="copilot-clarify-chips" style="margin-top:6px;">
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Ecuaciones lineales', '📐 Ecuaciones lineales')">📐 Ecuaciones lineales</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Porcentajes y descuentos', '🏷️ Porcentajes')">🏷️ Porcentajes</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetro y áreas geométricas', '📏 Geometría')">📏 Geometría</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Comprensión y deducción textual', '📖 Comprensión lectora')">📖 Comprensión lectora</button>
+          </div>
+        `
+        : `
+          <div class="copilot-clarify-chips" style="margin-top:6px;">
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Fracciones y partes', '🥧 Fracciones')">🥧 Fracciones</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Multiplicación y problemas cotidianos', '✖️ Multiplicación')">✖️ Multiplicación</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Perímetros de figuras planas', '📐 Perímetros')">📐 Perímetros</button>
+            <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_topic', 'Comprensión de lectura básica', '📖 Comprensión lectora')">📖 Comprensión lectora</button>
+          </div>
+        `;
+
+      appendMessage('ai', `Grado seleccionado: <b>${displayText}</b>.<br><br><b>Paso 2:</b> ¿Qué <b>tema</b> o competencia deseas trabajar? Elige un tema sugerido o <i>escribe el tema deseado en el chat</i>:${topicChips}`);
+    } else if (type === 'cq_topic') {
+      if (!pendingState.createQuestionData) pendingState.createQuestionData = {};
+      pendingState.createQuestionData.topic = value;
+      pendingState.action = 'create_question_await_rubric';
+
+      const rubricChips = `
+        <div class="copilot-clarify-chips" style="margin-top:6px; flex-direction:column; align-items:stretch; gap:6px;">
+          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'con_rubrica', '✨ Con Rúbrica Pedagógica (Rama 1)')">
+            <b>✨ Con Rúbrica Pedagógica</b><br>
+            <span style="font-size:0.75rem; color:#475569;">Para Formativa con IA (Rama 1). Genera solución canónica y criterios ponderados para calificar el borrador manuscrito.</span>
+          </button>
+          <button type="button" class="copilot-chip" style="text-align:left; padding:8px 12px;" onclick="CopilotCommand.sendChip('cq_rubric', 'sin_rubrica', '⚡ Sin Rúbrica (Ramas 2 y 3)')">
+            <b>⚡ Sin Rúbrica (Pregunta Rápida)</b><br>
+            <span style="font-size:0.75rem; color:#475569;">Para Focalizada (Rama 2) y Cartillas OMR (Rama 3). Calificación determinista inmediata sólo por clave.</span>
+          </button>
+        </div>
+      `;
+
+      appendMessage('ai', `Tema establecido: <b>${value}</b> para <b>${pendingState.createQuestionData.gradeText || 'el grado'}</b>.<br><br><b>Paso 3:</b> ¿Deseas la pregunta con rúbrica de IA o rápida sin rúbrica?${rubricChips}`);
+    } else if (type === 'cq_rubric') {
+      const hasRubric = value === 'con_rubrica';
+      const qData = pendingState.createQuestionData || {};
+      const topic = qData.topic || 'Matemática';
+      const stage = qData.stage || 'primaria';
+      const level = qData.level || 4;
+      const preferredKey = qData.preferredKey || null;
+
+      renderQuestionPreviewCard(topic, stage, level, preferredKey, hasRubric);
+      pendingState = { action: null, branch: null, classroomId: null, classroomName: null, questionCount: null, sessionId: null, createClassData: null, createQuestionData: null };
     }
   }
 
@@ -963,12 +1114,65 @@
   }
 
   /**
+   * Inicia el flujo conversacional guiado para crear una pregunta IA en el Banco
+   * Paso 1: Grado curricular (asociado al grado, no a salones)
+   * Paso 2: Tema / competencia (sugerencias o texto libre en el chat)
+   * Paso 3: Rúbrica (Con Rúbrica Pedagógica para Rama 1 / Sin Rúbrica para Ramas 2 y 3)
+   * Paso 4: Tarjeta de acción con alternativas, guardado en banco y opción de regenerar
+   */
+  function startCreateQuestionFlow() {
+    toggleChat(true);
+    pendingState = {
+      action: 'create_question_await_grade',
+      branch: null,
+      classroomId: null,
+      classroomName: null,
+      questionCount: null,
+      sessionId: null,
+      createClassData: null,
+      createQuestionData: {}
+    };
+
+    const chipsGrade = `
+      <div style="font-size:0.75rem; font-weight:700; color:#475569; margin:8px 0 4px 0;">🏫 Primaria:</div>
+      <div class="copilot-clarify-chips">
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:1', '1° Primaria')">1° Pri.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:2', '2° Primaria')">2° Pri.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:3', '3° Primaria')">3° Pri.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:4', '4° Primaria')">4° Pri.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:5', '5° Primaria')">5° Pri.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'primaria:6', '6° Primaria')">6° Pri.</button>
+      </div>
+      <div style="font-size:0.75rem; font-weight:700; color:#475569; margin:8px 0 4px 0;">🏛️ Secundaria:</div>
+      <div class="copilot-clarify-chips">
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:1', '1° Secundaria')">1° Sec.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:2', '2° Secundaria')">2° Sec.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:3', '3° Secundaria')">3° Sec.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:4', '4° Secundaria')">4° Sec.</button>
+        <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('cq_grade', 'secundaria:5', '5° Secundaria')">5° Sec.</button>
+      </div>
+    `;
+
+    appendMessage('ai', `<b>¡Crear Nueva Pregunta con IA!</b><br>Toda pregunta en Microevaluación se asocia a un grado curricular para estar disponible en todos los salones de ese nivel.<br><br><b>Paso 1:</b> Selecciona el <b>grado</b> de la pregunta:${chipsGrade}`);
+  }
+
+  /**
    * Renderiza la tarjeta de previsualización de pregunta con alternativas y rúbrica (Fase 2)
    */
-  function renderQuestionPreviewCard(topic, stage, level, preferredKey) {
-    const qData = generateQuestionWithRubric(topic, stage, level, preferredKey);
+  function renderQuestionPreviewCard(topic, stage, level, preferredKey, hasRubric) {
+    if (hasRubric === undefined) hasRubric = true;
+    const qData = generateQuestionWithRubric(topic, stage, level, preferredKey, hasRubric);
     const cardId = `card-q-${Date.now()}`;
     const encData = encodeURIComponent(JSON.stringify(qData));
+    const encTopic = encodeURIComponent(topic || 'Matemática');
+
+    const rubricBadge = hasRubric
+      ? `<div class="copilot-card-details" style="font-size:0.75rem; color:#15803d; background:#f0fdf4; padding:6px 10px; border-radius:6px; border:1px solid #bbf7d0;">
+           ✨ <b>Rúbrica pedagógica de IA generada:</b> Solución canónica y criterios de evaluación ponderados listos para corregir el borrador en Formativa con IA (Rama 1).
+         </div>`
+      : `<div class="copilot-card-details" style="font-size:0.75rem; color:#0369a1; background:#f0f9ff; padding:6px 10px; border-radius:6px; border:1px solid #bae6fd;">
+           ⚡ <b>Sin Rúbrica (Pregunta Rápida):</b> Calificación determinista por clave para Focalizada (Rama 2) y Cartillas OMR (Rama 3).
+         </div>`;
 
     const cardHtml = `
       <div class="copilot-action-card" id="${cardId}">
@@ -983,17 +1187,25 @@
           <div class="copilot-card-opt ${qData.correct === 'C' ? 'is-correct' : ''}"><b>C)</b> ${qData.options.C}</div>
           <div class="copilot-card-opt ${qData.correct === 'D' ? 'is-correct' : ''}"><b>D)</b> ${qData.options.D}</div>
         </div>
-        <div class="copilot-card-details" style="font-size:0.75rem; color:#15803d; background:#f0fdf4; padding:6px 10px; border-radius:6px; border:1px solid #bbf7d0;">
-          ✨ <b>Rúbrica pedagógica de IA generada:</b> Solución canónica y criterios de evaluación ponderados listos para corregir.
-        </div>
+        ${rubricBadge}
         <div class="copilot-card-actions">
           <button type="button" class="copilot-card-btn copilot-card-btn-primary" onclick="CopilotCommand.confirmSaveQuestion('${encData}', '${cardId}')">💾 Guardar en el Banco</button>
+          <button type="button" class="copilot-card-btn" style="background:#e0e7ff; color:#3730a3; border:1px solid #c7d2fe;" onclick="CopilotCommand.regenerateQuestion('${encTopic}', '${stage}', ${level}, '${preferredKey || ''}', ${hasRubric}, '${cardId}')">🔄 Regenerar</button>
           <button type="button" class="copilot-card-btn copilot-card-btn-secondary" onclick="CopilotCommand.dismissCard('${cardId}')">❌ Descartar</button>
         </div>
       </div>
     `;
 
-    appendMessage('ai', `He redactado la pregunta completa con sus 4 alternativas y rúbrica pedagógica (Regla 6):${cardHtml}`);
+    appendMessage('ai', `He redactado la pregunta completa para <b>${qData.gradeText}</b>:${cardHtml}`);
+  }
+
+  /**
+   * Regenera una pregunta con nuevas variantes manteniendo el grado, tema y modalidad de rúbrica
+   */
+  function regenerateQuestion(encTopic, stage, level, preferredKey, hasRubric, oldCardId) {
+    dismissCard(oldCardId);
+    const topic = decodeURIComponent(encTopic);
+    renderQuestionPreviewCard(topic, stage, parseInt(level, 10), preferredKey || null, !!hasRubric);
   }
 
   /**
@@ -1060,6 +1272,33 @@
       pendingState.createClassData.students = students;
       pendingState.action = null;
       renderClassroomPreviewCard(pendingState.createClassData);
+      return;
+    }
+
+    // =========================================================================
+    // GUARDARRAÍL: ESPERA DE RESPUESTAS EN FLUJO GUIADO DE PREGUNTA IA
+    // =========================================================================
+    if (pendingState.action === 'create_question_await_grade') {
+      const isSec = /sec|secundaria/.test(norm);
+      const stage = isSec ? 'secundaria' : 'primaria';
+      const numMatch = norm.match(/\b([1-6])\b/);
+      if (numMatch) {
+        const level = parseInt(numMatch[1], 10);
+        sendChip('cq_grade', `${stage}:${level}`, `${level}° ${stage === 'secundaria' ? 'Secundaria' : 'Primaria'}`);
+        return;
+      }
+      appendMessage('ai', 'Por favor selecciona o escribe el grado (ej. <i>"4° Primaria"</i> o <i>"2° Secundaria"</i>):');
+      return;
+    }
+
+    if (pendingState.action === 'create_question_await_topic') {
+      sendChip('cq_topic', trimmed, trimmed);
+      return;
+    }
+
+    if (pendingState.action === 'create_question_await_rubric') {
+      const withRubric = /con|si|rubrica|formativa|pedagogica/i.test(norm) && !/sin|no|rapida|focalizada|omr/i.test(norm);
+      sendChip('cq_rubric', withRubric ? 'con_rubrica' : 'sin_rubrica', withRubric ? '✨ Con Rúbrica Pedagógica' : '⚡ Sin Rúbrica');
       return;
     }
 
@@ -1205,32 +1444,25 @@
     // 2. Crear Pregunta Asistida hacia el Banco de Preguntas (Regla 6)
     if (/crear pregunta|nueva pregunta|genera una pregunta|redacta una pregunta|crea una pregunta|pregunta sobre/.test(norm)) {
       const topicMatch = trimmed.match(/(?:sobre|de)\s+([^.\n]+)/i);
-      const topic = topicMatch ? topicMatch[1].trim() : 'Matemática';
-
       const keyMatch = norm.match(/\bclave\s*([a-d])\b/);
       const preferredKey = keyMatch ? keyMatch[1].toUpperCase() : null;
-
       const gradeMatch = norm.match(/\b([1-6])\b/);
       const isSec = norm.includes('sec');
       const stage = isSec ? 'secundaria' : 'primaria';
 
-      if (gradeMatch) {
-        const level = parseInt(gradeMatch[1], 10);
-        renderQuestionPreviewCard(topic, stage, level, preferredKey);
+      if (!topicMatch && !gradeMatch) {
+        startCreateQuestionFlow();
         return;
       }
 
-      pendingState.action = 'create_question';
-      pendingState.createQuestionData = { topic, preferredKey };
-      const gradeChips = `
-        <div class="copilot-clarify-chips">
-          <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('create_q_grade', 'primaria:4', '4° Primaria')">4° Pri.</button>
-          <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('create_q_grade', 'primaria:5', '5° Primaria')">5° Pri.</button>
-          <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('create_q_grade', 'primaria:6', '6° Primaria')">6° Pri.</button>
-          <button type="button" class="copilot-chip" onclick="CopilotCommand.sendChip('create_q_grade', 'secundaria:1', '1° Secundaria')">1° Sec.</button>
-        </div>
-      `;
-      appendMessage('ai', `¿Para qué grado deseas crear la pregunta sobre <b>${topic}</b>?${gradeChips}`);
+      if (gradeMatch && topicMatch) {
+        const level = parseInt(gradeMatch[1], 10);
+        const topic = topicMatch[1].trim();
+        renderQuestionPreviewCard(topic, stage, level, preferredKey, true);
+        return;
+      }
+
+      startCreateQuestionFlow();
       return;
     }
 
@@ -1399,6 +1631,8 @@
     toggleChat,
     clearChat,
     dismissCard,
+    startCreateQuestionFlow,
+    regenerateQuestion,
     confirmCreateClassroom,
     confirmSaveQuestion,
     confirmDeleteClassroom,
