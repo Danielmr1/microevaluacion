@@ -6760,6 +6760,7 @@
       overflow: hidden;
       text-align: left;
       animation: copilotFadeIn 0.22s ease-out;
+      max-height: 440px;
     }
 
     @keyframes copilotFadeIn {
@@ -6819,7 +6820,7 @@
     }
 
     .copilot-messages {
-      max-height: 380px;
+      max-height: 300px;
       overflow-y: auto;
       padding: 14px 18px;
       display: flex;
@@ -6883,6 +6884,56 @@
       color: #ffffff;
     }
 
+    .copilot-drawer-input-area {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+      flex-shrink: 0;
+    }
+
+    .copilot-drawer-input {
+      flex: 1;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 9999px;
+      padding: 7px 14px;
+      font-size: 0.83rem;
+      color: #0f172a;
+      background: #ffffff;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .copilot-drawer-input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+    }
+
+    .copilot-drawer-input::placeholder {
+      color: #94a3b8;
+    }
+
+    .copilot-drawer-submit-btn {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0284c7;
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.18s ease;
+    }
+
+    .copilot-drawer-submit-btn:hover {
+      background: #0369a1;
+    }
+
     @media (max-width: 600px) {
       .copilot-stage {
         margin: 16px auto 0;
@@ -6894,8 +6945,11 @@
         padding: 4px 10px;
         font-size: 0.74rem;
       }
+      .copilot-chat-drawer {
+        max-height: 360px;
+      }
       .copilot-messages {
-        max-height: 220px;
+        max-height: 200px;
       }
     }
 

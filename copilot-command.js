@@ -1610,6 +1610,7 @@
    * Inicialización de eventos del Copilot
    */
   function init() {
+    // --- Barra de comandos superior (fuera del chat drawer) ---
     const inputEl = document.getElementById('copilot-input');
     const submitBtn = document.getElementById('copilot-submit-btn');
 
@@ -1625,6 +1626,33 @@
     if (submitBtn) {
       submitBtn.addEventListener('click', function () {
         if (inputEl) handleInput(inputEl.value);
+      });
+    }
+
+    // --- Caja de texto libre dentro del chat drawer ---
+    const drawerInput = document.getElementById('copilot-drawer-input');
+    const drawerSubmit = document.getElementById('copilot-drawer-submit');
+
+    if (drawerInput) {
+      drawerInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const val = drawerInput.value.trim();
+          if (val) {
+            handleInput(val);
+            drawerInput.value = '';
+          }
+        }
+      });
+    }
+
+    if (drawerSubmit) {
+      drawerSubmit.addEventListener('click', function () {
+        const val = drawerInput ? drawerInput.value.trim() : '';
+        if (val) {
+          handleInput(val);
+          drawerInput.value = '';
+        }
       });
     }
   }
