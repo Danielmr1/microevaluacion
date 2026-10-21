@@ -1452,11 +1452,29 @@
     const loadingId = 'msg-eva-thinking-' + Date.now();
     appendMessage('ai', '<div id="' + loadingId + '" style="display:flex; align-items:center; gap:8px; color:#64748b; font-size:0.84rem;"><span class="copilot-spinner" style="display:inline-block; width:14px; height:14px; border:2px solid #cbd5e1; border-top-color:#0284c7; border-radius:50%; animation:spin 0.8s linear infinite;"></span><span>EVA está pensando...</span></div>');
 
-    const classrooms = (typeof ClassroomData !== 'undefined' && ClassroomData.getClassrooms) ? ClassroomData.getClassrooms() : [];
-    const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions) ? ClassroomData.getSavedSessions() : [];
+    const classrooms = (typeof ClassroomData !== 'undefined' && ClassroomData.CLASSROOMS)
+      ? Object.values(ClassroomData.CLASSROOMS).map(c => ({
+          id: c.id,
+          nombre: c.name,
+          grado: c.gradeLevel ? `${c.gradeLevel}° ${c.gradeStage}` : (c.gradeText || ''),
+          totalAlumnos: (c.students || []).length,
+          primerosAlumnos: (c.students || []).map(s => s.shortName || s.name).slice(0, 5)
+        }))
+      : [];
+    const sessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+      ? ClassroomData.getSavedSessions().map((s, idx) => ({
+          numero: idx + 1,
+          salon: s.classroomName,
+          modalidad: s.branchTitle || s.branch,
+          preguntasCount: (s.questions || []).length || (s.prompt ? 1 : 0)
+        }))
+      : [];
     const context = {
-      salonesRegistrados: classrooms.map(c => ({ id: c.id, nombre: c.name, alumnos: (c.students || []).length })),
-      sesionesGuardadasCount: sessions.length
+      salones: classrooms,
+      totalSalonesRegistrados: classrooms.length,
+      sesionesGuardadas: sessions,
+      totalSesionesGuardadas: sessions.length,
+      maxSesionesPermitidas: (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8
     };
 
     let aiRes = null;
