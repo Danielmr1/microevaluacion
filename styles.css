@@ -545,15 +545,12 @@
     /* VISTA 1: REDACTAR E IMPRIMIR FICHAS                       */
     /* ========================================================= */
     #view-create {
-      background: radial-gradient(circle at 50% 0%, rgba(224, 242, 254, 0.7) 0%, rgba(248, 250, 252, 0) 65%),
-                  radial-gradient(circle at 15% 45%, rgba(238, 242, 255, 0.5) 0%, rgba(248, 250, 252, 0) 55%),
-                  radial-gradient(circle at 85% 60%, rgba(236, 253, 245, 0.4) 0%, rgba(248, 250, 252, 0) 55%),
-                  #f8fafc;
+      background: var(--bg-paper);
       padding: 16px;
       align-items: center;
       overflow-y: auto;
       min-height: calc(100vh - 65px);
-      color: #0f172a;
+      color: var(--text-carbon);
     }
 
     .teacher-panel {
@@ -4121,13 +4118,12 @@
     }
     #view-hub,
     #view-create,
-    #view-classrooms {
-      background: radial-gradient(circle at 50% 0%, rgba(224, 242, 254, 0.7) 0%, rgba(248, 250, 252, 0) 65%),
-                  radial-gradient(circle at 15% 45%, rgba(238, 242, 255, 0.5) 0%, rgba(248, 250, 252, 0) 55%),
-                  radial-gradient(circle at 85% 60%, rgba(236, 253, 245, 0.4) 0%, rgba(248, 250, 252, 0) 55%),
-                  #f8fafc;
+    #view-classrooms,
+    #view-bank,
+    #view-results {
+      background: var(--bg-paper);
       min-height: calc(100vh - 65px);
-      color: #0f172a;
+      color: var(--text-carbon);
     }
 
     /* ── TIRA SUPERIOR DE 3 TARJETAS COMPACTAS DEL GESTOR (DEBAJO DE INICIO) ── */
@@ -6787,6 +6783,17 @@
     }
 
     .copilot-chip {
+      background: #ffffff;
+      border: 1.5px solid var(--border-card);
+      color: var(--text-carbon);
+      transition: all 0.2s ease;
+    }
+    .copilot-chip:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: var(--accent-cyan-light);
+    }
+    .copilot-chip-original {
       background: #ffffff;
       border: 1px solid #cbd5e1;
       border-radius: 9999px;

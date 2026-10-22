@@ -567,7 +567,7 @@ function renderBankManagerStageTabs() {
       'border:none',
       'transition:all 0.15s',
       isActive
-        ? 'background:#0284c7; color:#ffffff; box-shadow:0 1px 4px rgba(2,132,199,0.3);'
+        ? 'background:#00B4D8; color:#ffffff; font-weight:700; box-shadow:0 1px 4px rgba(0,180,216,0.35);'
         : 'background:transparent; color:#64748b;'
     ].join(';');
 
@@ -632,7 +632,7 @@ function renderBankManagerGradeTabs() {
       'cursor:pointer',
       'transition:all 0.15s',
       isActive
-        ? 'background:#0284c7; color:#ffffff; border:1.5px solid #0284c7; box-shadow:0 2px 6px rgba(2,132,199,0.25);'
+        ? 'background:#00B4D8; color:#ffffff; font-weight:700; border:1.5px solid #00B4D8; box-shadow:0 2px 6px rgba(0,180,216,0.35);'
         : 'background:#f8fafc; color:#475569; border:1.5px solid #e2e8f0;'
     ].join(';');
 
@@ -690,7 +690,7 @@ function renderBankManagerFilterPills() {
       'cursor:pointer',
       'transition:all 0.15s',
       isActive
-        ? 'background:#e0f2fe; color:#0369a1; border:1.5px solid #0284c7;'
+        ? 'background:#e0f7fa; color:#007791; font-weight:700; border:1.5px solid #00B4D8;'
         : 'background:#ffffff; color:#64748b; border:1.5px solid #e2e8f0;'
     ].join(';');
 
