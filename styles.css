@@ -3498,9 +3498,9 @@
       top: 70px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(17, 24, 39, 0.92);
+      background: rgba(24, 21, 18, 0.94);
       backdrop-filter: blur(8px);
-      border: 1px solid #374151;
+      border: 1.5px solid rgba(0, 180, 216, 0.4);
       padding: 6px 16px;
       border-radius: 20px;
       font-size: 0.8rem;
@@ -3511,15 +3511,15 @@
       gap: 8px;
       z-index: 10;
       white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
       transition: all 0.2s ease;
     }
     .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #eab308;
-      box-shadow: 0 0 8px #eab308;
+      background: #FFB703;
+      box-shadow: 0 0 8px #FFB703;
     }
     .status-badge.locked {
       background: rgba(22, 101, 52, 0.9);
@@ -3548,9 +3548,9 @@
     }
     .metric-card {
       flex: 1;
-      background: rgba(17, 24, 39, 0.8);
+      background: rgba(24, 21, 18, 0.85);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255, 183, 3, 0.2);
       border-radius: 10px;
       padding: 8px 12px;
     }

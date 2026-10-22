@@ -2333,7 +2333,7 @@
     const bar = document.getElementById('bar-stability');
     if (bar) {
       bar.style.width = val + '%';
-      bar.style.background = val === 100 ? '#22c55e' : '#3b82f6';
+      bar.style.background = val === 100 ? '#22c55e' : '#00B4D8';
     }
   }
 
