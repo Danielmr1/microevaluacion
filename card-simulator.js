@@ -52,7 +52,7 @@ function selectBranchMode(branch) {
   if (simContainer) simContainer.style.display = (branch === 'rama1' || branch === 'rama2') ? 'flex' : 'none';
   if (b3Opts) b3Opts.style.display = branch === 'rama3' ? 'block' : 'none';
 
-  // Ocultar formularios secundarios antiguos
+  // Asegurar que el formulario modal de preguntas inicie cerrado
   const fNew = document.getElementById('step-new-form');
   if (fNew) fNew.style.display = 'none';
 
@@ -1450,18 +1450,6 @@ function confirmSimAndPrint() {
   }
 }
 
-function confirmSimAndScan() {
-  const ev = buildSimulatorEvaluation();
-  if (!ev) return;
-
-  if (typeof openFlow === 'function') {
-    openFlow('scanner');
-  } else {
-    window.location.href = 'scanner.html';
-  }
-}
-
-
 // ── EXPOSICIÓN GLOBAL DE FUNCIONES DEL SIMULADOR WYSIWYG ──
 if (typeof window !== 'undefined') {
   window.currentBranchMode = currentBranchMode;
@@ -1488,7 +1476,6 @@ if (typeof window !== 'undefined') {
   window.buildSimulatorEvaluation = buildSimulatorEvaluation;
   window.confirmSimulator = confirmSimulator;
   window.confirmSimAndPrint = confirmSimAndPrint;
-  window.confirmSimAndScan = confirmSimAndScan;
   if (typeof fitRama3ToViewport === 'function') {
     window.fitRama3ToViewport = fitRama3ToViewport;
   }

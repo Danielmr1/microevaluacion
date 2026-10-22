@@ -17,7 +17,6 @@ const PRECACHE_ASSETS = [
   './ScrollTrigger.min.js',
   './aruco.bundle.js?v=3.0.6',
   './jsqr.min.js?v=3.0.6',
-  './warp_math.js',
   // Módulos de la aplicación
   './classroom-data.js?v=3.3.8',
   './supabase-client.js?v=3.5.7',

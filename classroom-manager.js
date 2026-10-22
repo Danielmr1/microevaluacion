@@ -841,10 +841,6 @@ function applyMgrPastedStudents() {
   showToast(`✅ Se cargaron ${names.length} alumnos en la lista.`);
 }
 
-function updateMgrManualStudentCount() {
-  updateMgrStudentRowsCount();
-}
-
 async function handleDeleteClassroomFromManager() {
   const btnDel = document.getElementById('btn-manager-delete-classroom');
   try {

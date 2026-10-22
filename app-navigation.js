@@ -30,15 +30,6 @@ if (typeof window !== 'undefined') {
       setTimeout(() => { t.style.display = 'none'; }, 2800);
     }
 
-    function toggleRosterPanel() {
-      const wrap = document.getElementById('roster-list-wrap');
-      const chevron = document.getElementById('roster-chevron');
-      if (!wrap) return;
-      const isOpen = wrap.style.display !== 'none';
-      wrap.style.display = isOpen ? 'none' : 'block';
-      if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    }
-
     function switchTab(tabId) {
       activeTab = tabId;
       const tabBtnCreate = document.getElementById('tab-btn-create');
