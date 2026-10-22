@@ -475,6 +475,43 @@
     if (!raw) return '';
     let text = String(raw).trim();
 
+    // Pre-normalizador auto-reparador: si una tabla viene comprimida en una sola línea o con filas unidas por '| |'
+    if (/\|[-:\s|]{3,}\|/.test(text)) {
+      if (/\|\s*\|/.test(text)) {
+        text = text.replace(/\|\s*\|\s*/g, '|\n|');
+      }
+
+      // Separar texto previo si está pegado al encabezado antes del primer '|'
+      const lines = text.split(/\r?\n/);
+      for (let i = 0; i < lines.length - 1; i++) {
+        if (/^\|[-:\s|]+\|$/.test(lines[i + 1].trim())) {
+          const firstPipe = lines[i].indexOf('|');
+          if (firstPipe > 0) {
+            const prefix = lines[i].slice(0, firstPipe).trim();
+            const header = lines[i].slice(firstPipe).trim();
+            lines[i] = (prefix ? prefix + '\n\n' : '') + header;
+          }
+          break;
+        }
+      }
+
+      // Separar texto posterior si está pegado a la última fila tras el último '|'
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i].trim();
+        if (line.startsWith('|')) {
+          const lastPipe = line.lastIndexOf('|');
+          if (lastPipe !== -1 && lastPipe < line.length - 1) {
+            const row = line.slice(0, lastPipe + 1).trim();
+            const suffix = line.slice(lastPipe + 1).trim();
+            lines[i] = row + (suffix ? '\n\n' + suffix : '');
+          }
+          break;
+        }
+      }
+
+      text = lines.join('\n');
+    }
+
     const tables = [];
     const tableRegex = /(?:(?:^|\n)\|[^\n]+\|\r?\n\|[-:\s|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g;
 

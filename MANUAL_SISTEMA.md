@@ -325,6 +325,14 @@ Para evitar bloques densos de texto corrido al consultar nóminas de alumnos, sa
   - **Scroll interno acotado (`max-height: 260px`):** Si un salón contiene 35 estudiantes, la nómina no desplaza toda la pantalla del chat hacia abajo, sino que permite deslizar la lista cómodamente dentro de su propia tarjeta.
   - **Compatibilidad Anti-XSS:** Las tablas se procesan de forma compatible con `sanitizeCopilotHtml`, neutralizando cualquier vector de inyección sin romper la estructura tabular.
 
+### 15.3. Normalizador Auto-Reparador de Tablas Comprimidas (`v3.6.3`)
+* **Resiliencia ante Respuestas JSON:** Cuando modelos de lenguaje devuelven tablas Markdown comprimidas en una sola línea (filas unidas con `| |` sin saltos de línea físicos `\n`), `formatCopilotMarkdown` pre-normaliza la cadena:
+  1. Separa el texto introductorio de la cabecera.
+  2. Convierte las dobles barras `| |` en saltos de línea reales `\n`.
+  3. Separa el texto final de cierre tras la última celda `|`.
+* Esta tolerancia garantiza que la tabla siempre se dibuje estructurada, cebrada y con scroll, con cero texto plano residual.
+
+
 
 
 
