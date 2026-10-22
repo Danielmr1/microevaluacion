@@ -252,9 +252,9 @@ if (typeof window !== 'undefined') {
 
             // Asegurar que el primer ítem y su título comiencen 100% nítidos y visibles
             gsap.set(items[0], { opacity: 1, filter: 'blur(0px)', scale: 1 });
-            if (headTitles[0]) gsap.set(headTitles[0], { opacity: 1, y: 0 });
-            if (headTitles[1]) gsap.set(headTitles[1], { opacity: 0, y: 10 });
-            if (headTitles[2]) gsap.set(headTitles[2], { opacity: 0, y: 10 });
+            if (headTitles[0]) gsap.set(headTitles[0], { opacity: 1, y: 0, pointerEvents: 'auto', zIndex: 10 });
+            if (headTitles[1]) gsap.set(headTitles[1], { opacity: 0, y: 10, pointerEvents: 'none', zIndex: 1 });
+            if (headTitles[2]) gsap.set(headTitles[2], { opacity: 0, y: 10, pointerEvents: 'none', zIndex: 1 });
 
             // Inicializar llenado en 0% para las frases de las modalidades
             if (desc1) gsap.set(desc1, { '--fill': '0%' });
@@ -304,7 +304,7 @@ if (typeof window !== 'undefined') {
             // Transición Etapa 1 -> Etapa 2 (Focalizada en la Respuesta)
             stageTL
               .to(items[0], { opacity: 0.08, scale: 0.96, duration: 0.8, ease: 'power1.in' })
-              .to(headTitles[0], { opacity: 0, y: -10, duration: 0.5, ease: 'power1.in' }, '<')
+              .to(headTitles[0], { opacity: 0, y: -10, duration: 0.5, ease: 'power1.in', pointerEvents: 'none', zIndex: 1 }, '<')
               .to(stepsContainer, { yPercent: -33.33, duration: 0.8, ease: 'power2.inOut' }, '<')
               .to(progressBar, { scaleY: 0.66, ease: 'none', duration: 0.8 }, '<')
               .fromTo(items[1], 
@@ -312,7 +312,7 @@ if (typeof window !== 'undefined') {
                 { opacity: 1, filter: 'blur(0px)', scale: 1, duration: 0.8, ease: 'power2.out' },
                 '<'
               )
-              .to(headTitles[1], { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, '<0.1')
+              .to(headTitles[1], { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', pointerEvents: 'auto', zIndex: 10 }, '<0.1')
               // "Verificación Ágil de Contenidos" se llena de color negro de izquierda a derecha
               .fromTo(desc2, { '--fill': '0%' }, { '--fill': '100%', duration: 0.9, ease: 'power1.out' }, '>');
 
@@ -322,7 +322,7 @@ if (typeof window !== 'undefined') {
             // Transición Etapa 2 -> Etapa 3 (Cartilla OMR)
             stageTL
               .to(items[1], { opacity: 0.08, scale: 0.96, duration: 0.8, ease: 'power1.in' })
-              .to(headTitles[1], { opacity: 0, y: -10, duration: 0.5, ease: 'power1.in' }, '<')
+              .to(headTitles[1], { opacity: 0, y: -10, duration: 0.5, ease: 'power1.in', pointerEvents: 'none', zIndex: 1 }, '<')
               .to(stepsContainer, { yPercent: -66.66, duration: 0.8, ease: 'power2.inOut' }, '<')
               .to(progressBar, { scaleY: 1.0, ease: 'none', duration: 1 }, '<')
               .fromTo(items[2], 
@@ -330,7 +330,7 @@ if (typeof window !== 'undefined') {
                 { opacity: 1, filter: 'blur(0px)', scale: 1, duration: 0.8, ease: 'power2.out' },
                 '<'
               )
-              .to(headTitles[2], { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, '<0.1')
+              .to(headTitles[2], { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', pointerEvents: 'auto', zIndex: 10 }, '<0.1')
               // "Calificación Óptica Instantánea" se llena de color negro de izquierda a derecha
               .fromTo(desc3, { '--fill': '0%' }, { '--fill': '100%', duration: 0.9, ease: 'power1.out' }, '>');
 
@@ -786,6 +786,7 @@ if (typeof window !== 'undefined') {
       if (typeof updateHubSavedSessionsBadge === 'function') updateHubSavedSessionsBadge();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    window.goHomeHub = goHomeHub;
 
     function updateHubSessionBadge() {
       const badge = document.getElementById('hub-session-badge');
