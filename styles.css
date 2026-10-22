@@ -4746,9 +4746,14 @@
       font-size: clamp(1.85rem, 3.2vw, 2.6rem);
       font-weight: 900;
       letter-spacing: -0.03em;
-      color: #0f172a;
       line-height: 1.15;
       margin: 0;
+      background: linear-gradient(to right, #000000 calc(var(--fill, 0%) - 2%), #cbd5e1 calc(var(--fill, 0%) + 2%));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      will-change: background;
     }
 
     #target-section .stage-head-info .category-subtitle {
@@ -5171,10 +5176,15 @@
       .mobile-stage-title {
         font-size: 1.45rem;
         font-weight: 900;
-        color: #0f172a;
         margin: 0 0 6px;
         letter-spacing: -0.025em;
         line-height: 1.2;
+        background: linear-gradient(to right, #000000 calc(var(--fill, 0%) - 2%), #cbd5e1 calc(var(--fill, 0%) + 2%));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        will-change: background;
       }
       .mobile-stage-badges {
         display: flex;
