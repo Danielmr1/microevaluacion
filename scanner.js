@@ -1422,8 +1422,8 @@
     const isOptimalDistance = coverage >= COVERAGE_THRESHOLD;
     const sheetQuad = getExpandedSheetQuad(quad);
 
-    let color = '#22c55e';
-    let fillColor = 'rgba(34, 197, 94, 0.22)';
+    let color = '#00B4D8'; // Scanwing Cian Eléctrico
+    let fillColor = 'rgba(0, 180, 216, 0.22)';
     let labelText = `✓ ¡Encuadre Óptimo! (${coverage}%)`;
 
     if (!isFullyInside) {
@@ -1431,12 +1431,12 @@
       fillColor = 'rgba(239, 68, 68, 0.20)';
       labelText = '⚠️ Centra la hoja: esquinas al borde';
     } else if (!isOptimalDistance) {
-      color = '#f59e0b';
-      fillColor = 'rgba(245, 158, 11, 0.20)';
+      color = '#FFB703'; // Scanwing Ámbar Oro de Alerta / Enfoque
+      fillColor = 'rgba(255, 183, 3, 0.22)';
       labelText = `🔍 Acerca más la cámara (${coverage}% / ${COVERAGE_THRESHOLD}%)`;
     } else if (!isAlmostPerfect) {
-      color = '#f59e0b';
-      fillColor = 'rgba(245, 158, 11, 0.20)';
+      color = '#FFB703'; // Scanwing Ámbar Oro de Alerta / Enfoque
+      fillColor = 'rgba(255, 183, 3, 0.22)';
       labelText = '📐 Ponte más paralelo a la hoja';
     }
 
@@ -1485,7 +1485,7 @@
     const pillH = 32;
     const pillX = centerX - pillW / 2;
 
-    ctx.fillStyle = (!isFullyInside) ? 'rgba(185, 28, 28, 0.95)' : ((!isOptimalDistance || !isAlmostPerfect) ? 'rgba(180, 83, 9, 0.95)' : 'rgba(21, 128, 61, 0.95)');
+    ctx.fillStyle = (!isFullyInside) ? 'rgba(185, 28, 28, 0.95)' : ((!isOptimalDistance || !isAlmostPerfect) ? 'rgba(180, 83, 9, 0.95)' : 'rgba(0, 119, 145, 0.95)');
     ctx.beginPath();
     ctx.roundRect(pillX, pillY - pillH / 2, pillW, pillH, 16);
     ctx.fill();

@@ -3228,16 +3228,17 @@
     }
 
     /* ========================================================= */
-    /* VISTA 2: ESCÁNER DE AULA (CÁMARA MÓVIL)                   */
+    /* VISTA 2: ESCÁNER DE AULA (CÁMARA MÓVIL) — SCANWING (Tanda 3)*/
     /* ========================================================= */
     #view-scan {
       flex-direction: column;
       position: relative;
+      background: #181512;
     }
 
     .session-bar {
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
+      background: #1f1b17;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       padding: 8px 16px;
       display: flex;
       align-items: center;
@@ -3255,14 +3256,14 @@
     }
 
     .session-field label {
-      color: #94a3b8;
+      color: #a8a29e;
       font-weight: 600;
     }
 
     .session-badge-active {
-      background: #0f172a;
-      color: #38bdf8;
-      border: 1px solid #0284c7;
+      background: #181512;
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
       padding: 4px 10px;
       border-radius: 6px;
       font-weight: 700;
@@ -3271,21 +3272,21 @@
 
     .session-counter {
       margin-left: auto;
-      background: rgba(13, 148, 136, 0.25);
-      color: #2dd4bf;
+      background: rgba(0, 180, 216, 0.15);
+      color: var(--accent-cyan);
       font-weight: 700;
       padding: 4px 12px;
       border-radius: 12px;
       font-size: 0.78rem;
-      border: 1px solid rgba(45, 212, 191, 0.4);
+      border: 1px solid rgba(0, 180, 216, 0.35);
     }
 
     /* Tarjeta de Aviso si la sesión no está generada */
     .session-guardrail-card {
       margin: 20px auto;
       max-width: 500px;
-      background: #1e293b;
-      border: 2px dashed #f59e0b;
+      background: #1f1b17;
+      border: 2px dashed var(--accent-amber);
       border-radius: 16px;
       padding: 24px;
       text-align: center;
@@ -3302,35 +3303,36 @@
     .guardrail-title {
       font-size: 1.1rem;
       font-weight: 800;
-      color: #f59e0b;
+      color: var(--accent-amber);
     }
 
     .guardrail-desc {
       font-size: 0.88rem;
-      color: #cbd5e1;
+      color: #d6d3d1;
       line-height: 1.45;
     }
 
     .btn-arm-session {
-      background: #2563eb;
-      color: white;
+      background: var(--accent-amber);
+      color: #181512;
       border: none;
       padding: 12px 20px;
       border-radius: 10px;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 0.92rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
       margin-top: 6px;
+      box-shadow: 0 4px 12px rgba(255, 183, 3, 0.35);
     }
 
     /* Visor de Cámara */
     .viewport-container {
       position: relative;
       flex: 1;
-      background: #000;
+      background: #181512;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -3594,25 +3596,29 @@
     }
     .btn-main {
       flex: 1;
-      background: #2563eb;
-      color: white;
+      background: var(--accent-amber);
+      color: #181512;
       border: none;
       padding: 14px 20px;
       border-radius: 10px;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 1rem;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-      transition: background 0.2s;
+      box-shadow: 0 4px 14px rgba(255, 183, 3, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-main:hover {
+      background: #f59e0b;
+      transform: translateY(-1px);
     }
     .btn-secondary {
-      background: #1f2937;
-      color: #e2e8f0;
-      border: 1px solid #374151;
+      background: #292522;
+      color: #e7e5e4;
+      border: 1px solid #44403c;
       padding: 14px 16px;
       border-radius: 10px;
       font-weight: 600;
