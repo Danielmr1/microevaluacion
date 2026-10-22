@@ -492,18 +492,18 @@
           if (isBranch3) {
             // RAMA 3: Visualización de Cartilla OMR
             qContainer.innerHTML = `
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px;">
+              <div style="background:#F9F8F3; border:1px solid #e5e3dc; border-radius:10px; padding:10px 12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <strong style="color:#0f172a; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla (${qCount} Preguntas)</strong>
+                  <strong style="color:#181512; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla (${qCount} Preguntas)</strong>
                   ${(wizardEval && (wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))) ? '' : `
-                    <span style="background:#e0f2fe; color:#0284c7; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:6px; border:1px solid #bae6fd;">OMR Puro</span>
+                    <span style="background:#e0f7fa; color:#007791; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:6px; border:1px solid #b2ebf2;">OMR Puro</span>
                   `}
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(64px, 1fr)); gap:5px; max-height:160px; overflow-y:auto; padding:1px;">
                   ${(wizardEval.questions || []).map((q, idx) => `
-                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; padding:3px 6px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
-                      <span style="font-size:0.7rem; color:#64748b; font-weight:700;">P${(idx + 1).toString().padStart(2, '0')}</span>
-                      <span style="background:#2563eb; color:#fff; font-size:0.72rem; font-weight:800; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center;">${q.correct}</span>
+                    <div style="background:#ffffff; border:1px solid #e5e3dc; border-radius:6px; padding:3px 6px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 2px rgba(24,21,18,0.03);">
+                      <span style="font-size:0.7rem; color:#57534e; font-weight:700;">P${(idx + 1).toString().padStart(2, '0')}</span>
+                      <span style="background:#00B4D8; color:#fff; font-size:0.72rem; font-weight:800; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center;">${q.correct}</span>
                     </div>
                   `).join('')}
                 </div>
