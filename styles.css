@@ -4170,9 +4170,9 @@
       align-items: center;
       justify-content: center;
     }
-    .icon-sky { background: #e0f2fe; color: #0284c7; }
-    .icon-indigo { background: #e0e7ff; color: #4f46e5; }
-    .icon-amber { background: #fef3c7; color: #d97706; }
+    .icon-sky { background: #e0f7fa; color: #00B4D8; border: 1px solid rgba(0,180,216,0.3); }
+    .icon-indigo { background: #fff8e1; color: #FFB703; border: 1px solid rgba(255,183,3,0.35); }
+    .icon-amber { background: #f5f5f4; color: #181512; border: 1px solid rgba(24,21,18,0.2); }
 
     /* Tooltip Flotante al pasar el mouse */
     .top-strip-icon-btn .hub-tooltip {
@@ -4266,17 +4266,29 @@
     .ghost-stage-sheet {
       width: 100%;
       max-width: 920px;
-      height: 625px;
-      min-height: 625px;
-      padding: 34px 32px;
-      opacity: 0.28; /* Transparencia estética para que funcione como marca de agua viva */
-      transform: perspective(900px) rotateY(-4deg) rotateX(2deg);
-      background: rgba(255, 255, 255, 0.72);
-      border: 1.5px solid rgba(15, 23, 42, 0.25);
-      border-radius: 18px;
+      height: 530px;
+      min-height: 530px;
+      padding: 34px 34px 28px;
+      opacity: 1;
+      transform: perspective(900px) rotateY(-2deg) rotateX(1deg);
+      background: linear-gradient(180deg, 
+        #FDFCF7 0%, 
+        #FDFCF7 42%, 
+        #FFF4D6 43%, 
+        #FFB703 48%, 
+        #F59E0B 52%, 
+        #00B4D8 58%, 
+        #0096C7 75%, 
+        #03045E 100%);
+      border: 2.5px solid #2B2118;
+      border-radius: 24px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 20px 45px rgba(2, 132, 199, 0.08);
+      box-shadow: 
+        0 0 0 4px #FFB703,
+        0 0 0 8px rgba(0, 180, 216, 0.4),
+        0 28px 70px rgba(3, 4, 94, 0.25),
+        0 12px 30px rgba(43, 33, 24, 0.15);
       transform-origin: center center;
       will-change: transform, opacity;
     }
@@ -4295,23 +4307,26 @@
     }
 
     .hero-front-content .eva-hero-title {
-      font-size: clamp(3.2rem, 6.2vw, 4.4rem);
+      font-size: clamp(3.6rem, 6.5vw, 4.8rem);
       font-weight: 950;
-      color: var(--text-carbon);
-      letter-spacing: -0.04em;
+      color: #181512 !important;
+      letter-spacing: -0.03em;
       line-height: 1;
       margin: 0 0 4px;
-      text-shadow: 0 2px 20px rgba(249, 248, 243, 0.9), 0 0 35px rgba(249, 248, 243, 0.95);
+      position: relative;
+      display: inline-block;
+      text-shadow: 
+        0 0 20px rgba(186, 230, 253, 0.8), /* Halo lavanda/celeste hielo */
+        0 2px 10px rgba(24, 21, 18, 0.25);
     }
 
     .hero-front-content .eva-hero-subtitle {
-      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      font-size: clamp(0.95rem, 1.8vw, 1.12rem);
       font-weight: 650;
-      color: var(--text-muted);
-      margin: 0 0 8px;
+      color: #5c4a3b; /* Marrón suave terroso */
+      margin: 0 0 14px;
       max-width: 620px;
       line-height: 1.35;
-      text-shadow: 0 1px 12px rgba(249, 248, 243, 0.9);
     }
 
     .hero-cta-wrap {
@@ -4365,13 +4380,17 @@
     .l-long { width: 85%; }
     .l-med { width: 60%; }
     .wireframe-grid {
-      height: 180px;
-      border: 1px dashed rgba(15, 23, 42, 0.2);
-      border-radius: 8px;
+      height: 250px;
+      border: 1.5px solid rgba(255, 255, 255, 0.6);
+      border-radius: 14px;
+      background-color: rgba(255, 255, 255, 0.88);
       background-image: 
-        linear-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+        linear-gradient(rgba(0, 119, 182, 0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 119, 182, 0.16) 1px, transparent 1px);
       background-size: 16px 16px;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(3, 4, 94, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
     }
 
     /* ESCENARIO PROTAGONISTA: FICHA EVA CON 4 VÉRTICES ARUCO */
@@ -6714,16 +6733,21 @@
       display: flex;
       align-items: center;
       background: #ffffff;
-      border: 1.5px solid #cbd5e1;
+      border: 2px solid #FFB703;
       border-radius: 9999px;
-      padding: 4px 6px 4px 16px;
-      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      padding: 5px 8px 5px 18px;
+      box-shadow: 0 8px 26px rgba(43, 33, 24, 0.12), 0 0 0 3px rgba(255, 183, 3, 0.2);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .copilot-input-wrapper:hover {
+      border-color: #FFB703;
+      box-shadow: 0 8px 24px rgba(43, 33, 24, 0.12);
     }
 
     .copilot-input-wrapper:focus-within {
-      border-color: #0284c7;
-      box-shadow: 0 6px 24px rgba(2, 132, 199, 0.18);
+      border-color: #00B4D8;
+      box-shadow: 0 0 0 3.5px rgba(0, 180, 216, 0.22), 0 8px 28px rgba(43, 33, 24, 0.14);
     }
 
     .copilot-input-icon {
@@ -6740,34 +6764,35 @@
       background: transparent;
       font-size: 0.95rem;
       font-weight: 500;
-      color: #0f172a;
+      color: #181512;
       font-family: inherit;
     }
 
     .copilot-input::placeholder {
-      color: #94a3b8;
+      color: #8c786a;
       font-weight: 450;
     }
 
     .copilot-submit-btn {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       flex-shrink: 0;
       border-radius: 50%;
-      background: #0284c7;
-      color: #ffffff;
+      background: linear-gradient(135deg, #FFB703 0%, #F5A623 100%);
+      color: #181512;
       border: none;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background 0.18s ease, transform 0.18s ease;
-      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 3px 10px rgba(255, 183, 3, 0.45);
     }
 
     .copilot-submit-btn:hover {
-      background: #0369a1;
-      transform: scale(1.05);
+      background: linear-gradient(135deg, #ffc124 0%, #f7b13e 100%);
+      transform: scale(1.08);
+      box-shadow: 0 5px 16px rgba(255, 183, 3, 0.6);
     }
 
     .copilot-submit-btn:active {
@@ -6784,14 +6809,25 @@
 
     .copilot-chip {
       background: #ffffff;
-      border: 1.5px solid var(--border-card);
-      color: var(--text-carbon);
-      transition: all 0.2s ease;
+      border: 1.5px solid #00B4D8;
+      color: #03045E;
+      font-weight: 700;
+      font-size: 0.82rem;
+      border-radius: 9999px;
+      padding: 6px 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0, 180, 216, 0.2);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .copilot-chip:hover {
-      border-color: var(--accent-cyan);
-      color: var(--accent-cyan);
-      background: var(--accent-cyan-light);
+      border-color: #00B4D8;
+      color: #007791;
+      background: #f0fbfd;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 180, 216, 0.2);
     }
     .copilot-chip-original {
       background: #ffffff;
