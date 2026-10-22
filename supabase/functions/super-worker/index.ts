@@ -396,6 +396,33 @@ Deno.serve(async (req) => {
     headers: { ...CORS, 'Content-Type': 'application/json' }
   });
 
+  // =========================================================================
+  // GUARDARRAÍL DE CIBERSEGURIDAD: Validación de Sesión Autenticada (Google OAuth)
+  // =========================================================================
+  // Protege la cuota de la API de Gemini rechazando cualquier llamada que
+  // no provenga de un docente con sesión activa confirmada.
+  const authHeader = req.headers.get('Authorization') || req.headers.get('authorization') || '';
+  const isUserAuthenticated = (() => {
+    if (!authHeader.startsWith('Bearer ')) return false;
+    const token = authHeader.slice(7).trim();
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return false;
+      const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(b64));
+      return payload.role === 'authenticated' && typeof payload.sub === 'string' && payload.sub.length > 0;
+    } catch {
+      return false;
+    }
+  })();
+
+  if (!isUserAuthenticated) {
+    return responder({
+      ok: false,
+      error: 'Acceso no autorizado: debes iniciar sesión con tu cuenta de Google para utilizar la Inteligencia Artificial.'
+    }, 401);
+  }
+
   try {
     const datos = await req.json().catch(() => null);
     if (!datos || typeof datos !== 'object') return responder({ error: 'Cuerpo inválido.' }, 400);
