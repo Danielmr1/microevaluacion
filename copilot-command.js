@@ -530,9 +530,9 @@
       const headers = parseRow(rows[0]);
       const bodyRows = rows.slice(2).map(parseRow);
 
-      let html = '<div class="copilot-table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto; margin:10px 0; border:1.5px solid #cbd5e1; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.05); background:#ffffff;">';
+      let html = '<div class="copilot-table-wrapper" style="overflow-x:auto; margin:10px 0; border:1.5px solid #cbd5e1; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.05); background:#ffffff;">';
       html += '<table style="width:100%; border-collapse:collapse; font-size:0.78rem; text-align:left; min-width:220px;">';
-      html += '<thead style="position:sticky; top:0; background:#f1f5f9; z-index:1;"><tr>';
+      html += '<thead style="background:#f1f5f9;"><tr>';
       headers.forEach(h => {
         html += `<th style="padding:7px 10px; font-weight:800; color:#0f172a; border-bottom:1.5px solid #cbd5e1; white-space:nowrap;">${h}</th>`;
       });

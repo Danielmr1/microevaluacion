@@ -318,11 +318,12 @@ Para evitar bloques densos de texto corrido al consultar nóminas de alumnos, sa
 * **Instrucción Mandatoria a Gemini:** Se incorporó la regla de formato visual en el prompt de chat:
   > *"Siempre que presentes datos tabulares, comparaciones, listas de alumnos, sesiones o salones, utiliza SIEMPRE formato de tabla Markdown (`| Columna 1 | Columna 2 |`) para que la interfaz las dibuje como tablas compactas interactivas."*
 
-### 15.2. Renderizado Reactivo y Scroll Interno (`copilot-command.js`)
+### 15.2. Renderizado Reactivo y Altura Natural (`copilot-command.js`)
 * **Función `formatCopilotMarkdown`:** Detecta bloques de tablas Markdown y los convierte en contenedores HTML estilizados (`<div class="copilot-table-wrapper">`):
-  - **Cabeceras fijas (`position: sticky`):** Fondo `#f1f5f9` y tipografía destacada que permanece visible al desplazarse.
-  - **Filas alternadas:** Fondo blanco y gris claro `#f8fafc` para máxima legibilidad.
-  - **Scroll interno acotado (`max-height: 260px`):** Si un salón contiene 35 estudiantes, la nómina no desplaza toda la pantalla del chat hacia abajo, sino que permite deslizar la lista cómodamente dentro de su propia tarjeta.
+  - **Cabeceras destacadas:** Fondo `#f1f5f9` y tipografía nítida para máxima legibilidad.
+  - **Filas alternadas:** Fondo blanco y gris claro `#f8fafc`.
+  - **Altura natural sin scroll vertical anidado:** La tabla fluye naturalmente a su altura completa dentro de la burbuja, eliminando el problema de la "doble barra desplazadora" y permitiendo que la barra nativa del chat gestione todo el desplazamiento suavemente sin trabar la rueda del ratón.
+  - **Scroll horizontal responsivo (`overflow-x: auto`):** Si una tabla contiene múltiples columnas o se consulta en pantallas móviles estrechas, permite desplazamiento lateral sin desbordar el modal.
   - **Compatibilidad Anti-XSS:** Las tablas se procesan de forma compatible con `sanitizeCopilotHtml`, neutralizando cualquier vector de inyección sin romper la estructura tabular.
 
 ### 15.3. Normalizador Auto-Reparador de Tablas Comprimidas (`v3.6.3`)
