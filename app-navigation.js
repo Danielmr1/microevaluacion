@@ -245,10 +245,10 @@ if (typeof window !== 'undefined') {
               invalidateOnRefresh: true
             });
 
-            // Títulos de cabecera para el efecto de revelado de texto de izquierda a derecha
-            const t1 = headTitles[0] ? headTitles[0].querySelector('.h1') : null;
-            const t2 = headTitles[1] ? headTitles[1].querySelector('.h1') : null;
-            const t3 = headTitles[2] ? headTitles[2].querySelector('.h1') : null;
+            // Frases descriptivas pedagógicas para el efecto de revelado de texto de izquierda a derecha
+            const desc1 = items[0] ? items[0].querySelector('.item-title') : null;
+            const desc2 = items[1] ? items[1].querySelector('.item-title') : null;
+            const desc3 = items[2] ? items[2].querySelector('.item-title') : null;
 
             // Asegurar que el primer ítem y su título comiencen 100% nítidos y visibles
             gsap.set(items[0], { opacity: 1, filter: 'blur(0px)', scale: 1 });
@@ -256,15 +256,15 @@ if (typeof window !== 'undefined') {
             if (headTitles[1]) gsap.set(headTitles[1], { opacity: 0, y: 10 });
             if (headTitles[2]) gsap.set(headTitles[2], { opacity: 0, y: 10 });
 
-            // Inicializar llenado en 0% para todas las modalidades
-            if (t1) gsap.set(t1, { '--fill': '0%' });
-            if (t2) gsap.set(t2, { '--fill': '0%' });
-            if (t3) gsap.set(t3, { '--fill': '0%' });
+            // Inicializar llenado en 0% para las frases de las modalidades
+            if (desc1) gsap.set(desc1, { '--fill': '0%' });
+            if (desc2) gsap.set(desc2, { '--fill': '0%' });
+            if (desc3) gsap.set(desc3, { '--fill': '0%' });
 
-            // Entrada inicial: Al llegar a la sección de modalidades, el título 1 ("Formativa con IA")
-            // se llena de color negro desde la izquierda a la derecha al hacer scroll
-            if (t1) {
-              gsap.fromTo(t1, 
+            // Entrada inicial: Al llegar a la sección de modalidades,
+            // "Diagnóstico Profundo del Aprendizaje" se llena de color negro de izquierda a derecha al hacer scroll
+            if (desc1) {
+              gsap.fromTo(desc1, 
                 { '--fill': '0%' },
                 {
                   '--fill': '100%',
@@ -304,33 +304,35 @@ if (typeof window !== 'undefined') {
             // Transición Etapa 1 -> Etapa 2 (Focalizada en la Respuesta)
             stageTL
               .to(items[0], { opacity: 0.08, scale: 0.96, duration: 0.8, ease: 'power1.in' })
-              .to(headTitles[0], { opacity: 0, y: -10, duration: 0.6, ease: 'power1.in' }, '<')
-              .to(headTitles[1], { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '<0.2')
-              .fromTo(t2, { '--fill': '0%' }, { '--fill': '100%', duration: 0.7, ease: 'power1.out' }, '<')
+              .to(headTitles[0], { opacity: 0, y: -10, duration: 0.5, ease: 'power1.in' }, '<')
               .to(stepsContainer, { yPercent: -33.33, duration: 0.8, ease: 'power2.inOut' }, '<')
               .to(progressBar, { scaleY: 0.66, ease: 'none', duration: 0.8 }, '<')
               .fromTo(items[1], 
                 { opacity: 0.08, scale: 0.96 },
                 { opacity: 1, filter: 'blur(0px)', scale: 1, duration: 0.8, ease: 'power2.out' },
                 '<'
-              );
+              )
+              .to(headTitles[1], { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, '<0.1')
+              // "Verificación Ágil de Contenidos" se llena de color negro de izquierda a derecha
+              .fromTo(desc2, { '--fill': '0%' }, { '--fill': '100%', duration: 0.9, ease: 'power1.out' }, '>');
 
             // Sostiene la visibilidad de la Etapa 2 (Hold 2) en el centro exacto (progress 0.5)
-            stageTL.to({}, { duration: 0.6 });
+            stageTL.to({}, { duration: 0.5 });
 
             // Transición Etapa 2 -> Etapa 3 (Cartilla OMR)
             stageTL
               .to(items[1], { opacity: 0.08, scale: 0.96, duration: 0.8, ease: 'power1.in' })
-              .to(headTitles[1], { opacity: 0, y: -10, duration: 0.6, ease: 'power1.in' }, '<')
-              .to(headTitles[2], { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '<0.2')
-              .fromTo(t3, { '--fill': '0%' }, { '--fill': '100%', duration: 0.7, ease: 'power1.out' }, '<')
+              .to(headTitles[1], { opacity: 0, y: -10, duration: 0.5, ease: 'power1.in' }, '<')
               .to(stepsContainer, { yPercent: -66.66, duration: 0.8, ease: 'power2.inOut' }, '<')
               .to(progressBar, { scaleY: 1.0, ease: 'none', duration: 1 }, '<')
               .fromTo(items[2], 
                 { opacity: 0.08, scale: 0.96 },
                 { opacity: 1, filter: 'blur(0px)', scale: 1, duration: 0.8, ease: 'power2.out' },
                 '<'
-              );
+              )
+              .to(headTitles[2], { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, '<0.1')
+              // "Calificación Óptica Instantánea" se llena de color negro de izquierda a derecha
+              .fromTo(desc3, { '--fill': '0%' }, { '--fill': '100%', duration: 0.9, ease: 'power1.out' }, '>');
 
             // Sostiene la visibilidad de la Etapa 3 (Hold 3) al final (progress 1.0)
             stageTL.to({}, { duration: 0.5 });
@@ -338,18 +340,18 @@ if (typeof window !== 'undefined') {
 
           // MÓVIL (<= 768px): Transición Cross-Fade en el mismo lugar con imán magnético
           "(max-width: 768px)": function() {
-            const mt1 = items[0] ? items[0].querySelector('.mobile-stage-title') : null;
-            const mt2 = items[1] ? items[1].querySelector('.mobile-stage-title') : null;
-            const mt3 = items[2] ? items[2].querySelector('.mobile-stage-title') : null;
+            const mdesc1 = items[0] ? items[0].querySelector('.item-title') : null;
+            const mdesc2 = items[1] ? items[1].querySelector('.item-title') : null;
+            const mdesc3 = items[2] ? items[2].querySelector('.item-title') : null;
 
-            // Inicializar llenado en 0% para todas las modalidades móviles
-            if (mt1) gsap.set(mt1, { '--fill': '0%' });
-            if (mt2) gsap.set(mt2, { '--fill': '0%' });
-            if (mt3) gsap.set(mt3, { '--fill': '0%' });
+            // Inicializar llenado en 0% para todas las frases descriptivas móviles
+            if (mdesc1) gsap.set(mdesc1, { '--fill': '0%' });
+            if (mdesc2) gsap.set(mdesc2, { '--fill': '0%' });
+            if (mdesc3) gsap.set(mdesc3, { '--fill': '0%' });
 
             // Entrada inicial móvil: Al llegar a la sección de modalidades
-            if (mt1) {
-              gsap.fromTo(mt1,
+            if (mdesc1) {
+              gsap.fromTo(mdesc1,
                 { '--fill': '0%' },
                 {
                   '--fill': '100%',
@@ -392,18 +394,18 @@ if (typeof window !== 'undefined') {
 
             // 2. Transición Ítem 1 -> Ítem 2 (Focalizada en la Respuesta)
             mobileTL
-              .to(items[0], { autoAlpha: 0, y: -18, duration: 0.8, ease: 'power1.in' })
-              .to(items[1], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out' }, '-=0.2')
-              .fromTo(mt2, { '--fill': '0%' }, { '--fill': '100%', duration: 0.7, ease: 'power1.out' }, '<');
+              .to(items[0], { autoAlpha: 0, y: -18, duration: 0.6, ease: 'power1.in' })
+              .to(items[1], { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.1')
+              .fromTo(mdesc2, { '--fill': '0%' }, { '--fill': '100%', duration: 0.8, ease: 'power1.out' }, '>');
 
             // 3. Mantener ítem 2 visible para lectura cómoda (Hold 2 - centro exacto en progress 0.5)
-            mobileTL.to({}, { duration: 0.6 });
+            mobileTL.to({}, { duration: 0.5 });
 
             // 4. Transición Ítem 2 -> Ítem 3 (Cartilla OMR)
             mobileTL
-              .to(items[1], { autoAlpha: 0, y: -18, duration: 0.8, ease: 'power1.in' })
-              .to(items[2], { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out' }, '-=0.2')
-              .fromTo(mt3, { '--fill': '0%' }, { '--fill': '100%', duration: 0.7, ease: 'power1.out' }, '<');
+              .to(items[1], { autoAlpha: 0, y: -18, duration: 0.6, ease: 'power1.in' })
+              .to(items[2], { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.1')
+              .fromTo(mdesc3, { '--fill': '0%' }, { '--fill': '100%', duration: 0.8, ease: 'power1.out' }, '>');
 
             // 5. Mantener ítem 3 visible al final (Hold 3 - progress 1.0)
             mobileTL.to({}, { duration: 0.5 });

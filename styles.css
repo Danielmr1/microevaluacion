@@ -4746,14 +4746,9 @@
       font-size: clamp(1.85rem, 3.2vw, 2.6rem);
       font-weight: 900;
       letter-spacing: -0.03em;
+      color: #0f172a;
       line-height: 1.15;
       margin: 0;
-      background: linear-gradient(to right, #000000 calc(var(--fill, 0%) - 2%), #cbd5e1 calc(var(--fill, 0%) + 2%));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
-      will-change: background;
     }
 
     #target-section .stage-head-info .category-subtitle {
@@ -4852,10 +4847,15 @@
     .item-title {
       font-size: 1.35rem;
       font-weight: 850;
-      color: #0f172a;
       line-height: 1.25;
       margin: 0 0 10px;
       letter-spacing: -0.015em;
+      background: linear-gradient(to right, #000000 calc(var(--fill, 0%) - 2%), #cbd5e1 calc(var(--fill, 0%) + 2%));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      will-change: background;
     }
 
     .item-desc {
@@ -5176,15 +5176,10 @@
       .mobile-stage-title {
         font-size: 1.45rem;
         font-weight: 900;
+        color: #0f172a;
         margin: 0 0 6px;
         letter-spacing: -0.025em;
         line-height: 1.2;
-        background: linear-gradient(to right, #000000 calc(var(--fill, 0%) - 2%), #cbd5e1 calc(var(--fill, 0%) + 2%));
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        display: inline-block;
-        will-change: background;
       }
       .mobile-stage-badges {
         display: flex;
@@ -5244,9 +5239,14 @@
       .item-text .item-title {
         font-size: 1.15rem;
         font-weight: 850;
-        color: #0f172a;
         margin: 0 0 6px;
         line-height: 1.25;
+        background: linear-gradient(to right, #000000 calc(var(--fill, 0%) - 2%), #cbd5e1 calc(var(--fill, 0%) + 2%));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        will-change: background;
       }
       .item-text .item-desc {
         font-size: 0.86rem;
