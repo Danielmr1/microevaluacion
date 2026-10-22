@@ -53,10 +53,10 @@
   <script src="card-cartilla.js?v=3.2.73"></script>
   <script src="card-generator.js?v=3.3.8"></script>
   <script src="session-controller.js?v=3.3.8"></script>
-  <script src="app-navigation.js?v=3.6.1"></script>
+  <script src="app-navigation.js?v=3.6.2"></script>
   <script src="copilot-command.js?v=3.5.9"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.5.8">
+  <link rel="stylesheet" href="styles.css?v=3.5.9">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -416,7 +416,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.6.6</span>
+              Versión <span id="user-profile-version-tag">v3.6.7</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -576,15 +576,15 @@
       <!-- Columna Izquierda Anclada -->
       <div class="head">
         <div class="head-titles-wrapper">
-          <div class="stage-head-info" id="stage-head-1">
+          <div class="stage-head-info" id="stage-head-1" onclick="openBranchFlow('rama1')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Formativa con IA">
             <h2 class="h1">Formativa con IA</h2>
             <span class="category-subtitle">1 a 2 Preguntas</span>
           </div>
-          <div class="stage-head-info" id="stage-head-2">
+          <div class="stage-head-info" id="stage-head-2" onclick="openBranchFlow('rama2')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Focalizada en la Respuesta">
             <h2 class="h1">Focalizada en la Respuesta</h2>
             <span class="category-subtitle">1 a 5 Preguntas</span>
           </div>
-          <div class="stage-head-info" id="stage-head-3">
+          <div class="stage-head-info" id="stage-head-3" onclick="openBranchFlow('rama3')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Cartilla OMR">
             <h2 class="h1">Cartilla OMR</h2>
             <span class="category-subtitle">6 a 20 Preguntas</span>
           </div>
@@ -611,7 +611,7 @@
           
           <!-- Stage Item 1: Formativa con IA -->
           <div class="item" data-step="1">
-            <div class="mobile-stage-header">
+            <div class="mobile-stage-header" onclick="openBranchFlow('rama1')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Formativa con IA">
               <h3 class="mobile-stage-title">Formativa con IA</h3>
               <div class="mobile-stage-badges">
                 <span class="mobile-badge-range">1 a 2 Preguntas</span>
@@ -643,7 +643,7 @@
 
           <!-- Stage Item 2: Focalizada en la Respuesta -->
           <div class="item" data-step="2">
-            <div class="mobile-stage-header">
+            <div class="mobile-stage-header" onclick="openBranchFlow('rama2')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Focalizada en la Respuesta">
               <h3 class="mobile-stage-title">Focalizada en la Respuesta</h3>
               <div class="mobile-stage-badges">
                 <span class="mobile-badge-range">1 a 5 Preguntas</span>
@@ -680,7 +680,7 @@
 
           <!-- Stage Item 3: Cartilla OMR (Exacto a la captura) -->
           <div class="item" data-step="3">
-            <div class="mobile-stage-header">
+            <div class="mobile-stage-header" onclick="openBranchFlow('rama3')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Cartilla OMR">
               <h3 class="mobile-stage-title">Cartilla OMR</h3>
               <div class="mobile-stage-badges">
                 <span class="mobile-badge-range">6 a 20 Preguntas</span>

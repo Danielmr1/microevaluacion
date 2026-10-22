@@ -579,60 +579,167 @@ if (typeof window !== 'undefined') {
     }
     window.openFlow = openFlow;
 
+    function playSharedElementTransition(branch, onSetupView) {
+      if (typeof gsap === 'undefined') {
+        if (typeof onSetupView === 'function') onSetupView();
+        return;
+      }
+
+      // Identificar el elemento de origen correspondiente a la rama seleccionada
+      const stageIdx = branch === 'rama1' ? 0 : (branch === 'rama2' ? 1 : 2);
+      const isMobile = window.innerWidth <= 768;
+      let originEl = null;
+
+      if (isMobile) {
+        const mobileHeaders = document.querySelectorAll('#target-section .mobile-stage-header');
+        originEl = mobileHeaders[stageIdx] ? mobileHeaders[stageIdx].querySelector('.mobile-stage-title') : null;
+      } else {
+        const headInfo = document.getElementById(`stage-head-${stageIdx + 1}`);
+        originEl = headInfo ? headInfo.querySelector('.h1') : null;
+      }
+
+      // Si no hay elemento o está oculto por scroll extremo, cambiar de forma instantánea
+      if (!originEl || originEl.offsetParent === null) {
+        if (typeof onSetupView === 'function') onSetupView();
+        return;
+      }
+
+      const startRect = originEl.getBoundingClientRect();
+      const text = originEl.textContent.trim();
+
+      // Configurar inmediatamente el estado interno de la vista y barra superior
+      if (typeof onSetupView === 'function') onSetupView();
+
+      const targetEl = document.getElementById('topbar-app-title');
+      if (!targetEl) return;
+
+      const targetRect = targetEl.getBoundingClientRect();
+      if (!targetRect || targetRect.width === 0) return;
+
+      // Crear el elemento compartido flotante (clon que realiza el vuelo)
+      const flyer = document.createElement('div');
+      flyer.className = 'shared-element-flyer';
+      flyer.textContent = text;
+
+      const computedStart = window.getComputedStyle(originEl);
+      Object.assign(flyer.style, {
+        position: 'fixed',
+        top: `${startRect.top}px`,
+        left: `${startRect.left}px`,
+        width: `${startRect.width}px`,
+        height: `${startRect.height}px`,
+        fontSize: computedStart.fontSize,
+        fontWeight: '900',
+        fontFamily: computedStart.fontFamily,
+        letterSpacing: computedStart.letterSpacing,
+        lineHeight: computedStart.lineHeight,
+        color: '#0f172a',
+        background: '#ffffff00',
+        border: '1px solid transparent',
+        borderRadius: '9999px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        padding: '0px 4px',
+        margin: '0px',
+        boxSizing: 'border-box',
+        zIndex: '99999',
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap'
+      });
+
+      document.body.appendChild(flyer);
+
+      // Ocultar temporalmente el elemento destino fijo hasta que el flyer aterrice
+      targetEl.style.visibility = 'hidden';
+
+      // Entrada suave del contenedor wizard de preparación
+      const viewCreate = document.getElementById('view-create');
+      if (viewCreate) {
+        gsap.fromTo(viewCreate, 
+          { opacity: 0, y: 16 }, 
+          { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out', delay: 0.08 }
+        );
+      }
+
+      // Vuelo FLIP hacia la pastilla en la barra superior
+      gsap.to(flyer, {
+        top: targetRect.top,
+        left: targetRect.left,
+        width: targetRect.width,
+        height: targetRect.height,
+        fontSize: '0.82rem',
+        fontWeight: '800',
+        padding: '6px 16px',
+        background: '#ffffff',
+        borderColor: '#e2e8f0',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+        justifyContent: 'center',
+        duration: 0.44,
+        ease: 'power3.inOut',
+        onComplete: () => {
+          targetEl.style.visibility = 'visible';
+          if (flyer.parentNode) flyer.parentNode.removeChild(flyer);
+        }
+      });
+    }
+
     function openBranchFlow(branch) {
-      window.isViewingSavedSessionsMode = false;
-      window.selectedBranch = branch;
-      showView('eval');
+      playSharedElementTransition(branch, () => {
+        window.isViewingSavedSessionsMode = false;
+        window.selectedBranch = branch;
+        showView('eval');
 
-      // Iniciar de cero sin nada previamente guardado
-      ClassroomData.setActiveSession(null);
-      wizardClassroomId = null;
-      wizardEval = null;
-      wizardEvalType = null;
-      if (typeof resetRama3Builder === 'function') {
-        resetRama3Builder();
-      }
+        // Iniciar de cero sin nada previamente guardado
+        ClassroomData.setActiveSession(null);
+        wizardClassroomId = null;
+        wizardEval = null;
+        wizardEvalType = null;
+        if (typeof resetRama3Builder === 'function') {
+          resetRama3Builder();
+        }
 
-      // Paso 1: selector de salón vacío (— Elige un salón —) con acciones visibles
-      renderClassroomSelect();
-      const sel = document.getElementById('builder-classroom');
-      if (sel) {
-        sel.value = '';
-        sel.style.borderColor = '';
-        sel.style.color = '';
-      }
-      renderGradeSelect(null);
-      updateClassroomActionsVisibility(null);
+        // Paso 1: selector de salón vacío (— Elige un salón —) con acciones visibles
+        renderClassroomSelect();
+        const sel = document.getElementById('builder-classroom');
+        if (sel) {
+          sel.value = '';
+          sel.style.borderColor = '';
+          sel.style.color = '';
+        }
+        renderGradeSelect(null);
+        updateClassroomActionsVisibility(null);
 
-      const badge = document.getElementById('nav-students-badge');
-      if (badge) badge.textContent = '0 Alumnos';
+        const badge = document.getElementById('nav-students-badge');
+        if (badge) badge.textContent = '0 Alumnos';
 
-      const stepClass = document.getElementById('step-classroom');
-      if (stepClass) stepClass.style.display = 'block';
+        const stepClass = document.getElementById('step-classroom');
+        if (stepClass) stepClass.style.display = 'block';
 
-      // Ocultar paso 2, 3, etc. y limpiar contenedores
-      hideWizardSteps();
+        // Ocultar paso 2, 3, etc. y limpiar contenedores
+        hideWizardSteps();
 
-      if (typeof clearGeneratedPdfContainers === 'function') {
-        clearGeneratedPdfContainers();
-      }
+        if (typeof clearGeneratedPdfContainers === 'function') {
+          clearGeneratedPdfContainers();
+        }
 
-      // Configurar modo de la rama elegida
-      if (typeof selectBranchMode === 'function') {
-        selectBranchMode(branch);
-      }
+        // Configurar modo de la rama elegida
+        if (typeof selectBranchMode === 'function') {
+          selectBranchMode(branch);
+        }
 
-      // Título en la cabecera fija
-      updateTopbarModeTitle(branch);
+        // Título en la cabecera fija
+        updateTopbarModeTitle(branch);
 
-      // Garantizar que el Paso 2 permanezca oculto hasta que el docente elija un salón
-      const stepType = document.getElementById('step-eval-type');
-      if (stepType) stepType.style.display = 'none';
+        // Garantizar que el Paso 2 permanezca oculto hasta que el docente elija un salón
+        const stepType = document.getElementById('step-eval-type');
+        if (stepType) stepType.style.display = 'none';
 
-      const stepSummary = document.getElementById('step-summary');
-      if (stepSummary) stepSummary.style.display = 'none';
+        const stepSummary = document.getElementById('step-summary');
+        if (stepSummary) stepSummary.style.display = 'none';
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
     }
     window.openBranchFlow = openBranchFlow;
 

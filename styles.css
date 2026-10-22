@@ -263,6 +263,11 @@
       pointer-events: none !important;
     }
 
+    .shared-element-flyer {
+      box-sizing: border-box;
+      will-change: transform, top, left, width, height, font-size, background-color;
+    }
+
     @media (max-width: 600px) {
       header {
         padding: 8px 12px !important;
@@ -4735,6 +4740,15 @@
       top: 0;
       left: 0;
       width: 100%;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .stage-head-info:hover .h1 {
+      color: #0284c7;
+      transform: translateX(4px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .stage-head-info:not(:first-child) {
@@ -5172,6 +5186,12 @@
       .mobile-stage-header {
         display: block;
         margin-bottom: 10px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .mobile-stage-header:hover .mobile-stage-title {
+        color: #0284c7;
+        transition: color 0.15s ease;
       }
       .mobile-stage-title {
         font-size: 1.45rem;
