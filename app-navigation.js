@@ -710,11 +710,51 @@ if (typeof window !== 'undefined') {
       }
     });
 
-    function showLoginOverlay() {
+    // ─────────────────────────────────────────────────────────────────────────
+    // GUARDARRAÍL DE CIBERSEGURIDAD: Cierre Automático por Inactividad (30 min)
+    // ─────────────────────────────────────────────────────────────────────────
+    const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutos de inactividad
+    let inactivityTimer = null;
+    let lastActivityTracked = 0;
+
+    function resetInactivityTimer() {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+      }
+
+      // Solo armar el temporizador si el usuario tiene una sesión iniciada
+      const overlay = document.getElementById('login-overlay');
+      const isLoggedOut = overlay && overlay.style.display !== 'none';
+      if (isLoggedOut) return;
+
+      inactivityTimer = setTimeout(async () => {
+        await handleSignOut(true);
+      }, INACTIVITY_TIMEOUT_MS);
+    }
+
+    function handleUserActivity() {
+      const now = Date.now();
+      // Throttle a cada 5 segundos para no sobrecargar eventos del navegador
+      if (now - lastActivityTracked > 5000) {
+        lastActivityTracked = now;
+        resetInactivityTimer();
+      }
+    }
+
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+      window.addEventListener(evt, handleUserActivity, { passive: true });
+    });
+
+    function showLoginOverlay(isInactive = false) {
       const overlay = document.getElementById('login-overlay');
       if (overlay) overlay.style.display = 'flex';
       const userMenu = document.getElementById('user-menu-wrap');
       if (userMenu) userMenu.style.display = 'none';
+      const inactNotice = document.getElementById('login-inactivity-notice');
+      if (inactNotice) {
+        inactNotice.style.display = isInactive ? 'block' : 'none';
+      }
       closeUserMenu();
     }
 
@@ -723,6 +763,9 @@ if (typeof window !== 'undefined') {
       if (overlay) overlay.style.display = 'none';
       const userMenu = document.getElementById('user-menu-wrap');
       if (userMenu) userMenu.style.display = 'block';
+
+      const inactNotice = document.getElementById('login-inactivity-notice');
+      if (inactNotice) inactNotice.style.display = 'none';
 
       // Fallback SVG si el usuario no tiene avatar configurado
       const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
@@ -743,6 +786,9 @@ if (typeof window !== 'undefined') {
       }
       const email = document.getElementById('user-email');
       if (email) email.textContent = user.email || '';
+
+      // Iniciar el temporizador de inactividad de 30 minutos
+      resetInactivityTimer();
     }
 
     async function handleSignIn() {
@@ -765,7 +811,15 @@ if (typeof window !== 'undefined') {
     }
     window.handleSignIn = handleSignIn;
 
-    async function handleSignOut() {
+    async function handleSignOut(isInactive = false) {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+      }
+      // Detener cámara si estaba activa
+      if (typeof Scanner !== 'undefined' && Scanner.stopCamera) {
+        try { Scanner.stopCamera(); } catch (e) {}
+      }
       // Limpiar sesión local
       ClassroomData.setActiveSession(null);
       wizardClassroomId = null;
@@ -783,7 +837,10 @@ if (typeof window !== 'undefined') {
       if (typeof SupabaseClient !== 'undefined' && SupabaseClient.signOut) {
         await SupabaseClient.signOut();
       }
-      showLoginOverlay();
+      showLoginOverlay(isInactive);
+      if (isInactive) {
+        showToast('Cerrado por inactividad.');
+      }
     }
     window.handleSignOut = handleSignOut;
 

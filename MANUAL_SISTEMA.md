@@ -214,3 +214,19 @@ Para neutralizar cualquier intento de inyección de código JavaScript malicioso
 * **Canal de Formularios Blindado:** La directiva `form-action 'self' https://accounts.google.com https://bpffczohkcpoxyhzvdru.supabase.co` garantiza que ningún formulario pueda ser redirigido a servidores de phishing.
 * **Canal de Imágenes Cerrado:** `img-src` restringe la carga de imágenes exclusivamente al origen local, avatares de Google (`*.googleusercontent.com`) y almacenamiento oficial de Supabase.
 
+---
+
+## 11. Cierre Automático de Sesión por Inactividad (30 Minutos)
+
+Para evitar accesos no autorizados a las evaluaciones o nóminas en computadoras compartidas o escritorios desatendidos:
+
+* **Temporizador Silencioso:** Un vigilante en segundo plano en `app-navigation.js` monitorea la interacción activa del docente (movimiento de ratón, clics, pulsaciones de teclas, desplazamientos de scroll y toques en pantallas táctiles). Cada interacción reinicia la cuenta regresiva de **30 minutos** (1,800,000 ms).
+* **Protocolo de Cierre Seguro (Opción B):** Al transcurrir 30 minutos continuos sin interacción humana:
+  1. Se apaga automáticamente la cámara del escáner (si estaba abierta) para ahorrar energía y no dejar sensores activos.
+  2. Se invoca `SupabaseClient.signOut()`, destruyendo los tokens criptográficos de la memoria del navegador.
+  3. Se despliega la pantalla oscura de acceso mostrando el aviso conciso:
+     ```text
+     Cerrado por inactividad.
+     ```
+* **Continuidad sin Pérdida:** Como todas las evaluaciones en marcha se respaldan en tiempo real en las **8 Sesiones Guardadas**, el docente solo debe hacer 1 clic en *"Continuar con Google"* y presionar *"Reanudar"* para continuar evaluando exactamente donde se quedó.
+
