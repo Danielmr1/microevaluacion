@@ -772,7 +772,7 @@ function renderBankManagerQuestions() {
   // Renderizar preguntas de forma clara y unificada (sin textos redundantes sobre el enunciado)
   filtered.forEach(q => {
     const card = document.createElement('div');
-    card.style.cssText = 'background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; box-shadow:0 2px 6px rgba(15,23,42,0.03);';
+    card.style.cssText = 'background:#ffffff; border:1.5px solid #dcd8ce; border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; box-shadow:0 2px 8px rgba(43,33,24,0.04);';
 
     // Cabecera superior: exclusivamente acciones a la derecha
     const header = document.createElement('div');
@@ -795,9 +795,9 @@ function renderBankManagerQuestions() {
         btnLink.type = 'button';
         btnLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>Ir a Sesión ${s.sessionNumber}</span>`;
         btnLink.title = `Abrir la vista de evaluación de la sesión "${s.title}"`;
-        btnLink.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
-        btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#dbeafe'; btnLink.style.borderColor = '#93c5fd'; });
-        btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#eff6ff'; btnLink.style.borderColor = '#bfdbfe'; });
+        btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
+        btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#e0f7fa'; btnLink.style.borderColor = '#00B4D8'; });
+        btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#f0fbfd'; btnLink.style.borderColor = 'rgba(0,180,216,0.35)'; });
         btnLink.onclick = () => {
           if (typeof window.openSessionFromBank === 'function') {
             window.openSessionFromBank(s.sessionId);
@@ -825,7 +825,7 @@ function renderBankManagerQuestions() {
 
     // Enunciado
     const promptText = document.createElement('div');
-    promptText.style.cssText = 'font-size:0.88rem; color:#1e293b; font-weight:600; line-height:1.45;';
+    promptText.style.cssText = 'font-size:0.92rem; color:#181512; font-weight:700; line-height:1.45;';
     promptText.textContent = q.prompt;
 
     // Alternativas en 2 columnas
@@ -836,9 +836,11 @@ function renderBankManagerQuestions() {
       const optVal = q.options ? q.options[letter] : '';
       const optDiv = document.createElement('div');
       optDiv.style.cssText = isCorrect
-        ? 'color:#15803d; font-weight:800; background:#dcfce7; padding:6px 10px; border-radius:6px; border:1.5px solid #86efac;'
-        : 'color:#475569; padding:6px 10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;';
-      optDiv.textContent = `${letter}) ${optVal || '—'}` + (isCorrect ? ' ✓ (Clave)' : '');
+        ? 'color:#181512; font-weight:800; background:#fff8e1; padding:6px 10px; border-radius:6px; border:1.5px solid #FFB703; box-shadow:0 0 0 1.5px rgba(0,180,216,0.3);'
+        : 'color:#181512; padding:6px 10px; background:#F8F6F0; border-radius:6px; border:1px solid #dcd8ce;';
+      optDiv.innerHTML = isCorrect
+        ? `<span>${letter}) ${escaparHtml(optVal || '—')}</span> <span style="color:#00B4D8; font-weight:900;">✓ (Clave)</span>`
+        : `${letter}) ${escaparHtml(optVal || '—')}`;
       optsGrid.appendChild(optDiv);
     });
 
@@ -851,7 +853,7 @@ function renderBankManagerQuestions() {
       btnRubric.type = 'button';
       btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Ver Rúbrica de IA</span>';
       btnRubric.title = 'Ver la solución canónica, criterios y errores frecuentes generados por la IA';
-      btnRubric.style.cssText = 'background:#f5f3ff; border:1px solid #ddd6fe; color:#6d28d9; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
+      btnRubric.style.cssText = 'background:#F8F6F0; border:1.5px solid #dcd8ce; color:#181512; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
       btnRubric.addEventListener('mouseenter', () => { btnRubric.style.background = '#6d28d9'; btnRubric.style.color = '#ffffff'; });
       btnRubric.addEventListener('mouseleave', () => { btnRubric.style.background = '#f5f3ff'; btnRubric.style.color = '#6d28d9'; });
       btnRubric.onclick = () => {

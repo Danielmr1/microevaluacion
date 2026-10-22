@@ -56,7 +56,7 @@
   <script src="app-navigation.js?v=3.6.4"></script>
   <script src="copilot-command.js?v=3.5.9"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.6.9">
+  <link rel="stylesheet" href="styles.css?v=3.7.0">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.7.8</span>
+              Versión <span id="user-profile-version-tag">v3.7.9</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2058,13 +2058,13 @@
     <div class="mgr-content-wrapper" style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px;">
       
       <!-- Contenedor Maestro: Banco de Preguntas -->
-      <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 18px; box-shadow: 0 4px 20px rgba(15,23,42,0.06); overflow: hidden; display: flex; flex-direction: column;">
+      <div style="background: #ffffff; border: 2px solid #2B2118; border-radius: 18px; box-shadow: 0 0 0 3px #FFB703, 0 8px 30px rgba(43, 33, 24, 0.08); overflow: hidden; display: flex; flex-direction: column;">
         
         <!-- Header del Banco: Nivel (Primaria / Secundaria) -->
-        <div style="padding: 16px 22px; border-bottom: 1px solid #e5e3dc; display: flex; align-items: center; justify-content: flex-start; background: #F9F8F3;">
+        <div style="padding: 16px 22px; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: flex-start; background: #F9F8F3;">
           <!-- Selector de Nivel (Primaria / Secundaria) -->
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Nivel:</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: #5c4a3b; text-transform: uppercase; letter-spacing: 0.5px;">Nivel:</span>
             <div id="bank-manager-stage-tabs" style="display: flex; background: #e2e8f0; padding: 3px; border-radius: 10px; gap: 4px;">
               <!-- Botones Primaria / Secundaria generados por JS -->
             </div>
@@ -2072,14 +2072,14 @@
         </div>
 
         <!-- Fila de Grados (Dinámicos según el nivel activo) -->
-        <div style="padding: 12px 22px; background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="padding: 12px 22px; background: #ffffff; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
           <div id="bank-manager-grade-tabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <!-- Tabs dinámicos (4° Pri., 5° Pri., etc.) -->
           </div>
         </div>
 
         <!-- Fila de Filtros, Búsqueda y Botón Nueva Pregunta (debajo de los grados) -->
-        <div style="padding: 10px 22px; background: #F9F8F3; border-bottom: 1px solid #e5e3dc; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div style="padding: 10px 22px; background: #F9F8F3; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
           <!-- Filtro de tipo: Todas / Con Rúbrica / Sin Rúbrica -->
           <div id="bank-manager-filter-pills" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
             <!-- Píldoras generadas por JS con iconos SVG -->
@@ -2106,7 +2106,7 @@
         </div>
 
         <!-- Body de Preguntas -->
-        <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #F9F8F3;">
+        <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FDFCF7;">
           
           <!-- Formulario Crear Pregunta para el Grado (colapsable) -->
           <div id="bank-manager-add-form" style="display: none; background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 14px; padding: 18px; box-shadow: 0 4px 14px rgba(2,132,199,0.08);">
