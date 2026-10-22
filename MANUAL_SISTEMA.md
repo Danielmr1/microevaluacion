@@ -273,6 +273,18 @@ Para eliminar la necesidad de copiar manualmente o importar archivos Excel al re
   2. **Creación Automática de la Evaluación:** Al generar una sesión en Microevaluación, se podrá crear automáticamente la tarea correspondiente en el tablón de Classroom.
   3. **Envío Directo de Notas:** Al concluir el escaneo en el aula, un botón *"Publicar notas en Google Classroom"* enviará las calificaciones calculadas por Microevaluación directamente a la libreta de calificaciones oficial de Google, ahorrando tiempo administrativo al docente.
 
+### 13.2. Auto-Optimización Recursiva de Rúbricas y Prompts con Harness² (Google Research)
+Para elevar la precisión pedagógica en la corrección de procedimientos matemáticos y permitir que el sistema aprenda de forma autónoma:
+
+* **Inspiración Arquitectónica en Harness² (`google-research/harness2`):**
+  * El concepto de *Harness* (arnés agéntico) engloba los prompts de sistema, las rúbricas de corrección, la taxonomía de errores y las reglas de evaluación de Gemini.
+  * En lugar de requerir ajustes manuales constantes en el código de `super-worker`, el sistema podrá adoptar el ciclo de doble recursión **Propose–Probe–Compose** desarrollado por Google Research:
+    1. **Propose (Proponer):** Generar variantes refinadas de rúbricas o instrucciones para problemas matemáticos donde los estudiantes aplican métodos no convencionales o creativos.
+    2. **Probe (Sondear):** Evaluar automáticamente las rúbricas propuestas contra un conjunto de respuestas de prueba calibradas, midiendo coherencia y concordancia con la intención docente.
+    3. **Compose (Componer):** Sintetizar y consolidar las mejores instrucciones en el repositorio permanente de prompts del servidor, elevando la precisión diagnóstica sin necesidad de reentrenar modelos.
+* **Beneficio para el Aula:**
+  Permitirá que EVA evolucione continuamente su capacidad de evaluar desarrollos manuscritos complejos en Secundaria y Primaria, identificando errores conceptuales sutiles con exactitud clínica.
+
 ---
 
 ## 14. Barra de Fórmulas Matemáticas y Guardarraíl Universal de Fichas (A6, A5 y A4)
@@ -295,6 +307,24 @@ Para dotar al docente de herramientas de redacción matemática rigurosa y asegu
   - **Enunciado con Fracciones:** Al detectar fracciones Unicode (`½`, `¾`, `⅖`, etc.) o notación `n/m`, el sistema ajusta automáticamente el tope a **105 caracteres** (máximo 2 líneas en A6).
 * **Protección Geométrica:** Este ajuste evita que las fracciones apiladas verticales excedan los 13.5 mm de altura de seguridad, garantizando que el texto nunca desplace la cuadrícula de cálculo ni tape los marcadores ArUco.
 * **Alineación con la IA (Gemini):** En `super-worker/index.ts`, el generador de preguntas inéditas aplica esta misma restricción física (160 caracteres estándar / 105 con fracciones).
+
+---
+
+## 15. Formateador de Tablas Markdown en el Asistente EVA (Generative UI Tabular)
+
+Para evitar bloques densos de texto corrido al consultar nóminas de alumnos, salones o sesiones guardadas:
+
+### 15.1. Regla de Generación en el Servidor (`super-worker/index.ts`)
+* **Instrucción Mandatoria a Gemini:** Se incorporó la regla de formato visual en el prompt de chat:
+  > *"Siempre que presentes datos tabulares, comparaciones, listas de alumnos, sesiones o salones, utiliza SIEMPRE formato de tabla Markdown (`| Columna 1 | Columna 2 |`) para que la interfaz las dibuje como tablas compactas interactivas."*
+
+### 15.2. Renderizado Reactivo y Scroll Interno (`copilot-command.js`)
+* **Función `formatCopilotMarkdown`:** Detecta bloques de tablas Markdown y los convierte en contenedores HTML estilizados (`<div class="copilot-table-wrapper">`):
+  - **Cabeceras fijas (`position: sticky`):** Fondo `#f1f5f9` y tipografía destacada que permanece visible al desplazarse.
+  - **Filas alternadas:** Fondo blanco y gris claro `#f8fafc` para máxima legibilidad.
+  - **Scroll interno acotado (`max-height: 260px`):** Si un salón contiene 35 estudiantes, la nómina no desplaza toda la pantalla del chat hacia abajo, sino que permite deslizar la lista cómodamente dentro de su propia tarjeta.
+  - **Compatibilidad Anti-XSS:** Las tablas se procesan de forma compatible con `sanitizeCopilotHtml`, neutralizando cualquier vector de inyección sin romper la estructura tabular.
+
 
 
 

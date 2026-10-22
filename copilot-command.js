@@ -466,6 +466,72 @@
   const MAX_VISIBLE_MESSAGES = 25;
 
   /**
+   * Formatea texto Markdown en respuestas de EVA:
+   * - Convierte tablas Markdown (| col1 | col2 |) a tablas HTML compactas con scroll interno.
+   * - Convierte negritas **texto** a <b>texto</b>.
+   * - Respeta saltos de línea sin romper estructuras de tabla.
+   */
+  function formatCopilotMarkdown(raw) {
+    if (!raw) return '';
+    let text = String(raw).trim();
+
+    const tables = [];
+    const tableRegex = /(?:(?:^|\n)\|[^\n]+\|\r?\n\|[-:\s|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g;
+
+    text = text.replace(tableRegex, function (match) {
+      const rows = match.trim().split(/\r?\n/).map(r => r.trim()).filter(Boolean);
+      if (rows.length < 3) return match;
+
+      const parseRow = (rowStr) => {
+        return rowStr
+          .replace(/^\|/, '')
+          .replace(/\|$/, '')
+          .split('|')
+          .map(c => c.trim());
+      };
+
+      const headers = parseRow(rows[0]);
+      const bodyRows = rows.slice(2).map(parseRow);
+
+      let html = '<div class="copilot-table-wrapper" style="max-height:260px; overflow-y:auto; overflow-x:auto; margin:10px 0; border:1.5px solid #cbd5e1; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,0.05); background:#ffffff;">';
+      html += '<table style="width:100%; border-collapse:collapse; font-size:0.78rem; text-align:left; min-width:220px;">';
+      html += '<thead style="position:sticky; top:0; background:#f1f5f9; z-index:1;"><tr>';
+      headers.forEach(h => {
+        html += `<th style="padding:7px 10px; font-weight:800; color:#0f172a; border-bottom:1.5px solid #cbd5e1; white-space:nowrap;">${h}</th>`;
+      });
+      html += '</tr></thead>';
+      html += '<tbody>';
+      bodyRows.forEach((cols, rIdx) => {
+        const bg = rIdx % 2 === 1 ? '#f8fafc' : '#ffffff';
+        html += `<tr style="background:${bg};">`;
+        cols.forEach(c => {
+          html += `<td style="padding:6px 10px; border-bottom:1px solid #f1f5f9; color:#334155;">${c}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+
+      const placeholder = `%%%COPILOT_TABLE_${tables.length}%%%`;
+      tables.push(html);
+      return '\n' + placeholder + '\n';
+    });
+
+    // Formatear negritas **texto**
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+
+    // Convertir saltos de línea dobles y simples a <br>
+    text = text.replace(/\n\n+/g, '<br><br>').replace(/\n/g, '<br>');
+
+    // Restaurar tablas HTML en sus placeholders
+    tables.forEach((tblHtml, idx) => {
+      text = text.replace(`<br>%%%COPILOT_TABLE_${idx}%%%<br>`, tblHtml);
+      text = text.replace(`%%%COPILOT_TABLE_${idx}%%%`, tblHtml);
+    });
+
+    return text;
+  }
+
+  /**
    * Sanitiza HTML para neutralizar vectores XSS (scripts, iframes, atributos on*, javascript: links)
    */
   function sanitizeCopilotHtml(dirty) {
@@ -1695,7 +1761,7 @@
         DailyQuota.consume('chat');
       }
 
-      let replyText = (aiRes.reply || '').replace(/\n/g, '<br>');
+      let replyText = formatCopilotMarkdown(aiRes.reply || '');
 
       // Guardarraíl de Delimitación Temática: Manejo de strikes si la pregunta fue fuera de lugar
       if (aiRes.out_of_scope) {
@@ -1993,7 +2059,8 @@
     renderQuestionErrorAnalysis,
     renderStudentsReinforcement,
     getChatStrikeStatus,
-    resetChatStrikes
+    resetChatStrikes,
+    formatCopilotMarkdown
   };
 
   // Inicializar al cargar el DOM
