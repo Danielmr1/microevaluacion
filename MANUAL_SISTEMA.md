@@ -178,3 +178,39 @@ Para proteger la cuota de la API de Gemini, evitar interrupciones de servicio y 
 * Las cuotas se calculan por fecha calendario local (`YYYY-MM-DD`).
 * Todos los contadores de cuota se restablecen a cero de forma automática cada día a las **00:00 (medianoche)**.
 
+---
+
+## 9. Blindaje de Ciberseguridad: Autorización Obligatoria para Consumo de IA
+
+Para prevenir el consumo abusivo de la cuota de la API de Gemini mediante manipulación de cliente (eliminación forzada del overlay de login vía herramientas de desarrollador o envío de peticiones REST directas con la clave anónima pública `anon_key`), el sistema implementa una doble barrera de autenticación:
+
+### 9.1. Barrera del Lado del Cliente (`copilot-command.js` y `supabase-client.js`)
+* **Verificación de Sesión Activa:** Antes de enviar cualquier consulta a EVA, generar preguntas o crear rúbricas, el cliente verifica de forma síncrona y asíncrona la existencia de un usuario autenticado con Google (`SupabaseClient.getCachedUser()` y `SupabaseClient.getCurrentUser()`).
+* **Bloqueo Informativo:** Si un usuario no autenticado intenta escribir en el chat o accionar funciones de IA, el sistema no emite ninguna llamada de red y muestra una tarjeta con botón de acceso directo:
+  ```text
+  🔒 Acceso Restringido: Debes iniciar sesión con tu cuenta de Google para conversar con EVA y utilizar las funciones de Inteligencia Artificial.
+  ```
+
+### 9.2. Barrera del Lado del Servidor (`super-worker` y `grade-sheet` en Supabase Edge Functions)
+* **Validación Criptográfica de JWT:** Al recibir una petición POST, las Edge Functions inspeccionan la cabecera `Authorization: Bearer <token>`.
+* **Diferenciación Estricta:** Comprueba que el payload del token contenga `role === 'authenticated'` y un identificador único de usuario `sub` válido. Si la petición viaja con la clave anónima (`role === 'anon'`) o sin token, el servidor aborta inmediatamente con código **`401 Unauthorized`** sin invocar a Google Gemini.
+
+---
+
+## 10. Blindaje Integral contra Cross-Site Scripting (XSS) y Exfiltración de Sesión
+
+Para neutralizar cualquier intento de inyección de código JavaScript malicioso en el navegador del docente y evitar el robo de tokens de sesión almacenados en `localStorage`:
+
+### 10.1. Regla de Oro en el Chat y Entradas de Usuario (`copilot-command.js`)
+* **Inyección de Usuario:** Todo texto escrito por el usuario en el chat se renderiza mediante `element.textContent`, impidiendo que etiquetas como `<script>`, `<img>` o `<iframe>` sean interpretadas como código por el navegador.
+* **Sanitización de Respuestas IA:** Toda respuesta generada por Gemini pasa por un sanitizador regex estricto (`sanitizeCopilotHtml`) que purga scripts, iframes, objetos incrustados, atributos de eventos inline (`onerror=`, `onload=`) y enlaces con esquema `javascript:`.
+
+### 10.2. Filtro Estricto de Nóminas de Alumnos (`classroom-manager.js`)
+* **Lista Blanca de Caracteres:** La validación de nombres de alumnos (`RE_ALLOWED_STUDENT_CHARS`) y nombres de aulas (`RE_ALLOWED_CLASSROOM_CHARS`) rechaza activamente cualquier entrada que contenga símbolos como `<`, `>`, `"`, `'`, `%`, `$`, `#`, `&`, `{}` o `;`.
+* **Escape Universal:** Las listas de estudiantes en el DOM se renderizan invocando `escaparHtml()` para garantizar que los nombres se dibujen como entidades de texto inofensivas.
+
+### 10.3. Endurecimiento de la Política de Seguridad de Contenido (`index.html`)
+* **Cierre de Canales de Fuga:** La directiva `default-src 'self' data: blob:` elimina el comodín genérico `https:`, impidiendo que un script intente conectarse a dominios externos desconocidos.
+* **Canal de Formularios Blindado:** La directiva `form-action 'self' https://accounts.google.com https://bpffczohkcpoxyhzvdru.supabase.co` garantiza que ningún formulario pueda ser redirigido a servidores de phishing.
+* **Canal de Imágenes Cerrado:** `img-src` restringe la carga de imágenes exclusivamente al origen local, avatares de Google (`*.googleusercontent.com`) y almacenamiento oficial de Supabase.
+

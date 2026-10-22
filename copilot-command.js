@@ -394,8 +394,24 @@
   const MAX_VISIBLE_MESSAGES = 25;
 
   /**
+   * Sanitiza HTML para neutralizar vectores XSS (scripts, iframes, atributos on*, javascript: links)
+   */
+  function sanitizeCopilotHtml(dirty) {
+    if (!dirty) return '';
+    return String(dirty)
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+      .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+      .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/on\w+\s*=\s*[^>\s]+/gi, '')
+      .replace(/href\s*=\s*["']javascript:[^"']*["']/gi, 'href="#"');
+  }
+
+  /**
    * Agrega un mensaje a la conversación del Copilot
    * Guardarraíl de visualización: Mantiene un tope de los últimos 25 mensajes en pantalla
+   * Blindaje Anti-XSS: Mensajes de usuario como textContent estricto, respuestas IA sanitizadas
    */
   function appendMessage(role, contentHtml) {
     const container = document.getElementById('copilot-messages');
@@ -403,7 +419,11 @@
 
     const msg = document.createElement('div');
     msg.className = role === 'user' ? 'copilot-msg-user' : 'copilot-msg-ai';
-    msg.innerHTML = contentHtml;
+    if (role === 'user') {
+      msg.textContent = contentHtml;
+    } else {
+      msg.innerHTML = sanitizeCopilotHtml(contentHtml);
+    }
     container.appendChild(msg);
 
     // Guardarraíl: Mantener solo los últimos 25 mensajes visibles en pantalla

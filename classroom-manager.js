@@ -17,6 +17,18 @@
 //                        hideWizardSteps, renderGradeSelect, escaparHtml
 // =============================================================================
 
+// Sanitizador universal anti-XSS para renderizado seguro en DOM
+if (typeof window !== 'undefined' && typeof window.escaparHtml !== 'function') {
+  window.escaparHtml = function(t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  };
+}
+
 //* ── GESTOR DE SALONES: PLANO ARQUITECTÓNICO DEL COLEGIO (CAMPUS BLUEPRINT) ── */
 const MAX_CAMPUS_CLASSROOMS = 10;
 let currentSelectedClassroomId = null;
