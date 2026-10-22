@@ -15,14 +15,50 @@
 //                        showSummary, wizardClassroomId, wizardEvalType, wizardEval
 // =============================================================================
 
-/* ── TOPE DE CARACTERES DEL ENUNCIADO ──
-   La ranura del enunciado en la ficha aloja 3 líneas a 11pt, que a lo
-   ancho de la ficha son ~89 caracteres por línea (~267 en total). El
-   tope de 240 deja margen para palabras largas y signos, de modo que
-   ningún enunciado válido pueda desbordar la ranura y correr la
-   cuadrícula o la franja de respuesta. */
-const PROMPT_MAX_CHARS = 240;
-const PROMPT_CHARS_PER_LINE = 89;
+/* ── TOPE UNIVERSAL DE CARACTERES DEL ENUNCIADO ──
+   Para garantizar compatibilidad universal con todos los tamaños (A6, A5 y A4),
+   el límite se calibra contra la ficha más pequeña (A6, ancho útil de ~52 caracteres por línea):
+   - Estándar (sin fracciones): Máximo 160 caracteres (hasta 3 líneas en A6).
+   - Con fracciones: Máximo 105 caracteres (máximo 2 líneas en A6 para no invadir la cuadrícula). */
+const PROMPT_MAX_CHARS = 160;
+const PROMPT_FRACTIONS_MAX_CHARS = 105;
+const PROMPT_CHARS_PER_LINE = 52;
+
+function hasFractions(text) {
+  if (!text) return false;
+  return /[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\b\d+\s*\/\s*\d+\b/.test(text);
+}
+
+// ── SEGUIMIENTO DE ENFOQUE E INSERCIÓN DE SÍMBOLOS MATEMÁTICOS ──
+let lastFocusedMathInput = null;
+
+function trackMathInputFocus(el) {
+  if (el) lastFocusedMathInput = el;
+}
+window.trackMathInputFocus = trackMathInputFocus;
+
+function insertMathSymbol(sym) {
+  let target = lastFocusedMathInput;
+  if (!target || !document.body.contains(target)) {
+    target = document.getElementById('bm-prompt') || document.getElementById('input-eval-prompt');
+  }
+  if (!target) return;
+
+  const start = target.selectionStart != null ? target.selectionStart : target.value.length;
+  const end = target.selectionEnd != null ? target.selectionEnd : target.value.length;
+  const val = target.value || '';
+
+  target.value = val.slice(0, start) + sym + val.slice(end);
+  const newPos = start + sym.length;
+  if (typeof target.setSelectionRange === 'function') {
+    target.setSelectionRange(newPos, newPos);
+  }
+  target.focus();
+
+  // Disparar evento input para actualizar contadores y validaciones
+  target.dispatchEvent(new Event('input', { bubbles: true }));
+}
+window.insertMathSymbol = insertMathSymbol;
 
 function updatePromptCounter() {
   const ta = document.getElementById('input-eval-prompt');
@@ -30,19 +66,27 @@ function updatePromptCounter() {
   const hint = document.getElementById('prompt-hint');
   if (!ta) return;
 
+  const withFrac = hasFractions(ta.value);
+  const maxChars = withFrac ? PROMPT_FRACTIONS_MAX_CHARS : PROMPT_MAX_CHARS;
+  ta.setAttribute('maxlength', String(maxChars));
+
   const len = ta.value.length;
   const lines = Math.max(1, Math.ceil(len / PROMPT_CHARS_PER_LINE));
+  const maxLines = withFrac ? 2 : 3;
 
   if (counter) {
-    counter.textContent = len + ' / ' + PROMPT_MAX_CHARS;
-    counter.style.color = len >= PROMPT_MAX_CHARS ? '#f59e0b' : '#64748b';
+    counter.textContent = len + ' / ' + maxChars;
+    counter.style.color = len >= maxChars ? '#f59e0b' : '#64748b';
   }
   if (hint) {
-    if (lines > 3) {
-      hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acortá el enunciado.';
+    if (len > maxChars || lines > maxLines) {
+      hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
+    } else if (withFrac) {
+      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 2 líneas (ajuste por fracciones)';
+      hint.style.color = '#0284c7';
     } else {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' en la ficha · máximo 3';
+      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 3 (compatible A6, A5 y A4)';
       hint.style.color = '#64748b';
     }
   }
@@ -54,19 +98,27 @@ function updatePromptCounterFree() {
   const hint = document.getElementById('prompt-hint-free');
   if (!ta) return;
 
+  const withFrac = hasFractions(ta.value);
+  const maxChars = withFrac ? PROMPT_FRACTIONS_MAX_CHARS : PROMPT_MAX_CHARS;
+  ta.setAttribute('maxlength', String(maxChars));
+
   const len = ta.value.length;
   const lines = Math.max(1, Math.ceil(len / PROMPT_CHARS_PER_LINE));
+  const maxLines = withFrac ? 2 : 3;
 
   if (counter) {
-    counter.textContent = len + ' / ' + PROMPT_MAX_CHARS;
-    counter.style.color = len >= PROMPT_MAX_CHARS ? '#f59e0b' : '#64748b';
+    counter.textContent = len + ' / ' + maxChars;
+    counter.style.color = len >= maxChars ? '#f59e0b' : '#64748b';
   }
   if (hint) {
-    if (lines > 3) {
-      hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acortá el enunciado.';
+    if (len > maxChars || lines > maxLines) {
+      hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
+    } else if (withFrac) {
+      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 2 líneas (ajuste por fracciones)';
+      hint.style.color = '#0284c7';
     } else {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' en la ficha · máximo 3';
+      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 3 (compatible A6, A5 y A4)';
       hint.style.color = '#64748b';
     }
   }
@@ -1057,18 +1109,28 @@ function updateBMPromptCounter() {
   const counter = document.getElementById('bm-prompt-counter');
   const hint = document.getElementById('bm-prompt-hint');
   if (!ta) return;
+
+  const withFrac = hasFractions(ta.value);
+  const maxChars = withFrac ? PROMPT_FRACTIONS_MAX_CHARS : PROMPT_MAX_CHARS;
+  ta.setAttribute('maxlength', String(maxChars));
+
   const len = ta.value.length;
   const lines = Math.max(1, Math.ceil(len / PROMPT_CHARS_PER_LINE));
+  const maxLines = withFrac ? 2 : 3;
+
   if (counter) {
-    counter.textContent = len + ' / ' + PROMPT_MAX_CHARS;
-    counter.style.color = len >= PROMPT_MAX_CHARS ? '#f59e0b' : '#64748b';
+    counter.textContent = len + ' / ' + maxChars;
+    counter.style.color = len >= maxChars ? '#f59e0b' : '#64748b';
   }
   if (hint) {
-    if (lines > 3) {
-      hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acortá el enunciado.';
+    if (len > maxChars || lines > maxLines) {
+      hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
+    } else if (withFrac) {
+      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 2 líneas (ajuste por fracciones)';
+      hint.style.color = '#0284c7';
     } else {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' en la ficha · máximo 3';
+      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 3 (compatible A6, A5 y A4)';
       hint.style.color = '#64748b';
     }
   }

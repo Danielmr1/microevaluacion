@@ -7220,3 +7220,43 @@
       background: #059669;
       transform: translateY(-1px);
     }
+
+    /* Barra de Herramientas de Fórmulas y Símbolos Matemáticos */
+    .math-symbols-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+      padding: 5px 8px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+    }
+
+    .math-sym-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 3px 8px;
+      font-size: 0.8rem;
+      font-weight: 750;
+      color: #0369a1;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      user-select: none;
+      line-height: 1.1;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .math-sym-btn:hover {
+      background: #e0f2fe;
+      border-color: #38bdf8;
+      color: #0284c7;
+      transform: translateY(-1px);
+    }
+
+    .math-sym-btn:active {
+      transform: translateY(0);
+      background: #bae6fd;
+    }

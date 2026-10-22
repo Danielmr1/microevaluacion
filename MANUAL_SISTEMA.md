@@ -257,4 +257,45 @@ Para preservar la integridad pedagógica de la plataforma, optimizar el uso de c
   2. Todo mensaje posterior que el usuario intente enviar al chat con IA es interceptado instantáneamente en el cliente: **no llama a Gemini, no consume cuota de IA** y despliega una tarjeta de bloqueo indicando el tiempo restante aproximado para el desbloqueo.
   3. **Cero Afectación al Aula:** Las funciones esenciales del docente (gestionar salones, escanear cartillas, imprimir fichas y consultar el banco de preguntas) continúan 100% operativas e ilimitadas.
 
+---
+
+## 13. Hoja de Ruta e Ideas Futuras (Roadmap de Expansión)
+
+### 13.1. Integración con Google Classroom (Sincronización Bidireccional)
+Para eliminar la necesidad de copiar manualmente o importar archivos Excel al registro oficial del colegio:
+
+* **Aprovechamiento de la Autenticación Actual:**
+  * Dado que los docentes ya inician sesión con su cuenta de Google institucional o personal a través de Supabase Auth, se podrá solicitar autorización para los permisos (*scopes*) de Google Classroom:
+    - Lectura de salones y nóminas de alumnos (`classroom.courses.readonly`, `classroom.rosters.readonly`).
+    - Publicación y sincronización de calificaciones (`classroom.coursework.students`).
+* **Flujo Planificado para el Docente:**
+  1. **Importación con 1 Clic:** Al crear un salón, el docente podrá seleccionar *"Importar desde Google Classroom"*, cargando instantáneamente la lista oficial de estudiantes sin necesidad de subir archivos CSV o Excel.
+  2. **Creación Automática de la Evaluación:** Al generar una sesión en Microevaluación, se podrá crear automáticamente la tarea correspondiente en el tablón de Classroom.
+  3. **Envío Directo de Notas:** Al concluir el escaneo en el aula, un botón *"Publicar notas en Google Classroom"* enviará las calificaciones calculadas por Microevaluación directamente a la libreta de calificaciones oficial de Google, ahorrando tiempo administrativo al docente.
+
+---
+
+## 14. Barra de Fórmulas Matemáticas y Guardarraíl Universal de Fichas (A6, A5 y A4)
+
+Para dotar al docente de herramientas de redacción matemática rigurosa y asegurar que ninguna pregunta del banco desborde jamás en los formatos impresos físicos:
+
+### 14.1. Barra de Herramientas de Símbolos Rápidos a 1 Clic
+* **Ubicación Dinámica:** Situada directamente sobre el campo de enunciado y conectada con las 4 alternativas (A, B, C, D).
+* **Catálogo de Símbolos:**
+  - **Exponentes:** `x²`, `x³`, `xⁿ` (superíndices Unicode exactos).
+  - **Radicales:** `√(` (símbolo de raíz cuadrada).
+  - **Fracciones:** `½`, `¼`, `¾` y plantilla libre `a/b`.
+  - **Geometría y Medición:** Grados sexagesimales `°` y constante `π`.
+  - **Operadores y Comparación:** `×`, `÷`, `±`, `≠`, `≤`, `≥`.
+* **Inserción Inteligente:** Si el docente tiene el cursor en el enunciado o en cualquiera de las 4 alternativas, el símbolo se inserta exactamente en la posición del cursor (`selectionStart`) sin perder el foco.
+
+### 14.2. Guardarraíl Físico Calibrado para la Ficha más Pequeña (A6)
+* **Principio Smallest-First:** El límite del banco de preguntas se calibra contra el ancho útil de la ficha A6 (~52 caracteres por línea) para que toda pregunta sea 100% compatible con A6, A5 y A4:
+  - **Enunciado Estándar (Sin Fracciones):** Máximo **160 caracteres** (hasta 3 líneas en A6, 1-2 en A5 y 1 en A4).
+  - **Enunciado con Fracciones:** Al detectar fracciones Unicode (`½`, `¾`, `⅖`, etc.) o notación `n/m`, el sistema ajusta automáticamente el tope a **105 caracteres** (máximo 2 líneas en A6).
+* **Protección Geométrica:** Este ajuste evita que las fracciones apiladas verticales excedan los 13.5 mm de altura de seguridad, garantizando que el texto nunca desplace la cuadrícula de cálculo ni tape los marcadores ArUco.
+* **Alineación con la IA (Gemini):** En `super-worker/index.ts`, el generador de preguntas inéditas aplica esta misma restricción física (160 caracteres estándar / 105 con fracciones).
+
+
+
 

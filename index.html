@@ -416,7 +416,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.6.0</span>
+              Versión <span id="user-profile-version-tag">v3.6.1</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1023,12 +1023,32 @@
         <!-- Bloque Enunciado y Alternativas -->
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; margin-bottom:14px;">
           <label style="font-size:0.75rem; color:#475569; display:block; margin-bottom:4px; font-weight:700;">Enunciado del problema</label>
-          <textarea id="input-eval-prompt" class="form-control" rows="3" maxlength="240"
-            oninput="updatePromptCounter()"
+                      <!-- Barra de Símbolos Matemáticos Rápidos -->
+            <div class="math-symbols-toolbar">
+              <span style="font-size: 0.68rem; font-weight: 800; color: #475569; margin-right: 2px;">Fórmulas:</span>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('²')" title="Al cuadrado (x²)">x²</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('³')" title="Al cubo (x³)">x³</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('ⁿ')" title="Exponente (xⁿ)">xⁿ</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('√(')" title="Raíz cuadrada (√)">√( )</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('½')" title="Un medio (½)">½</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¼')" title="Un cuarto (¼)">¼</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¾')" title="Tres cuartos (¾)">¾</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol(' / ')" title="Fracción libre (a/b)">a/b</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" title="Grados (°)">°</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" title="Número Pi (π)">π</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" title="Multiplicación (×)">×</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" title="División (÷)">÷</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" title="Más o menos (±)">±</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" title="Diferente (≠)">≠</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" title="Menor o igual (≤)">≤</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" title="Mayor o igual (≥)">≥</button>
+            </div>
+          <textarea id="input-eval-prompt" class="form-control" rows="3" maxlength="160"
+            oninput="updatePromptCounter()" onfocus="trackMathInputFocus(this)"
             placeholder="Ej: La panadería de don Pepe horneó 94 panes en la mañana y vendió 56 al mediodía. ¿Cuántos panes le quedan por vender?"
             style="resize:vertical; font-size:0.88rem; margin-bottom:4px;"></textarea>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span id="prompt-counter" style="font-size:0.68rem; color:#64748b; font-weight:700;">0 / 240</span>
+            <span id="prompt-counter" style="font-size:0.68rem; color:#64748b; font-weight:700;">0 / 160</span>
             <span id="prompt-hint" style="font-size:0.68rem; color:#64748b;">≈ 1 línea en la ficha · máximo 3</span>
           </div>
 
@@ -1039,22 +1059,22 @@
             <div style="display:flex; align-items:center; gap:8px;">
               <input type="radio" name="eval-unified-correct" id="unified-rad-a" value="A" checked onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
               <label for="unified-rad-a" style="font-weight:800; color:#0f172a; width:20px; cursor:pointer;">A)</label>
-              <input type="text" id="input-opt-a" class="form-control" placeholder="Alternativa A" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="text" id="input-opt-a" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa A" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <input type="radio" name="eval-unified-correct" id="unified-rad-b" value="B" onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
               <label for="unified-rad-b" style="font-weight:800; color:#0f172a; width:20px; cursor:pointer;">B)</label>
-              <input type="text" id="input-opt-b" class="form-control" placeholder="Alternativa B" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="text" id="input-opt-b" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa B" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <input type="radio" name="eval-unified-correct" id="unified-rad-c" value="C" onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
               <label for="unified-rad-c" style="font-weight:800; color:#0f172a; width:20px; cursor:pointer;">C)</label>
-              <input type="text" id="input-opt-c" class="form-control" placeholder="Alternativa C" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="text" id="input-opt-c" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa C" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <input type="radio" name="eval-unified-correct" id="unified-rad-d" value="D" onchange="syncUnifiedAnswer()" style="accent-color:#22c55e; width:18px; height:18px; cursor:pointer;">
               <label for="unified-rad-d" style="font-weight:800; color:#0f172a; width:20px; cursor:pointer;">D)</label>
-              <input type="text" id="input-opt-d" class="form-control" placeholder="Alternativa D" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
+              <input type="text" id="input-opt-d" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa D" oninput="syncUnifiedAnswer()" style="padding:6px 10px; font-size:0.85rem;">
             </div>
           </div>
         </div>
@@ -2093,12 +2113,32 @@
             <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 4px;">
               Enunciado del problema <span style="color: #dc2626;">*</span>
             </label>
-            <textarea id="bm-prompt" class="form-control" rows="3" maxlength="240" oninput="updateBMPromptCounter()"
+                        <!-- Barra de Símbolos Matemáticos Rápidos -->
+            <div class="math-symbols-toolbar">
+              <span style="font-size: 0.68rem; font-weight: 800; color: #475569; margin-right: 2px;">Fórmulas:</span>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('²')" title="Al cuadrado (x²)">x²</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('³')" title="Al cubo (x³)">x³</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('ⁿ')" title="Exponente (xⁿ)">xⁿ</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('√(')" title="Raíz cuadrada (√)">√( )</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('½')" title="Un medio (½)">½</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¼')" title="Un cuarto (¼)">¼</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¾')" title="Tres cuartos (¾)">¾</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol(' / ')" title="Fracción libre (a/b)">a/b</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" title="Grados (°)">°</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" title="Número Pi (π)">π</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" title="Multiplicación (×)">×</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" title="División (÷)">÷</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" title="Más o menos (±)">±</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" title="Diferente (≠)">≠</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" title="Menor o igual (≤)">≤</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" title="Mayor o igual (≥)">≥</button>
+            </div>
+            <textarea id="bm-prompt" class="form-control" rows="3" maxlength="160" oninput="updateBMPromptCounter()" onfocus="trackMathInputFocus(this)"
               placeholder="Ej: Si una bolsa de arroz pesa 3/4 de kg, ¿cuántos kg pesan 6 bolsas iguales?"
               style="font-size: 0.88rem; width: 100%; box-sizing: border-box; margin-bottom: 4px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; color: #0f172a;"></textarea>
             <div style="display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 0.72rem;">
               <span id="bm-prompt-hint" style="color: #64748b;">Máximo 3 líneas en la ficha</span>
-              <span id="bm-prompt-counter" style="color: #64748b; font-weight: 700;">0 / 240</span>
+              <span id="bm-prompt-counter" style="color: #64748b; font-weight: 700;">0 / 160</span>
             </div>
 
             <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
@@ -2108,22 +2148,22 @@
               <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
                 <input type="radio" id="bm-rad-a" name="bm-correct" value="A" checked style="accent-color: #16a34a; cursor: pointer;">
                 <label for="bm-rad-a" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">A)</label>
-                <input type="text" id="bm-opt-a" class="form-control" placeholder="Alternativa A" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
+                <input type="text" id="bm-opt-a" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa A" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
               <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
                 <input type="radio" id="bm-rad-b" name="bm-correct" value="B" style="accent-color: #16a34a; cursor: pointer;">
                 <label for="bm-rad-b" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">B)</label>
-                <input type="text" id="bm-opt-b" class="form-control" placeholder="Alternativa B" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
+                <input type="text" id="bm-opt-b" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa B" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
               <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
                 <input type="radio" id="bm-rad-c" name="bm-correct" value="C" style="accent-color: #16a34a; cursor: pointer;">
                 <label for="bm-rad-c" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">C)</label>
-                <input type="text" id="bm-opt-c" class="form-control" placeholder="Alternativa C" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
+                <input type="text" id="bm-opt-c" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa C" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
               <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
                 <input type="radio" id="bm-rad-d" name="bm-correct" value="D" style="accent-color: #16a34a; cursor: pointer;">
                 <label for="bm-rad-d" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">D)</label>
-                <input type="text" id="bm-opt-d" class="form-control" placeholder="Alternativa D" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
+                <input type="text" id="bm-opt-d" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa D" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
               </div>
             </div>
 
