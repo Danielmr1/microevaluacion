@@ -4825,7 +4825,7 @@
 
     .bar.desktop-vertical {
       width: 3px;
-      height: 72px;
+      height: 58px;
       background: rgba(43, 33, 24, 0.18);
       border-radius: 3px;
       position: relative;
@@ -4844,17 +4844,11 @@
     }
 
     .progress-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent-cyan);
-      margin-top: 8px;
-      box-shadow: 0 0 10px rgba(0, 180, 216, 0.8);
-      flex-shrink: 0;
+      display: none !important;
     }
 
     .steps-container {
-      height: 52px;
+      height: 58px;
       overflow: hidden;
       position: relative;
       width: 100%;
@@ -4863,16 +4857,17 @@
     .steps {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      height: 174px; /* 3 items exactos x 58px = 100% de la altura total */
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .step-item-wrap {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      height: 52px;
+      gap: 4px;
+      height: 58px;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .step-line {
