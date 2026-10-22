@@ -1257,6 +1257,15 @@
    */
   function startCreateQuestionFlow() {
     toggleChat(true);
+
+    const currentUser = (typeof SupabaseClient !== 'undefined' && SupabaseClient.getCachedUser)
+      ? SupabaseClient.getCachedUser()
+      : null;
+    if (!currentUser) {
+      appendMessage('ai', '🔒 <b>Acceso Restringido:</b> Debes iniciar sesión con tu cuenta de Google para crear preguntas con IA.<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="handleSignIn()">🔑 Iniciar sesión con Google</button></div>');
+      return;
+    }
+
     pendingState = {
       action: 'create_question_await_grade',
       branch: null,
@@ -1547,6 +1556,17 @@
       maxSesionesPermitidas: (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8
     };
 
+    // Guardarraíl de Autenticación: Requiere cuenta Google activa para consultar a la IA
+    const currentUser = (typeof SupabaseClient !== 'undefined' && SupabaseClient.getCachedUser)
+      ? SupabaseClient.getCachedUser()
+      : null;
+    if (!currentUser) {
+      const loadEl = document.getElementById(loadingId);
+      if (loadEl) loadEl.remove();
+      appendMessage('ai', '🔒 <b>Acceso Restringido:</b> Debes iniciar sesión con tu cuenta de Google para conversar con EVA y utilizar las funciones de Inteligencia Artificial.<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="handleSignIn()">🔑 Iniciar sesión con Google</button></div>');
+      return;
+    }
+
     // Guardarraíl Nivel 1: Límite diario de 15 consultas con IA
     if (typeof DailyQuota !== 'undefined' && !DailyQuota.canConsume('chat')) {
       const loadEl = document.getElementById(loadingId);
@@ -1627,6 +1647,15 @@
    */
   function startCreateQuestionFlow() {
     toggleChat(true);
+
+    const currentUser = (typeof SupabaseClient !== 'undefined' && SupabaseClient.getCachedUser)
+      ? SupabaseClient.getCachedUser()
+      : null;
+    if (!currentUser) {
+      appendMessage('ai', '🔒 <b>Acceso Restringido:</b> Debes iniciar sesión con tu cuenta de Google para crear preguntas con IA.<div class="copilot-clarify-chips" style="margin-top:10px;"><button type="button" class="copilot-chip" style="background:#0284c7; color:#ffffff; font-weight:700;" onclick="handleSignIn()">🔑 Iniciar sesión con Google</button></div>');
+      return;
+    }
+
     pendingState = {
       action: 'create_question_await_grade',
       branch: null,

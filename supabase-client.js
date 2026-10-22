@@ -19,6 +19,7 @@
   // el informe del botón de diagnóstico lee de acá: sin esto, cuando la función
   // falla en plena clase solo queda un toast que desaparece.
   let _ultimaLlamadaIA = null;
+  let _cachedUser = null;
 
   /** Lo que sabe el cliente sobre la última llamada a la IA. */
   function diagnosticoIA() {
@@ -75,9 +76,17 @@
    * Cierra la sesión actual.
    */
   async function signOut() {
+    _cachedUser = null;
     const client = getClient();
     if (!client) return;
     await client.auth.signOut();
+  }
+
+  /**
+   * Devuelve el usuario autenticado actualmente en memoria (síncrono), o null.
+   */
+  function getCachedUser() {
+    return _cachedUser;
   }
 
   /**
@@ -85,9 +94,14 @@
    */
   async function getCurrentUser() {
     const client = getClient();
-    if (!client) return null;
-    const { data: { user } } = await client.auth.getUser();
-    return user || null;
+    if (!client) return _cachedUser;
+    try {
+      const { data: { user } } = await client.auth.getUser();
+      _cachedUser = user || null;
+      return _cachedUser;
+    } catch (e) {
+      return _cachedUser;
+    }
   }
 
   /**
@@ -97,7 +111,10 @@
   function onAuthStateChange(callback) {
     const client = getClient();
     if (!client) return;
-    client.auth.onAuthStateChange(callback);
+    client.auth.onAuthStateChange((event, session) => {
+      _cachedUser = (session && session.user) ? session.user : null;
+      if (typeof callback === 'function') callback(event, session);
+    });
   }
 
   // ─────────────────────────────────────────────
@@ -373,6 +390,12 @@
     const client = getClient();
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
 
+    // Guardarraíl de Autenticación: Requiere cuenta Google activa
+    const user = await getCurrentUser();
+    if (!user) {
+      return { ok: false, error: 'Acceso no autorizado: debes iniciar sesión con Google para generar rúbricas con IA.' };
+    }
+
     try {
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Tiempo de espera agotado (45 s). La IA de Gemini no respondió a tiempo.')), 45000)
@@ -442,6 +465,12 @@
     const client = getClient();
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
 
+    // Guardarraíl de Autenticación: Requiere cuenta Google activa
+    const user = await getCurrentUser();
+    if (!user) {
+      return { ok: false, error: 'Acceso no autorizado: debes iniciar sesión con Google para crear preguntas con IA.' };
+    }
+
     try {
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Tiempo de espera agotado (40 s). La IA de Gemini no respondió a tiempo.')), 40000)
@@ -495,6 +524,12 @@
   async function chatWithAI(message, context = {}, history = []) {
     const client = getClient();
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
+
+    // Guardarraíl de Autenticación: Requiere cuenta Google activa
+    const user = await getCurrentUser();
+    if (!user) {
+      return { ok: false, error: 'Acceso no autorizado: debes iniciar sesión con Google para consultar al Asistente EVA.' };
+    }
 
     try {
       const timeoutPromise = new Promise((_, reject) =>
@@ -891,6 +926,12 @@
     const client = getClient();
     if (!client) return { ok: false, error: 'Supabase no está inicializado.' };
 
+    // Guardarraíl de Autenticación: Requiere cuenta Google activa
+    const user = await getCurrentUser();
+    if (!user) {
+      return { ok: false, error: 'Acceso no autorizado: debes iniciar sesión con Google para calificar con IA.' };
+    }
+
     try {
       const { data, error } = await client.functions.invoke('grade-sheet', { body: payload });
 
@@ -1026,6 +1067,7 @@
     signInWithGoogle,
     signOut,
     getCurrentUser,
+    getCachedUser,
     onAuthStateChange,
     loadClassrooms,
     createClassroom,
