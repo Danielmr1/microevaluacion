@@ -568,7 +568,8 @@
         ok: true,
         reply: data.reply || '',
         action: data.action || 'none',
-        action_label: data.action_label || ''
+        action_label: data.action_label || '',
+        out_of_scope: Boolean(data.out_of_scope)
       };
     } catch (e) {
       console.error('[SupabaseClient] Error en llamada a chatWithAI:', e);

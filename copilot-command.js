@@ -30,6 +30,78 @@
   // Historial conversacional deslizante para memoria con Gemini
   let chatHistory = [];
 
+  // =========================================================================
+  // GUARDARRAÍL: DELIMITACIÓN TEMÁTICA Y BLOQUEO DE 3 STRIKES (24 HORAS)
+  // =========================================================================
+  const CHAT_STRIKES_STORAGE_KEY = 'microeval_chat_strikes_v1';
+  const MAX_CHAT_STRIKES = 3;
+  const CHAT_BLOCK_DURATION_MS = 24 * 60 * 60 * 1000; // 24 horas
+
+  function getChatStrikeStatus() {
+    try {
+      const raw = localStorage.getItem(CHAT_STRIKES_STORAGE_KEY);
+      if (!raw) return { strikes: 0, blockedUntil: null, lastStrikeTime: null };
+      const data = JSON.parse(raw);
+      const now = Date.now();
+
+      // Si el bloqueo de 24 horas ya expiró, restablecer
+      if (data.blockedUntil && now >= data.blockedUntil) {
+        localStorage.removeItem(CHAT_STRIKES_STORAGE_KEY);
+        return { strikes: 0, blockedUntil: null, lastStrikeTime: null };
+      }
+
+      // Si no estaba bloqueado pero pasaron más de 24 horas desde la última advertencia, restablecer
+      if (data.lastStrikeTime && (now - data.lastStrikeTime > CHAT_BLOCK_DURATION_MS)) {
+        localStorage.removeItem(CHAT_STRIKES_STORAGE_KEY);
+        return { strikes: 0, blockedUntil: null, lastStrikeTime: null };
+      }
+
+      return {
+        strikes: Number(data.strikes || 0),
+        blockedUntil: data.blockedUntil ? Number(data.blockedUntil) : null,
+        lastStrikeTime: data.lastStrikeTime ? Number(data.lastStrikeTime) : null
+      };
+    } catch (_) {
+      return { strikes: 0, blockedUntil: null, lastStrikeTime: null };
+    }
+  }
+
+  function registerChatStrike() {
+    const status = getChatStrikeStatus();
+    const now = Date.now();
+    const newStrikes = status.strikes + 1;
+    let blockedUntil = null;
+
+    if (newStrikes >= MAX_CHAT_STRIKES) {
+      blockedUntil = now + CHAT_BLOCK_DURATION_MS;
+    }
+
+    const payload = {
+      strikes: newStrikes,
+      blockedUntil: blockedUntil,
+      lastStrikeTime: now
+    };
+
+    try {
+      localStorage.setItem(CHAT_STRIKES_STORAGE_KEY, JSON.stringify(payload));
+    } catch (_) {}
+
+    return payload;
+  }
+
+  function resetChatStrikes() {
+    try {
+      localStorage.removeItem(CHAT_STRIKES_STORAGE_KEY);
+    } catch (_) {}
+  }
+
+  function formatHoursRemaining(blockedUntil) {
+    if (!blockedUntil) return '24 horas';
+    const diffMs = Math.max(0, blockedUntil - Date.now());
+    const hours = Math.ceil(diffMs / (1000 * 60 * 60));
+    return hours <= 1 ? '1 hora o menos' : `${hours} horas`;
+  }
+
   /**
    * Limpia y normaliza texto para comparación difusa (tildes, mayúsculas, espacios)
    */
@@ -1548,6 +1620,17 @@
    * Procesa mensajes en lenguaje natural con IA real (Gemini en Supabase)
    */
   async function handleAIChatMessage(userText) {
+    // Guardarraíl de Delimitación Temática: Bloqueo de 24 horas tras 3 strikes
+    const strikeStatus = getChatStrikeStatus();
+    if (strikeStatus.blockedUntil && Date.now() < strikeStatus.blockedUntil) {
+      const remaining = formatHoursRemaining(strikeStatus.blockedUntil);
+      appendMessage('ai', `🔒 <b>Chat con IA bloqueado temporalmente por 24 horas.</b><br><br>` +
+        `Has acumulado 3 advertencias por realizar consultas fuera de los temas permitidos (Matemática y la plataforma Microevaluación).<br><br>` +
+        `⏳ <b>Tiempo restante para desbloqueo:</b> aproximadamente ${remaining}.<br><br>` +
+        `💡 <i>Puedes continuar utilizando el resto de funciones del sistema (salones, escáner, cartillas y banco) con total normalidad.</i>`);
+      return;
+    }
+
     const loadingId = 'msg-eva-thinking-' + Date.now();
     appendMessage('ai', '<div id="' + loadingId + '" style="display:flex; align-items:center; gap:8px; color:#64748b; font-size:0.84rem;"><span class="copilot-spinner" style="display:inline-block; width:14px; height:14px; border:2px solid #cbd5e1; border-top-color:#0284c7; border-radius:50%; animation:spin 0.8s linear infinite;"></span><span>EVA está pensando...</span></div>');
 
@@ -1611,14 +1694,37 @@
       if (typeof DailyQuota !== 'undefined') {
         DailyQuota.consume('chat');
       }
-      // Registrar en el historial de memoria conversacional
+
+      let replyText = (aiRes.reply || '').replace(/\n/g, '<br>');
+
+      // Guardarraíl de Delimitación Temática: Manejo de strikes si la pregunta fue fuera de lugar
+      if (aiRes.out_of_scope) {
+        const strikeResult = registerChatStrike();
+        let strikeNotice = '';
+        if (strikeResult.strikes === 1) {
+          strikeNotice = `<div style="margin-top:10px; padding:9px 12px; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; color:#92400e; font-size:0.83rem; line-height:1.4;">` +
+            `⚠️ <b>Advertencia de uso (1/3):</b> EVA solo responde consultas sobre Matemática y la plataforma Microevaluación. Si continúas preguntando sobre temas ajenos, el chat se bloqueará por 24 horas.` +
+            `</div>`;
+        } else if (strikeResult.strikes === 2) {
+          strikeNotice = `<div style="margin-top:10px; padding:9px 12px; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; color:#991b1b; font-size:0.83rem; line-height:1.4;">` +
+            `⚠️ <b>Segunda advertencia (2/3):</b> Consulta fuera de los temas permitidos. Al próximo intento el chat quedará bloqueado por 24 horas.` +
+            `</div>`;
+        } else {
+          strikeNotice = `<div style="margin-top:10px; padding:10px 12px; background:#fef2f2; border:2px solid #ef4444; border-radius:8px; color:#991b1b; font-size:0.85rem; line-height:1.4;">` +
+            `🔒 <b>Chat bloqueado por 24 horas (3/3):</b> Has alcanzado las 3 advertencias por consultas fuera de tema. El acceso al chat con IA ha quedado suspendido por 24 horas.` +
+            `</div>`;
+        }
+        appendMessage('ai', replyText + strikeNotice);
+        return;
+      }
+
+      // Registrar en el historial de memoria conversacional sólo si fue pedagógicamente válida
       chatHistory.push({ role: 'user', text: userText });
       chatHistory.push({ role: 'assistant', text: aiRes.reply || '' });
       if (chatHistory.length > 10) {
         chatHistory = chatHistory.slice(-10);
       }
 
-      let replyText = (aiRes.reply || '').replace(/\n/g, '<br>');
       let actionBtn = '';
 
       if (aiRes.action === 'open_create_classroom') {
@@ -1885,7 +1991,9 @@
     exportAnalyticsToExcel,
     renderComparativeTable,
     renderQuestionErrorAnalysis,
-    renderStudentsReinforcement
+    renderStudentsReinforcement,
+    getChatStrikeStatus,
+    resetChatStrikes
   };
 
   // Inicializar al cargar el DOM
