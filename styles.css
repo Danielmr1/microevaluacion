@@ -4825,8 +4825,8 @@
 
     .bar.desktop-vertical {
       width: 3px;
-      height: 90px;
-      background: rgba(24, 21, 18, 0.12);
+      height: 72px;
+      background: rgba(43, 33, 24, 0.18);
       border-radius: 3px;
       position: relative;
       overflow: hidden;
@@ -4854,7 +4854,7 @@
     }
 
     .steps-container {
-      height: 32px;
+      height: 52px;
       overflow: hidden;
       position: relative;
       width: 100%;
@@ -4863,16 +4863,36 @@
     .steps {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 20px;
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .step-label {
-      font-size: 0.92rem;
-      color: var(--text-carbon);
-      font-weight: 700;
+    .step-item-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      height: 52px;
+      justify-content: center;
+    }
+
+    .step-line {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #181512;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       white-space: nowrap;
       line-height: 1.2;
+    }
+
+    .step-line .step-dash {
+      color: #FFB703;
+      font-weight: 900;
+    }
+
+    .step-line .step-text {
+      color: #181512;
     }
 
     /* Columna Derecha Transformable (Right Transforming Scroll Stage) */
@@ -4915,7 +4935,7 @@
 
     .item-desc {
       font-size: 0.94rem;
-      color: #334155;
+      color: #5c4a3b;
       font-weight: 500;
       line-height: 1.55;
       display: block;

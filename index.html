@@ -53,10 +53,10 @@
   <script src="card-cartilla.js?v=3.2.73"></script>
   <script src="card-generator.js?v=3.3.8"></script>
   <script src="session-controller.js?v=3.3.8"></script>
-  <script src="app-navigation.js?v=3.6.3"></script>
+  <script src="app-navigation.js?v=3.6.4"></script>
   <script src="copilot-command.js?v=3.5.9"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.6.7">
+  <link rel="stylesheet" href="styles.css?v=3.6.8">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.7.6</span>
+              Versión <span id="user-profile-version-tag">v3.7.7</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -577,15 +577,15 @@
         <div class="head-titles-wrapper">
           <div class="stage-head-info" id="stage-head-1" onclick="openBranchFlow('rama1')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Formativa con IA">
             <h2 class="h1">Formativa con IA</h2>
-            <span class="category-subtitle">1 a 2 Preguntas</span>
+            <span class="category-subtitle" style="display:none;">1 a 2 Preguntas</span>
           </div>
           <div class="stage-head-info" id="stage-head-2" onclick="openBranchFlow('rama2')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Focalizada en la Respuesta">
             <h2 class="h1">Focalizada en la Respuesta</h2>
-            <span class="category-subtitle">1 a 5 Preguntas</span>
+            <span class="category-subtitle" style="display:none;">1 a 5 Preguntas</span>
           </div>
           <div class="stage-head-info" id="stage-head-3" onclick="openBranchFlow('rama3')" role="button" tabindex="0" style="cursor:pointer;" title="Clic para iniciar Cartilla OMR">
             <h2 class="h1">Cartilla OMR</h2>
-            <span class="category-subtitle">6 a 20 Preguntas</span>
+            <span class="category-subtitle" style="display:none;">6 a 20 Preguntas</span>
           </div>
         </div>
 
@@ -596,9 +596,18 @@
           <div class="progress-dot"></div>
           <div class="steps-container">
             <div class="steps">
-              <span class="step-label">Procedimiento Escrito</span>
-              <span class="step-label">Alternativas y Clave Directa</span>
-              <span class="step-label">Burbujas de Respuesta</span>
+              <div class="step-item-wrap">
+                <div class="step-line"><span class="step-dash">—</span><span class="step-text">Procedimiento Escrito</span></div>
+                <div class="step-line"><span class="step-dash">—</span><span class="step-text">1 a 2 Preguntas</span></div>
+              </div>
+              <div class="step-item-wrap">
+                <div class="step-line"><span class="step-dash">—</span><span class="step-text">Alternativas y Clave Directa</span></div>
+                <div class="step-line"><span class="step-dash">—</span><span class="step-text">1 a 5 Preguntas</span></div>
+              </div>
+              <div class="step-item-wrap">
+                <div class="step-line"><span class="step-dash">—</span><span class="step-text">Burbujas de Respuesta</span></div>
+                <div class="step-line"><span class="step-dash">—</span><span class="step-text">6 a 20 Preguntas</span></div>
+              </div>
             </div>
           </div>
         </div>
