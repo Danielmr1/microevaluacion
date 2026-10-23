@@ -425,13 +425,29 @@
         yRight = -14 - tEnd * 6; // desciende suavemente a -20 junto a Confirmar Fichas
       }
 
-      // Separación lateral milimétrica: flota libre en el margen entre la ficha (37) y el filo (56)
-      const lateralXLeft = 53;
-      const lateralXRight = 50;
+      // Separación lateral adaptativa según el ancho real de pantalla y la posición de la ficha
+      const vDist = 95;
+      const halfH3D = vDist * Math.tan((camera.fov * Math.PI) / 360);
+      const halfW3D = halfH3D * (window.innerWidth / window.innerHeight);
+
+      const sheetEl = document.getElementById('sim-card-render-host') || document.querySelector('.teacher-panel');
+      const sheetRect = sheetEl ? sheetEl.getBoundingClientRect() : null;
+      const leftMarginPx = (sheetRect && sheetRect.left > 60) ? sheetRect.left : Math.max(window.innerWidth * 0.16, 70);
+      const rightMarginPx = (sheetRect && (window.innerWidth - sheetRect.right) > 60) ? (window.innerWidth - sheetRect.right) : Math.max(window.innerWidth * 0.16, 70);
+
+      const pxLeft = Math.max(leftMarginPx * 0.26, 25);
+      const pxRight = Math.min(window.innerWidth - (rightMarginPx * 0.26), window.innerWidth - 25);
+
+      const targetXLeft = ((pxLeft / window.innerWidth) - 0.5) * 2 * halfW3D;
+      const targetXRight = ((pxRight / window.innerWidth) - 0.5) * 2 * halfW3D;
+
+      const scaleLeft = Math.min(Math.max(leftMarginPx / 200, 0.52), 0.90);
+      const scaleRight = Math.min(Math.max(rightMarginPx / 200, 0.52), 0.90);
 
       if (cardLeft) {
         cardLeft.setOpacity(alphaLeft);
-        cardLeft.group.position.x = -lateralXLeft;
+        cardLeft.group.scale.set(scaleLeft, scaleLeft, scaleLeft);
+        cardLeft.group.position.x = targetXLeft;
         cardLeft.group.position.y = yLeft;
         if (alphaLeft > 0.01) {
           updateCardPhysics(cardLeft, dt, 0);
@@ -440,7 +456,8 @@
 
       if (cardRight) {
         cardRight.setOpacity(alphaRight);
-        cardRight.group.position.x = lateralXRight;
+        cardRight.group.scale.set(scaleRight, scaleRight, scaleRight);
+        cardRight.group.position.x = targetXRight;
         cardRight.group.position.y = yRight;
         if (alphaRight > 0.01) {
           updateCardPhysics(cardRight, dt, 2.5);
