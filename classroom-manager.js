@@ -344,6 +344,11 @@ function openAddClassroomModal() {
   const modal = document.getElementById('modal-add-classroom');
   if (modal) modal.style.display = 'flex';
 
+  const ta = document.getElementById('mgr-manual-classroom-students');
+  if (ta) ta.value = '';
+  const count = document.getElementById('mgr-manual-student-count');
+  if (count) { count.textContent = '0 alumnos'; count.style.color = '#64748b'; }
+
   switchManagerCreateTab('import');
   const nameInput = document.getElementById('mgr-manual-classroom-name');
   if (nameInput) setTimeout(() => nameInput.focus(), 80);
@@ -352,6 +357,8 @@ function openAddClassroomModal() {
 function closeAddClassroomModal() {
   const modal = document.getElementById('modal-add-classroom');
   if (modal) modal.style.display = 'none';
+  const ta = document.getElementById('mgr-manual-classroom-students');
+  if (ta) ta.value = '';
 }
 
 /* ── FORMULARIO INLINE: AGREGAR ALUMNO EN MODAL ── */
@@ -782,9 +789,18 @@ function renumberMgrStudentRows() {
 }
 
 function updateMgrStudentRowsCount() {
-  const container = document.getElementById('mgr-manual-students-rows-container');
+  const ta = document.getElementById('mgr-manual-classroom-students');
   const countEl = document.getElementById('mgr-manual-student-count');
-  if (!container || !countEl) return;
+  if (!countEl) return;
+  if (ta) {
+    const n = parseStudentLines(ta.value).length;
+    countEl.textContent = `${n} alumno${n === 1 ? '' : 's'}`;
+    countEl.style.color = n === 0 ? '#64748b' : '#38bdf8';
+    return;
+  }
+
+  const container = document.getElementById('mgr-manual-students-rows-container');
+  if (!container) return;
 
   const inputs = container.querySelectorAll('.mgr-student-input');
   let count = 0;
@@ -794,8 +810,13 @@ function updateMgrStudentRowsCount() {
   countEl.textContent = `${count} alumno${count === 1 ? '' : 's'}`;
   countEl.style.color = count === 0 ? '#64748b' : '#38bdf8';
 }
+const updateMgrStudentCount = updateMgrStudentRowsCount;
 
 function getMgrManualStudentsList() {
+  const ta = document.getElementById('mgr-manual-classroom-students');
+  if (ta) {
+    return parseStudentLines(ta.value);
+  }
   const container = document.getElementById('mgr-manual-students-rows-container');
   if (!container) return [];
   const inputs = container.querySelectorAll('.mgr-student-input');
@@ -1369,12 +1390,11 @@ function prefillManualClassroomForm(nombre, students) {
     switchManagerCreateTab('manual');
     const mgrName = document.getElementById('mgr-manual-classroom-name');
     if (mgrName) mgrName.value = nombre || '';
-    const names = (students || []).map(s =>
-      (s.shortName && s.shortName !== s.fullName)
-        ? s.fullName + ', ' + s.shortName
-        : s.fullName
-    );
-    resetMgrStudentRows(names.length > 0 ? names : ['']);
+    const mgrTa = document.getElementById('mgr-manual-classroom-students');
+    if (mgrTa) {
+      mgrTa.value = (students || []).map(s => s.fullName || s.name || '').filter(Boolean).join('\n');
+      updateMgrStudentCount();
+    }
     return;
   }
 
@@ -1383,11 +1403,7 @@ function prefillManualClassroomForm(nombre, students) {
 
   const ta = document.getElementById('manual-classroom-students');
   if (ta) {
-    ta.value = (students || []).map(s =>
-      (s.shortName && s.shortName !== s.fullName)
-        ? s.fullName + ', ' + s.shortName
-        : s.fullName
-    ).join('\n');
+    ta.value = (students || []).map(s => s.fullName || s.name || '').filter(Boolean).join('\n');
   }
 
   updateManualStudentCount();
@@ -1440,23 +1456,37 @@ function parseStudentLines(texto) {
     .map(l => l.trim())
     // Se descarta una fila de encabezado, por si alguien pega la plantilla
     // entera en el cuadro en vez de escribir solo los nombres.
-    .filter(l => l.length > 0 && !/^"?nombre\s+completo/i.test(l))
+    .filter(l => l.length > 0 && !/^"?nombre\s+completo/i.test(l) && !/^"?apellidos\s*,\s*nombres/i.test(l))
     .map(linea => {
-      const partes = linea.split(/[|,;\t]/).map(p => p.trim()).filter(Boolean);
-      const fullName = cleanName(partes[0] || '');
-      const shortName = generateShortName(fullName, partes[1] || '');
+      let fullName = '';
+      if (linea.includes('\t')) {
+        const parts = linea.split('\t').map(p => p.trim()).filter(Boolean);
+        fullName = cleanName(parts[0] || '');
+      } else if (linea.includes('|')) {
+        const parts = linea.split('|').map(p => p.trim()).filter(Boolean);
+        fullName = cleanName(parts[0] || '');
+      } else if (linea.includes(';')) {
+        const parts = linea.split(';').map(p => p.trim()).filter(Boolean);
+        fullName = cleanName(parts[0] || '');
+      } else {
+        // Formato estándar: "Apellidos, Nombres" o "Nombres Apellidos"
+        // Si tuviera una 2da coma accidental (ej. "Mejia Prado, Mateo, Mateo M.")
+        const partesComa = linea.split(',').map(p => p.trim()).filter(Boolean);
+        if (partesComa.length >= 3) {
+          // Si tiene 3 partes con coma, las 2 primeras componen Apellidos, Nombres
+          fullName = cleanName(partesComa[0] + ', ' + partesComa[1]);
+        } else {
+          fullName = cleanName(linea);
+        }
+      }
+      const shortName = generateShortName(fullName);
       return { fullName: fullName, shortName: shortName };
     })
     .filter(s => s.fullName.length > 0);
 }
 
 /**
- * Descarga una plantilla CSV vacía: solo los encabezados, sin un solo
- * alumno.
- *
- * Se arma en el navegador a propósito. Antes la plantilla era un archivo
- * del repositorio con 10 nombres de alumnos dentro, y eso no puede estar
- * en un repositorio público.
+ * Descarga una plantilla CSV vacía: solo el encabezado de Apellidos, Nombres.
  *
  * Lleva BOM UTF-8 porque Excel, sin él, abre el archivo como Latin-1 y
  * rompe los acentos al guardarlo. Nuestro importador descarta el BOM, así
@@ -1464,7 +1494,7 @@ function parseStudentLines(texto) {
  * que se degrade.
  */
 function downloadEmptyRosterTemplate() {
-  const contenido = '\uFEFF"Nombre Completo (Apellidos, Nombres)",Nombre Corto (Opcional)\n';
+  const contenido = '\uFEFF"Apellidos, Nombres"\n';
   try {
     const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
