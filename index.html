@@ -56,7 +56,7 @@
   <script src="app-navigation.js?v=3.6.4"></script>
   <script src="copilot-command.js?v=3.5.9"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.7.2">
+  <link rel="stylesheet" href="styles.css?v=3.8.2">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -149,8 +149,7 @@
       pointer-events: none !important;
     }
 
-    /* MODO CLARO UNIFICADO PARA WIZARD, SALONES Y MODALES — PALETA SCANWING (Tanda 2) */
-    #view-create,
+    /* MODO CLARO UNIFICADO PARA SALONES Y MODALES — PALETA SCANWING (Tanda 2) */
     #view-classrooms {
       background: radial-gradient(circle at 50% 0%, rgba(0, 180, 216, 0.08) 0%, rgba(249, 248, 243, 0) 65%),
                   radial-gradient(circle at 15% 45%, rgba(255, 183, 3, 0.06) 0%, rgba(249, 248, 243, 0) 55%),
@@ -158,12 +157,147 @@
       color: #181512 !important;
     }
 
-    .teacher-panel {
+    #view-classrooms .teacher-panel {
       background: #FFFFFF !important;
       border: 1.5px solid #e5e3dc !important;
       border-radius: 16px !important;
       box-shadow: 0 4px 20px -2px rgba(24, 21, 18, 0.05), 0 2px 6px -1px rgba(24, 21, 18, 0.03) !important;
       color: #181512 !important;
+    }
+
+    /* MODO OSCURO UNIFICADO (DARK SPACE + BIONIC BUTTERFLY) PARA CONFIGURACIÓN DE FICHA */
+    #view-create {
+      background: #070a14 !important;
+      color: #f8fafc !important;
+    }
+
+    #view-create .teacher-panel {
+      background: #070a14 !important;
+      border: 1px solid rgba(56, 189, 248, 0.18) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 12px 40px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(56, 189, 248, 0.08) !important;
+      color: #f8fafc !important;
+    }
+
+    #view-create #step-classroom,
+    #view-create #step-eval-type {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    #view-create #step-classroom label,
+    #view-create #step-eval-type label {
+      color: #94a3b8 !important;
+    }
+
+    #view-create .form-control {
+      background: #0f172a !important;
+      border: 1.5px solid #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    #view-create .form-control:focus {
+      outline: none !important;
+      border-color: #00B4D8 !important;
+      box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.25) !important;
+    }
+
+    #view-create .form-control option {
+      background: #0f172a !important;
+      color: #f8fafc !important;
+    }
+
+    #view-create .btn-dashed-action {
+      background: rgba(15, 23, 42, 0.6) !important;
+      border: 1.5px dashed #334155 !important;
+      color: #94a3b8 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    #view-create .btn-dashed-action:hover {
+      background: rgba(0, 180, 216, 0.08) !important;
+      border-color: #00B4D8 !important;
+      color: #38bdf8 !important;
+      box-shadow: 0 2px 6px rgba(0, 180, 216, 0.25) !important;
+    }
+
+    #view-create .sim-toolbar {
+      background: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid #1e293b !important;
+    }
+
+    #view-create .sim-toolbar span {
+      color: #94a3b8 !important;
+    }
+
+    #view-create .sim-pill-btn {
+      background: #111827 !important;
+      border: 1.5px solid #334155 !important;
+      color: #94a3b8 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    #view-create .sim-pill-btn:hover:not(:disabled) {
+      border-color: #64748b !important;
+      color: #f8fafc !important;
+      background: #1e293b !important;
+    }
+
+    #view-create .sim-pill-btn.active {
+      background: linear-gradient(135deg, rgba(0, 180, 216, 0.2), rgba(2, 132, 199, 0.25)) !important;
+      border-color: #00B4D8 !important;
+      color: #38bdf8 !important;
+      font-weight: 800 !important;
+      box-shadow: 0 0 12px rgba(0, 180, 216, 0.35) !important;
+    }
+
+    #view-create .sim-pill-btn.active-emerald {
+      background: linear-gradient(135deg, rgba(255, 183, 3, 0.22), rgba(251, 133, 0, 0.25)) !important;
+      border-color: #FFB703 !important;
+      color: #FFB703 !important;
+      font-weight: 800 !important;
+      box-shadow: 0 0 12px rgba(255, 183, 3, 0.35) !important;
+    }
+
+    #view-create .sim-card-viewport {
+      background: #030712 !important;
+      border: 1.5px solid #1e293b !important;
+      box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    #view-create .sim-format-badge {
+      background: rgba(0, 180, 216, 0.12) !important;
+      color: #38bdf8 !important;
+      border: 1px solid rgba(0, 180, 216, 0.3) !important;
+      box-shadow: none !important;
+    }
+
+    #view-create #branch-3-options,
+    #view-create #manual-classroom-form {
+      background: #0f172a !important;
+      border: 1.5px solid #334155 !important;
+      border-radius: 12px !important;
+    }
+
+    #view-create #branch-3-options span,
+    #view-create #manual-classroom-form label,
+    #view-create #manual-classroom-form p {
+      color: #cbd5e1 !important;
+    }
+
+    #view-create #manual-form-title {
+      color: #f8fafc !important;
+    }
+
+    #view-create .btn-r3-qcount {
+      background: #111827 !important;
+      border: 1.5px solid #334155 !important;
+      color: #94a3b8 !important;
+    }
+
+    #view-create .btn-r3-qcount.active {
+      background: rgba(0, 180, 216, 0.2) !important;
+      border-color: #00B4D8 !important;
+      color: #38bdf8 !important;
     }
 
     #step-classroom,
@@ -415,7 +549,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.8.1</span>
+              Versión <span id="user-profile-version-tag">v3.8.2</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">

@@ -434,7 +434,7 @@ if (typeof window !== 'undefined') {
 
       const headerEl = document.querySelector('header');
       if (headerEl) {
-        if (flowName === 'scan') {
+        if (flowName === 'scan' || flowName === 'eval') {
           headerEl.classList.remove('header-light');
           headerEl.classList.add('header-dark');
         } else {
