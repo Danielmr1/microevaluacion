@@ -22,6 +22,9 @@
     }
 
     function onClassroomSelectChanged(classId) {
+      if (typeof window !== 'undefined' && window.EvaluationHologram) {
+        window.EvaluationHologram.onClassroomChanged();
+      }
       if (!classId) {
         wizardClassroomId = null;
         wizardEval = null;

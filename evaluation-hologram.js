@@ -1,26 +1,25 @@
 /**
  * EVALUATION 3D HOLOGRAM CONTROLLER (Paleta Mariposa Biónica)
- * Malla tridimensional reactiva al scroll con 4 vértices ArUco dorados,
- * haz de barrido láser y ondulación continua inspirada en Dirac.
+ * - PC (>=768px): 2 hologramas compactos alternantes en laterales (izq/der), nunca simultáneos.
+ * - Móvil (<768px): 1 holograma central compacto al inicio; desaparece al elegir salón.
+ * - Dinámica: Ondulación continua en reposo, pulsación ArUco y descenso por scroll.
  */
 
 (function () {
   'use strict';
 
   let scene, camera, renderer, animationFrameId;
-  let hologramGroup, gridMesh, laserLine, arucoMarkers = [], particlesMesh;
   let canvas = null;
   let isRunning = false;
   let clock = null;
 
-  // Parámetros y estado de la física
+  // Parámetros y colores Bionic Butterfly
   const config = {
-    cardWidth: 44,
-    cardHeight: 60,
-    gridCols: 26,
-    gridRows: 36,
-    baseAmplitude: 2.2,
-    scrollSpeedMultiplier: 0.18,
+    cardWidth: 28,        // Más compacto tanto en PC como en móvil
+    cardHeight: 39,
+    gridCols: 22,
+    gridRows: 30,
+    baseAmplitude: 1.8,
     colorLinen: 0xEDE8DF,
     colorCyan: 0x00B4D8,
     colorCyanLight: 0x48CAE4,
@@ -30,6 +29,8 @@
   };
 
   const state = {
+    isMobile: false,
+    classroomSelected: false,
     scrollProgress: 0,
     targetProgress: 0,
     scrollSpeed: 0,
@@ -40,16 +41,20 @@
     idleTime: 0
   };
 
+  // Instancias de hologramas
+  let cardLeft = null;
+  let cardRight = null;
+  let cardCenterMobile = null;
+
   function initHologram() {
     if (typeof THREE === 'undefined') {
-      console.warn('Three.js no está cargado. Se pospone la inicialización del holograma.');
+      console.warn('Three.js no disponible.');
       return false;
     }
 
     const view = document.getElementById('view-create');
     if (!view) return false;
 
-    // Crear canvas si no existe
     canvas = document.getElementById('eval-hologram-canvas');
     if (!canvas) {
       canvas = document.createElement('canvas');
@@ -62,23 +67,21 @@
       canvas.style.pointerEvents = 'none';
       canvas.style.zIndex = '0';
       canvas.style.opacity = '0';
-      canvas.style.transition = 'opacity 0.6s ease';
-      // Insertar al inicio de view-create
+      canvas.style.transition = 'opacity 0.5s ease';
       view.insertBefore(canvas, view.firstChild);
     }
 
     const width = window.innerWidth;
     const height = window.innerHeight;
+    state.isMobile = width < 768;
 
     scene = new THREE.Scene();
     clock = new THREE.Clock();
 
-    // Cámara en perspectiva
     camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, -6, 95);
-    camera.lookAt(0, -4, 0);
+    camera.position.set(0, -4, 90);
+    camera.lookAt(0, -3, 0);
 
-    // Renderer con fondo transparente
     renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       antialias: true,
@@ -88,173 +91,194 @@
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    buildHologramObjects();
-    bindScrollAndResize();
+    buildAllHolograms();
+    bindEvents();
+    checkClassroomState();
 
     return true;
   }
 
-  function buildHologramObjects() {
-    hologramGroup = new THREE.Group();
-    scene.add(hologramGroup);
-
-    // ── 1. MALLA DE LÍNEAS 3D (CUADRÍCULA DE LA FICHA) ──
-    const cols = config.gridCols;
-    const rows = config.gridRows;
+  // Fábrica para crear una ficha holográfica completa
+  function createHologramCard(tag) {
+    const group = new THREE.Group();
     const w = config.cardWidth;
     const h = config.cardHeight;
+    const cols = config.gridCols;
+    const rows = config.gridRows;
 
+    // 1. Malla Wireframe de la Cuadrícula
     const planeGeom = new THREE.PlaneGeometry(w, h, cols, rows);
-    // Orientar en plano XZ
     planeGeom.rotateX(-Math.PI / 2);
-
-    // Material de alambre (wireframe) en cian turquesa
     const wireMat = new THREE.MeshBasicMaterial({
       color: config.colorCyan,
       wireframe: true,
       transparent: true,
       opacity: 0.55
     });
+    const gridMesh = new THREE.Mesh(planeGeom, wireMat);
+    planeGeom.userData = { basePositions: planeGeom.attributes.position.clone() };
+    group.add(gridMesh);
 
-    gridMesh = new THREE.Mesh(planeGeom, wireMat);
-    hologramGroup.add(gridMesh);
-
-    // Guardar posiciones base de vértices para la animación de ondulación
-    gridMesh.geometry.userData = {
-      basePositions: planeGeom.attributes.position.clone()
-    };
-
-    // ── 2. MARCO PERIMETRAL EXTERIOR ──
-    const frameGeom = new THREE.BufferGeometry();
+    // 2. Marco perimetral
     const halfW = w / 2;
     const halfH = h / 2;
-    const framePoints = [
+    const frameGeom = new THREE.BufferGeometry();
+    frameGeom.setFromPoints([
       new THREE.Vector3(-halfW, 0, -halfH),
       new THREE.Vector3(halfW, 0, -halfH),
       new THREE.Vector3(halfW, 0, halfH),
       new THREE.Vector3(-halfW, 0, halfH),
       new THREE.Vector3(-halfW, 0, -halfH)
-    ];
-    frameGeom.setFromPoints(framePoints);
+    ]);
     const frameMat = new THREE.LineBasicMaterial({
       color: config.colorBrown,
-      linewidth: 2,
+      linewidth: 1.5,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.75
     });
-    const frameLine = new THREE.Line(frameGeom, frameMat);
-    hologramGroup.add(frameLine);
+    group.add(new THREE.Line(frameGeom, frameMat));
 
-    // ── 3. LOS 4 VÉRTICES ARUCO DORADOS ──
-    arucoMarkers = [];
+    // 3. Vértices ArUco dorados en las 4 esquinas
+    const arucoMarkers = [];
     const cornerOffsets = [
-      { x: -halfW + 3.2, z: -halfH + 3.2 }, // Superior izquierda
-      { x: halfW - 3.2, z: -halfH + 3.2 },  // Superior derecha
-      { x: -halfW + 3.2, z: halfH - 3.2 },  // Inferior izquierda
-      { x: halfW - 3.2, z: halfH - 3.2 }   // Inferior derecha
+      { x: -halfW + 2.5, z: -halfH + 2.5 },
+      { x: halfW - 2.5, z: -halfH + 2.5 },
+      { x: -halfW + 2.5, z: halfH - 2.5 },
+      { x: halfW - 2.5, z: halfH - 2.5 }
     ];
 
-    cornerOffsets.forEach((pos, idx) => {
-      const markerGroup = new THREE.Group();
-      markerGroup.position.set(pos.x, 0.4, pos.z);
+    cornerOffsets.forEach(pos => {
+      const mGroup = new THREE.Group();
+      mGroup.position.set(pos.x, 0.3, pos.z);
 
-      // Marco exterior ArUco en dorado ámbar (#FFB703)
-      const boxOuterGeom = new THREE.BoxGeometry(4.4, 0.8, 4.4);
-      const boxOuterMat = new THREE.MeshBasicMaterial({
-        color: config.colorAmber,
-        transparent: true,
-        opacity: 0.95
-      });
-      const boxOuter = new THREE.Mesh(boxOuterGeom, boxOuterMat);
-      markerGroup.add(boxOuter);
+      // Marco dorado exterior
+      const boxOuter = new THREE.Mesh(
+        new THREE.BoxGeometry(3.6, 0.6, 3.6),
+        new THREE.MeshBasicMaterial({ color: config.colorAmber, transparent: true, opacity: 0.95 })
+      );
+      mGroup.add(boxOuter);
 
-      // Matriz interna negra/marrón (#2B2118)
-      const boxInnerGeom = new THREE.BoxGeometry(2.4, 0.9, 2.4);
-      const boxInnerMat = new THREE.MeshBasicMaterial({
-        color: config.colorBrown,
-        transparent: true,
-        opacity: 0.9
-      });
-      const boxInner = new THREE.Mesh(boxInnerGeom, boxInnerMat);
-      markerGroup.add(boxInner);
+      // Matriz interna marrón
+      const boxInner = new THREE.Mesh(
+        new THREE.BoxGeometry(2.0, 0.7, 2.0),
+        new THREE.MeshBasicMaterial({ color: config.colorBrown, transparent: true, opacity: 0.9 })
+      );
+      mGroup.add(boxInner);
 
-      // Líneas de mira / retículas láser que apuntan al centro
-      const reticleGeom = new THREE.BufferGeometry();
-      const dirX = pos.x < 0 ? 1 : -1;
-      const dirZ = pos.z < 0 ? 1 : -1;
-      const reticlePoints = [
-        new THREE.Vector3(0, 0.5, 0),
-        new THREE.Vector3(dirX * 4, 0.5, 0),
-        new THREE.Vector3(0, 0.5, 0),
-        new THREE.Vector3(0, 0.5, dirZ * 4)
-      ];
-      reticleGeom.setFromPoints(reticlePoints);
-      const reticleMat = new THREE.LineBasicMaterial({
-        color: config.colorCyanLight,
-        transparent: true,
-        opacity: 0.7
-      });
-      const reticle = new THREE.LineSegments(reticleGeom, reticleMat);
-      markerGroup.add(reticle);
+      // Retículas de mira láser
+      const rGeom = new THREE.BufferGeometry();
+      const dx = pos.x < 0 ? 1 : -1;
+      const dz = pos.z < 0 ? 1 : -1;
+      rGeom.setFromPoints([
+        new THREE.Vector3(0, 0.4, 0), new THREE.Vector3(dx * 3, 0.4, 0),
+        new THREE.Vector3(0, 0.4, 0), new THREE.Vector3(0, 0.4, dz * 3)
+      ]);
+      const reticle = new THREE.LineSegments(
+        rGeom,
+        new THREE.LineBasicMaterial({ color: config.colorCyanLight, transparent: true, opacity: 0.75 })
+      );
+      mGroup.add(reticle);
 
-      hologramGroup.add(markerGroup);
-      arucoMarkers.push(markerGroup);
+      group.add(mGroup);
+      arucoMarkers.push(mGroup);
     });
 
-    // ── 4. HAZ DE ESCANEO LÁSER (LÍNEA HORIZONTAL LUMINOSA) ──
+    // 4. Haz láser de barrido
     const laserGeom = new THREE.BufferGeometry();
-    const laserPoints = [
-      new THREE.Vector3(-halfW - 2, 0.6, 0),
-      new THREE.Vector3(halfW + 2, 0.6, 0)
-    ];
-    laserGeom.setFromPoints(laserPoints);
+    laserGeom.setFromPoints([
+      new THREE.Vector3(-halfW - 1.5, 0.5, 0),
+      new THREE.Vector3(halfW + 1.5, 0.5, 0)
+    ]);
     const laserMat = new THREE.LineBasicMaterial({
       color: config.colorCyanLight,
-      linewidth: 3,
+      linewidth: 2,
       transparent: true,
       opacity: 0.85
     });
-    laserLine = new THREE.Line(laserGeom, laserMat);
-    hologramGroup.add(laserLine);
+    const laserLine = new THREE.Line(laserGeom, laserMat);
+    group.add(laserLine);
 
-    // ── 5. NUBE DE MICRO-PARTÍCULAS FLOTANTES ──
-    const particleCount = 70;
-    const particleGeom = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(particleCount * 3);
-    const particleColors = new Float32Array(particleCount * 3);
-
+    // 5. Partículas de escaneo
+    const pCount = 36;
+    const pGeom = new THREE.BufferGeometry();
+    const pPos = new Float32Array(pCount * 3);
+    const pCol = new Float32Array(pCount * 3);
     const cCyan = new THREE.Color(config.colorCyan);
     const cAmber = new THREE.Color(config.colorAmber);
 
-    for (let i = 0; i < particleCount; i++) {
-      particlePositions[i * 3] = (Math.random() - 0.5) * (w + 24);
-      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 16;
-      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * (h + 24);
+    for (let i = 0; i < pCount; i++) {
+      pPos[i * 3] = (Math.random() - 0.5) * (w + 16);
+      pPos[i * 3 + 1] = (Math.random() - 0.5) * 12;
+      pPos[i * 3 + 2] = (Math.random() - 0.5) * (h + 16);
+      const c = Math.random() > 0.4 ? cCyan : cAmber;
+      pCol[i * 3] = c.r;
+      pCol[i * 3 + 1] = c.g;
+      pCol[i * 3 + 2] = c.b;
+    }
+    pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    pGeom.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+    const particlesMesh = new THREE.Points(
+      pGeom,
+      new THREE.PointsMaterial({ size: 1.2, vertexColors: true, transparent: true, opacity: 0.6 })
+    );
+    group.add(particlesMesh);
 
-      const color = Math.random() > 0.4 ? cCyan : cAmber;
-      particleColors[i * 3] = color.r;
-      particleColors[i * 3 + 1] = color.g;
-      particleColors[i * 3 + 2] = color.b;
+    scene.add(group);
+
+    // Método para controlar opacidad y visibilidad del holograma
+    function setOpacity(alpha) {
+      if (alpha <= 0.01) {
+        group.visible = false;
+        return;
+      }
+      group.visible = true;
+      wireMat.opacity = 0.55 * alpha;
+      frameMat.opacity = 0.75 * alpha;
+      laserMat.opacity = 0.85 * alpha;
+      particlesMesh.material.opacity = 0.6 * alpha;
+      arucoMarkers.forEach(m => {
+        m.children[0].material.opacity = 0.95 * alpha;
+        m.children[1].material.opacity = 0.90 * alpha;
+        m.children[2].material.opacity = 0.75 * alpha;
+      });
     }
 
-    particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    particleGeom.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
-
-    const particleMat = new THREE.PointsMaterial({
-      size: 1.4,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.65
-    });
-    particlesMesh = new THREE.Points(particleGeom, particleMat);
-    hologramGroup.add(particlesMesh);
-
-    // Configuración inicial de posición y ángulo del holograma
-    hologramGroup.position.set(0, -12, -8);
-    hologramGroup.rotation.set(0.68, -0.42, 0.12); // Vista isométrica suave
+    return {
+      tag,
+      group,
+      gridMesh,
+      laserLine,
+      arucoMarkers,
+      particlesMesh,
+      setOpacity
+    };
   }
 
-  function bindScrollAndResize() {
+  function buildAllHolograms() {
+    // 1. Holograma Izquierdo (PC)
+    cardLeft = createHologramCard('left');
+    cardLeft.group.position.set(-42, -10, -5);
+    cardLeft.group.rotation.set(0.60, 0.38, -0.08); // Inclinado mirando hacia el centro
+
+    // 2. Holograma Derecho (PC)
+    cardRight = createHologramCard('right');
+    cardRight.group.position.set(42, -14, -5);
+    cardRight.group.rotation.set(0.60, -0.38, 0.08); // Inclinado mirando hacia el centro
+    cardRight.setOpacity(0); // Oculto al inicio
+
+    // 3. Holograma Central (Móvil)
+    cardCenterMobile = createHologramCard('centerMobile');
+    cardCenterMobile.group.scale.set(0.68, 0.68, 0.68); // Más pequeño en móvil
+    cardCenterMobile.group.position.set(0, -12, -2);
+    cardCenterMobile.group.rotation.set(0.65, -0.25, 0.08);
+  }
+
+  function checkClassroomState() {
+    const sel = document.getElementById('builder-classroom');
+    state.classroomSelected = !!(sel && sel.value && sel.value.trim() !== '');
+  }
+
+  function bindEvents() {
     const view = document.getElementById('view-create');
 
     const onScroll = () => {
@@ -267,109 +291,140 @@
 
       state.targetProgress = maxScroll > 20 ? Math.min(Math.max(currentScroll / maxScroll, 0), 1) : 0;
 
-      // Calcular velocidad de scroll
       const now = performance.now();
       const dt = Math.max(now - state.lastScrollTime, 16);
       const dy = Math.abs(currentScroll - state.lastScrollTop);
       state.scrollSpeed = dy / dt;
-
-      // Excitación de amplitud por scroll (Dirac physics)
-      state.targetAmplitude = config.baseAmplitude + Math.min(state.scrollSpeed * 9.0, 8.0);
+      state.targetAmplitude = config.baseAmplitude + Math.min(state.scrollSpeed * 8.0, 7.0);
 
       state.lastScrollTop = currentScroll;
       state.lastScrollTime = now;
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    if (view) {
-      view.addEventListener('scroll', onScroll, { passive: true });
+    if (view) view.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
+
+    // Escuchar cambios de selección de salón
+    const sel = document.getElementById('builder-classroom');
+    if (sel) {
+      sel.addEventListener('change', () => {
+        checkClassroomState();
+      });
     }
-    window.addEventListener('resize', onWindowResize, { passive: true });
   }
 
-  function onWindowResize() {
+  function onResize() {
     if (!camera || !renderer || !canvas) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
+    state.isMobile = w < 768;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
   }
 
-  function updatePhysics(dt) {
-    state.idleTime += dt;
+  function updateCardPhysics(card, dt, timeOffset = 0) {
+    if (!card || !card.group.visible) return;
 
-    // Amortiguamiento suave de velocidad e inercia hacia target
+    const t = state.idleTime + timeOffset;
+    const amp = state.amplitude;
+
+    // A. Ondulación de cuadrícula
+    const posAttr = card.gridMesh.geometry.attributes.position;
+    const basePos = card.gridMesh.geometry.userData.basePositions;
+    const count = posAttr.count;
+
+    for (let i = 0; i < count; i++) {
+      const x = basePos.getX(i);
+      const z = basePos.getZ(i);
+      const r2 = (x * x + z * z) / 450;
+      const wave1 = Math.sin(0.20 * x + t * 2.2) * Math.cos(0.16 * z + t * 1.7);
+      const wave2 = Math.sin(0.35 * z - t * 2.8) * 0.4;
+      const y = (wave1 + wave2) * amp * Math.exp(-r2 * 0.45);
+      posAttr.setY(i, y);
+    }
+    posAttr.needsUpdate = true;
+
+    // B. Pulsación de los 4 ArUco dorados
+    const pulseScale = 1.0 + 0.12 * Math.sin(t * 2.8);
+    card.arucoMarkers.forEach(m => m.scale.set(pulseScale, pulseScale, pulseScale));
+
+    // C. Haz de barrido láser
+    const halfH = config.cardHeight / 2;
+    card.laserLine.position.z = Math.sin(t * 1.8) * (halfH - 2);
+
+    // D. Micro-partículas
+    card.particlesMesh.rotation.y = t * 0.05;
+  }
+
+  function updateFrame(dt) {
+    state.idleTime += dt;
+    checkClassroomState();
+
+    // Suavizado de scroll y amplitud
     state.scrollProgress += (state.targetProgress - state.scrollProgress) * 0.08;
     state.targetAmplitude += (config.baseAmplitude - state.targetAmplitude) * 0.04;
     state.amplitude += (state.targetAmplitude - state.amplitude) * 0.1;
 
-    // ── A. ONDULACIÓN DE LA MALLA (Continuo + Reactivo) ──
-    if (gridMesh) {
-      const posAttr = gridMesh.geometry.attributes.position;
-      const basePos = gridMesh.geometry.userData.basePositions;
-      const count = posAttr.count;
-      const t = state.idleTime;
-      const amp = state.amplitude;
+    const p = state.scrollProgress;
 
-      for (let i = 0; i < count; i++) {
-        const x = basePos.getX(i);
-        const z = basePos.getZ(i);
+    if (state.isMobile) {
+      // ── MODO CELULAR (<768px) ──
+      // En PC se apagan los laterales
+      if (cardLeft) cardLeft.setOpacity(0);
+      if (cardRight) cardRight.setOpacity(0);
 
-        // Ecuación de resonancia de sala con amortiguamiento gaussiano
-        const r2 = (x * x + z * z) / 600;
-        const wave1 = Math.sin(0.18 * x + t * 2.2) * Math.cos(0.14 * z + t * 1.6);
-        const wave2 = Math.sin(0.32 * z - t * 3.0) * 0.45;
-        const y = (wave1 + wave2) * amp * Math.exp(-r2 * 0.4);
-
-        posAttr.setY(i, y);
+      // Si el docente seleccionó un salón, el holograma central desaparece por completo
+      if (state.classroomSelected) {
+        if (cardCenterMobile) cardCenterMobile.setOpacity(0);
+      } else {
+        // Al inicio (sin salón), flota vivo en el centro
+        if (cardCenterMobile) {
+          cardCenterMobile.setOpacity(1.0);
+          updateCardPhysics(cardCenterMobile, dt, 0);
+        }
       }
-      posAttr.needsUpdate = true;
-    }
+    } else {
+      // ── MODO PC (>=768px) ──
+      // Apagar el central móvil
+      if (cardCenterMobile) cardCenterMobile.setOpacity(0);
 
-    // ── B. PULSACIÓN DE LOS 4 ARUCO DORADOS ──
-    const pulseScale = 1.0 + 0.12 * Math.sin(state.idleTime * 2.8);
-    arucoMarkers.forEach(marker => {
-      marker.scale.set(pulseScale, pulseScale, pulseScale);
-    });
+      // ALTERNANCIA ESTRICTA IZQUIERDA / DERECHA:
+      // Scroll 0.0 a 0.35: 100% Izquierdo, 0% Derecho
+      // Scroll 0.35 a 0.65: Transición (Izquierdo 1 -> 0, Derecho 0 -> 1)
+      // Scroll 0.65 a 1.0: 0% Izquierdo, 100% Derecho
+      let alphaLeft = 0;
+      let alphaRight = 0;
 
-    // ── C. BARRIDO LÁSER DE ESCANEO ──
-    if (laserLine) {
-      const halfH = config.cardHeight / 2;
-      // Combina ciclo automático continuo con la posición de scroll
-      const autoSweep = Math.sin(state.idleTime * 1.6) * (halfH - 2);
-      const scrollSweep = (state.scrollProgress - 0.5) * (halfH * 1.8);
-      // Mezcla equilibrada entre ciclo vivo y desplazamiento del usuario
-      const laserZ = autoSweep * 0.5 + scrollSweep * 0.5;
-      laserLine.position.z = laserZ;
-    }
+      if (p <= 0.35) {
+        alphaLeft = 1.0;
+        alphaRight = 0;
+      } else if (p >= 0.65) {
+        alphaLeft = 0;
+        alphaRight = 1.0;
+      } else {
+        // Zona de relevo cruzado
+        const trans = (p - 0.35) / 0.30; // 0.0 a 1.0
+        alphaLeft = Math.cos(trans * (Math.PI / 2));
+        alphaRight = Math.sin(trans * (Math.PI / 2));
+      }
 
-    // ── D. CINEMÁTICA Y DESCENSO CON EL SCROLL ──
-    if (hologramGroup) {
-      const p = state.scrollProgress;
+      if (cardLeft) {
+        cardLeft.setOpacity(alphaLeft);
+        // Descenso y rotación con scroll
+        cardLeft.group.position.y = -8 - p * 16;
+        cardLeft.group.position.x = -42 - p * 2;
+        updateCardPhysics(cardLeft, dt, 0);
+      }
 
-      // 1. Descenso físico en el eje Y y acercamiento en Z
-      // En scroll 0% está en Y=-12 (en el espacio inferior vacío del paso 1)
-      // Conforme avanza el scroll a 100%, acompaña la bajada hacia Y=-26
-      const targetY = -12 - p * 14;
-      const targetZ = -8 + p * 6;
-      hologramGroup.position.y += (targetY - hologramGroup.position.y) * 0.08;
-      hologramGroup.position.z += (targetZ - hologramGroup.position.z) * 0.08;
-
-      // 2. Rotación: En scroll 0% diagonal (38° pitch, -24° yaw)
-      // En scroll 100% se orienta más de frente (20° pitch, -5° yaw) lista para confirmar
-      const targetRotX = 0.68 - p * 0.32;
-      const targetRotY = -0.42 + p * 0.36 + Math.sin(state.idleTime * 0.6) * 0.04;
-      const targetRotZ = 0.12 - p * 0.10;
-
-      hologramGroup.rotation.x += (targetRotX - hologramGroup.rotation.x) * 0.08;
-      hologramGroup.rotation.y += (targetRotY - hologramGroup.rotation.y) * 0.08;
-      hologramGroup.rotation.z += (targetRotZ - hologramGroup.rotation.z) * 0.08;
-    }
-
-    // ── E. ROTACIÓN LENTA DE MICRO-PARTÍCULAS ──
-    if (particlesMesh) {
-      particlesMesh.rotation.y = state.idleTime * 0.04;
+      if (cardRight) {
+        cardRight.setOpacity(alphaRight);
+        // Descenso y rotación con scroll
+        cardRight.group.position.y = -10 - p * 16;
+        cardRight.group.position.x = 42 + p * 2;
+        updateCardPhysics(cardRight, dt, 2.5); // Desfase temporal armónico
+      }
     }
   }
 
@@ -378,14 +433,14 @@
     animationFrameId = requestAnimationFrame(renderLoop);
 
     const dt = clock ? Math.min(clock.getDelta(), 0.1) : 0.016;
-    updatePhysics(dt);
+    updateFrame(dt);
 
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
     }
   }
 
-  // ── CONTROL DE CICLO DE VIDA PÚBLICO ──
+  // API Pública
   const EvaluationHologram = {
     start: function () {
       if (isRunning) return;
@@ -396,9 +451,10 @@
       isRunning = true;
       if (canvas) {
         canvas.style.display = 'block';
-        setTimeout(() => { if (canvas) canvas.style.opacity = '1'; }, 40);
+        setTimeout(() => { if (canvas) canvas.style.opacity = '1'; }, 30);
       }
       if (clock) clock.start();
+      checkClassroomState();
       renderLoop();
     },
 
@@ -413,8 +469,12 @@
         canvas.style.opacity = '0';
         setTimeout(() => {
           if (!isRunning && canvas) canvas.style.display = 'none';
-        }, 600);
+        }, 500);
       }
+    },
+
+    onClassroomChanged: function () {
+      checkClassroomState();
     },
 
     isActive: function () {
