@@ -52,7 +52,7 @@ function selectBranchMode(branch) {
 
   if (simContainer) simContainer.style.display = (branch === 'rama1' || branch === 'rama2') ? 'flex' : 'none';
   if (b3Opts) b3Opts.style.display = branch === 'rama3' ? 'block' : 'none';
-  if (evalHeader) evalHeader.style.display = branch === 'rama3' ? 'flex' : 'none';
+  if (evalHeader) evalHeader.style.display = 'none';
 
   // Asegurar que el formulario modal de preguntas inicie cerrado
   const fNew = document.getElementById('step-new-form');

@@ -462,15 +462,6 @@ function updateRama3ControlsUI() {
     const val = parseInt(btn.textContent.trim(), 10);
     const isActive = (val === r3State.count);
     btn.classList.toggle('active', isActive);
-    if (isActive) {
-      btn.style.borderColor = '#0284c7';
-      btn.style.background = '#e0f2fe';
-      btn.style.color = '#0284c7';
-    } else {
-      btn.style.borderColor = '#cbd5e1';
-      btn.style.background = '#ffffff';
-      btn.style.color = '#475569';
-    }
   });
 
   // Título dinámico del tamaño de cartilla para ambos modos (A6 hasta 10 preguntas, A5 para 15 y 20)
@@ -509,29 +500,11 @@ function updateRama3ControlsUI() {
   const wrapBank = document.getElementById('rama3-bank-wrap');
 
   if (btnKeys && btnBank) {
-    if (r3State.mode === 'keys') {
-      btnKeys.classList.add('active');
-      btnBank.classList.remove('active');
-      btnKeys.style.borderColor = '#0284c7';
-      btnKeys.style.background = '#e0f2fe';
-      btnKeys.style.color = '#0284c7';
-      btnBank.style.borderColor = '#cbd5e1';
-      btnBank.style.background = '#ffffff';
-      btnBank.style.color = '#64748b';
-      if (wrapKeys) wrapKeys.style.display = 'block';
-      if (wrapBank) wrapBank.style.display = 'none';
-    } else {
-      btnBank.classList.add('active');
-      btnKeys.classList.remove('active');
-      btnBank.style.borderColor = '#0284c7';
-      btnBank.style.background = '#e0f2fe';
-      btnBank.style.color = '#0284c7';
-      btnKeys.style.borderColor = '#cbd5e1';
-      btnKeys.style.background = '#ffffff';
-      btnKeys.style.color = '#64748b';
-      if (wrapKeys) wrapKeys.style.display = 'none';
-      if (wrapBank) wrapBank.style.display = 'block';
-    }
+    const isKeys = (r3State.mode === 'keys');
+    btnKeys.classList.toggle('active', isKeys);
+    btnBank.classList.toggle('active', !isKeys);
+    if (wrapKeys) wrapKeys.style.display = isKeys ? 'block' : 'none';
+    if (wrapBank) wrapBank.style.display = isKeys ? 'none' : 'block';
   }
 }
 

@@ -47,7 +47,7 @@
   <script src="classroom-manager.js?v=3.5.9"></script>
   <script src="question-bank.js?v=3.2.71"></script>
   <script src="card-simulator.js?v=3.9.0"></script>
-  <script src="card-exam-builder.js?v=3.8.7"></script>
+  <script src="card-exam-builder.js?v=3.9.2"></script>
   <script src="card-formativa.js?v=3.2.73"></script>
   <script src="card-focalizada.js?v=3.2.73"></script>
   <script src="card-cartilla.js?v=3.8.9"></script>
@@ -594,7 +594,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.9.1</span>
+              Versión <span id="user-profile-version-tag">v3.9.2</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1095,30 +1095,38 @@
         </div>
 
         <!-- ── SUBPANEL RAMA 3: Builder de Cartilla de Respuestas ── -->
-        <div id="branch-3-options" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; margin:16px 20px; padding:12px;">
-          <!-- Selector de cantidad de preguntas de la cartilla -->
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-            <span style="font-size:0.75rem; color:#475569; font-weight:700;">Cantidad de preguntas:</span>
-            <div style="display:flex; gap:4px; flex-wrap:wrap;">
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(5)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">5</button>
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(6)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">6</button>
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(10)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">10</button>
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(15)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">15</button>
-              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(20)" style="padding:4px 9px; border-radius:6px; font-size:0.75rem; font-weight:800; cursor:pointer;">20</button>
+        <div id="branch-3-options" style="display:none; padding:0; margin:0;">
+          <!-- PUNTO 2: Cantidad de Preguntas (Línea completa) -->
+          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:16px 20px;">
+            <label style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
+              2 · Cantidad de preguntas
+            </label>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(5)" style="padding:6px 14px; border-radius:8px; font-size:0.82rem; cursor:pointer;">5</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(6)" style="padding:6px 14px; border-radius:8px; font-size:0.82rem; cursor:pointer;">6</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(10)" style="padding:6px 14px; border-radius:8px; font-size:0.82rem; cursor:pointer;">10</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(15)" style="padding:6px 14px; border-radius:8px; font-size:0.82rem; cursor:pointer;">15</button>
+              <button type="button" class="btn-r3-qcount" onclick="setRama3Count(20)" style="padding:6px 14px; border-radius:8px; font-size:0.82rem; cursor:pointer;">20</button>
             </div>
           </div>
 
-          <!-- Selector de Modo de Preparación de la Cartilla -->
-          <div style="display:flex; gap:8px; margin-bottom:12px;">
-            <button type="button" id="btn-r3-mode-keys" onclick="setRama3Mode('keys')"
-              style="flex:1; padding:8px 10px; border-radius:8px; border:1.5px solid #0284c7; background:#e0f2fe; color:#0284c7; font-size:0.75rem; font-weight:700; cursor:pointer;">
-              ⚡ Solo Cartilla
-            </button>
-            <button type="button" id="btn-r3-mode-bank" onclick="setRama3Mode('bank')"
-              style="flex:1; padding:8px 10px; border-radius:8px; border:1.5px solid #cbd5e1; background:#ffffff; color:#64748b; font-size:0.75rem; font-weight:700; cursor:pointer;">
-              📚 Evaluación y Cartillas
-            </button>
+          <!-- PUNTO 3: Fichas a Generar (Línea completa) -->
+          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:16px 20px;">
+            <label style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
+              3 · Fichas a generar
+            </label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" id="btn-r3-mode-keys" onclick="setRama3Mode('keys')" class="sim-pill-btn active">
+                ⚡ Solo Cartilla
+              </button>
+              <button type="button" id="btn-r3-mode-bank" onclick="setRama3Mode('bank')" class="sim-pill-btn">
+                📚 Evaluación y Cartillas
+              </button>
+            </div>
           </div>
+
+          <!-- CONTENIDO DE CARTILLA Y EXAMEN INTERACTIVO -->
+          <div style="padding:16px 20px;">
 
           <!-- Matriz / Cartilla Dinámica de Claves (Modo A: Solo Cartilla) -->
           <div id="rama3-keys-wrap" style="display:block; margin-bottom:12px;">
@@ -1203,6 +1211,7 @@
               style="margin-top:12px; width:100%; background:linear-gradient(135deg, #0284c7, #2563eb); border:none; color:#fff; border-radius:8px; padding:10px; font-size:0.85rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
               ✓ Confirmar Evaluación y Cartillas
             </button>
+          </div>
           </div>
         </div>
 
