@@ -450,6 +450,10 @@ if (typeof window !== 'undefined') {
       if (viewSavedSessions) viewSavedSessions.classList.toggle('active', flowName === 'saved-sessions');
       if (viewScan) viewScan.classList.toggle('active', flowName === 'scan');
 
+      if (flowName !== 'eval' && typeof window !== 'undefined' && window.EvaluationHologram) {
+        window.EvaluationHologram.stop();
+      }
+
       // Botón INICIO en la barra superior: oculto en el Hub de inicio, visible en cualquier otra vista
       const btnHome = document.getElementById('topbar-btn-home');
       if (btnHome) {
@@ -739,11 +743,18 @@ if (typeof window !== 'undefined') {
         if (stepSummary) stepSummary.style.display = 'none';
 
         window.scrollTo({ top: 0, behavior: 'instant' });
+
+        if (typeof window !== 'undefined' && window.EvaluationHologram) {
+          window.EvaluationHologram.start();
+        }
       });
     }
     window.openBranchFlow = openBranchFlow;
 
     function goHomeHub() {
+      if (typeof window !== 'undefined' && window.EvaluationHologram) {
+        window.EvaluationHologram.stop();
+      }
       if (typeof Scanner !== 'undefined' && Scanner.stopCamera) {
         try { Scanner.stopCamera(); } catch (e) {}
       }

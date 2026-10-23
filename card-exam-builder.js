@@ -1134,6 +1134,9 @@ function confirmRama3AndScan() {
 }
 
 function confirmRama3() {
+  if (typeof window !== 'undefined' && window.EvaluationHologram) {
+    window.EvaluationHologram.stop();
+  }
   const ev = prepareRama3Evaluation();
   if (!ev) return;
   const stepType = document.getElementById('step-eval-type');
@@ -1142,6 +1145,9 @@ function confirmRama3() {
 }
 
 function confirmRama3Bank() {
+  if (typeof window !== 'undefined' && window.EvaluationHologram) {
+    window.EvaluationHologram.stop();
+  }
   const ev = prepareRama3Evaluation();
   if (!ev) return;
   const stepType = document.getElementById('step-eval-type');

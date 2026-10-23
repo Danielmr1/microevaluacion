@@ -1415,6 +1415,9 @@ function buildSimulatorEvaluation() {
  * mostrando los botones de acción (Guardar o Imprimir, Ir al Escáner, Editar) y las hojas A4.
  */
 function confirmSimulator() {
+  if (typeof window !== 'undefined' && window.EvaluationHologram) {
+    window.EvaluationHologram.stop();
+  }
   const ev = buildSimulatorEvaluation();
   if (!ev) return;
 
