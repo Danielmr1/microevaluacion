@@ -1,4 +1,4 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.5.0
+// Service Worker para Microevaluación A5 (PWA) — v3.8.4
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
 const CACHE_NAME = 'microeval-cache-v3.8.4';
 
