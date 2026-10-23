@@ -1,5 +1,5 @@
 // =============================================================================
-// card-simulator.js — Microevaluación A5 v3.2.61
+// card-simulator.js — Microevaluación A5 v3.8.9
 // MÓDULO: SIMULADOR INTERACTIVO WYSIWYG DE FICHAS (RAMA 1 Y RAMA 2)
 //
 // Responsabilidad única:
@@ -48,9 +48,11 @@ function selectBranchMode(branch) {
 
   const simContainer = document.getElementById('sheet-simulator-container');
   const b3Opts = document.getElementById('branch-3-options');
+  const evalHeader = document.getElementById('step-eval-type-header');
 
   if (simContainer) simContainer.style.display = (branch === 'rama1' || branch === 'rama2') ? 'flex' : 'none';
   if (b3Opts) b3Opts.style.display = branch === 'rama3' ? 'block' : 'none';
+  if (evalHeader) evalHeader.style.display = branch === 'rama3' ? 'flex' : 'none';
 
   // Asegurar que el formulario modal de preguntas inicie cerrado
   const fNew = document.getElementById('step-new-form');

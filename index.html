@@ -46,7 +46,7 @@
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.5.9"></script>
   <script src="question-bank.js?v=3.2.71"></script>
-  <script src="card-simulator.js?v=3.2.62"></script>
+  <script src="card-simulator.js?v=3.8.9"></script>
   <script src="card-exam-builder.js?v=3.8.7"></script>
   <script src="card-formativa.js?v=3.2.73"></script>
   <script src="card-focalizada.js?v=3.2.73"></script>
@@ -1032,7 +1032,7 @@
 
       <!-- ── PASO 2: Preguntas de la Evaluación (según la modalidad elegida en el Hub) ── -->
       <div id="step-eval-type" style="display:none; padding:16px 20px; border-bottom:1px solid #e2e8f0;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+        <div id="step-eval-type-header" style="display:none; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
           <label style="font-size:0.74rem; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
             2 · Preguntas de la Evaluación
           </label>
@@ -1040,18 +1040,23 @@
 
         <!-- ── SIMULADOR INTERACTIVO DE FICHAS (WYSIWYG: RAMA 1 Y RAMA 2) ── -->
         <div id="sheet-simulator-container" style="display:flex; flex-direction:column; gap:14px;">
-          <!-- TOOLBAR SUPERIOR DEL SIMULADOR: PREGUNTAS (ARRIBA) + RESPUESTA (DEBAJO) -->
-          <div class="sim-toolbar" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px; display:flex; flex-direction:column; align-items:center; gap:10px;">
-            <!-- Fila 1 (Arriba): Selector de Cantidad de Preguntas -->
-            <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
-              <span style="font-size:0.75rem; color:#475569; font-weight:700;">Preguntas:</span>
-              <div id="sim-qcount-group" style="display:flex; gap:4px;">
-                <!-- Rellenado dinámicamente por updateSimToolbar() -->
-              </div>
-            </div>
 
-            <!-- Fila 2 (Debajo): Selector de Tipo de Respuesta -->
-            <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+          <!-- PUNTO 2: Cantidad de Preguntas -->
+          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">
+            <label style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
+              2 · Cantidad de preguntas
+            </label>
+            <div id="sim-qcount-group" style="display:flex; gap:6px; flex-wrap:wrap;">
+              <!-- Rellenado dinámicamente por updateSimToolbar() -->
+            </div>
+          </div>
+
+          <!-- PUNTO 3: Tipo de Respuesta -->
+          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">
+            <label style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
+              3 · Tipo de respuesta
+            </label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button type="button" id="sim-btn-type-mc" onclick="setSimType('mc')" class="sim-pill-btn active">
                 🔘 Alternativas (OMR)
               </button>
