@@ -134,7 +134,7 @@ function updateSimToolbar() {
     let html = '';
     for (let i = 1; i <= maxQ; i++) {
       const activeCls = (simState.count === i) ? (isRama1 ? 'active' : 'active-emerald') : '';
-      html += `<button type="button" onclick="setSimCount(${i})" class="sim-pill-btn ${activeCls}">${i}P</button>`;
+      html += `<button type="button" onclick="setSimCount(${i})" class="sim-pill-btn ${activeCls}">${i}</button>`;
     }
     countContainer.innerHTML = html;
   }

@@ -1,6 +1,6 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.8.9
+// Service Worker para Microevaluación A5 (PWA) — v3.9.0
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.8.9';
+const CACHE_NAME = 'microeval-cache-v3.9.0';
 
 const PRECACHE_ASSETS = [
   './',
@@ -26,7 +26,7 @@ const PRECACHE_ASSETS = [
   './results-manager.js?v=3.1.90',
   './classroom-manager.js?v=3.5.9',
   './question-bank.js?v=3.2.71',
-  './card-simulator.js?v=3.8.9',
+  './card-simulator.js?v=3.9.0',
   './card-exam-builder.js?v=3.8.7',
   './card-formativa.js?v=3.2.73',
   './card-focalizada.js?v=3.2.73',

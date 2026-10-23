@@ -46,7 +46,7 @@
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.5.9"></script>
   <script src="question-bank.js?v=3.2.71"></script>
-  <script src="card-simulator.js?v=3.8.9"></script>
+  <script src="card-simulator.js?v=3.9.0"></script>
   <script src="card-exam-builder.js?v=3.8.7"></script>
   <script src="card-formativa.js?v=3.2.73"></script>
   <script src="card-focalizada.js?v=3.2.73"></script>
@@ -593,7 +593,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.8.9</span>
+              Versión <span id="user-profile-version-tag">v3.9.0</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1031,18 +1031,18 @@
       </div>
 
       <!-- ── PASO 2: Preguntas de la Evaluación (según la modalidad elegida en el Hub) ── -->
-      <div id="step-eval-type" style="display:none; padding:16px 20px; border-bottom:1px solid #e2e8f0;">
-        <div id="step-eval-type-header" style="display:none; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+      <div id="step-eval-type" style="display:none; padding:0; border-bottom:1px solid #e2e8f0;">
+        <div id="step-eval-type-header" style="display:none; justify-content:space-between; align-items:center; padding:16px 20px 12px; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; gap:8px;">
           <label style="font-size:0.74rem; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
             2 · Preguntas de la Evaluación
           </label>
         </div>
 
         <!-- ── SIMULADOR INTERACTIVO DE FICHAS (WYSIWYG: RAMA 1 Y RAMA 2) ── -->
-        <div id="sheet-simulator-container" style="display:flex; flex-direction:column; gap:14px;">
+        <div id="sheet-simulator-container" style="display:flex; flex-direction:column;">
 
-          <!-- PUNTO 2: Cantidad de Preguntas -->
-          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">
+          <!-- PUNTO 2: Cantidad de Preguntas (Línea completa) -->
+          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:16px 20px; border-bottom:1px solid #e2e8f0;">
             <label style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
               2 · Cantidad de preguntas
             </label>
@@ -1051,8 +1051,8 @@
             </div>
           </div>
 
-          <!-- PUNTO 3: Tipo de Respuesta -->
-          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">
+          <!-- PUNTO 3: Tipo de Respuesta (Línea completa) -->
+          <div class="sim-step-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:16px 20px; border-bottom:1px solid #e2e8f0;">
             <label style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0;">
               3 · Tipo de respuesta
             </label>
@@ -1066,32 +1066,35 @@
             </div>
           </div>
 
-          <!-- INDICADOR DEL FORMATO DE LA FICHA (OPCIÓN B) -->
-          <div style="display:flex; justify-content:flex-start; align-items:center; margin-bottom:-4px;">
-            <span id="sim-card-format-tag" class="sim-format-badge">
-              📄 Ficha A6 Horizontal
-            </span>
-          </div>
-
-          <!-- VIEWPORT DE SIMULACIÓN EN VIVO (LA FICHA REAL EN PANTALLA) -->
-          <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">
-            <!-- Contenedor del Canvas de la Ficha -->
-            <div id="sim-card-viewport" class="sim-card-viewport">
-              <div id="sim-card-render-host" class="sim-card-host"></div>
+          <!-- CONTENIDO DEL SIMULADOR: BADGE, FICHA INTERACTIVA Y CONFIRMAR -->
+          <div style="padding:16px 20px; display:flex; flex-direction:column; gap:14px;">
+            <!-- INDICADOR DEL FORMATO DE LA FICHA (OPCIÓN B) -->
+            <div style="display:flex; justify-content:flex-start; align-items:center; margin-bottom:-4px;">
+              <span id="sim-card-format-tag" class="sim-format-badge">
+                📄 Ficha A6 Horizontal
+              </span>
             </div>
-          </div>
 
-          <!-- BOTÓN DE CONFIRMACIÓN DE FICHAS (RAMA 1 Y RAMA 2) -->
-          <div style="display:flex; margin-top:8px; width:100%;">
-            <button type="button" id="sim-btn-confirm" onclick="confirmSimulator()"
-              style="width:100%; background:linear-gradient(135deg, #2563eb, #1d4ed8); border:none; color:#fff; border-radius:10px; padding:14px 18px; font-size:0.95rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(37,99,235,0.25); transition:all 0.15s;">
-              ✓ Confirmar Fichas
-            </button>
+            <!-- VIEWPORT DE SIMULACIÓN EN VIVO (LA FICHA REAL EN PANTALLA) -->
+            <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">
+              <!-- Contenedor del Canvas de la Ficha -->
+              <div id="sim-card-viewport" class="sim-card-viewport">
+                <div id="sim-card-render-host" class="sim-card-host"></div>
+              </div>
+            </div>
+
+            <!-- BOTÓN DE CONFIRMACIÓN DE FICHAS (RAMA 1 Y RAMA 2) -->
+            <div style="display:flex; margin-top:8px; width:100%;">
+              <button type="button" id="sim-btn-confirm" onclick="confirmSimulator()"
+                style="width:100%; background:linear-gradient(135deg, #2563eb, #1d4ed8); border:none; color:#fff; border-radius:10px; padding:14px 18px; font-size:0.95rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(37,99,235,0.25); transition:all 0.15s;">
+                ✓ Confirmar Fichas
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- ── SUBPANEL RAMA 3: Builder de Cartilla de Respuestas ── -->
-        <div id="branch-3-options" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px;">
+        <div id="branch-3-options" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; margin:16px 20px; padding:12px;">
           <!-- Selector de cantidad de preguntas de la cartilla -->
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
             <span style="font-size:0.75rem; color:#475569; font-weight:700;">Cantidad de preguntas:</span>
