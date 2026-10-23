@@ -735,6 +735,7 @@ function openRama3QuestionPicker(slotIdx) {
 
   setSimPickerTab('bank');
   renderSimBankList();
+  if (typeof updateSimPromptCounter === 'function') updateSimPromptCounter();
 
   modal.style.display = 'flex';
 }

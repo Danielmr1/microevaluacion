@@ -594,7 +594,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.9.4</span>
+              Versión <span id="user-profile-version-tag">v3.9.5</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2183,8 +2183,33 @@
         <div id="sim-pane-new" style="display:none; flex-direction:column; gap:12px;">
           <div>
             <label style="font-size:0.76rem; color:#2B2118; font-weight:800; display:block; margin-bottom:4px;">Enunciado del problema:</label>
-            <textarea id="sim-new-prompt" class="form-control" rows="3" maxlength="240" placeholder="Escribe el enunciado aquí..." style="width:100%; font-size:0.88rem; resize:vertical; background:#FFFFFF !important; border:1.5px solid #2B2118 !important; color:#2B2118 !important; border-radius:10px; padding:10px 12px; box-sizing:border-box;"></textarea>
-            <div style="font-size:0.68rem; color:#645547; font-weight:600; margin-top:3px;">Máximo 240 caracteres (1 a 3 líneas en la ficha).</div>
+
+            <!-- Barra de Símbolos Matemáticos Rápidos -->
+            <div class="math-symbols-toolbar" style="background:#EDE8DF; border:1px solid rgba(43,33,24,0.18); border-radius:8px; padding:5px 8px; margin-bottom:8px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+              <span style="font-size:0.68rem; font-weight:800; color:#2B2118; margin-right:2px;">Fórmulas:</span>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('²')" title="Al cuadrado (x²)">x²</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('³')" title="Al cubo (x³)">x³</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('ⁿ')" title="Exponente (xⁿ)">xⁿ</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('√(')" title="Raíz cuadrada (√)">√( )</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('½')" title="Un medio (½)">½</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¼')" title="Un cuarto (¼)">¼</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¾')" title="Tres cuartos (¾)">¾</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol(' / ')" title="Fracción libre (a/b)">a/b</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" title="Grados (°)">°</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" title="Número Pi (π)">π</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" title="Multiplicación (×)">×</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" title="División (÷)">÷</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" title="Más o menos (±)">±</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" title="Diferente (≠)">≠</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" title="Menor o igual (≤)">≤</button>
+              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" title="Mayor o igual (≥)">≥</button>
+            </div>
+
+            <textarea id="sim-new-prompt" class="form-control" rows="3" maxlength="160" oninput="updateSimPromptCounter()" onfocus="trackMathInputFocus(this)" placeholder="Escribe el enunciado aquí..." style="width:100%; font-size:0.88rem; resize:vertical; background:#FFFFFF !important; border:1.5px solid #2B2118 !important; color:#2B2118 !important; border-radius:10px; padding:10px 12px; box-sizing:border-box; margin-bottom:4px;"></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:0.72rem;">
+              <span id="sim-prompt-hint" style="color:#645547; font-weight:600;">≈ 1 línea · máx 3 (compatible A6, A5 y A4)</span>
+              <span id="sim-prompt-counter" style="color:#645547; font-weight:700;">0 / 160</span>
+            </div>
           </div>
 
           <div id="sim-new-options-wrap">
@@ -2195,22 +2220,22 @@
               <div style="display:flex; align-items:center; gap:8px;">
                 <input type="radio" name="sim-new-correct" id="sim-rad-a" value="A" checked style="accent-color:#15803D;">
                 <label for="sim-rad-a" style="font-size:0.82rem; font-weight:800; color:#2B2118; width:18px;">A)</label>
-                <input type="text" id="sim-opt-a" class="form-control" placeholder="Alternativa A" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
+                <input type="text" id="sim-opt-a" class="form-control" placeholder="Alternativa A" onfocus="trackMathInputFocus(this)" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <input type="radio" name="sim-new-correct" id="sim-rad-b" value="B" style="accent-color:#15803D;">
                 <label for="sim-rad-b" style="font-size:0.82rem; font-weight:800; color:#2B2118; width:18px;">B)</label>
-                <input type="text" id="sim-opt-b" class="form-control" placeholder="Alternativa B" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
+                <input type="text" id="sim-opt-b" class="form-control" placeholder="Alternativa B" onfocus="trackMathInputFocus(this)" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <input type="radio" name="sim-new-correct" id="sim-rad-c" value="C" style="accent-color:#15803D;">
                 <label for="sim-rad-c" style="font-size:0.82rem; font-weight:800; color:#2B2118; width:18px;">C)</label>
-                <input type="text" id="sim-opt-c" class="form-control" placeholder="Alternativa C" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
+                <input type="text" id="sim-opt-c" class="form-control" placeholder="Alternativa C" onfocus="trackMathInputFocus(this)" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <input type="radio" name="sim-new-correct" id="sim-rad-d" value="D" style="accent-color:#15803D;">
                 <label for="sim-rad-d" style="font-size:0.82rem; font-weight:800; color:#2B2118; width:18px;">D)</label>
-                <input type="text" id="sim-opt-d" class="form-control" placeholder="Alternativa D" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
+                <input type="text" id="sim-opt-d" class="form-control" placeholder="Alternativa D" onfocus="trackMathInputFocus(this)" style="font-size:0.84rem; padding:7px 10px; flex:1; background:#FFFFFF !important; border:1.5px solid rgba(43,33,24,0.3) !important; color:#2B2118 !important; border-radius:8px;">
               </div>
             </div>
           </div>
@@ -2218,7 +2243,7 @@
           <!-- Respuesta esperada si el tipo de ficha es Escrita -->
           <div id="sim-new-free-wrap" style="display:none;">
             <label style="font-size:0.76rem; color:#2B2118; font-weight:800; display:block; margin-bottom:4px;">Respuesta esperada:</label>
-            <input type="text" id="sim-new-free-ans" class="form-control" placeholder="Ej: 38 panes" style="font-size:0.85rem; padding:8px 12px; background:#FFFFFF !important; border:1.5px solid #2B2118 !important; color:#2B2118 !important; border-radius:8px;">
+            <input type="text" id="sim-new-free-ans" class="form-control" placeholder="" onfocus="trackMathInputFocus(this)" style="font-size:0.85rem; padding:8px 12px; background:#FFFFFF !important; border:1.5px solid #2B2118 !important; color:#2B2118 !important; border-radius:8px;">
           </div>
 
           <!-- Sección IA (Obligatoria para Formativa con IA) -->

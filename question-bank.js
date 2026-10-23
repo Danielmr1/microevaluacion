@@ -40,7 +40,7 @@ window.trackMathInputFocus = trackMathInputFocus;
 function insertMathSymbol(sym) {
   let target = lastFocusedMathInput;
   if (!target || !document.body.contains(target)) {
-    target = document.getElementById('bm-prompt') || document.getElementById('input-eval-prompt');
+    target = document.getElementById('sim-new-prompt') || document.getElementById('bm-prompt') || document.getElementById('input-eval-prompt');
   }
   if (!target) return;
 

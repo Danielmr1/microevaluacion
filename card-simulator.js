@@ -955,6 +955,7 @@ function openSimQuestionPicker(slotIdx) {
 
   setSimPickerTab('bank');
   renderSimBankList();
+  updateSimPromptCounter();
 
   modal.style.display = 'flex';
 }
@@ -963,6 +964,41 @@ function closeSimPicker() {
   const modal = document.getElementById('modal-sim-picker');
   if (modal) modal.style.display = 'none';
 }
+
+function updateSimPromptCounter() {
+  const ta = document.getElementById('sim-new-prompt');
+  const counter = document.getElementById('sim-prompt-counter');
+  const hint = document.getElementById('sim-prompt-hint');
+  if (!ta) return;
+
+  const hasFracFn = typeof hasFractions === 'function' ? hasFractions : (t => /[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\b\d+\s*\/\s*\d+\b/.test(t));
+  const withFrac = hasFracFn(ta.value || '');
+  const maxChars = withFrac ? 105 : 160;
+  ta.setAttribute('maxlength', String(maxChars));
+
+  const len = (ta.value || '').length;
+  const charsPerLine = 52;
+  const lines = Math.max(1, Math.ceil(len / charsPerLine));
+  const maxLines = withFrac ? 2 : 3;
+
+  if (counter) {
+    counter.textContent = len + ' / ' + maxChars;
+    counter.style.color = len >= maxChars ? '#D97706' : '#645547';
+  }
+  if (hint) {
+    if (len > maxChars || lines > maxLines) {
+      hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
+      hint.style.color = '#ef4444';
+    } else if (withFrac) {
+      hint.textContent = '≈ ' + lines + ' línea(s) con fracciones (máx 2 en A6, 105 car.)';
+      hint.style.color = '#645547';
+    } else {
+      hint.textContent = '≈ ' + lines + ' línea(s) · máx 3 (compatible A6, A5 y A4)';
+      hint.style.color = '#645547';
+    }
+  }
+}
+window.updateSimPromptCounter = updateSimPromptCounter;
 
 function setSimPickerTab(tab) {
   simPickerActiveTab = tab;
@@ -1170,6 +1206,14 @@ function saveSimCustomQuestion() {
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
   if (!prompt) {
     if (typeof showToast === 'function') showToast('⚠️ Escribe el enunciado de la pregunta.');
+    return;
+  }
+
+  const hasFracFn = typeof hasFractions === 'function' ? hasFractions : (t => /[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\b\d+\s*\/\s*\d+\b/.test(t));
+  const withFrac = hasFracFn(prompt);
+  const maxAllowed = withFrac ? 105 : 160;
+  if (prompt.length > maxAllowed) {
+    if (typeof showToast === 'function') showToast(`⚠️ El enunciado excede el límite de ${maxAllowed} caracteres (${withFrac ? 'con fracciones máx 105' : 'máx 160'}).`);
     return;
   }
 
