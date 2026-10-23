@@ -1168,8 +1168,8 @@ const RE_ALLOWED_CLASSROOM_CHARS = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ°º\
 
 function validateClassroomName(name) {
   const clean = cleanName(name);
-  if (!clean || clean.length < 3 || clean.length > 50) {
-    return { valid: false, error: 'El nombre del salón debe tener entre 3 y 50 letras o caracteres.' };
+  if (!clean || clean.length < 3 || clean.length > 15) {
+    return { valid: false, error: 'El nombre del salón debe tener entre 3 y 15 letras o caracteres.' };
   }
   if (RE_PROHIBITED_CHARS.test(clean) || !RE_ALLOWED_CLASSROOM_CHARS.test(clean)) {
     return { valid: false, error: 'El nombre del salón contiene caracteres no permitidos (no se permiten %, $, # ni símbolos especiales).' };
@@ -1440,12 +1440,13 @@ window.cancelManualClassroomForm = cancelManualClassroomForm;
  * modo todo salón nace con grado, sin un paso posterior para completarlo.
  */
 function prefillManualClassroomForm(nombre, students) {
+  const safeName = (nombre || '').slice(0, 15);
   const isManagerActive = document.getElementById('view-classrooms')?.classList.contains('active');
   if (isManagerActive) {
     openAddClassroomModal();
     switchManagerCreateTab('manual');
     const mgrName = document.getElementById('mgr-manual-classroom-name');
-    if (mgrName) mgrName.value = nombre || '';
+    if (mgrName) mgrName.value = safeName;
     const mgrTa = document.getElementById('mgr-manual-classroom-students');
     if (mgrTa) {
       mgrTa.value = (students || []).map(s => s.fullName || s.name || '').filter(Boolean).join('\n');
@@ -1455,7 +1456,7 @@ function prefillManualClassroomForm(nombre, students) {
   }
 
   const nameEl = document.getElementById('manual-classroom-name');
-  if (nameEl) nameEl.value = nombre || '';
+  if (nameEl) nameEl.value = safeName;
 
   const ta = document.getElementById('manual-classroom-students');
   if (ta) {
