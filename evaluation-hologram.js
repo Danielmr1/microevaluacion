@@ -430,41 +430,25 @@
       const halfH3D = vDist * Math.tan((camera.fov * Math.PI) / 360);
       const halfW3D = halfH3D * (window.innerWidth / window.innerHeight);
 
-      // Buscar el bloque o ficha visible real en pantalla (compatible con Rama 1, 2 y 3)
-      let sheetRect = null;
-      const candidates = [
-        document.getElementById('r3-cartilla-render-host'),
-        document.getElementById('r3-exam-render-host'),
-        document.getElementById('sim-card-render-host'),
-        document.getElementById('branch-3-options'),
-        document.querySelector('.sim-card-host'),
-        document.querySelector('.teacher-panel')
-      ];
-      for (let i = 0; i < candidates.length; i++) {
-        const el = candidates[i];
-        if (el) {
-          const r = el.getBoundingClientRect();
-          if (r.width > 80 && r.height > 40) {
-            sheetRect = r;
-            break;
-          }
-        }
-      }
+      // Referencia única y estable: el contenedor general .teacher-panel (900px)
+      // Garantiza que la posición horizontal no cambie antes ni después de elegir el salón.
+      const panelEl = document.querySelector('.teacher-panel');
+      const panelRect = panelEl ? panelEl.getBoundingClientRect() : null;
 
-      const leftMarginPx = sheetRect ? Math.max(sheetRect.left, 40) : Math.max(window.innerWidth * 0.16, 60);
-      const rightMarginPx = sheetRect ? Math.max(window.innerWidth - sheetRect.right, 40) : Math.max(window.innerWidth * 0.16, 60);
+      const leftMarginPx = (panelRect && panelRect.left > 20) ? panelRect.left : Math.max(window.innerWidth * 0.12, 40);
+      const rightMarginPx = (panelRect && (window.innerWidth - panelRect.right) > 20) ? (window.innerWidth - panelRect.right) : Math.max(window.innerWidth * 0.12, 40);
 
-      // Posicionamiento simétrico y pegado a los costados:
-      // Izquierda: a 25px del borde izquierdo
-      // Derecha: a 25px de la barra de desplazamiento derecha
-      const pxLeft = Math.max(leftMarginPx * 0.22, 25);
-      const pxRight = Math.min(window.innerWidth - Math.max(rightMarginPx * 0.22, 25) - 12, window.innerWidth - 30);
+      // Centrado perfecto en el medio de cada margen lateral para que nunca se corte en los filos de la pantalla
+      const pxLeft = leftMarginPx * 0.50;
+      const pxRight = (panelRect ? panelRect.right : (window.innerWidth - rightMarginPx)) + (rightMarginPx * 0.50);
 
       const targetXLeft = ((pxLeft / window.innerWidth) - 0.5) * 2 * halfW3D;
       const targetXRight = ((pxRight / window.innerWidth) - 0.5) * 2 * halfW3D;
 
-      const scaleLeft = Math.min(Math.max(leftMarginPx / 180, 0.52), 0.90);
-      const scaleRight = Math.min(Math.max(rightMarginPx / 180, 0.52), 0.90);
+      // Escala adaptativa geométrica: calcula la escala exacta para que el holograma
+      // entre 100% visible dentro del margen disponible sin cortarse por los filos ni tocar el panel
+      const scaleLeft = Math.min(0.85, Math.max(0.18, (leftMarginPx - 8) / 180));
+      const scaleRight = Math.min(0.85, Math.max(0.18, (rightMarginPx - 8) / 180));
 
       if (cardLeft) {
         cardLeft.setOpacity(alphaLeft);

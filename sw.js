@@ -1,6 +1,6 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.8.7
+// Service Worker para Microevaluación A5 (PWA) — v3.8.8
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.8.7';
+const CACHE_NAME = 'microeval-cache-v3.8.8';
 
 const PRECACHE_ASSETS = [
   './',
@@ -37,7 +37,7 @@ const PRECACHE_ASSETS = [
   './copilot-command.js?v=3.5.9',
   './daily-quota.js?v=3.5.6',
   './qrcode.bundle.js?v=3.0.6',
-  './evaluation-hologram.js?v=3.8.7'
+  './evaluation-hologram.js?v=3.8.8'
 ];
 
 self.addEventListener('install', (event) => {
