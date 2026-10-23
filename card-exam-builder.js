@@ -484,14 +484,19 @@ function updateRama3ControlsUI() {
     bankTitle.textContent = cartillaTitleText;
   }
 
+  const examFormatBadge = document.getElementById('r3-exam-format-badge');
+  if (examFormatBadge) {
+    examFormatBadge.textContent = (r3State.count <= 6) ? '📄 Evaluación A5 Vertical' : '📄 Evaluación A4 Vertical';
+  }
+
   const layoutBadge = document.getElementById('r3-layout-badge');
   if (layoutBadge) {
     if (r3State.count <= 6) {
-      layoutBadge.innerHTML = '📄 <b>Examen A5 Vertical</b> (2 alumnos por A4) + Cartilla A6 (4 alumnos por A4)';
+      layoutBadge.innerHTML = '📄 <b>Evaluación A5 Vertical</b> (2 alumnos por A4) + Cartilla A6 (4 alumnos por A4)';
     } else if (r3State.count <= 10) {
-      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A6 (4 alumnos por A4)';
+      layoutBadge.innerHTML = '📄 <b>Evaluación A4 Vertical</b> + Cartilla A6 (4 alumnos por A4)';
     } else {
-      layoutBadge.innerHTML = '📄 <b>Examen A4 Vertical</b> (1 pág · 2 col) + Cartilla A5 (2 alumnos por A4)';
+      layoutBadge.innerHTML = '📄 <b>Evaluación A4 Vertical</b> + Cartilla A5 (2 alumnos por A4)';
     }
     layoutBadge.style.color = '#0369a1';
     layoutBadge.style.borderColor = '#bae6fd';
