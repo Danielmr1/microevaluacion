@@ -430,19 +430,41 @@
       const halfH3D = vDist * Math.tan((camera.fov * Math.PI) / 360);
       const halfW3D = halfH3D * (window.innerWidth / window.innerHeight);
 
-      const sheetEl = document.getElementById('sim-card-render-host') || document.querySelector('.teacher-panel');
-      const sheetRect = sheetEl ? sheetEl.getBoundingClientRect() : null;
-      const leftMarginPx = (sheetRect && sheetRect.left > 60) ? sheetRect.left : Math.max(window.innerWidth * 0.16, 70);
-      const rightMarginPx = (sheetRect && (window.innerWidth - sheetRect.right) > 60) ? (window.innerWidth - sheetRect.right) : Math.max(window.innerWidth * 0.16, 70);
+      // Buscar el bloque o ficha visible real en pantalla (compatible con Rama 1, 2 y 3)
+      let sheetRect = null;
+      const candidates = [
+        document.getElementById('r3-cartilla-render-host'),
+        document.getElementById('r3-exam-render-host'),
+        document.getElementById('sim-card-render-host'),
+        document.getElementById('branch-3-options'),
+        document.querySelector('.sim-card-host'),
+        document.querySelector('.teacher-panel')
+      ];
+      for (let i = 0; i < candidates.length; i++) {
+        const el = candidates[i];
+        if (el) {
+          const r = el.getBoundingClientRect();
+          if (r.width > 80 && r.height > 40) {
+            sheetRect = r;
+            break;
+          }
+        }
+      }
 
-      const pxLeft = Math.max(leftMarginPx * 0.26, 25);
-      const pxRight = Math.min(window.innerWidth - (rightMarginPx * 0.26), window.innerWidth - 25);
+      const leftMarginPx = sheetRect ? Math.max(sheetRect.left, 40) : Math.max(window.innerWidth * 0.16, 60);
+      const rightMarginPx = sheetRect ? Math.max(window.innerWidth - sheetRect.right, 40) : Math.max(window.innerWidth * 0.16, 60);
+
+      // Posicionamiento simétrico y pegado a los costados:
+      // Izquierda: a 25px del borde izquierdo
+      // Derecha: a 25px de la barra de desplazamiento derecha
+      const pxLeft = Math.max(leftMarginPx * 0.22, 25);
+      const pxRight = Math.min(window.innerWidth - Math.max(rightMarginPx * 0.22, 25) - 12, window.innerWidth - 30);
 
       const targetXLeft = ((pxLeft / window.innerWidth) - 0.5) * 2 * halfW3D;
       const targetXRight = ((pxRight / window.innerWidth) - 0.5) * 2 * halfW3D;
 
-      const scaleLeft = Math.min(Math.max(leftMarginPx / 200, 0.52), 0.90);
-      const scaleRight = Math.min(Math.max(rightMarginPx / 200, 0.52), 0.90);
+      const scaleLeft = Math.min(Math.max(leftMarginPx / 180, 0.52), 0.90);
+      const scaleRight = Math.min(Math.max(rightMarginPx / 180, 0.52), 0.90);
 
       if (cardLeft) {
         cardLeft.setOpacity(alphaLeft);
