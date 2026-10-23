@@ -160,7 +160,6 @@ function renderClassroomManager(selectedClassId = null) {
           </div>
           <div class="room-card-bottom">
             <span class="room-students-count">👥 ${cls.count} estudiante${cls.count === 1 ? '' : 's'}</span>
-            <span class="room-status-door">Ver o Editar →</span>
           </div>
         </div>
       `;
@@ -232,17 +231,72 @@ function openClassroomModal(classroomId) {
 
   const session = ClassroomData.getActiveSession();
   const roomUsage = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse)
-    ? ClassroomData.isClassroomInUse(classroomId)
-    : { inUse: false };
-  const isSessionLocked = !!(session && session.classroomId);
-  const isRoomLocked = roomUsage.inUse;
+  // Obtener todas las sesiones donde este salón esté en uso (activa o guardadas)
+  const sessionsInUse = [];
+  const targetId = String(classroomId).trim().toLowerCase();
+  const clsName = cls?.name ? String(cls.name).trim().toLowerCase() : null;
 
-  // Banner informativo de salón protegido
+  // 1. Sesión activa en memoria
+  const activeSess = (typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession)
+    ? ClassroomData.getActiveSession()
+    : null;
+  if (activeSess && (
+    (activeSess.classroomId && String(activeSess.classroomId).trim().toLowerCase() === targetId) ||
+    (clsName && activeSess.classroomName && String(activeSess.classroomName).trim().toLowerCase() === clsName)
+  )) {
+    const title = activeSess.title || (activeSess.classroomName ? `Evaluación activa (${activeSess.classroomName})` : 'Evaluación activa');
+    sessionsInUse.push({
+      title: title,
+      id: activeSess.id || null,
+      isActive: true
+    });
+  }
+
+  // 2. Sesiones guardadas
+  const savedSessions = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions)
+    ? ClassroomData.getSavedSessions()
+    : [];
+  savedSessions.forEach(s => {
+    const matchId = s.classroomId && String(s.classroomId).trim().toLowerCase() === targetId;
+    const matchName = clsName && s.classroomName && String(s.classroomName).trim().toLowerCase() === clsName;
+    if (matchId || matchName) {
+      if (!sessionsInUse.some(item => item.id && item.id === s.id)) {
+        const title = s.title || (s.branchTitle ? `${s.branchTitle}` : (s.classroomName || 'Sesión guardada'));
+        sessionsInUse.push({
+          title: title,
+          id: s.id,
+          isSaved: true
+        });
+      }
+    }
+  });
+
+  const isSessionLocked = !!(session && session.classroomId);
+  const isRoomLocked = roomUsage.inUse || sessionsInUse.length > 0;
+
+  // Banner informativo simplificado con hipervínculo a la sesión
   const bannerEl = document.getElementById('mgr-modal-room-lock-banner');
   if (bannerEl) {
-    if (isRoomLocked) {
-      bannerEl.innerHTML = `🔒 <b>Salón protegido:</b> Este salón está en uso en <i>"${escaparHtml(roomUsage.sessionTitle)}"</i>. La eliminación de alumnos o del aula está deshabilitada para proteger los resultados y las fichas de evaluación impresas. (Puedes corregir nombres con ✏️ Editar).`;
+    if (isRoomLocked && sessionsInUse.length > 0) {
+      const badgesHtml = sessionsInUse.map(sess => `
+        <button type="button" class="classroom-session-badge" onclick="navigateToClassroomSession('${cls.id}', '${sess.id || ''}')"
+          style="background:#0284c7; color:#ffffff; border:none; border-radius:6px; padding:4px 11px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 3px rgba(2,132,199,0.3); transition:all 0.15s;"
+          title="Ir a esta evaluación en curso">
+          ${escaparHtml(sess.title)} <span style="font-size:0.85rem;">→</span>
+        </button>
+      `).join(' ');
+
+      bannerEl.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:0.82rem; color:#92400e; width:100%;">
+          <span style="font-size:1.1rem; flex-shrink:0;">🔒</span>
+          <b style="color:#78350f; white-space:nowrap;">Salón en uso en:</b>
+          <div style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            ${badgesHtml}
+          </div>
+        </div>
+      `;
       bannerEl.style.display = 'flex';
+      bannerEl.style.alignItems = 'center';
     } else {
       bannerEl.style.display = 'none';
       bannerEl.innerHTML = '';
@@ -254,7 +308,7 @@ function openClassroomModal(classroomId) {
     btnAddStudent.disabled = isRoomLocked;
     btnAddStudent.style.opacity = isRoomLocked ? '0.5' : '1';
     btnAddStudent.style.cursor = isRoomLocked ? 'not-allowed' : 'pointer';
-    btnAddStudent.title = isRoomLocked ? `Bloqueado: salón en uso en "${roomUsage.sessionTitle}"` : 'Agregar nuevo alumno';
+    btnAddStudent.title = isRoomLocked ? `Bloqueado: salón en uso en "${roomUsage.sessionTitle || 'evaluación'}"` : 'Agregar nuevo alumno';
   }
 
   if (badgeEl) badgeEl.style.background = cls.color || '#3b82f6';
@@ -271,7 +325,7 @@ function openClassroomModal(classroomId) {
     btnDelete.disabled = isRoomLocked;
     btnDelete.style.opacity = isRoomLocked ? '0.45' : '1';
     btnDelete.style.cursor = isRoomLocked ? 'not-allowed' : 'pointer';
-    btnDelete.title = isRoomLocked ? `Bloqueado: salón en uso en "${roomUsage.sessionTitle}"` : 'Eliminar este salón';
+    btnDelete.title = isRoomLocked ? `Bloqueado: salón en uso en "${roomUsage.sessionTitle || 'evaluación'}"` : 'Eliminar este salón';
   }
 
   // Ocultar formulario inline de agregar alumno si estaba abierto
@@ -295,17 +349,15 @@ function openClassroomModal(classroomId) {
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+            ${isRoomLocked ? `
+            <span style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:4px 9px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;" title="Bloqueado: salón en sesión">
+              🔒 En sesión
+            </span>` : `
             <button type="button" onclick="openEditStudentModal('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', '${escaparHtml(s.shortName || '').replace(/'/g, "\\'")}')"
-              title="Editar nombre y nombre corto"
+              title="Editar nombre"
               style="background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
               ✏️ Editar
             </button>
-            ${isRoomLocked ? `
-            <button type="button" onclick="handleDeleteStudent('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', this)"
-              title="Bloqueado: el salón está en uso en ${escaparHtml(roomUsage.sessionTitle)}"
-              style="background:#f1f5f9; border:1px solid #cbd5e1; color:#94a3b8; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:not-allowed; display:inline-flex; align-items:center; gap:4px;">
-              🔒
-            </button>` : `
             <button type="button" onclick="handleDeleteStudent('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', this)"
               title="Eliminar este alumno del salón"
               style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
@@ -501,9 +553,11 @@ function exportClassroomRosterToExcel() {
 
 /* ── FUNCIONES DE EDICIÓN Y BORRADO DE ALUMNOS (FLUJO 2) ── */
 function openEditStudentModal(classroomId, studentCode, currentFullName, currentShortName) {
-  const activeSession = ClassroomData.getActiveSession();
-  if (activeSession && activeSession.classroomId === classroomId) {
-    showToast('⚠️ No se pueden editar estudiantes mientras este salón tenga una evaluación en marcha.');
+  const roomUsage = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse)
+    ? ClassroomData.isClassroomInUse(classroomId)
+    : { inUse: false };
+  if (roomUsage && roomUsage.inUse) {
+    showToast(`⚠️ No se pueden editar estudiantes mientras este salón esté en uso en: "${roomUsage.sessionTitle}".`);
     return;
   }
   const inClassId = document.getElementById('edit-student-class-id');
@@ -528,9 +582,11 @@ function closeEditStudentModal() {
 
 async function saveEditStudent() {
   const classroomId = document.getElementById('edit-student-class-id')?.value;
-  const activeSession = ClassroomData.getActiveSession();
-  if (activeSession && activeSession.classroomId === classroomId) {
-    showToast('⚠️ No se pueden editar estudiantes mientras este salón tenga una evaluación en marcha.');
+  const roomUsage = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse)
+    ? ClassroomData.isClassroomInUse(classroomId)
+    : { inUse: false };
+  if (roomUsage && roomUsage.inUse) {
+    showToast(`⚠️ No se pueden editar estudiantes mientras este salón esté en uso en: "${roomUsage.sessionTitle}".`);
     return;
   }
   const studentCode = document.getElementById('edit-student-code')?.value;
@@ -1805,6 +1861,50 @@ async function handleExcelImport(input) {
   input.value = '';  // Resetear el input para permitir reimportar el mismo archivo
 }
 
+/**
+ * Navega desde el visor de aula protegida directamente a la evaluación en curso,
+ * cerrando el modal de salones y mostrando la pantalla confirmada (resumen y fichas listas).
+ */
+function navigateToClassroomSession(classroomId, sessionId) {
+  closeClassroomModal();
+  closeAddClassroomModal();
+
+  // 1. Si coincide con una sesión guardada en almacenamiento
+  const savedList = (typeof ClassroomData !== 'undefined' && ClassroomData.getSavedSessions) ? ClassroomData.getSavedSessions() : [];
+  const savedMatch = savedList.find(s => (sessionId && s.id === sessionId) || (s.classroomId === classroomId));
+  if (savedMatch && typeof loadAndActivateSavedSession === 'function') {
+    loadAndActivateSavedSession(savedMatch.id, { asDirectModalityView: true });
+    return;
+  }
+
+  // 2. Si es la sesión activa actual en memoria
+  const active = (typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession)
+    ? ClassroomData.getActiveSession()
+    : null;
+  if (active && (
+    (active.classroomId && active.classroomId === classroomId) ||
+    (sessionId && active.id === sessionId)
+  )) {
+    if (typeof openFlow === 'function') {
+      openFlow('eval');
+    } else if (typeof showView === 'function') {
+      showView('eval');
+    }
+    if (typeof updateTopbarModeTitle === 'function') {
+      updateTopbarModeTitle(active.branch || 'rama1');
+    }
+    if (typeof showSummary === 'function') {
+      showSummary();
+    }
+    return;
+  }
+
+  // 3. Fallback directo a evaluación
+  if (typeof openFlow === 'function') openFlow('eval');
+  else if (typeof showView === 'function') showView('eval');
+  if (typeof showSummary === 'function') showSummary();
+}
+
 if (typeof window !== 'undefined') {
   window.renderClassroomManager = renderClassroomManager;
   window.openClassroomModal = openClassroomModal;
@@ -1815,4 +1915,5 @@ if (typeof window !== 'undefined') {
   window.handleSaveInlineStudent = handleSaveInlineStudent;
   window.exportClassroomRosterToExcel = exportClassroomRosterToExcel;
   window.switchClassroomManagerTab = switchClassroomManagerTab;
+  window.navigateToClassroomSession = navigateToClassroomSession;
 }

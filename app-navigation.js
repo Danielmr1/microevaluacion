@@ -509,13 +509,6 @@ if (typeof window !== 'undefined') {
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (flowName === 'classrooms') {
-        const session = ClassroomData.getActiveSession();
-        if (session && session.classroomId) {
-          const cls = ClassroomData.getClassroom(session.classroomId);
-          const clsName = cls ? cls.name : 'el salón actual';
-          showToast(`⚠️ Hay una evaluación en marcha para "${clsName}". Finaliza o reinicia la sesión antes de editar salones o nóminas.`);
-          return;
-        }
         showView('classrooms');
         renderClassroomManager();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -582,6 +575,7 @@ if (typeof window !== 'undefined') {
       }
     }
     window.openFlow = openFlow;
+    window.showView = showView;
 
     function playSharedElementTransition(branch, onSetupView) {
       if (typeof gsap === 'undefined') {
