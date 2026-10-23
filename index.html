@@ -56,7 +56,7 @@
   <script src="app-navigation.js?v=3.6.4"></script>
   <script src="copilot-command.js?v=3.5.9"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.7.0">
+  <link rel="stylesheet" href="styles.css?v=3.7.1">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -415,7 +415,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.7.9</span>
+              Versión <span id="user-profile-version-tag">v3.8.0</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -781,37 +781,41 @@
              la importación de un archivo pasan por acá. Así el grado se elige
              SIEMPRE al crear, y ningún salón nace sin grado pidiendo completarlo
              después. -->
-        <div id="manual-classroom-form" style="display:none; margin-top:12px; padding:14px; border:1.5px solid #e2e8f0; border-radius:10px; background:#f8fafc;">
-          <div id="manual-form-title" style="font-weight:800; color:#0f172a; font-size:0.85rem; margin-bottom:10px;">➕ Nuevo salón</div>
+        <div id="manual-classroom-form" style="display:none; margin-top:12px; padding:18px 20px; border:1.5px solid #dcd8ce; border-radius:14px; background:#ffffff;">
+          <div id="manual-form-title" style="font-weight:800; color:#181512; font-size:0.92rem; margin-bottom:14px;">➕ Nuevo salón</div>
 
-          <label style="font-size:0.72rem; color:#475569; display:block; margin-bottom:4px;">Nombre del salón</label>
-          <input type="text" id="manual-classroom-name" class="form-control" maxlength="50"
-            placeholder=""
-            style="font-size:0.92rem; font-weight:700; padding:9px 12px; margin-bottom:10px;">
+          <!-- Fila PC: Nombre del salón (izq) y Grado (der) a la misma altura -->
+          <div class="manual-classroom-top-row">
+            <div class="manual-col">
+              <label style="font-size:0.74rem; font-weight:700; color:#5c4a3b; display:block; margin-bottom:4px;">Nombre del salón</label>
+              <input type="text" id="manual-classroom-name" class="form-control" maxlength="50"
+                placeholder=""
+                style="font-size:0.92rem; font-weight:700; padding:9px 12px; background:#F8F6F0; border:1.5px solid #dcd8ce; border-radius:8px; color:#181512; width:100%; box-sizing:border-box;">
+            </div>
 
-          <label style="font-size:0.72rem; color:#475569; display:block; margin-bottom:4px;">
-            Grado <span style="color:#f59e0b;">*</span>
-          </label>
-          <select id="manual-classroom-grade" class="form-control"
-            style="font-size:0.92rem; font-weight:700; padding:9px 12px;">
-            <option value="">— Elige el grado —</option>
-          </select>
-          <p style="font-size:0.68rem; color:#64748b; margin:5px 0 10px;">
-            Obligatorio: define qué procedimiento de resolución se considera correcto.
-          </p>
+            <div class="manual-col">
+              <label style="font-size:0.74rem; font-weight:700; color:#5c4a3b; display:block; margin-bottom:4px;">
+                Grado <span style="color:#f59e0b;">*</span>
+              </label>
+              <select id="manual-classroom-grade" class="form-control"
+                style="font-size:0.92rem; font-weight:700; padding:9px 12px; background:#F8F6F0; border:1.5px solid #dcd8ce; border-radius:8px; color:#181512; width:100%; box-sizing:border-box;">
+                <option value="">— Elige el grado —</option>
+              </select>
+            </div>
+          </div>
 
-          <label style="font-size:0.72rem; color:#475569; display:block; margin-bottom:4px;">
+          <label style="font-size:0.74rem; font-weight:700; color:#5c4a3b; display:block; margin-bottom:4px;">
             Alumnos — uno por línea
           </label>
           <textarea id="manual-classroom-students" class="form-control" rows="10"
             oninput="updateManualStudentCount()"
-            placeholder=""
-            style="font-size:0.85rem; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;"></textarea>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; gap:8px;">
-            <span id="manual-student-hint" style="font-size:0.68rem; color:#64748b;">
-              Solo el nombre completo alcanza. Para un nombre corto distinto, sepáralo con coma: <code>Nombre completo, Nombre corto</code>. También puedes pegar dos columnas desde Excel.
+            placeholder="Apellidos, Nombres"
+            style="font-size:0.88rem; width:100%; box-sizing:border-box; background:#F8F6F0; border:1.5px solid #dcd8ce; border-radius:8px; padding:10px 12px; color:#181512; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;"></textarea>
+          <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:5px; gap:8px;">
+            <span id="manual-student-hint" style="display:none;"></span>
+            <span id="manual-student-count" style="font-size:0.74rem; font-weight:800; color:#00B4D8; white-space:nowrap;">
+              0
             </span>
-            <span id="manual-student-count" style="font-size:0.7rem; font-weight:800; color:#0284c7; flex:0 0 auto;">0</span>
           </div>
 
           <div style="display:flex; gap:8px; margin-top:12px;">

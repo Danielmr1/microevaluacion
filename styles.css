@@ -7377,3 +7377,21 @@
       transform: translateY(0);
       background: #bae6fd;
     }
+
+    /* Disposición responsiva de Alta de Salón manual */
+    .manual-classroom-top-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .manual-col {
+      display: flex;
+      flex-direction: column;
+    }
+    @media (max-width: 640px) {
+      .manual-classroom-top-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
