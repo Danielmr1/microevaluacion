@@ -5,7 +5,7 @@ const CACHE_NAME = 'microeval-cache-v3.8.4';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './styles.css?v=3.6.3',
+  './styles.css?v=3.8.2',
   './manifest.json',
   './icon-192.png',
   // Librerías de soporte (100% locales / self-hosted)
@@ -15,6 +15,7 @@ const PRECACHE_ASSETS = [
   './jspdf.umd.min.js',
   './gsap.min.js',
   './ScrollTrigger.min.js',
+  './three.min.js',
   './aruco.bundle.js?v=3.0.6',
   './jsqr.min.js?v=3.0.6',
   // Módulos de la aplicación
@@ -32,10 +33,11 @@ const PRECACHE_ASSETS = [
   './card-cartilla.js?v=3.2.73',
   './card-generator.js?v=3.3.8',
   './session-controller.js?v=3.3.8',
-  './app-navigation.js?v=3.6.3',
+  './app-navigation.js?v=3.6.4',
   './copilot-command.js?v=3.5.9',
   './daily-quota.js?v=3.5.6',
-  './qrcode.bundle.js?v=3.0.6'
+  './qrcode.bundle.js?v=3.0.6',
+  './evaluation-hologram.js?v=3.8.4'
 ];
 
 self.addEventListener('install', (event) => {

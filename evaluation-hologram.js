@@ -15,10 +15,10 @@
 
   // Parámetros y colores Bionic Butterfly
   const config = {
-    cardWidth: 28,        // Más compacto tanto en PC como en móvil
-    cardHeight: 39,
-    gridCols: 22,
-    gridRows: 30,
+    cardWidth: 20,        // Tamaño compacto optimizado para márgenes laterales
+    cardHeight: 28,
+    gridCols: 20,
+    gridRows: 26,
     baseAmplitude: 1.8,
     colorLinen: 0xEDE8DF,
     colorCyan: 0x00B4D8,
@@ -68,7 +68,7 @@
       canvas.style.zIndex = '0';
       canvas.style.opacity = '0';
       canvas.style.transition = 'opacity 0.5s ease';
-      view.insertBefore(canvas, view.firstChild);
+      document.body.appendChild(canvas);
     }
 
     const width = window.innerWidth;
@@ -386,44 +386,65 @@
         }
       }
     } else {
-      // ── MODO PC (>=768px) ──
-      // Apagar el central móvil
+      // ── MODO PC (>=768px): CASCADA DE DESCENSO Y RELEVO SECUENCIAL ──
       if (cardCenterMobile) cardCenterMobile.setOpacity(0);
 
-      // ALTERNANCIA ESTRICTA IZQUIERDA / DERECHA:
-      // Scroll 0.0 a 0.35: 100% Izquierdo, 0% Derecho
-      // Scroll 0.35 a 0.65: Transición (Izquierdo 1 -> 0, Derecho 0 -> 1)
-      // Scroll 0.65 a 1.0: 0% Izquierdo, 100% Derecho
+      // 1. Tramo Izquierdo: Nace alto (Y=+6) y desciende a Y=-6 mientras p va de 0.0 a 0.40
+      //    Se desvanece suavemente de 1.0 a 0.0 entre 0.20 y 0.40 hasta desaparecer por completo.
+      // 2. Zona de pausa limpia (p=0.40 a 0.48): Ningún holograma visible.
+      // 3. Tramo Derecho: Nace ya más abajo (Y=-6) a partir de p=0.48, y continúa
+      //    descendiendo hasta Y=-20 (junto al botón Confirmar Fichas) al 100% de visibilidad.
+
       let alphaLeft = 0;
       let alphaRight = 0;
+      let yLeft = 6;
+      let yRight = -6;
 
-      if (p <= 0.35) {
+      if (p < 0.20) {
         alphaLeft = 1.0;
-        alphaRight = 0;
-      } else if (p >= 0.65) {
-        alphaLeft = 0;
-        alphaRight = 1.0;
+        yLeft = 6 - (p / 0.20) * 5; // baja de +6 a +1
+      } else if (p < 0.40) {
+        const tFade = (p - 0.20) / (0.40 - 0.20);
+        alphaLeft = Math.cos(tFade * (Math.PI / 2)); // 1.0 -> 0.0
+        yLeft = 1 - tFade * 7; // continúa bajando hasta -6 al desaparecer
       } else {
-        // Zona de relevo cruzado
-        const trans = (p - 0.35) / 0.30; // 0.0 a 1.0
-        alphaLeft = Math.cos(trans * (Math.PI / 2));
-        alphaRight = Math.sin(trans * (Math.PI / 2));
+        alphaLeft = 0;
+        yLeft = -6;
       }
+
+      if (p <= 0.48) {
+        alphaRight = 0;
+        yRight = -6;
+      } else if (p < 0.68) {
+        const tIn = (p - 0.48) / (0.68 - 0.48);
+        alphaRight = Math.sin(tIn * (Math.PI / 2)); // 0.0 -> 1.0
+        yRight = -6 - tIn * 8; // desciende de -6 a -14
+      } else {
+        alphaRight = 1.0;
+        const tEnd = (p - 0.68) / (1.0 - 0.68);
+        yRight = -14 - tEnd * 6; // desciende suavemente a -20 junto a Confirmar Fichas
+      }
+
+      // Separación lateral milimétrica: flota libre en el margen entre la ficha (37) y el filo (56)
+      const lateralXLeft = 53;
+      const lateralXRight = 50;
 
       if (cardLeft) {
         cardLeft.setOpacity(alphaLeft);
-        // Descenso y rotación con scroll
-        cardLeft.group.position.y = -8 - p * 16;
-        cardLeft.group.position.x = -42 - p * 2;
-        updateCardPhysics(cardLeft, dt, 0);
+        cardLeft.group.position.x = -lateralXLeft;
+        cardLeft.group.position.y = yLeft;
+        if (alphaLeft > 0.01) {
+          updateCardPhysics(cardLeft, dt, 0);
+        }
       }
 
       if (cardRight) {
         cardRight.setOpacity(alphaRight);
-        // Descenso y rotación con scroll
-        cardRight.group.position.y = -10 - p * 16;
-        cardRight.group.position.x = 42 + p * 2;
-        updateCardPhysics(cardRight, dt, 2.5); // Desfase temporal armónico
+        cardRight.group.position.x = lateralXRight;
+        cardRight.group.position.y = yRight;
+        if (alphaRight > 0.01) {
+          updateCardPhysics(cardRight, dt, 2.5);
+        }
       }
     }
   }
@@ -479,6 +500,16 @@
 
     isActive: function () {
       return isRunning;
+    },
+
+    _debug: function () {
+      return {
+        state: { ...state },
+        leftPos: cardLeft?.group?.position ? { x: cardLeft.group.position.x, y: cardLeft.group.position.y, z: cardLeft.group.position.z } : null,
+        rightPos: cardRight?.group?.position ? { x: cardRight.group.position.x, y: cardRight.group.position.y, z: cardRight.group.position.z } : null,
+        leftVis: cardLeft?.group?.visible,
+        rightVis: cardRight?.group?.visible
+      };
     }
   };
 
