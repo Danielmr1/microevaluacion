@@ -1361,17 +1361,121 @@
     }
     .a6-qr-box svg { width: 100%; height: 100%; display: block; }
 
-    .a6-fill-hint-side {
+    /* ── CUADRO INSTRUCTIVO OMR (MARCADO CORRECTO / INCORRECTO) ── */
+    .omr-instructions-box {
       position: absolute;
-      left: 3.5mm;
-      top: 28mm;
-      transform: translateY(-50%);
-      font-size: 6.8pt;
-      color: #475569;
-      line-height: 1;
-      white-space: nowrap;
-      pointer-events: none;
+      left: 2.5mm;
+      top: 25mm;
+      width: 15mm;
+      border: 0.25mm solid #000000;
+      background: #ffffff;
+      padding: 1mm 0.6mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
       z-index: 5;
+      pointer-events: none;
+    }
+
+    .card-a6-r3 .omr-instructions-box {
+      top: 21mm;
+      left: 2.5mm;
+      width: 14mm;
+    }
+
+    .omr-inst-title {
+      font-size: 4.2pt;
+      font-weight: 800;
+      color: #000000;
+      letter-spacing: 0.1px;
+      line-height: 1.1;
+      margin-bottom: 0.8mm;
+      font-family: inherit;
+    }
+
+    .omr-inst-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1mm;
+      margin-bottom: 0.7mm;
+    }
+
+    .omr-inst-divider {
+      width: 100%;
+      height: 0;
+      border-top: 0.2mm solid #000000;
+      margin: 0.5mm 0 0.8mm 0;
+    }
+
+    .omr-inst-subrows {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6mm;
+      width: 100%;
+    }
+
+    .omr-inst-subrows .omr-inst-row {
+      margin-bottom: 0;
+    }
+
+    .omr-inst-bubble-filled {
+      width: 3.2mm;
+      height: 3.2mm;
+      border-radius: 50%;
+      background: #000000;
+      border: 0.2mm solid #000000;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    .omr-inst-bubble-half {
+      width: 3.2mm;
+      height: 3.2mm;
+      border-radius: 50%;
+      border: 0.2mm solid #000000;
+      box-sizing: border-box;
+      background: linear-gradient(to right, #000000 50%, #ffffff 50%);
+      flex-shrink: 0;
+    }
+
+    .omr-inst-bubble-inner {
+      width: 3.2mm;
+      height: 3.2mm;
+      border-radius: 50%;
+      border: 0.2mm solid #000000;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .omr-inst-bubble-inner svg {
+      width: 2.0mm;
+      height: 2.0mm;
+      display: block;
+    }
+
+    .omr-inst-icon-ok {
+      width: 2.8mm;
+      height: 2.8mm;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .omr-inst-icon-err {
+      width: 2.6mm;
+      height: 2.6mm;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .a6-fill-hint-side {
+      display: none;
     }
 
     .a6-fill-hint-side b {
@@ -1673,16 +1777,7 @@
     .v-qr-box svg { width: 100%; height: 100%; display: block; }
 
     .v-fill-hint-side {
-      position: absolute;
-      left: 3.5mm;
-      top: 30mm;
-      transform: translateY(-50%);
-      font-size: 6.8pt;
-      color: #475569;
-      line-height: 1;
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 5;
+      display: none;
     }
 
     .v-fill-hint-side b {

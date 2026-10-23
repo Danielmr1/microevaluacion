@@ -1,6 +1,6 @@
 // =============================================================================
 // card-cartilla.js — Submódulo 3: Cartilla OMR y Cuadernillo de Preguntas (Rama 3)
-// Microevaluación v3.1.85
+// Microevaluación v3.8.9
 //
 // MÓDULO AISLADO:
 //   * Generación de Cartilla OMR en A5 Vertical (9 a 20 preguntas) y A6 (hasta 8 preguntas).
@@ -14,6 +14,39 @@ const CARTILLA_FIDUCIALS = `
   <div class="fiducial fiducial-br" title="ArUco 2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="6" y="6" width="1" height="1" fill="white"/></svg></div>
   <div class="fiducial fiducial-bl" title="ArUco 3"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"><rect x="0" y="0" width="9" height="9" fill="white"/><rect x="1" y="1" width="7" height="7" fill="black"/><rect x="2" y="2" width="1" height="1" fill="white"/><rect x="2" y="3" width="1" height="1" fill="white"/><rect x="2" y="4" width="1" height="1" fill="white"/><rect x="2" y="5" width="1" height="1" fill="white"/><rect x="2" y="6" width="1" height="1" fill="white"/><rect x="3" y="6" width="1" height="1" fill="white"/><rect x="4" y="6" width="1" height="1" fill="white"/><rect x="5" y="6" width="1" height="1" fill="white"/></svg></div>
 `;
+
+const OMR_INSTRUCTIONS_BOX_HTML = `
+  <div class="omr-instructions-box">
+    <div class="omr-inst-title">CORRECTO</div>
+    <div class="omr-inst-row">
+      <div class="omr-inst-bubble-filled"></div>
+      <svg class="omr-inst-icon-ok" viewBox="0 0 12 12"><path d="M2 6.5 L4.8 9.3 L10 3" fill="none" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="omr-inst-divider"></div>
+    <div class="omr-inst-title">INCORRECTO</div>
+    <div class="omr-inst-subrows">
+      <div class="omr-inst-row">
+        <div class="omr-inst-bubble-half"></div>
+        <svg class="omr-inst-icon-err" viewBox="0 0 12 12"><path d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="omr-inst-row">
+        <div class="omr-inst-bubble-inner">
+          <svg viewBox="0 0 12 12"><path d="M2.5 6.5 L4.8 9 L9.5 3.5" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <svg class="omr-inst-icon-err" viewBox="0 0 12 12"><path d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="omr-inst-row">
+        <div class="omr-inst-bubble-inner">
+          <svg viewBox="0 0 12 12"><path d="M3 3 L9 9 M9 3 L3 9" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <svg class="omr-inst-icon-err" viewBox="0 0 12 12"><path d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+`;
+if (typeof window !== 'undefined') {
+  window.OMR_INSTRUCTIONS_BOX_HTML = OMR_INSTRUCTIONS_BOX_HTML;
+}
 
 function cartillaEscape(t) {
   return (typeof escaparHtml === 'function')
@@ -125,7 +158,7 @@ function createCartillaA5VerticalCard(student, classroom, evaluation) {
       </div>
       <div class="aruco-tr-number">${orderNumber}</div>
 
-      <span class="v-fill-hint-side">Rellena: <b>●</b></span>
+      ${OMR_INSTRUCTIONS_BOX_HTML}
       <div class="v-b3-body">
         ${bodyHTML}
       </div>
@@ -237,7 +270,7 @@ function createCartillaA6Card(student, classroom, evaluation) {
       </div>
       <div class="aruco-tr-number">${orderNumber}</div>
 
-      <span class="a6-fill-hint-side">Rellena: <b>●</b></span>
+      ${OMR_INSTRUCTIONS_BOX_HTML}
       <div class="a6-b3-body">
         ${bodyHTML}
       </div>

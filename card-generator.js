@@ -236,7 +236,7 @@ function createA5VerticalR3Card(student, classroom, evaluation) {
       </div>
       <div class="aruco-tr-number">${orderNumber}</div>
 
-      <span class="v-fill-hint-side">Rellena: <b>●</b></span>
+      ${typeof OMR_INSTRUCTIONS_BOX_HTML !== 'undefined' ? OMR_INSTRUCTIONS_BOX_HTML : (window.OMR_INSTRUCTIONS_BOX_HTML || '')}
       <div class="v-b3-body">
         ${bodyHTML}
       </div>
