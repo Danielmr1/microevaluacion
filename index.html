@@ -594,7 +594,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.9.2</span>
+              Versión <span id="user-profile-version-tag">v3.9.3</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -905,21 +905,39 @@
     <div class="teacher-panel" style="padding:0;">
 
       <!-- ── PASO 1: Selección de Salón ── -->
-      <div id="step-classroom" style="padding:18px 20px; border-bottom:1px solid #e2e8f0;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-          <label style="font-size:0.72rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0;">1 · Salón de Clases</label>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <div id="step-classroom" style="padding:16px 20px; border-bottom:1px solid #e2e8f0;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+          
+          <!-- Lado Izquierdo: Etiqueta y botón de resultados -->
+          <div style="display:flex; align-items:center; gap:10px; padding-top:9px;">
+            <label style="font-size:0.74rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0; white-space:nowrap;">
+              1 · Salón de Clases
+            </label>
             <button id="btn-open-results-modal" type="button" onclick="openResultsModal()"
               style="display:none; align-items:center; gap:6px; background:#dcfce7; border:1.5px solid #86efac; color:#15803d; border-radius:8px; padding:5px 12px; font-size:0.76rem; font-weight:700; cursor:pointer; transition:all 0.15s; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
               📊 Ver Resultados
             </button>
           </div>
-        </div>
 
-        <div>
-          <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)"
-            style="width:100%; font-size:1rem; font-weight:700; padding:10px 14px;">
-          </select>
+          <!-- Lado Derecho: Selector de Salón y Grado a la derecha debajo -->
+          <div style="flex:1 1 320px; max-width:440px; min-width:260px; display:flex; flex-direction:column; align-items:flex-end;">
+            <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)"
+              style="width:100%; font-size:0.95rem; font-weight:700; padding:9px 14px; box-sizing:border-box;">
+            </select>
+
+            <!-- Grado del Salón: Se muestra debajo del selector alineado al lado derecho -->
+            <div id="grade-block" style="display:none; margin-top:6px; width:100%; text-align:right;">
+              <div id="grade-readonly" style="display:none; justify-content:flex-end; align-items:center; gap:8px;">
+                <span id="grade-value" style="font-size:0.92rem; font-weight:800; color:#16a34a;"></span>
+              </div>
+              <select id="builder-grade" class="form-control" onchange="onGradeChanged(this.value)"
+                style="display:none; font-size:0.92rem; font-weight:700; padding:9px 12px; margin-top:4px;">
+                <option value="">Sin especificar</option>
+              </select>
+              <p id="grade-hint" style="font-size:0.68rem; color:#f59e0b; margin:6px 0 0; display:none; text-align:right;"></p>
+            </div>
+          </div>
+
         </div>
 
         <!-- Alerta de guía si no hay salones -->
@@ -931,9 +949,9 @@
         </div>
 
         <!-- Acciones de salón: Importar nómina / Crear a mano / Descargar plantilla (se ocultan si hay salón seleccionado) -->
-        <div id="classroom-actions-group">
+        <div id="classroom-actions-group" style="margin-top:10px;">
           <!-- Importar nómina desde Excel / CSV  ·  Crear salón a mano -->
-          <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;"
               onchange="handleExcelImport(this)">
             <button class="btn-dashed-action" onclick="document.getElementById('excel-file-input').click()">
@@ -1007,27 +1025,6 @@
               Cancelar
             </button>
           </div>
-        </div>
-
-        <!-- ── GRADO DEL SALÓN ──
-             El grado se elige al CREAR el salón y NO se cambia después.
-             El motivo es fuerte: cada rúbrica se genera tomando el grado como
-             contexto, así que si el grado cambiara, todas las rúbricas ya hechas
-             para ese salón quedarían apuntando a otro criterio.
-             El selector aparece en un único caso: un salón al que le falta el
-             grado porque se creó antes de que el grado fuera obligatorio. -->
-        <div id="grade-block" style="display:none; margin-top:8px;">
-          <!-- Solo lectura: el grado se eligió al crear el salón y no se cambia. -->
-          <div id="grade-readonly" style="display:none; align-items:center; gap:8px;">
-            <span id="grade-value" style="font-size:0.95rem; font-weight:800; color:#16a34a;"></span>
-          </div>
-
-          <select id="builder-grade" class="form-control" onchange="onGradeChanged(this.value)"
-            style="display:none; font-size:0.92rem; font-weight:700; padding:9px 12px; margin-top:4px;">
-            <option value="">Sin especificar</option>
-          </select>
-
-          <p id="grade-hint" style="font-size:0.68rem; color:#f59e0b; margin:6px 0 0; display:none;"></p>
         </div>
       </div>
 
