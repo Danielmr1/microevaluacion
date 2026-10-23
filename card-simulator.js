@@ -973,23 +973,27 @@ function setSimPickerTab(tab) {
 
   if (tab === 'bank') {
     if (tabBank) {
-      tabBank.style.color = '#38bdf8';
-      tabBank.style.borderBottomColor = '#38bdf8';
+      tabBank.style.color = '#0284c7';
+      tabBank.style.borderBottomColor = '#0284c7';
+      tabBank.style.fontWeight = '800';
     }
     if (tabNew) {
-      tabNew.style.color = '#94a3b8';
+      tabNew.style.color = '#645547';
       tabNew.style.borderBottomColor = 'transparent';
+      tabNew.style.fontWeight = '700';
     }
     if (paneBank) paneBank.style.display = 'flex';
     if (paneNew) paneNew.style.display = 'none';
   } else {
     if (tabNew) {
-      tabNew.style.color = '#38bdf8';
-      tabNew.style.borderBottomColor = '#38bdf8';
+      tabNew.style.color = '#0284c7';
+      tabNew.style.borderBottomColor = '#0284c7';
+      tabNew.style.fontWeight = '800';
     }
     if (tabBank) {
-      tabBank.style.color = '#94a3b8';
+      tabBank.style.color = '#645547';
       tabBank.style.borderBottomColor = 'transparent';
+      tabBank.style.fontWeight = '700';
     }
     if (paneBank) paneBank.style.display = 'none';
     if (paneNew) paneNew.style.display = 'flex';
@@ -1018,43 +1022,43 @@ function renderSimBankList() {
 
   bankList.forEach((q, idx) => {
     const item = document.createElement('div');
-    item.style.cssText = 'background:#1e293b; border:1.5px solid #334155; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px;';
+    item.style.cssText = 'background:#FFFFFF; border:1.5px solid rgba(43, 33, 24, 0.14); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; box-shadow:0 2px 6px rgba(43, 33, 24, 0.04);';
 
     const header = document.createElement('div');
     header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px;';
 
     const hasRubric = !!(q.hasRubric || q.rubric);
     const badgeHtml = hasRubric
-      ? '<span style="background:#4c1d95; color:#c4b5fd; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;">🤖 Con Rúbrica IA</span>'
-      : '<span style="background:#065f46; color:#6ee7b7; font-size:0.65rem; font-weight:800; padding:2px 7px; border-radius:6px;">⚡ Pregunta Rápida</span>';
+      ? '<span style="background:#F3E8FF; color:#6B21A8; border:1px solid #C084FC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px;">🤖 Con Rúbrica IA</span>'
+      : '<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px;">⚡ Pregunta Rápida</span>';
 
     header.innerHTML = `
       <div style="display:flex; align-items:center; gap:8px;">
         ${badgeHtml}
-        <span style="font-size:0.8rem; font-weight:700; color:#cbd5e1;">Opción ${idx + 1}</span>
+        <span style="font-size:0.82rem; font-weight:800; color:#2B2118;">Opción ${idx + 1}</span>
       </div>
     `;
 
     const btnSelect = document.createElement('button');
     btnSelect.type = 'button';
     btnSelect.textContent = '✓ Seleccionar';
-    btnSelect.style.cssText = 'background:#2563eb; border:none; color:#fff; border-radius:6px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer;';
+    btnSelect.style.cssText = 'background:#0284C7; border:none; color:#FFFFFF; border-radius:8px; padding:6px 14px; font-size:0.78rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(2, 132, 199, 0.25); transition:all 0.15s;';
     btnSelect.onclick = () => selectSimBankQuestion(q);
     header.appendChild(btnSelect);
 
     const promptText = document.createElement('div');
-    promptText.style.cssText = 'font-size:0.82rem; color:#f1f5f9; line-height:1.4;';
+    promptText.style.cssText = 'font-size:0.85rem; color:#2B2118; font-weight:700; line-height:1.45;';
     promptText.textContent = q.prompt;
 
     const optsGrid = document.createElement('div');
-    optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.75rem;';
+    optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem;';
     ['A', 'B', 'C', 'D'].forEach(letter => {
       const isCorrect = (q.correct || 'A').toUpperCase() === letter;
       const optVal = q.options ? q.options[letter] : '';
       const optDiv = document.createElement('div');
       optDiv.style.cssText = isCorrect
-        ? 'color:#4ade80; font-weight:800; background:rgba(34,197,94,0.1); padding:4px 8px; border-radius:6px; border:1px solid rgba(34,197,94,0.25);'
-        : 'color:#94a3b8; padding:4px 8px; background:#0f172a; border-radius:6px; border:1px solid #1e293b;';
+        ? 'color:#15803D; font-weight:800; background:#DCFCE7; padding:5px 9px; border-radius:7px; border:1.5px solid #86EFAC;'
+        : 'color:#4B3A2C; font-weight:600; padding:5px 9px; background:#F8F6F0; border-radius:7px; border:1px solid rgba(43, 33, 24, 0.12);';
       optDiv.textContent = `${letter}) ${optVal || '—'}` + (isCorrect ? ' ✓' : '');
       optsGrid.appendChild(optDiv);
     });
