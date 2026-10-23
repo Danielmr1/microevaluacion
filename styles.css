@@ -666,8 +666,13 @@
 
     /* ── PASO 2: Preguntas de la Evaluación ── */
     #view-create #step-eval-type {
-      padding: 16px 20px;
+      padding: 0 !important;
       border-bottom: none !important;
+    }
+
+    #view-create #step-classroom,
+    #view-create .sim-step-row {
+      border-bottom: 1.5px solid rgba(43, 33, 24, 0.22) !important;
     }
 
     #view-create #step-eval-type label {

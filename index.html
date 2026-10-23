@@ -58,7 +58,7 @@
   <script src="three.min.js"></script>
   <script src="evaluation-hologram.js?v=3.8.8"></script>
 
-  <link rel="stylesheet" href="styles.css?v=3.8.9">
+  <link rel="stylesheet" href="styles.css?v=3.9.1">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -182,8 +182,9 @@
     }
 
     #view-create #step-classroom,
-    #view-create #step-eval-type {
-      border-bottom: 1.5px solid rgba(43, 33, 24, 0.1) !important;
+    #view-create #step-eval-type,
+    #view-create .sim-step-row {
+      border-bottom: 1.5px solid rgba(43, 33, 24, 0.22) !important;
     }
 
     #view-create #step-classroom label,
@@ -593,7 +594,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.9.0</span>
+              Versión <span id="user-profile-version-tag">v3.9.1</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
