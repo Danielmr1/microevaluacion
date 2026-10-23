@@ -22,6 +22,8 @@
     }
 
     function onClassroomSelectChanged(classId) {
+      const bSel = document.getElementById('builder-classroom');
+      if (bSel && bSel.disabled && classId) return;
       if (typeof window !== 'undefined' && window.EvaluationHologram) {
         window.EvaluationHologram.onClassroomChanged();
       }

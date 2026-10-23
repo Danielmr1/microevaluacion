@@ -147,7 +147,7 @@ function renderClassroomManager(selectedClassId = null) {
       const color = cls.color || '#3b82f6';
 
       const roomUsage = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse) ? ClassroomData.isClassroomInUse(cls.id) : { inUse: false };
-      const lockBadge = roomUsage.inUse ? `<span style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; border-radius:4px; padding:2px 6px; font-size:0.65rem; font-weight:700; margin-left:auto; display:inline-flex; align-items:center; gap:2px;" title="Protegido: en uso en ${escaparHtml(roomUsage.sessionTitle)}">🔒 En Sesión</span>` : '';
+      const lockBadge = roomUsage.inUse ? `<span style="background:rgba(255, 183, 3, 0.16); color:#FFB703; border:1px solid #FFB703; border-radius:4px; padding:2px 7px; font-size:0.65rem; font-weight:800; margin-left:auto; display:inline-flex; align-items:center; gap:2px;" title="Protegido: en uso en ${escaparHtml(roomUsage.sessionTitle)}">🔒 En Sesión</span>` : '';
 
       cardHtml = `
         <div class="campus-room-card is-occupied" style="border-left-color: ${color};" onclick="openClassroomModal('${cls.id}')" title="Clic para gestionar el aula y nómina de estudiantes">
@@ -1243,7 +1243,16 @@ function toggleManualClassroomForm(forzar, titulo) {
   const form = document.getElementById('manual-classroom-form');
   if (!form) return;
   const mostrar = (forzar === undefined) ? (form.style.display === 'none') : !!forzar;
+
+  // Si se llama como toggle para cerrar (sin forzar), ejecutar la lógica completa de cancelación
+  if (!mostrar && forzar === undefined) {
+    cancelManualClassroomForm();
+    return;
+  }
+
   form.style.display = mostrar ? 'block' : 'none';
+  const sel = document.getElementById('builder-classroom');
+
   if (mostrar) {
     const t = document.getElementById('manual-form-title');
     if (t) t.textContent = titulo || '➕ Nuevo salón';
@@ -1253,10 +1262,98 @@ function toggleManualClassroomForm(forzar, titulo) {
       const el = document.getElementById(id);
       if (el) el.style.borderColor = '';
     });
+
+    // 1. Bloquear selector de salón superior para evitar saltos prematuros a pasos 2 y 3
+    if (sel) {
+      sel.value = '';
+      sel.disabled = true;
+      sel.style.opacity = '0.55';
+      sel.style.cursor = 'not-allowed';
+      sel.style.borderColor = '';
+      sel.style.color = '';
+    }
+
+    // 2. Ocultar grado y pasos siguientes mientras se crea/importa el salón
+    const gradeBlock = document.getElementById('grade-block');
+    if (gradeBlock) gradeBlock.style.display = 'none';
+    const gradeReadonly = document.getElementById('grade-readonly');
+    if (gradeReadonly) gradeReadonly.style.display = 'none';
+    const stepType = document.getElementById('step-eval-type');
+    if (stepType) stepType.style.display = 'none';
+    const stepSumm = document.getElementById('step-summary');
+    if (stepSumm) stepSumm.style.display = 'none';
+
+    // 3. Desaparecer inmediatamente el holograma (especialmente en celular donde queda de fondo)
+    if (typeof window !== 'undefined' && window.EvaluationHologram) {
+      if (typeof window.EvaluationHologram.stop === 'function') {
+        window.EvaluationHologram.stop();
+      }
+      const hCanvas = document.getElementById('eval-hologram-canvas');
+      if (hCanvas) {
+        hCanvas.style.opacity = '0';
+        hCanvas.style.display = 'none';
+      }
+    }
+
     const nameInput = document.getElementById('manual-classroom-name');
     if (nameInput && !nameInput.value) nameInput.focus();
+  } else {
+    // Al cerrar normalmente (ej: alta exitosa), rehabilitar el selector superior
+    if (sel) {
+      sel.disabled = false;
+      sel.style.opacity = '1';
+      sel.style.cursor = '';
+    }
+
+    // Limpiar campos del formulario
+    const nameInput = document.getElementById('manual-classroom-name');
+    if (nameInput) nameInput.value = '';
+    const studentsInput = document.getElementById('manual-classroom-students');
+    if (studentsInput) studentsInput.value = '';
+    const gradeInput = document.getElementById('manual-classroom-grade');
+    if (gradeInput) gradeInput.value = '';
+    if (typeof updateManualStudentCount === 'function') updateManualStudentCount();
   }
 }
+
+/**
+ * Cancela la creación/importación manual del salón:
+ * Cierra el formulario, limpia campos, rehabilita el selector superior en blanco
+ * y reactiva el holograma en la pantalla inicial de espera.
+ */
+function cancelManualClassroomForm() {
+  const form = document.getElementById('manual-classroom-form');
+  if (form) form.style.display = 'none';
+
+  // Limpiar campos
+  const nameInput = document.getElementById('manual-classroom-name');
+  if (nameInput) nameInput.value = '';
+  const studentsInput = document.getElementById('manual-classroom-students');
+  if (studentsInput) studentsInput.value = '';
+  const gradeInput = document.getElementById('manual-classroom-grade');
+  if (gradeInput) gradeInput.value = '';
+  if (typeof updateManualStudentCount === 'function') updateManualStudentCount();
+
+  // Rehabilita selector superior y lo deja en "Elige un salón"
+  const sel = document.getElementById('builder-classroom');
+  if (sel) {
+    sel.disabled = false;
+    sel.style.opacity = '1';
+    sel.style.cursor = '';
+    sel.value = '';
+  }
+
+  // Notificar reseteo de salón
+  if (typeof onClassroomSelectChanged === 'function') {
+    onClassroomSelectChanged('');
+  }
+
+  // Reactivar el holograma inicial
+  if (typeof window !== 'undefined' && window.EvaluationHologram && typeof window.EvaluationHologram.start === 'function') {
+    window.EvaluationHologram.start();
+  }
+}
+window.cancelManualClassroomForm = cancelManualClassroomForm;
 
 /**
  * Abre el formulario de alta con el nombre y la nómina ya cargados.
