@@ -1,0 +1,932 @@
+    /* =============================================================================
+       MÓDULO SALONES Y ALUMNOS: PLANO ARQUITECTÓNICO DEL COLEGIO (CAMPUS BLUEPRINT)
+       ============================================================================= */
+
+    #view-classrooms .mgr-content-wrapper {
+      padding-bottom: 40px !important;
+    }
+
+    /* =============================================================================
+       MÓDULO SALONES: PLANO ARQUITECTÓNICO CONTINUO (BLUEPRINT AZUL TÉCNICO)
+       PC: Formato Apaisado 5x2 (Más anchura que altura W > H)
+       Celular: Formato Vertical 2x5 (Más altura que anchura H > W)
+       ============================================================================= */
+
+    #view-classrooms .mgr-content-wrapper {
+      padding-bottom: 40px !important;
+    }
+
+    .campus-blueprint-container {
+      background: #F8F5EE;
+      border: 2.5px solid #2B2118;
+      border-radius: 24px;
+      padding: 24px 26px;
+      box-shadow: 
+        0 0 0 4px #FFB703,
+        0 0 0 8px rgba(0, 180, 216, 0.45),
+        0 24px 60px rgba(43, 33, 24, 0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      color: #181512;
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .campus-blueprint-header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1.5px solid #dcd8ce;
+      margin-bottom: 8px;
+    }
+
+    .campus-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .campus-badge-icon {
+      font-size: 1.7rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 6px rgba(255, 183, 3, 0.5));
+    }
+
+    .campus-title {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #181512;
+      letter-spacing: -0.02em;
+    }
+
+    .campus-subtitle {
+      margin: 2px 0 0;
+      font-size: 0.72rem;
+      color: #78716c;
+      font-weight: 500;
+    }
+
+    .campus-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .campus-occupancy-pill {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: #00B4D8;
+      background: #2B2118;
+      border: 1.5px solid #5c4a3b;
+      padding: 5px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-campus-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FFB703;
+      color: #181512;
+      border: 1.5px solid #f59e0b;
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(255, 183, 3, 0.35);
+      transition: all 0.18s ease;
+    }
+
+    .btn-campus-add:hover:not(:disabled) {
+      background: #ffc300;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255, 183, 3, 0.45);
+    }
+
+    .btn-campus-add:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ── ESTRUCTURA CAD CON MUROS CONTINUOS (BLUEPRINT) ── */
+    .campus-building-cad {
+      background-color: #081d30;
+      background-image: 
+        linear-gradient(rgba(0, 180, 216, 0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 180, 216, 0.14) 1px, transparent 1px);
+      background-size: 20px 20px;
+      border: 2.5px solid #00B4D8;
+      border-radius: 12px;
+      box-shadow: 0 0 16px rgba(0, 180, 216, 0.22), inset 0 0 30px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      /* PC por defecto: orientación apaisada (horizontal 5x2) */
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    /* Pabellón en PC: 5 aulas continuas de izquierda a derecha */
+    .campus-cad-wing {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Pasillo y Patio Central en PC: franja horizontal continua */
+    .campus-cad-corridor {
+      height: 24px;
+      background: rgba(0, 180, 216, 0.12);
+      border-top: 1.5px solid rgba(0, 180, 216, 0.45);
+      border-bottom: 1.5px solid rgba(0, 180, 216, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    .corridor-decor-line {
+      width: 100%;
+      height: 1px;
+      background: repeating-linear-gradient(90deg, #00B4D8 0, #00B4D8 8px, transparent 8px, transparent 16px);
+      opacity: 0.85;
+    }
+
+    /* AULAS CONTINUAS (Cero huecos, muros tabique continuos) */
+    .campus-room-card {
+      margin: 0;
+      padding: 14px 14px;
+      min-height: 142px;
+      box-sizing: border-box;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: background 0.2s ease, outline 0.2s ease;
+      background: rgba(42, 32, 24, 0.90);
+    }
+
+    /* Muros interiores continuos en PC (5x2):
+       Cada aula tiene borde derecho que actúa como tabique con la siguiente */
+    .wing-north .campus-room-card:not(:last-child),
+    .wing-south .campus-room-card:not(:last-child) {
+      border-right: 1.5px solid rgba(0, 180, 216, 0.25);
+    }
+
+    /* Hover técnico de aula en blueprint */
+    .campus-room-card:hover {
+      background: #382B21 !important;
+      outline: 2px solid #FFB703;
+      outline-offset: -2px;
+      z-index: 5;
+    }
+
+    /* Aula Ocupada */
+    .campus-room-card.is-occupied {
+      border-top: 3.5px solid #00B4D8;
+    }
+
+    .room-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .room-slot-num {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.64rem;
+      font-weight: 800;
+      color: #caf0f8;
+      letter-spacing: 0.05em;
+    }
+
+    .room-grade-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #1C1510;
+      color: #caf0f8;
+      border: 1px solid rgba(0, 180, 216, 0.45);
+      white-space: nowrap;
+    }
+
+    .room-name-row {
+      margin: 2px 0 4px;
+    }
+
+    .room-name {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #FFFDF8;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+
+    .room-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      margin-top: auto;
+    }
+
+    .room-students-count {
+      font-weight: 600;
+      color: #dcd8ce;
+      font-size: 0.72rem;
+    }
+
+    .room-status-door {
+      font-size: 0.70rem;
+      color: #00B4D8;
+      font-weight: 800;
+    }
+
+    /* Aula Disponible / Libre (Solo +) */
+    .campus-room-card.is-available {
+      background: rgba(8, 29, 48, 0.55);
+      border-top: 3px dashed rgba(0, 180, 216, 0.3);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .room-available-plus {
+      font-size: 2rem;
+      font-weight: 300;
+      color: rgba(0, 180, 216, 0.45);
+      line-height: 1;
+      transition: all 0.18s ease;
+      user-select: none;
+    }
+
+    .campus-room-card.is-available:hover .room-available-plus {
+      color: #FFB703;
+      transform: scale(1.2);
+    }
+
+    /* =============================================================================
+       ADAPTACIÓN CELULAR (MOBILE): FORMATO VERTICAL 2x5 (MÁS ALTURA QUE ANCHURA H > W)
+       ============================================================================= */
+    @media (max-width: 768px) {
+      .campus-blueprint-container {
+        padding: 14px 12px;
+      }
+
+      /* El edificio pasa de horizontal 5x2 a 3 columnas verticales:
+         Pabellón Izquierdo (5 aulas) | Pasillo Vertical | Pabellón Derecho (5 aulas) */
+      .campus-building-cad {
+        display: grid;
+        grid-template-columns: 1fr 20px 1fr;
+        width: 100%;
+      }
+
+      /* Cada ala se apila verticalmente con 5 aulas continuas */
+      .campus-cad-wing {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      /* Muros interiores continuos en Celular (2x5):
+         Tabiques horizontales entre aulas apiladas */
+      .wing-north .campus-room-card:not(:last-child),
+      .wing-south .campus-room-card:not(:last-child) {
+        border-right: none !important;
+        border-bottom: 1.5px solid rgba(0, 180, 216, 0.28) !important;
+      }
+
+      .campus-room-card {
+        min-height: 96px;
+        padding: 8px;
+      }
+
+      .room-name {
+        font-size: 0.84rem;
+      }
+
+      /* Pasillo Central en Celular: Eje vertical continuo entre ambos pabellones */
+      .campus-cad-corridor {
+        height: auto;
+        width: 100%;
+        background: rgba(2, 132, 199, 0.22);
+        border-top: none;
+        border-bottom: none;
+        border-left: 2px solid #0284c7;
+        border-right: 2px solid #0284c7;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .corridor-decor-line {
+        width: 1px;
+        height: 100%;
+        background: repeating-linear-gradient(to bottom, #38bdf8 0, #38bdf8 6px, transparent 6px, transparent 12px);
+      }
+    }
+
+    /* ── TWO-PANE SPLIT LAYOUT (PANTALLA DE RESUMEN Y DOCUMENTOS) ───── */
+    .summary-split-layout {
+      width: 100%;
+      box-sizing: border-box;
+      gap: 24px;
+      padding: 0;
+      display: none;
+    }
+
+    .summary-sticky-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-sizing: border-box;
+    }
+
+    .summary-actions-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .summary-sidebar-panel {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .btn-summary-neutral {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      color: #1e293b;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-summary-neutral:hover {
+      background: #f8fafc;
+      border-color: #0284c7;
+      color: #0284c7;
+    }
+
+    .btn-summary-primary {
+      background: #2563eb;
+      border: 1.5px solid #1d4ed8;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+    .btn-summary-primary:hover {
+      background: #1d4ed8;
+      border-color: #1e40af;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-summary-secondary {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      color: #475569;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-summary-secondary:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    .btn-summary-teal {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      color: #15803d;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+    .btn-summary-teal:hover {
+      background: #dcfce7;
+      border-color: #4ade80;
+    }
+
+    .btn-summary-blue {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      color: #1d4ed8;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+    .btn-summary-blue:hover {
+      background: #dbeafe;
+      border-color: #3b82f6;
+    }
+
+    /* ── BARRA SUPERIOR DE SESIONES GUARDADAS ([ 1 ] [ 2 ] [ 3 ] ...) ── */
+    .summary-sessions-strip {
+      position: sticky;
+      top: 60px;
+      z-index: 95;
+      width: fit-content;
+      max-width: 92vw;
+      margin: 4px auto 8px auto;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 3px 10px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sessions-numbers-list {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      overflow: visible;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 3px 4px;
+    }
+    .sessions-numbers-list::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+    .session-num-btn {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      border-radius: 9999px;
+      border: 1.5px solid var(--border-card);
+      background: #ffffff;
+      color: var(--text-carbon);
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 3px rgba(24, 21, 18, 0.05);
+    }
+    .session-num-btn:hover {
+      background: var(--bg-paper);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+    .session-num-btn.active {
+      background: var(--accent-cyan);
+      border-color: #0096c7;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 180, 216, 0.45);
+      font-weight: 900;
+      border-width: 2px;
+    }
+    .btn-session-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+      color: #475569;
+      border-radius: 9px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-session-add:hover {
+      background: var(--bg-paper);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* ── BLOQUE ASIMÉTRICO (IZQUIERDA 3 BOTONES / DERECHA ESCÁNER ALTO) ── */
+    .summary-action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      align-items: stretch;
+    }
+    .summary-secondary-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .btn-summary-sub {
+      background: #ffffff;
+      border: 1.5px solid var(--border-card);
+      color: var(--text-carbon);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 1px 2px rgba(24, 21, 18, 0.04);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      min-height: 36px;
+      box-sizing: border-box;
+      flex: 1;
+    }
+    .btn-summary-sub:hover {
+      background: var(--bg-paper);
+      border-color: #cbd5e1;
+      color: var(--text-carbon);
+    }
+    .btn-summary-sub-discard {
+      color: var(--text-muted);
+      border-color: var(--border-card);
+      background: #ffffff;
+    }
+    .btn-summary-sub-discard:hover {
+      background: var(--bg-paper);
+      border-color: #94a3b8;
+      color: var(--text-carbon);
+    }
+    .btn-summary-sub-delete {
+      color: #dc2626 !important;
+      border-color: #fecaca !important;
+      background: #fff5f5 !important;
+    }
+    .btn-summary-sub-delete:hover {
+      background: #fee2e2 !important;
+      border-color: #f87171 !important;
+      color: #b91c1c !important;
+    }
+    /* Botón Hero de Escaneo Scanwing: Ámbar Oro + Negro Carbón (#181512) */
+    .btn-summary-scan-card {
+      background: var(--accent-amber);
+      border: 1.5px solid #d97706;
+      color: var(--text-carbon);
+      border-radius: 12px;
+      padding: 12px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(255, 183, 3, 0.4);
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      height: 100%;
+      min-height: 120px;
+      box-sizing: border-box;
+    }
+    .btn-summary-scan-card:hover {
+      background: #f59e0b;
+      border-color: #b45309;
+      box-shadow: 0 6px 20px rgba(255, 183, 3, 0.55);
+      transform: translateY(-2px);
+    }
+    .scan-card-icon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      background: rgba(24, 21, 18, 0.1);
+      border-radius: 10px;
+      color: var(--text-carbon);
+    }
+    .scan-card-label {
+      font-size: 0.92rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-align: center;
+      line-height: 1.2;
+      color: var(--text-carbon);
+    }
+
+    .summary-document-viewport {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Desbloqueo de overflow para permitir sticky inamovible (estilo Modelo REA Targeted Inspections) */
+    #view-create:has(.active-split),
+    #view-create.has-active-split {
+      overflow: visible !important;
+      min-height: 100vh !important;
+    }
+
+    body:has(.active-split),
+    body.has-active-split {
+      overflow-x: clip !important;
+    }
+
+    /* Vista de Escritorio (PC / Laptop): Dos columnas con fijación real y auto-escala */
+    @media screen and (min-width: 901px) {
+      .summary-split-layout.active-split {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 28px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+      }
+
+      /* Columna izquierda fija (Sticky real bajo el topbar, idéntico a Modelo REA) */
+      .summary-sticky-sidebar {
+        flex: 0 0 340px !important;
+        width: 340px !important;
+        max-width: 340px !important;
+        position: sticky !important;
+        top: 75px !important;
+        align-self: flex-start !important;
+        z-index: 25 !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+      }
+
+      /* Columna derecha: Visor de Documentos con Auto-Escala Completa */
+      .summary-document-viewport {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 24px !important;
+        padding-top: 0 !important;
+        padding-bottom: 50px !important;
+        padding-right: 18px !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+      }
+
+      .summary-document-viewport #pages-container,
+      .summary-document-viewport #booklet-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex;
+        flex-direction: column !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      .summary-document-viewport #booklet-container:empty,
+      .summary-document-viewport #pages-container:empty {
+        display: none !important;
+      }
+
+      .summary-document-viewport #pages-container > :first-child,
+      .summary-document-viewport #booklet-container > :first-child {
+        margin-top: 0 !important;
+      }
+
+      .summary-document-viewport .sheet-a4,
+      .summary-document-viewport .sheet-a4-quad,
+      .summary-document-viewport .sheet-a4-quad-v,
+      .summary-document-viewport .sheet-a4-split,
+      .summary-document-viewport .sheet-a4-v-single,
+      .summary-document-viewport .sheet-a4-h-single,
+      .summary-document-viewport .sheet-booklet-landscape,
+      .summary-document-viewport .sheet-booklet-quad,
+      .summary-document-viewport .sheet-booklet-portrait {
+        box-sizing: border-box !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+    }
+
+    /* Vista de Celular / Tablet: Diseño apilado con desplazamiento horizontal nativo */
+    @media screen and (max-width: 900px) {
+      .teacher-panel,
+      .teacher-panel.has-active-split {
+        overflow: visible !important;
+      }
+
+      .summary-sessions-strip {
+        top: 58px !important;
+        z-index: 95 !important;
+        margin: 4px auto 8px auto !important;
+        padding: 2px 8px !important;
+      }
+      .session-num-btn {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        font-size: 0.82rem !important;
+      }
+
+      .summary-split-layout.active-split {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      .summary-sticky-sidebar {
+        position: static !important;
+        width: 100% !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+      }
+
+      .summary-actions-stack {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+
+      .summary-action-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+        align-items: stretch !important;
+      }
+      .summary-action-grid .btn-summary-scan-card {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 120px !important;
+      }
+
+      .summary-document-viewport {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 30px !important;
+        box-sizing: border-box !important;
+      }
+
+      .summary-document-viewport.viewing-results-mode {
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+      }
+
+      #summary-inline-results-container {
+        border-radius: 12px !important;
+        overflow: visible !important;
+      }
+
+      #summary-inline-results-container > div:last-child {
+        overflow-y: visible !important;
+        max-height: none !important;
+      }
+
+      .summary-document-viewport #pages-container,
+      .summary-document-viewport #booklet-container {
+        width: max-content !important;
+        min-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        box-sizing: border-box !important;
+      }
+
+      .summary-document-viewport .sheet-a4,
+      .summary-document-viewport .sheet-a4-quad,
+      .summary-document-viewport .sheet-a4-quad-v,
+      .summary-document-viewport .sheet-a4-split,
+      .summary-document-viewport .sheet-a4-v-single,
+      .summary-document-viewport .sheet-a4-h-single,
+      .summary-document-viewport .sheet-booklet-landscape,
+      .summary-document-viewport .sheet-booklet-quad,
+      .summary-document-viewport .sheet-booklet-portrait {
+        zoom: 1 !important;
+        transform: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+    }
+
+    /* Adaptación del panel contenedor para permitir ancho expandido en PC cuando el split está activo */
+    @media screen and (min-width: 901px) {
+      .teacher-panel:has(.summary-split-layout.active-split),
+      .teacher-panel.has-active-split {
+        max-width: 96% !important;
+        width: 96% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+    }
+
+    /* Reseteo para Impresión: Las hojas siempre se imprimen al 100% en milímetros exactos */
+    @media print {
+      .summary-document-viewport,
+      .summary-document-viewport #pages-container,
+      .summary-document-viewport #booklet-container,
+      .summary-document-viewport .sheet-a4,
+      .summary-document-viewport .sheet-a4-quad,
+      .summary-document-viewport .sheet-a4-quad-v,
+      .summary-document-viewport .sheet-a4-split,
+      .summary-document-viewport .sheet-a4-v-single,
+      .summary-document-viewport .sheet-a4-h-single,
+      .summary-document-viewport .sheet-booklet-landscape,
+      .summary-document-viewport .sheet-booklet-quad,
+      .summary-document-viewport .sheet-booklet-portrait {
+        zoom: 1 !important;
+        transform: none !important;
+        margin-bottom: 0 !important;
+        max-width: none !important;
+        overflow: visible !important;
+      }
+    }
+

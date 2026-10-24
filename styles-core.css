@@ -1,0 +1,562 @@
+@page {
+      size: A4 portrait;
+      margin: 6mm;
+    }
+
+    /* ==========================================================================
+       VARIABLES DE COLOR — IDENTIDAD SCANWING / OCELO DE MARIPOSA
+       Regla 60-30-10:
+       - 60% Dominante:  --bg-paper (#F9F8F3) y Blanco (#FFFFFF)
+       - 30% Estructura:  --text-carbon (#181512) y --border-subtle (#e5e3dc)
+       - 10% Acentos:     --accent-cyan (#00B4D8) y --accent-amber (#FFB703)
+       ========================================================================== */
+    :root {
+      --bg-paper: #F9F8F3;
+      --bg-surface: #FFFFFF;
+      --text-carbon: #181512;
+      --text-muted: #57534e;
+      --border-subtle: #e5e3dc;
+      --border-card: #dcd8ce;
+      --accent-cyan: #00B4D8;
+      --accent-cyan-light: #e0f7fa;
+      --accent-amber: #FFB703;
+      --accent-amber-light: #fff8e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-paper);
+      color: var(--text-carbon);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Cabecera Principal Topbar (Inspiración AIROBOTS / Unitree Go2) */
+    header {
+      background: transparent;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border: none;
+      width: 100%;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    header.header-dark {
+      background: rgba(7, 10, 20, 0.92) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.15) !important;
+    }
+
+    header.header-dark .topbar-modality-pill {
+      background: rgba(15, 23, 42, 0.85) !important;
+      color: #38bdf8 !important;
+      -webkit-text-fill-color: #38bdf8 !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      box-shadow: 0 0 12px rgba(0, 180, 216, 0.2) !important;
+    }
+
+    header.header-dark .island-nav-item {
+      background: rgba(15, 23, 42, 0.85) !important;
+      color: #f8fafc !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    header.header-dark .island-icon-btn {
+      background: rgba(15, 23, 42, 0.85) !important;
+      color: #f8fafc !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    header.header-light {
+      background: rgba(249, 248, 243, 0.92) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      border-bottom: 1px solid rgba(24, 21, 18, 0.08) !important;
+    }
+
+    .island-topbar {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    /* ── Botones de Navegación en Barra Superior (Solo Íconos - v3.2.94) ── */
+    .topbar-nav-buttons {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-nav-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-card);
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 6px rgba(24, 21, 18, 0.05);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .topbar-nav-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 6px 16px rgba(0, 180, 216, 0.2);
+      background: #ffffff;
+    }
+
+    .topbar-nav-btn:active {
+      transform: translateY(0);
+    }
+
+    .topbar-nav-btn .strip-card-icon {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .topbar-nav-btn .icon-sky {
+      color: var(--accent-cyan);
+      background: var(--accent-cyan-light);
+    }
+
+    .topbar-nav-btn .icon-indigo {
+      color: var(--accent-amber);
+      background: var(--accent-amber-light);
+    }
+
+    .topbar-nav-btn .icon-amber {
+      color: #b45309;
+      background: #fef3c7;
+    }
+
+    .topbar-nav-btn:hover .icon-sky {
+      background: rgba(0, 180, 216, 0.2);
+    }
+    .topbar-nav-btn:hover .icon-indigo {
+      background: rgba(255, 183, 3, 0.25);
+    }
+    .topbar-nav-btn:hover .icon-amber {
+      background: rgba(180, 83, 9, 0.2);
+    }
+
+    .topbar-nav-btn .nav-count-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: var(--accent-amber);
+      color: var(--text-carbon);
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(255, 183, 3, 0.4);
+      z-index: 2;
+    }
+
+    .island-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .island-brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .island-brand-title {
+      font-size: 0.94rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: #0f172a;
+      -webkit-text-fill-color: #0f172a;
+    }
+
+    .version-tag {
+      background: rgba(2, 132, 199, 0.08);
+      color: #0284c7;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+      display: inline-block;
+      line-height: 1.2;
+      letter-spacing: 0.03em;
+    }
+
+    /* Cápsula Flotante al Centro */
+    .island-capsule {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 9999px;
+      padding: 0 !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .island-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .island-nav-item {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #475569;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.2;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .island-nav-item:hover {
+      color: #0f172a;
+      background: rgba(241, 245, 249, 0.9);
+    }
+
+    .island-nav-item.active {
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 9999px !important;
+      padding: 6px 16px !important;
+      font-size: 0.82rem !important;
+      font-weight: 800 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      white-space: nowrap !important;
+      line-height: 1.2 !important;
+    }
+
+    /* Píldora de Modalidad Seleccionada en la Topbar (Idéntica a INICIO) */
+    .topbar-modality-pill {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 9999px !important;
+      padding: 6px 16px !important;
+      font-size: 0.82rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.02em !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      white-space: nowrap !important;
+      line-height: 1.2 !important;
+      cursor: default !important;
+      user-select: none !important;
+      pointer-events: none !important;
+    }
+
+    .shared-element-flyer {
+      box-sizing: border-box;
+      will-change: transform, top, left, width, height, font-size, background-color;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 8px 12px !important;
+      }
+      .island-topbar {
+        gap: 8px !important;
+      }
+      .topbar-modality-pill {
+        padding: 5px 10px !important;
+        font-size: 0.75rem !important;
+        max-width: 155px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      .island-nav-item.active {
+        padding: 5px 10px !important;
+        font-size: 0.75rem !important;
+      }
+    }
+
+    .nav-count-badge {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #b45309;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 9999px;
+    }
+
+    .island-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .island-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+    }
+
+    .island-icon-btn:hover {
+      background: #0f172a;
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    .island-avatar-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      border-radius: 50%;
+      outline: none;
+      transition: transform 0.18s;
+    }
+
+    .island-avatar-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .island-avatar-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #0284c7;
+      background: #e2e8f0;
+      display: block;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    }
+
+    .island-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+      padding: 12px;
+      min-width: 210px;
+      z-index: 1000;
+    }
+
+    .island-btn-logout {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .island-btn-logout:hover {
+      background: #fca5a5;
+      color: #b91c1c;
+    }
+
+    @media (max-width: 440px) {
+      header {
+        padding: 8px 10px;
+      }
+      .brand-text h1 {
+        font-size: 0.95rem;
+      }
+      .version-tag {
+        font-size: 0.6rem;
+        padding: 1px 5px;
+      }
+      .btn-header-bank {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+        gap: 4px;
+      }
+      .btn-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+      }
+      #btn-user-avatar img {
+        width: 30px !important;
+        height: 30px !important;
+      }
+    }
+
+    @media (max-width: 350px) {
+      .btn-bank-text {
+        font-size: 0.68rem;
+      }
+      .btn-icon {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    .btn-icon {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-icon:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-icon:active {
+      transform: scale(0.96);
+    }
+
+    .btn-icon.active {
+      background: #f59e0b;
+      color: #000;
+      border-color: #fbbf24;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Pestañas de Navegación */
+    .tab-bar {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      padding: 0 16px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #f8fafc;
+    }
+
+    .tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .tab-badge {
+      background: rgba(14, 165, 233, 0.2);
+      color: #38bdf8;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    /* VISTAS PRINCIPALES */
+    .view-content {
+      display: none;
+      flex: 1;
+      width: 100%;
+    }
+
+    .view-content.active {
+      display: flex;
+      flex-direction: column;
+    }

@@ -1,0 +1,466 @@
+    /* ========================================================= */
+    /* SIMULADOR INTERACTIVO DE FICHAS (WYSIWYG)                 */
+    /* ========================================================= */
+    #sheet-simulator-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .sim-toolbar {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sim-pill-btn {
+      padding: 5px 11px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .sim-pill-btn:hover:not(:disabled) {
+      border-color: #94a3b8;
+      color: #0f172a;
+      background: #f1f5f9;
+    }
+
+    .sim-pill-btn.active {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      color: #0369a1;
+      font-weight: 800;
+    }
+
+    .sim-pill-btn.active-emerald {
+      background: #d1fae5;
+      border-color: #10b981;
+      color: #065f46;
+      font-weight: 800;
+    }
+
+    .sim-pill-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .sim-card-viewport {
+      width: 100%;
+      background: #f1f5f9;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 20px 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.06);
+      margin: 0 auto;
+    }
+
+    .sim-card-viewport.is-horizontal {
+      max-width: 860px;
+    }
+
+    .sim-card-viewport.is-vertical {
+      max-width: 580px;
+    }
+
+    .sim-card-host {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      background: #ffffff;
+      border-radius: 2px;
+      transform-origin: top center;
+      flex-shrink: 0;
+    }
+
+    /* Guardrail 14: Los hijos directos del visor del simulador nunca heredan flex-basis */
+    .sim-card-host > div {
+      flex: 0 0 auto !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Ranura interactiva sobre la ficha del simulador */
+    .sim-interactive-slot {
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      position: relative !important;
+      border-radius: 3px !important;
+    }
+
+    .sim-interactive-slot:hover {
+      outline: 2px dashed #6366f1 !important;
+      outline-offset: 1px !important;
+      background: rgba(99, 102, 241, 0.08) !important;
+    }
+
+    .sim-slot-empty {
+      border: 1.5px dashed #6366f1 !important;
+      background: rgba(99, 102, 241, 0.06) !important;
+      padding: 4px 8px !important;
+      border-radius: 4px !important;
+      color: #4f46e5 !important;
+      font-size: 0.75rem !important;
+      font-weight: 800 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      animation: simSlotPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes simSlotPulse {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 1; border-color: #818cf8; background: rgba(99, 102, 241, 0.12); }
+    }
+
+    /* ── FORMATO A6 CON CUADRÍCULA (HORIZONTAL Y VERTICAL) ── */
+    .card-a6-v {
+      width: 89mm;
+      min-width: 89mm;
+      max-width: 89mm;
+      height: 132mm;
+      min-height: 132mm;
+      max-height: 132mm;
+      flex: 0 0 89mm;
+      border: 1mm solid #000000;
+      padding: 2.5mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+    .card-a6-v .fiducial {
+      position: absolute;
+      width: 8mm;
+      height: 8mm;
+      z-index: 10;
+    }
+    .card-a6-v .fiducial svg { width: 100%; height: 100%; display: block; }
+    .card-a6-v .fiducial-tl { top: 3.5mm; left: 3.5mm; }
+    .card-a6-v .fiducial-tr { top: 3.5mm; right: 3.5mm; }
+    .card-a6-v .fiducial-bl { bottom: 3.5mm; left: 3.5mm; }
+    .card-a6-v .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
+
+    .a6-v-card-header {
+      height: 18.5mm;
+      padding: 2mm 12mm 1.5mm 12mm;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000000;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .a6-problem, .a6-v-problem {
+      margin: 1.5mm 0 1mm 0;
+      padding: 0 1mm;
+      font-size: 7.8pt;
+      line-height: 1.25;
+      font-weight: 600;
+      color: #0f172a;
+      overflow: hidden;
+    }
+
+    .a6-grid-wrapper {
+      width: 104mm;
+      height: 40mm;
+      flex: 0 0 40mm;
+      margin: 1mm auto;
+      align-self: center;
+      position: relative;
+    }
+
+    .notebook-grid-a6 {
+      width: 104mm;
+      height: 40mm;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      border: 1.2px solid #64748b;
+      border-radius: 2px;
+      background: #ffffff;
+    }
+    .notebook-grid-a6 > i {
+      border-right: 0.75pt solid #e4e4e7;
+      border-bottom: 0.75pt solid #e4e4e7;
+      box-sizing: border-box;
+    }
+    .notebook-grid-a6 > i:nth-child(13n) { border-right: none; }
+    .notebook-grid-a6 > i:nth-child(n+53) { border-bottom: none; }
+
+    .a6-v-grid-wrapper {
+      width: 72mm;
+      height: 72mm;
+      flex: 0 0 72mm;
+      margin: 1.5mm auto;
+      align-self: center;
+      position: relative;
+    }
+
+    .notebook-grid-a6-v {
+      width: 72mm;
+      height: 72mm;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(9, 1fr);
+      border: 1.2px solid #64748b;
+      border-radius: 2px;
+      background: #ffffff;
+    }
+    .notebook-grid-a6-v > i {
+      border-right: 0.75pt solid #e4e4e7;
+      border-bottom: 0.75pt solid #e4e4e7;
+      box-sizing: border-box;
+    }
+    .notebook-grid-a6-v > i:nth-child(9n) { border-right: none; }
+    .notebook-grid-a6-v > i:nth-child(n+73) { border-bottom: none; }
+
+    .a6-omr-row {
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      margin-top: 1mm;
+      padding: 0 18mm;
+      box-sizing: border-box;
+    }
+
+    .card-a6-v .a6-omr-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4.5mm;
+      padding: 0 12mm;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .card-a6-v .a6-omr-row .v-omr-option {
+      width: auto;
+      gap: 1.5mm;
+    }
+
+    .a6-free-answer-strip {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 3mm;
+      margin: 5mm auto 0 auto;
+      width: 104mm;
+      padding: 0 1mm;
+      box-sizing: border-box;
+    }
+    .card-a6-v .a6-free-answer-strip {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 3mm;
+      margin: 15mm auto 0 auto;
+      width: 72mm;
+      padding-left: 5mm;
+      box-sizing: border-box;
+    }
+
+    /* Badge de formato sobre la ficha, examen o cartilla (Opción B) */
+    .sim-format-badge {
+      background: #f0f9ff;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      box-shadow: none;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Control de redimensionamiento de cuadrícula en esquina inferior derecha */
+    .sim-grid-stepper {
+      position: absolute !important;
+      bottom: 4px !important;
+      right: 4px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 3px !important;
+      background: rgba(15, 23, 42, 0.94) !important;
+      backdrop-filter: blur(4px) !important;
+      padding: 2px 5px !important;
+      border-radius: 6px !important;
+      border: 1px solid #334155 !important;
+      z-index: 50 !important;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
+      pointer-events: auto !important;
+    }
+
+    .focalizada-grid-slot-1p,
+    .focalizada-grid-slot-2p,
+    .focalizada-grid-slot-3p,
+    .focalizada-grid-slot-4p {
+      display: flex !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 20px !important;
+      margin-top: 2.5mm !important;
+      padding-right: 1mm !important;
+      box-sizing: border-box !important;
+    }
+    .focalizada-grid-slot-1p .sim-grid-stepper,
+    .focalizada-grid-slot-2p .sim-grid-stepper,
+    .focalizada-grid-slot-3p .sim-grid-stepper,
+    .focalizada-grid-slot-4p .sim-grid-stepper {
+      position: static !important;
+      margin-left: auto !important;
+    }
+
+    .sim-stepper-label {
+      font-size: 0.62rem !important;
+      color: #94a3b8 !important;
+      font-weight: 700 !important;
+      margin-right: 2px !important;
+      user-select: none !important;
+    }
+
+    .sim-stepper-btn {
+      background: #1e293b !important;
+      border: 1px solid #475569 !important;
+      color: #38bdf8 !important;
+      font-size: 0.75rem !important;
+      font-weight: 900 !important;
+      width: 20px !important;
+      height: 20px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 4px !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      padding: 0 !important;
+      line-height: 1 !important;
+    }
+
+    .sim-stepper-btn:hover:not(:disabled) {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      border-color: #38bdf8 !important;
+    }
+
+    .sim-stepper-btn:disabled {
+      opacity: 0.3 !important;
+      cursor: not-allowed !important;
+      color: #64748b !important;
+      border-color: #1e293b !important;
+    }
+
+    /* Botón interactivo para encender/apagar cuadrícula en Focalizada */
+    .sim-grid-toggle-btn {
+      position: absolute !important;
+      bottom: 4px !important;
+      right: 4px !important;
+      background: #0f172a !important;
+      border: 1.5px solid #0284c7 !important;
+      color: #38bdf8 !important;
+      font-size: 0.72rem !important;
+      font-weight: 800 !important;
+      padding: 3px 9px !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      z-index: 50 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      pointer-events: auto !important;
+      transition: all 0.15s ease !important;
+      user-select: none !important;
+    }
+    .sim-grid-toggle-btn:hover {
+      background: #1e293b !important;
+      border-color: #38bdf8 !important;
+      color: #7dd3fc !important;
+    }
+    .sim-grid-toggle-btn.active {
+      background: #064e3b !important;
+      border-color: #10b981 !important;
+      color: #a7f3d0 !important;
+    }
+
+    @media print {
+      .sim-grid-toggle-btn,
+      .sim-grid-stepper {
+        display: none !important;
+      }
+    }
+
+    /* ── CARTILLA OMR INTERACTIVA WYSIWYG & KEYPAD RÁPIDO ── */
+    .a6-q-row.active-row,
+    .v-q-row.active-row {
+      background: #e0f2fe !important;
+      border-radius: 4px;
+      box-shadow: 0 0 0 1.5px #0284c7;
+    }
+    .a6-bubble.filled,
+    .v-bubble.filled {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 900 !important;
+    }
+    .a6-q-row,
+    .v-q-row {
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background 0.15s ease;
+    }
+    .a6-q-row:hover,
+    .v-q-row:hover {
+      background: rgba(2, 132, 199, 0.08);
+    }
+    .a6-bubble,
+    .v-bubble {
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.1s ease, background 0.15s ease;
+    }
+    .a6-bubble:active,
+    .v-bubble:active {
+      transform: scale(0.9);
+    }
+    .btn-r3-keypad.active {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35) !important;
+    }

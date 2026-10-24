@@ -1,0 +1,3002 @@
+    /* ========================================================= */
+    /* VISTA 1: EVALUACIÓN EN AULA (PALETA MARIPOSA BIÓNICA)     */
+    /* ========================================================= */
+    #view-create {
+      background: #EDE8DF !important;
+      padding: 16px;
+      align-items: center;
+      overflow-y: auto;
+      min-height: calc(100vh - 65px);
+      color: #2B2118;
+    }
+
+    #view-create .teacher-panel {
+      width: 100%;
+      max-width: 900px;
+      background: #EDE8DF !important;
+      border: 1.5px solid rgba(43, 33, 24, 0.16) !important;
+      border-radius: 16px;
+      padding: 0;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px -2px rgba(43, 33, 24, 0.06), 0 1px 3px rgba(43, 33, 24, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── PASO 1: Selección de Salón en Paleta Mariposa ── */
+    #view-create #step-classroom {
+      padding: 18px 20px;
+      border-bottom: 1.5px solid rgba(43, 33, 24, 0.1) !important;
+    }
+
+    #view-create #step-classroom label {
+      color: #2B2118 !important;
+      font-size: 0.74rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.06em !important;
+    }
+
+    #view-create #builder-classroom {
+      background: #F8F6F0 !important;
+      color: #2B2118 !important;
+      font-weight: 700 !important;
+      border: 1.5px solid #2B2118 !important;
+      border-radius: 10px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    #view-create #builder-classroom:focus {
+      border-color: #00b4d8 !important;
+      box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.25) !important;
+    }
+
+    #view-create #builder-classroom option {
+      background: #F8F6F0 !important;
+      color: #2B2118 !important;
+    }
+
+    #view-create .btn-dashed-action {
+      background: #F8F6F0 !important;
+      border: 1.5px dashed #2B2118 !important;
+      color: #2B2118 !important;
+      font-weight: 700 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 3px rgba(43, 33, 24, 0.04) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    #view-create .btn-dashed-action:hover {
+      border-color: #00b4d8 !important;
+      color: #00b4d8 !important;
+      background: #FFFFFF !important;
+      box-shadow: 0 2px 6px rgba(0, 180, 216, 0.2) !important;
+    }
+
+    #view-create #classroom-actions-group span {
+      color: #5C4D3C !important;
+    }
+
+    #view-create #classroom-actions-group strong {
+      color: #2B2118 !important;
+    }
+
+    /* Formulario manual de salón */
+    #view-create #manual-classroom-form {
+      background: #E5DFD3 !important;
+      border: 1.5px solid #D8D2C4 !important;
+      color: #2B2118 !important;
+    }
+
+    #view-create #manual-form-title {
+      color: #2B2118 !important;
+      font-weight: 800 !important;
+    }
+
+    #view-create #manual-classroom-name,
+    #view-create #manual-classroom-grade,
+    #view-create #manual-classroom-students {
+      background: #F8F6F0 !important;
+      border: 1.5px solid #2B2118 !important;
+      color: #2B2118 !important;
+    }
+
+    /* ── PASO 2: Preguntas de la Evaluación ── */
+    #view-create #step-eval-type {
+      padding: 0 !important;
+      border-bottom: none !important;
+    }
+
+    #view-create #step-classroom,
+    #view-create .sim-step-row {
+      border-bottom: 1.5px solid rgba(43, 33, 24, 0.22) !important;
+    }
+
+    #view-create #step-eval-type label {
+      color: #2B2118 !important;
+      font-size: 0.78rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    #view-create .sim-toolbar {
+      background: #E5DFD3 !important;
+      border: 1.5px solid rgba(43, 33, 24, 0.15) !important;
+      border-radius: 12px !important;
+      padding: 12px 16px !important;
+    }
+
+    #view-create .sim-toolbar span {
+      color: #2B2118 !important;
+      font-weight: 700 !important;
+    }
+
+    #view-create .sim-pill-btn {
+      background: #F8F6F0 !important;
+      border: 1.5px solid #D8D2C4 !important;
+      color: #5C4D3C !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 2px rgba(43, 33, 24, 0.04) !important;
+      transition: all 0.15s ease !important;
+    }
+
+    #view-create .sim-pill-btn:hover:not(:disabled) {
+      border-color: #00b4d8 !important;
+      color: #00b4d8 !important;
+      background: #FFFFFF !important;
+    }
+
+    /* Pastilla activa Rama 1 (Cian escamas de mariposa) */
+    #view-create .sim-pill-btn.active {
+      background: #00B4D8 !important;
+      border-color: #2B2118 !important;
+      color: #FFFFFF !important;
+      font-weight: 800 !important;
+      box-shadow: 0 2px 8px rgba(0, 180, 216, 0.35) !important;
+    }
+
+    /* Pastilla activa Rama 2 (Ámbar dorado ocelos de mariposa) */
+    #view-create .sim-pill-btn.active-emerald {
+      background: #FFB703 !important;
+      border-color: #2B2118 !important;
+      color: #2B2118 !important;
+      font-weight: 800 !important;
+      box-shadow: 0 2px 8px rgba(255, 183, 3, 0.35) !important;
+    }
+
+    /* Badge de formato sobre la ficha */
+    #view-create .sim-format-badge {
+      background: rgba(0, 180, 216, 0.15) !important;
+      color: #026A81 !important;
+      border: 1.5px solid #00B4D8 !important;
+      font-weight: 800 !important;
+    }
+
+    /* Viewport de la ficha (El escenario lino donde descansa la hoja física) */
+    #view-create .sim-card-viewport {
+      background: #E5DFD3 !important;
+      border: 1.5px solid #D8D2C4 !important;
+      border-radius: 12px !important;
+      box-shadow: inset 0 2px 8px rgba(43, 33, 24, 0.06) !important;
+    }
+
+    /* Botón de Confirmación */
+    #view-create #sim-btn-confirm {
+      background: linear-gradient(135deg, #00B4D8, #0077B6) !important;
+      border: 1.5px solid #2B2118 !important;
+      color: #FFFFFF !important;
+      font-weight: 800 !important;
+      box-shadow: 0 4px 14px rgba(0, 180, 216, 0.3) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    #view-create #sim-btn-confirm:hover {
+      background: linear-gradient(135deg, #48CAE4, #00B4D8) !important;
+      box-shadow: 0 6px 20px rgba(0, 180, 216, 0.45) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    /* Rama 3: Builder de Cartilla de Respuestas */
+    #view-create #branch-3-options {
+      background: #E5DFD3 !important;
+      border: 1.5px solid #D8D2C4 !important;
+      color: #2B2118 !important;
+    }
+
+    #view-create .btn-r3-qcount {
+      background: #F8F6F0 !important;
+      border: 1.5px solid #D8D2C4 !important;
+      color: #2B2118 !important;
+      font-weight: 700 !important;
+    }
+
+    #view-create .btn-r3-qcount.active {
+      background: #00B4D8 !important;
+      border-color: #2B2118 !important;
+      color: #FFFFFF !important;
+      font-weight: 800 !important;
+    }
+
+    #view-create #r3-keypad-panel {
+      background: #F8F6F0 !important;
+      border: 1.5px solid #D8D2C4 !important;
+    }
+
+    #view-create .btn-r3-keypad {
+      background: #F8F6F0 !important;
+      border: 1.5px solid #2B2118 !important;
+      color: #2B2118 !important;
+      font-weight: 800 !important;
+    }
+
+    #view-create .btn-r3-keypad:hover {
+      border-color: #00B4D8 !important;
+      color: #00B4D8 !important;
+      background: #FFFFFF !important;
+    }
+
+    .teacher-panel {
+      width: 100%;
+      max-width: 900px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .panel-header h2 {
+      font-size: 1.15rem;
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .panel-header p {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-control {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      color: #0f172a;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+    }
+
+    .form-control option {
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    .btn-dashed-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      border: 1.5px dashed #cbd5e1;
+      color: #475569;
+      border-radius: 9999px;
+      padding: 7px 14px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-dashed-action:hover {
+      background: #f8fafc;
+      border-color: #0284c7;
+      color: #0284c7;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.12);
+    }
+
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 75px;
+      line-height: 1.45;
+    }
+
+    .builder-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 8px;
+    }
+
+    .btn-generate {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s;
+    }
+
+    .btn-generate:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-print-action {
+      background: #0f766e;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-print-action:hover {
+      background: #115e59;
+    }
+
+    .btn-goto-scan {
+      background: #16a34a;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      transition: all 0.2s;
+    }
+
+    .btn-goto-scan:hover {
+      background: #15803d;
+    }
+
+    /* ESTILOS DE IMPRESIÓN Y HOJAS A4 (Plantilla de 10 Alumnos) */
+    #pages-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      gap: 20px;
+    }
+
+    /* ── HOJA IMPRIMIBLE: 188 x 275 mm ──────────────────────────────
+       Se dimensiona para el PEOR CASO realista, no para el @page de 6mm.
+       Chrome y sus derivados usan 1cm de margen por defecto cuando el
+       diálogo está en "Predeterminado", y eso deja 190 x 277 mm imprimibles.
+       Con 188 x 275 mm la hoja entra tanto con 1cm como con 6mm de margen,
+       y como el alto (275mm) es menor que cualquier caja imprimible
+       razonable, el navegador NUNCA tiene motivo para partirla en dos
+       páginas: una hoja = una página, siempre.
+       Contenido: 2mm + ficha 134mm + corte 3mm + ficha 134mm + 2mm = 275mm.
+       No usar justify-content:space-between aquí: estiraba la hoja por
+       encima del área imprimible y partía cada hoja en dos páginas. */
+    .sheet-a4 {
+      background: white;
+      width: 188mm;
+      height: 275mm;
+      padding: 2mm 0;
+      margin: 6mm auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      box-sizing: border-box;
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      position: relative;
+    }
+
+    /* ── HOJA A4 CON 4 ALUMNOS (CARTILLA OMR HASTA 8 PREGUNTAS) ─────
+       Orientación Horizontal (Landscape: 275 x 188 mm).
+       Cuadrícula de 2 x 2 cartillas A6 (136 x 92 mm cada una).
+       1 sola columna vertical de burbujas por estudiante. */
+    .sheet-a4-quad {
+      background: #ffffff;
+      width: 275mm;
+      height: 188mm;
+      margin: 6mm auto;
+      padding: 3mm 4mm;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      color: #000000;
+    }
+
+    .quad-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      height: 89mm;
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .quad-hcut {
+      height: 4mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.62rem;
+      color: #64748b;
+      border-top: 1px dashed #94a3b8;
+      border-bottom: 1px dashed #94a3b8;
+      background: #f8fafc;
+      letter-spacing: 0.5px;
+      user-select: none;
+      margin: 0 -4mm;
+    }
+
+    .quad-vcut {
+      width: 3mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: #f8fafc;
+      user-select: none;
+    }
+
+    .quad-vcut-line {
+      flex: 1;
+      width: 0;
+      border-left: 1px dashed #94a3b8;
+    }
+
+    .quad-vcut-text {
+      font-size: 0.6rem;
+      color: #64748b;
+      margin: 1mm 0;
+    }
+
+    .card-a6-empty {
+      width: 132mm;
+      height: 89mm;
+      box-sizing: border-box;
+      background: transparent;
+      border: none;
+    }
+
+    /* ── HOJA A4 CON 4 FICHAS A6 VERTICALES (PORTRAIT: 188 x 275 mm) ── */
+    .sheet-a4-quad-v {
+      background: #ffffff;
+      width: 188mm;
+      height: 275mm;
+      margin: 6mm auto;
+      padding: 3mm 2mm;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      color: #000000;
+    }
+
+    .sheet-a4-quad-v .quad-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      height: 132mm;
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .sheet-a4-quad-v .quad-vcut {
+      width: 6mm;
+      height: 132mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: #f8fafc;
+      user-select: none;
+      position: relative;
+    }
+
+    .sheet-a4-quad-v .quad-vcut-line {
+      flex: 1;
+      width: 0;
+      border-left: 1px dashed #94a3b8;
+    }
+
+    .sheet-a4-quad-v .quad-vcut-text {
+      position: absolute;
+      background: #ffffff;
+      font-size: 0.6rem;
+      color: #64748b;
+      padding: 2px 0;
+    }
+
+    .sheet-a4-quad-v .quad-hcut {
+      height: 5mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.62rem;
+      color: #64748b;
+      border-top: 1px dashed #94a3b8;
+      border-bottom: 1px dashed #94a3b8;
+      background: #f8fafc;
+      letter-spacing: 0.5px;
+      user-select: none;
+      margin: 0 -2mm;
+    }
+
+    .sheet-a4-quad-v .card-a6-empty {
+      width: 89mm;
+      height: 132mm;
+      flex: 0 0 89mm;
+      box-sizing: border-box;
+      background: transparent;
+      border: none;
+    }
+
+    .card-a5-placeholder {
+      width: 186mm;
+      height: 134mm;
+      box-sizing: border-box;
+      background: transparent;
+      border: none;
+    }
+
+    /* ── NÚMERO DE ORDEN (#01) DEBAJO DEL ARUCO SUPERIOR DERECHO ── */
+    .aruco-tr-number {
+      position: absolute;
+      top: 15.2mm;
+      right: 5mm;
+      width: 10mm;
+      text-align: center;
+      font-size: 7.5pt;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      z-index: 10;
+    }
+    .card-a5-v-free .aruco-tr-number,
+    .card-a5-v-r3 .aruco-tr-number,
+    .card-a6-r3 .aruco-tr-number,
+    .card-a6-v .aruco-tr-number {
+      top: 12mm;
+      right: 3.5mm;
+      width: 8mm;
+      font-size: 7pt;
+    }
+
+    /* ── CARTILLA A6 (132 x 89 mm) ────────────────────────────────── */
+    .card-a6-r3 {
+      width: 132mm;
+      min-width: 132mm;
+      max-width: 132mm;
+      height: 89mm;
+      min-height: 89mm;
+      max-height: 89mm;
+      flex: 0 0 132mm;
+      border: 1mm solid #000000;
+      padding: 2.5mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+
+    .card-a6-r3 .fiducial {
+      position: absolute;
+      width: 8mm;
+      height: 8mm;
+      z-index: 10;
+    }
+    .card-a6-r3 .fiducial svg { width: 100%; height: 100%; display: block; }
+    .card-a6-r3 .fiducial-tl { top: 3.5mm; left: 3.5mm; }
+    .card-a6-r3 .fiducial-tr { top: 3.5mm; right: 3.5mm; }
+    .card-a6-r3 .fiducial-bl { bottom: 3.5mm; left: 3.5mm; }
+    .card-a6-r3 .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
+
+    .a6-card-header {
+      height: 20mm;
+      padding: 2mm 16.5mm 2mm 16mm;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000000;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .a6-header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 16mm;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      padding-right: 3mm;
+      box-sizing: border-box;
+    }
+
+    .a6-header-top-title {
+      font-size: 8.8pt;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: left;
+      color: #000000;
+      line-height: 1.1;
+      margin: 0;
+      padding: 0;
+    }
+
+    .a6-student-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.8mm;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
+      min-width: 0;
+      overflow: hidden;
+      flex: 1 1 auto;
+    }
+
+    .a6-student-name-row {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .a6-student-grade-row {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .a6-student-label {
+      font-size: 6.8pt;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .a6-student-name {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #000000;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+
+    .a6-student-grade {
+      font-size: 7.2pt;
+      font-weight: 600;
+      color: #475569;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .a6-qr-block {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+      flex: 0 0 auto;
+      height: 16mm;
+    }
+
+    .a6-qr-code-text {
+      font-family: monospace;
+      font-size: 9pt;
+      font-weight: 800;
+      color: #000000;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .a6-qr-box {
+      width: 16mm;
+      height: 16mm;
+      flex: 0 0 16mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .a6-qr-box svg { width: 100%; height: 100%; display: block; }
+
+    /* ── CUADRO INSTRUCTIVO OMR (MARCADO CORRECTO / INCORRECTO) ── */
+    .omr-instructions-box {
+      position: absolute;
+      left: 2.5mm;
+      top: 25mm;
+      width: 15mm;
+      border: 0.25mm solid #000000;
+      background: #ffffff;
+      padding: 1mm 0.6mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .card-a6-r3 .omr-instructions-box {
+      top: 21mm;
+      left: 2.5mm;
+      width: 14mm;
+    }
+
+    .omr-inst-title {
+      font-size: 4.2pt;
+      font-weight: 800;
+      color: #000000;
+      letter-spacing: 0.1px;
+      line-height: 1.1;
+      margin-bottom: 0.8mm;
+      font-family: inherit;
+    }
+
+    .omr-inst-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1mm;
+      margin-bottom: 0.7mm;
+    }
+
+    .omr-inst-divider {
+      width: 100%;
+      height: 0;
+      border-top: 0.2mm solid #000000;
+      margin: 0.5mm 0 0.8mm 0;
+    }
+
+    .omr-inst-subrows {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6mm;
+      width: 100%;
+    }
+
+    .omr-inst-subrows .omr-inst-row {
+      margin-bottom: 0;
+    }
+
+    .omr-inst-bubble-filled {
+      width: 3.2mm;
+      height: 3.2mm;
+      border-radius: 50%;
+      background: #000000;
+      border: 0.2mm solid #000000;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    .omr-inst-bubble-half {
+      width: 3.2mm;
+      height: 3.2mm;
+      border-radius: 50%;
+      border: 0.2mm solid #000000;
+      box-sizing: border-box;
+      background: linear-gradient(to right, #000000 50%, #ffffff 50%);
+      flex-shrink: 0;
+    }
+
+    .omr-inst-bubble-inner {
+      width: 3.2mm;
+      height: 3.2mm;
+      border-radius: 50%;
+      border: 0.2mm solid #000000;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .omr-inst-bubble-inner svg {
+      width: 2.0mm;
+      height: 2.0mm;
+      display: block;
+    }
+
+    .omr-inst-icon-ok {
+      width: 2.8mm;
+      height: 2.8mm;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .omr-inst-icon-err {
+      width: 2.6mm;
+      height: 2.6mm;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .a6-fill-hint-side {
+      display: none;
+    }
+
+    .a6-fill-hint-side b {
+      color: #000000;
+      font-size: 7.5pt;
+    }
+
+    .a6-b3-title {
+      font-size: 6.5pt;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      color: #0f172a;
+    }
+
+    .a6-b3-hint {
+      font-size: 6pt;
+      color: #64748b;
+    }
+
+    .a6-b3-body {
+      flex: 1;
+      padding: 0 13mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .a6-q-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6mm;
+      height: 7.5mm;
+      box-sizing: border-box;
+    }
+
+    .a6-q-num {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #000000;
+      width: 7mm;
+      text-align: right;
+    }
+
+    .a6-bubbles-group {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+    }
+
+    .a6-bubble {
+      width: 4.8mm;
+      height: 4.8mm;
+      border-radius: 50%;
+      border: 1.4px solid #000000;
+      font-size: 7pt;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000000;
+      background: #ffffff;
+      box-sizing: border-box;
+      line-height: 1;
+    }
+
+    .a6-2col-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .a6-2col-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      height: 100%;
+    }
+
+    .a6-2col-divider {
+      width: 0;
+      height: 88%;
+      border-left: 1px dashed #cbd5e1;
+      margin: 0 1.5mm;
+    }
+
+    /* ── HOJA A4 CON 2 ALUMNOS EN PARALELO (CARTILLA OMR 9 A 20 PREGUNTAS) ──
+       Orientación Horizontal (Landscape: 275 x 188 mm).
+       Alumno 1 a la IZQUIERDA y Alumno 2 a la DERECHA.
+       Línea de corte vertical central (✂️ cortar por aquí).
+       Cada alumno tiene una cartilla vertical A5 (136 x 188 mm) con
+       ESTRICTAMENTE 1 SOLA COLUMNA VERTICAL de burbujas (01 al N hacia abajo). */
+    .sheet-a4-split {
+      background: #ffffff;
+      width: 275mm;
+      height: 188mm;
+      margin: 6mm auto;
+      padding: 3mm 4mm;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      color: #000000;
+    }
+
+    .dual-vcut {
+      width: 3mm;
+      height: calc(100% + 6mm);
+      margin: -3mm 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: #f8fafc;
+      user-select: none;
+    }
+
+    .dual-vcut-line {
+      flex: 1;
+      width: 0;
+      border-left: 1px dashed #94a3b8;
+    }
+
+    .dual-vcut-text {
+      font-size: 0.65rem;
+      color: #64748b;
+      margin: 2mm 0;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      letter-spacing: 1px;
+    }
+
+    .card-a5-v-empty {
+      width: 132mm;
+      height: 182mm;
+      box-sizing: border-box;
+      background: transparent;
+      border: none;
+    }
+
+    /* ── CARTILLA A5 VERTICAL (132 x 182 mm) PARA RAMA 3 ─────────── */
+    .card-a5-v-r3 {
+      width: 132mm;
+      height: 182mm;
+      flex: 0 0 132mm;
+      border: 1mm solid #000000;
+      padding: 2.5mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+
+    .card-a5-v-r3 .fiducial {
+      position: absolute;
+      width: 8mm;
+      height: 8mm;
+      z-index: 10;
+    }
+    .card-a5-v-r3 .fiducial svg { width: 100%; height: 100%; display: block; }
+    .card-a5-v-r3 .fiducial-tl { top: 3.5mm; left: 3.5mm; }
+    .card-a5-v-r3 .fiducial-tr { top: 3.5mm; right: 3.5mm; }
+    .card-a5-v-r3 .fiducial-bl { bottom: 3.5mm; left: 3.5mm; }
+    .card-a5-v-r3 .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
+
+    .v-card-header {
+      height: 20mm;
+      padding: 2mm 16.5mm 2mm 16mm;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000000;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .v-header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 16mm;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      padding-right: 3mm;
+      box-sizing: border-box;
+    }
+
+    .v-header-top-title {
+      font-size: 9.5pt;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: left;
+      color: #000000;
+      line-height: 1.1;
+      margin: 0;
+      padding: 0;
+    }
+
+    .v-student-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1mm;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
+      min-width: 0;
+      overflow: hidden;
+      flex: 1 1 auto;
+    }
+
+    .v-student-name-row {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .v-student-grade-row {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .v-student-label {
+      font-size: 6.8pt;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .v-student-name {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #000000;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+
+    .v-student-grade {
+      font-size: 7.2pt;
+      font-weight: 600;
+      color: #475569;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .v-qr-block {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      flex: 0 0 auto;
+      height: 16mm;
+    }
+
+    .v-qr-code-text {
+      font-family: monospace;
+      font-size: 9.5pt;
+      font-weight: 800;
+      color: #000000;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .v-qr-box {
+      width: 16mm;
+      height: 16mm;
+      flex: 0 0 16mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .v-qr-box svg { width: 100%; height: 100%; display: block; }
+
+    .v-fill-hint-side {
+      display: none;
+    }
+
+    .v-fill-hint-side b {
+      color: #000000;
+      font-size: 7.5pt;
+    }
+
+    .v-b3-body {
+      flex: 1;
+      padding: 0 13mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .v-q-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6mm;
+      box-sizing: border-box;
+    }
+
+    .v-q-num {
+      font-size: 8pt;
+      font-weight: 800;
+      color: #000000;
+      width: 7mm;
+      text-align: right;
+    }
+
+    .v-bubbles-group {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+    }
+
+    .v-bubble {
+      width: 4.8mm;
+      height: 4.8mm;
+      border-radius: 50%;
+      border: 1.4px solid #000000;
+      font-size: 7pt;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000000;
+      background: #ffffff;
+      box-sizing: border-box;
+      line-height: 1;
+    }
+
+    .v-2col-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .v-2col-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      height: 100%;
+    }
+
+    .v-2col-divider {
+      width: 0;
+      height: 92%;
+      border-left: 1px dashed #cbd5e1;
+      margin: 0 1.5mm;
+    }
+
+    /* ── FICHA A5 VERTICAL (132 x 182 mm) DE RESPUESTA LIBRE ───────── */
+    .card-a5-v-free {
+      width: 132mm;
+      height: 182mm;
+      flex: 0 0 132mm;
+      border: 1mm solid #000000;
+      padding: 2.5mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #000000;
+    }
+
+    .card-a5-v-free .fiducial {
+      position: absolute;
+      width: 8mm;
+      height: 8mm;
+      z-index: 10;
+    }
+    .card-a5-v-free .fiducial svg { width: 100%; height: 100%; display: block; }
+    .card-a5-v-free .fiducial-tl { top: 3.5mm; left: 3.5mm; }
+    .card-a5-v-free .fiducial-tr { top: 3.5mm; right: 3.5mm; }
+    .card-a5-v-free .fiducial-bl { bottom: 3.5mm; left: 3.5mm; }
+    .card-a5-v-free .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
+
+    .v-free-problem {
+      height: 22mm;
+      min-height: 22mm;
+      max-height: 22mm;
+      padding: 2mm 3mm;
+      border-bottom: 1.5px solid #000000;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      font-size: 8.5pt;
+      line-height: 1.35;
+    }
+
+    .v-free-grid {
+      width: 104mm;
+      height: 104mm;
+      flex: 0 0 104mm;
+      margin: 2mm auto;
+      border: 1px solid #cbd5e1;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notebook-grid-v {
+      display: grid !important;
+      grid-template-columns: repeat(13, 1fr) !important;
+      grid-template-rows: repeat(13, 1fr) !important;
+      width: 104mm !important;
+      height: 104mm !important;
+      min-height: 104mm !important;
+      flex: 0 0 104mm !important;
+      border: none !important;
+      background: #ffffff;
+    }
+
+    .notebook-grid-v i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+      box-sizing: border-box;
+    }
+    .notebook-grid-v > i:nth-child(13n) { border-right: none; }
+    .notebook-grid-v > i:nth-child(n+157) { border-bottom: none; }
+
+    .v-free-answer-strip {
+      width: 104mm;
+      height: 12mm;
+      min-height: 12mm;
+      max-height: 12mm;
+      margin: 1.5mm auto 0 auto;
+      border: none !important;
+      padding: 0 1mm;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+
+    .v-free-2q-block {
+      flex: 1 1 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 1.5mm 0;
+    }
+
+    .v-free-problem-2q {
+      height: 16mm;
+      padding: 1mm 2mm;
+      border-bottom: 1px solid #000000;
+      box-sizing: border-box;
+      overflow: hidden;
+      font-size: 8pt;
+      line-height: 1.3;
+    }
+
+    .v-free-grid-2q {
+      width: 104mm;
+      height: 40mm;
+      flex: 0 0 40mm;
+      margin: 1.5mm auto;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .notebook-grid-v2q {
+      display: grid !important;
+      grid-template-columns: repeat(13, 1fr) !important;
+      grid-template-rows: repeat(5, 1fr) !important;
+      width: 104mm !important;
+      height: 40mm !important;
+    }
+
+    .notebook-grid-v2q i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+    }
+
+    .v-free-answer-strip-2q {
+      width: 104mm;
+      height: 10mm;
+      margin: 1mm auto 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      border: none !important;
+      padding: 0 1mm;
+      box-sizing: border-box;
+    }
+
+    .v-free-divider {
+      height: 0;
+      border-top: 1px dashed #64748b;
+      margin: 1mm 0;
+    }
+
+    /* ── FILA OMR EN FICHA A5 VERTICAL ── */
+    .v-omr-row {
+      width: 114mm;
+      height: 14mm;
+      min-height: 14mm;
+      max-height: 14mm;
+      margin: 1mm auto 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      box-sizing: border-box;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 1.5mm;
+      align-items: center;
+      padding: 0 8mm;
+    }
+    .v-omr-row-2q {
+      height: 11mm;
+      min-height: 11mm;
+      max-height: 11mm;
+    }
+    .v-omr-option {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      width: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .v-omr-bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 6mm;
+      height: 6mm;
+      flex: 0 0 6mm;
+      margin-left: 1mm;
+      border-radius: 50%;
+      border: 1.8px solid #0f172a;
+      font-weight: 800;
+      font-size: 8pt;
+      color: #0f172a;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+    .v-omr-text {
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── CUADRÍCULA AMPLIADA (AJUSTABLE POR EL DOCENTE EN 1 PREGUNTA) ── */
+    .grid-wrapper-expanded {
+      height: 72mm !important;
+      flex: 0 0 72mm !important;
+    }
+    .grid-wrapper-expanded .notebook-grid {
+      height: 72mm !important;
+      grid-template-rows: repeat(8, 1fr) !important;
+    }
+    .grid-wrapper-compact {
+      height: 52mm !important;
+      flex: 0 0 52mm !important;
+    }
+    .grid-wrapper-compact .notebook-grid {
+      height: 52mm !important;
+      grid-template-rows: repeat(5, 1fr) !important;
+    }
+
+    .v-free-grid-expanded {
+      height: 125mm !important;
+      flex: 1 1 125mm !important;
+    }
+    .v-free-grid-compact {
+      height: 90mm !important;
+      flex: 1 1 90mm !important;
+    }
+
+    /* ── CUERPO VERTICAL SIN CUADRÍCULA (1 A 5 PREGUNTAS EN A5 VERTICAL) ── */
+    .v-nogrid-body {
+      flex: 1 1 auto;
+      height: 148mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 1.5mm 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .v-nogrid-q {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
+      gap: 1.5mm;
+      padding: 1mm 0;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .v-nogrid-q:last-child {
+      border-bottom: none;
+    }
+    .v-nogrid-q-header {
+      display: flex;
+      gap: 2mm;
+      font-size: 8pt;
+      color: #0f172a;
+      line-height: 1.25;
+    }
+    .v-nogrid-q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .v-nogrid-q-prompt {
+      font-weight: 600;
+      flex: 1;
+    }
+    .v-nogrid-free-row {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-top: 1mm;
+    }
+    .v-nogrid-free-tag {
+      font-weight: 800;
+      font-size: 8.5pt;
+      color: #0f172a;
+    }
+    .v-nogrid-free-box {
+      width: 44mm;
+      height: 9mm;
+      border: 1.5px solid #000000;
+      background: #ffffff;
+      border-radius: 1mm;
+    }
+
+    /* ── FICHA A6 HORIZONTAL/VERTICAL PARA 1 O 2 PREGUNTAS SIN CUADRÍCULA ── */
+    .a6-nogrid-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 2.5mm 3mm 14mm 3mm;
+      gap: 4mm;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .a6-nogrid-q {
+      display: flex;
+      flex-direction: column;
+      gap: 1mm;
+    }
+    .a6-nogrid-q-prompt {
+      font-size: 7.5pt;
+      font-weight: 600;
+      line-height: 1.2;
+      color: #0f172a;
+    }
+    .a6-nogrid-omr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1mm;
+    }
+    .a6-nogrid-free {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      margin-top: 1mm;
+    }
+    .a6-nogrid-free-box {
+      width: 38mm;
+      height: 8mm;
+      border: 1.4px solid #000000;
+      background: #ffffff;
+      border-radius: 1mm;
+    }
+
+    /* ── CUADERNILLO DE PREGUNTAS (EXAMEN PARA ESTUDIANTES) ─────────
+       No lleva QR ni fiducials ArUco. Genérico para todos los alumnos.
+       - A5 (Landscape): 2 copias por hoja A4 cortadas por la mitad.
+       - A4 (Portrait): 2 columnas para 6 o más preguntas. */
+    #booklet-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      gap: 20px;
+    }
+
+    /* ── NIVEL 1: HOJA A4 HORIZONTAL EN 4 CUADRANTES IGUALES ── */
+    .sheet-booklet-quad {
+      background: #ffffff;
+      width: 297mm;
+      height: 210mm;
+      margin: 6mm auto;
+      padding: 0;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      color: #000000;
+    }
+
+    .sheet-booklet-quad .quad-row {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 105mm;
+      box-sizing: border-box;
+    }
+
+    .sheet-booklet-quad .booklet-quad-item {
+      flex: 0 0 148.5mm;
+      width: 148.5mm;
+      max-width: 148.5mm;
+      min-width: 148.5mm;
+      height: 105mm;
+      padding: 4mm 8mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .booklet-header-quad {
+      border-bottom: 1px solid #000000 !important;
+      padding-bottom: 1mm !important;
+      margin-bottom: 1.5mm !important;
+      gap: 0.8mm !important;
+    }
+
+    .booklet-title-compact {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #000000;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .booklet-student-line-compact {
+      display: flex;
+      font-size: 7.2pt;
+      color: #000000;
+      margin-top: 0.5mm;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .booklet-instructions-compact {
+      font-size: 6.2pt;
+      color: #475569;
+      font-style: italic;
+      line-height: 1.1;
+    }
+
+    .booklet-body-quad {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 2mm;
+      overflow: hidden;
+      margin-top: 1.5mm;
+    }
+
+    .booklet-q-item.booklet-q-compact {
+      gap: 1mm;
+    }
+
+    .booklet-q-item.booklet-q-compact .booklet-q-prompt {
+      font-size: 7.5pt;
+      line-height: 1.2;
+    }
+
+    .booklet-q-item.booklet-q-compact .booklet-opt-item {
+      font-size: 7.2pt;
+    }
+
+    /* ── NIVEL 2: HOJA A4 HORIZONTAL EN 2 MITADES IGUALES (EXACTO 50% A4) ── */
+    .sheet-booklet-landscape {
+      background: #ffffff;
+      width: 297mm;
+      height: 210mm;
+      margin: 6mm auto;
+      padding: 0;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: row;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      color: #000000;
+    }
+
+    .booklet-half {
+      flex: 0 0 148.5mm;
+      width: 148.5mm;
+      max-width: 148.5mm;
+      min-width: 148.5mm;
+      height: 100%;
+      padding: 6mm 10mm;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .booklet-divider {
+      position: absolute;
+      left: 148.5mm;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      border-left: 1.5px dashed #64748b;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .booklet-divider-h {
+      position: absolute;
+      top: 105mm;
+      left: 0;
+      right: 0;
+      height: 0;
+      border-top: 1.5px dashed #64748b;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .booklet-2subcol-wrap {
+      flex: 1;
+      display: flex;
+      gap: 6mm;
+      overflow: hidden;
+      box-sizing: border-box;
+      margin-top: 2mm;
+    }
+
+    .booklet-subcol {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 3.5mm;
+      overflow: hidden;
+    }
+
+    .booklet-subcol-divider {
+      display: none;
+    }
+
+    /* ── NIVEL 3: HOJA A4 VERTICAL EN 2 COLUMNAS CONTINUAS ── */
+    .sheet-booklet-portrait {
+      background: #ffffff;
+      width: 210mm;
+      height: 297mm;
+      padding: 8mm 12mm;
+      margin: 6mm auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      color: #000000;
+    }
+
+    .booklet-header {
+      border-bottom: 1.5px solid #000000;
+      padding-bottom: 2mm;
+      margin-bottom: 3mm;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+    }
+
+    .booklet-header-p2 {
+      padding-bottom: 1.5mm;
+      margin-bottom: 2.5mm;
+    }
+
+    .booklet-title {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #000000;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+
+    .booklet-student-line {
+      display: flex;
+      justify-content: flex-start;
+      font-size: 8pt;
+      color: #000000;
+      margin-top: 1mm;
+    }
+
+    .booklet-instructions {
+      font-size: 7.2pt;
+      color: #475569;
+      font-style: italic;
+      line-height: 1.2;
+    }
+
+    .booklet-body-a5 {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 4mm;
+      overflow: hidden;
+      margin-top: 2mm;
+    }
+
+    .booklet-columns {
+      flex: 1;
+      display: flex;
+      gap: 5mm;
+      overflow: hidden;
+    }
+
+    .booklet-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3mm;
+      overflow: hidden;
+    }
+
+    .booklet-col-divider {
+      width: 0;
+      border-left: 1px solid #cbd5e1;
+    }
+
+    .booklet-q-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5mm;
+    }
+
+    .booklet-q-prompt {
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: #000000;
+      line-height: 1.25;
+    }
+
+    .booklet-q-num {
+      font-weight: 800;
+      color: #000000;
+    }
+
+    .sheet-booklet-portrait .booklet-header {
+      border-bottom: 2px solid #000000;
+      padding-bottom: 3.5mm;
+      margin-bottom: 4mm;
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+    }
+    .sheet-booklet-portrait .booklet-title {
+      font-size: 13.5pt;
+      font-weight: 800;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+    .sheet-booklet-portrait .booklet-student-line {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #000000;
+      margin-top: 1mm;
+    }
+    .sheet-booklet-portrait .booklet-instructions {
+      font-size: 9pt;
+      color: #475569;
+      font-style: italic;
+    }
+    .sheet-booklet-portrait .booklet-q-prompt {
+      font-size: 10pt;
+      font-weight: 600;
+      line-height: 1.38;
+      color: #000000;
+    }
+    .sheet-booklet-portrait .booklet-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5mm 3.5mm;
+      font-size: 9.5pt;
+      color: #000000;
+      margin-left: 2mm;
+    }
+    .sheet-booklet-portrait .booklet-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+      font-size: 9.5pt;
+      color: #000000;
+      margin-left: 2mm;
+    }
+
+    .booklet-opt-item {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      line-height: 1.2;
+    }
+
+    .booklet-opt-item strong {
+      font-weight: 800;
+      color: #000000;
+      min-width: 14px;
+    }
+
+    .booklet-footer {
+      display: none !important;
+    }
+
+    /* ── FICHA A5: 186 x 134 mm, RANURAS DE ALTO FIJO ───────────────
+       Todo el alto está repartido en tramos cerrados, así que la cuadrícula
+       y la franja de respuesta caen SIEMPRE en el mismo milímetro, sin
+       importar si el enunciado tiene 1, 2 o 3 líneas:
+         borde 1 + padding 3 ..................   4.000 mm
+         cabecera .............................  20.000 mm
+         separación ...........................   3.000 mm
+         ranura del enunciado .................  20.000 mm
+         separación ...........................   3.000 mm
+         cuadrícula (7 filas x 9.286mm) .......  65.000 mm
+         separación ...........................   3.000 mm
+         franja de respuesta ..................  12.000 mm
+         padding 3 + borde 1 ..................   4.000 mm
+         TOTAL ................................ 134.000 mm  */
+    .card-a5 {
+      width: 186mm;
+      min-width: 186mm;
+      height: 134mm;
+      max-height: 134mm;
+      flex: 0 0 auto;
+      padding: 3mm;
+      border: 1mm solid #000000;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .sheet-a4-split > .card-a5 {
+      flex: 0 0 134mm;
+    }
+
+    /* ── MARCADORES ARUCO: 10mm, a 5mm del borde de la ficha ────────
+       Antes iban a 2.2mm del borde de la ficha, que a su vez quedaba al
+       filo del papel: la impresora los recortaba y el warp salía deforme.
+       Ahora la ficha queda a 6-8mm del borde físico del papel y los
+       marcadores a 5mm de la ficha, así que ninguno queda a menos de 11mm
+       del borde del papel. La zona de contenido libre de marcadores es
+       x=15..171mm e y=15..119mm; la cabecera, la cuadrícula y la franja de
+       respuesta respetan ese límite.
+       OJO: los centros de marcador quedan a 10mm de cada borde de la ficha.
+       Si cambia el inset o el tamaño, hay que recalcular las ROI en
+       roi-processor.js (GEOMETRY / getExpansionMargins). */
+    .fiducial {
+      position: absolute;
+      width: 10mm;
+      height: 10mm;
+      z-index: 10;
+    }
+    .fiducial svg { width: 100%; height: 100%; display: block; }
+    .fiducial-tl { top: 5mm; left: 5mm; }
+    .fiducial-tr { top: 5mm; right: 5mm; }
+    .fiducial-br { bottom: 5mm; right: 5mm; }
+    .fiducial-bl { bottom: 5mm; left: 5mm; }
+
+    /* Línea de corte: 3mm exactos entre las dos fichas. */
+    .cut-line {
+      width: 186mm;
+      height: 3mm;
+      flex: 0 0 3mm;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cut-line::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 1.5px dashed #94a3b8;
+    }
+
+    .cut-line span {
+      position: relative;
+      background: white;
+      padding: 0 10px;
+      font-size: 8pt;
+      line-height: 1;
+      color: #94a3b8;
+    }
+
+    /* ── CABECERA: 20mm fijos ──
+       El padding horizontal de 16mm deja nombre y QR dentro de x=15..171mm,
+       la zona libre de marcadores (los ArUco ocupan las esquinas hasta 15mm).
+       El nombre largo se expande a todo lo ancho con el grado debajo. */
+    .card-header {
+      height: 20mm;
+      flex: 0 0 20mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 3mm;
+      padding: 0 16mm 1mm 16mm;
+      border-bottom: 2px solid #0f172a;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .student-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.2mm;
+      min-width: 0;
+      overflow: hidden;
+      flex: 1 1 auto;
+    }
+
+    .student-main-row {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .student-label {
+      font-size: 11pt;
+      color: #475569;
+      font-weight: 600;
+      flex: 0 0 auto;
+    }
+
+    .student-name {
+      font-size: 13.5pt;
+      color: #0f172a;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .student-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .student-grade {
+      font-size: 8.5pt;
+      color: #64748b;
+      font-weight: 600;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .qr-block {
+      display: flex;
+      align-items: center;
+      gap: 2.5mm;
+      flex: 0 0 auto;
+    }
+
+    .qr-code-text {
+      font-family: monospace;
+      font-size: 9pt;
+      font-weight: 800;
+      color: #475569;
+      letter-spacing: 0.5px;
+    }
+
+    /* QR de 16mm: en el warp nuevo son ~170px para 23 módulos
+       (~7.4 px/módulo), por encima del mínimo legible de jsQR. */
+    .qr-box {
+      width: 16mm;
+      height: 16mm;
+      flex: 0 0 16mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ── RANURA DEL ENUNCIADO: 20mm FIJOS ──
+       Aloja 1, 2 o 3 líneas sin desplazar la cuadrícula ni la franja de
+       respuesta. El texto se centra verticalmente, así que un enunciado de
+       una sola línea no deja un hueco descolgado. El tope de 240 caracteres
+       del formulario más el auto-ajuste de fitProblemText() garantizan que
+       nunca desborde la ranura. */
+    .problem-wide {
+      height: 20mm;
+      flex: 0 0 20mm;
+      margin: 3mm 0 0 0;
+      padding: 1.6mm 0;
+      background: transparent;
+      border-left: none;
+      border-radius: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    .problem-text {
+      width: 100%;
+      font-size: 11pt;
+      line-height: 1.35;
+      color: #1e293b;
+    }
+
+    .problem-text strong {
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    /* ── CUADRÍCULA DE CÁLCULO: 156 x 65 mm FIJOS ──
+       Pasó de <table> a CSS grid: las alturas de fila de una tabla no son
+       deterministas al paginar y la cuadrícula se estiraba. Con grid,
+       7 filas de 9.286mm y 16 columnas de 9.75mm dan celdas casi cuadradas
+       (algo más anchas que altas, que es lo que conviene para escribir en
+       columnas) y una altura exacta.
+       Ocupa x=15..171mm e y=50..115mm de la ficha, dentro de la zona libre
+       de marcadores (ver ROI_CONFIG.RESOLUTION en roi-processor.js). */
+    .grid-wrapper {
+      width: 156mm;
+      height: 68.25mm;
+      flex: 0 0 68.25mm;
+      margin: 3mm 0 0 0;
+      align-self: center;
+      overflow: hidden;
+    }
+
+    .notebook-grid {
+      width: 156mm;
+      height: 68.25mm;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      grid-template-rows: repeat(7, 1fr);
+      border: 1.2px solid #64748b;
+      border-radius: 2.5px;
+      background: #ffffff;
+    }
+
+    .notebook-grid > i {
+      border-right: 0.75pt solid #e4e4e7;
+      border-bottom: 0.75pt solid #e4e4e7;
+      box-sizing: border-box;
+    }
+
+    /* Sin bordes duplicados en el perímetro de la cuadrícula. */
+    .notebook-grid > i:nth-child(16n) { border-right: none; }
+    .notebook-grid > i:nth-child(n+97) { border-bottom: none; }
+    .mc-grid-2q .notebook-grid > i:nth-child(n+49) { border-bottom: none; }
+
+    /* ── FRANJA DE RESPUESTA: 156 x 10 mm FIJAS ──
+       Ocupa x=15..171mm (libre de marcadores) e y=118..128mm de la ficha.
+       El ancho de ".answer-tag" es FIJO a propósito: si dependiera del ancho
+       del texto, la caja de respuesta se correría según la fuente y la ROI
+       dejaría de caer sobre ella. Con tag fijo + gap fijo, la caja cae
+       centrada exactamente al nivel de los vértices ArUco inferiores. */
+    .answer-strip {
+      width: 156mm;
+      height: 10mm;
+      flex: 0 0 10mm;
+      margin: 0.5mm 0 0 0;
+      align-self: center;
+      border: none !important;
+      background: transparent !important;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 0 0 3mm;
+      gap: 3mm;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .answer-tag {
+      flex: 0 0 14mm;
+      font-size: 11pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .answer-box-open {
+      flex: 0 0 44mm;
+      width: 44mm;
+      height: 9mm;
+      border: 0.6mm solid #0f172a;
+      background: #ffffff;
+      border-radius: 0.8mm;
+      box-sizing: border-box;
+    }
+
+    .answer-line {
+      display: none !important;
+    }
+
+    .answer-line-hint {
+      font-size: 7.5pt;
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    /* ── FORMATO OPCIÓN MÚLTIPLE (OMR) ── */
+    .omr-row {
+      width: 156mm;
+      height: 8.5mm;
+      flex: 0 0 8.5mm;
+      margin: 1mm auto 0 auto;
+      align-self: center;
+      display: grid;
+      grid-template-columns: repeat(4, 39mm);
+      box-sizing: border-box;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 1.5mm;
+      align-items: center;
+      padding: 0 1mm;
+    }
+    .omr-row.omr-row-1 {
+      height: 12mm;
+      flex: 0 0 12mm;
+      margin: 3mm auto 0 auto;
+    }
+    .omr-option {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      width: 37mm;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .omr-bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 6mm;
+      height: 6mm;
+      flex: 0 0 6mm;
+      margin-left: 2mm;
+      border-radius: 50%;
+      border: 1.8px solid #0f172a;
+      font-weight: 800;
+      font-size: 8pt;
+      color: #0f172a;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+    .omr-text {
+      font-size: 8pt;
+      font-weight: 600;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Modo 2 Preguntas */
+    .card-a5.mc-2q,
+    .card-a5.free-card-2q {
+      padding: 2.5mm 3mm;
+    }
+    /* El encabezado NO se achica: mantiene sus 20mm y márgenes limpios */
+    .mc-q-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      flex: 0 0 auto;
+    }
+    .mc-problem-2q {
+      width: 156mm !important;
+      height: 11mm !important;
+      min-height: 11mm !important;
+      max-height: 11mm !important;
+      margin: 1.2mm auto 0 auto !important;
+      padding: 1mm 0 !important;
+      background: transparent !important;
+      border-left: none !important;
+      border-radius: 0 !important;
+      box-sizing: border-box !important;
+      align-self: center;
+    }
+    .mc-problem-2q .problem-text {
+      font-size: 8.5pt !important;
+      line-height: 1.25 !important;
+    }
+
+    /* ── 2 PREGUNTAS EN A6 HORIZONTAL (FOCALIZADA) ── */
+    .a6-h-2q-body {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 1mm 16mm;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .a6-h-2q-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
+      gap: 1mm;
+      padding: 1mm 0;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .a6-h-2q-item:last-child {
+      border-bottom: none;
+    }
+    .a6-h-2q-header {
+      display: flex;
+      gap: 1.5mm;
+      font-size: 8pt;
+      color: #0f172a;
+      line-height: 1.25;
+    }
+    .a6-h-2q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .a6-h-2q-prompt {
+      font-weight: 600;
+      flex: 1;
+    }
+    .a6-h-2q-omr {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 3mm;
+      width: 100%;
+      margin-top: 1mm;
+    }
+    .a6-h-2q-free {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      width: 100%;
+      margin-top: 1mm;
+    }
+
+    /* ── HOJA DEL EXAMEN LIMPIA (RAMA 3 MODO B: SIN ARUCO NI BORDE) ── */
+    .r3-exam-sheet {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .r3-exam-sheet-a5-v {
+      width: 132mm;
+      min-height: 182mm;
+      padding: 6mm 10mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .r3-exam-sheet-a5-h {
+      width: 186mm;
+      min-height: 134mm;
+      padding: 6mm 10mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .r3-exam-sheet-a4-v {
+      width: 196mm;
+      min-height: 282mm;
+      padding: 10mm 14mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    #r3-exam-viewport {
+      align-items: flex-start !important;
+      padding-top: 14px !important;
+      overflow-x: hidden !important;
+    }
+    #r3-exam-render-host {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      transform-origin: top center;
+      flex-shrink: 0;
+    }
+    #r3-cartilla-viewport {
+      overflow-x: hidden !important;
+    }
+    #r3-cartilla-render-host {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform-origin: top center;
+      flex-shrink: 0;
+    }
+    .r3-exam-header {
+      padding-bottom: 3.5mm;
+      margin-bottom: 4mm;
+      border-bottom: 2px solid #0f172a;
+    }
+    .r3-exam-header-p2 {
+      padding-bottom: 2.5mm;
+      margin-bottom: 3mm;
+      border-bottom: 1.5px dashed #cbd5e1;
+    }
+    .r3-exam-header-title {
+      font-size: 13.5pt;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #0f172a;
+      text-align: center;
+      margin-bottom: 2.5mm;
+    }
+    .r3-exam-student-line {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 2mm;
+    }
+    .r3-exam-instructions {
+      font-size: 9pt;
+      color: #475569;
+      font-style: italic;
+    }
+    .r3-exam-body-1col {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      flex: 1 1 auto;
+      gap: 6mm;
+    }
+    .r3-exam-body-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8mm;
+      row-gap: 4.5mm;
+      flex: 1 1 auto;
+      align-content: flex-start;
+    }
+    .r3-exam-subcol {
+      display: flex;
+      flex-direction: column;
+      gap: 4.5mm;
+      justify-content: flex-start;
+    }
+    .r3-exam-q-item {
+      padding: 2mm 2.5mm;
+      border-bottom: 1px dashed #cbd5e1;
+      border-radius: 4px;
+      transition: background 0.15s ease;
+      cursor: pointer;
+    }
+    .r3-exam-q-item:hover {
+      background: rgba(2, 132, 199, 0.05);
+    }
+    .r3-exam-q-item:last-child {
+      border-bottom: none;
+    }
+    .r3-exam-empty-slot {
+      padding: 6px 8px;
+      border: 1.5px dashed #0284c7;
+      border-radius: 4px;
+      background: rgba(2, 132, 199, 0.04);
+      font-size: 9pt;
+      margin-bottom: 2.5mm;
+      cursor: pointer;
+    }
+    .r3-exam-empty-slot:hover {
+      background: rgba(2, 132, 199, 0.1);
+    }
+    .r3-exam-q-prompt {
+      display: flex;
+      gap: 2.5mm;
+      font-size: 10pt;
+      line-height: 1.38;
+      color: #0f172a;
+      margin-bottom: 2mm;
+    }
+    .r3-exam-q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .r3-exam-prompt-text {
+      font-weight: 600;
+      flex: 1;
+    }
+    .r3-exam-opt-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5mm 3.5mm;
+      font-size: 9.5pt;
+      line-height: 1.3;
+    }
+    .r3-exam-opt-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 2mm;
+    }
+    .r3-exam-opt-bubble {
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      border: 1px solid #475569;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0f172a;
+      flex: 0 0 17px;
+    }
+    .r3-exam-opt-bubble.is-correct {
+      border-color: #059669;
+      background: #ecfdf5;
+      color: #047857;
+      font-weight: 800;
+    }
+    .r3-exam-opt-row {
+      display: flex;
+      gap: 4mm;
+      margin-top: 1mm;
+    }
+    .card-a5.mc-2q .mc-grid-2q {
+      width: 156mm;
+      height: 24mm !important;
+      flex: 0 0 24mm !important;
+      margin: 1.2mm auto 0 auto !important;
+      align-self: center;
+    }
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid,
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid {
+      height: 24mm !important;
+      grid-template-columns: repeat(26, 1fr) !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
+    .card-a5.free-card-2q .mc-grid-2q {
+      width: 156mm;
+      height: 24mm !important;
+      flex: 0 0 24mm !important;
+      margin: 1.2mm auto 0 auto !important;
+      align-self: center;
+    }
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid > i:nth-child(16n),
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid > i:nth-child(16n) {
+      border-right: 0.75pt solid #e4e4e7;
+    }
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid > i:nth-child(26n),
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid > i:nth-child(26n) {
+      border-right: none !important;
+    }
+    .card-a5.mc-2q .mc-grid-2q .notebook-grid > i:nth-child(n+79),
+    .card-a5.free-card-2q .mc-grid-2q .notebook-grid > i:nth-child(n+79) {
+      border-bottom: none !important;
+    }
+    .card-a5.free-card-2q .answer-strip {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 0 0 3mm !important;
+      width: 156mm !important;
+      height: 9.5mm !important;
+      flex: 0 0 9.5mm !important;
+      justify-content: flex-start !important;
+      align-self: center;
+      box-shadow: none !important;
+    }
+    .card-a5.mc-2q .omr-row-2q-1 {
+      margin: 1.8mm auto 0 auto !important;
+    }
+    .mc-divider {
+      width: 156mm;
+      height: 1px;
+      background: #cbd5e1;
+      margin: 2mm auto 1.5mm auto;
+    }
+    .card-a5.mc-2q .omr-row-2q-2 {
+      margin: 3mm auto 0 auto !important;
+    }
+
+    /* ── RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS EN 2 COLUMNAS) ── */
+    .card-a5.branch3-card {
+      padding: 2.5mm 3mm;
+    }
+    .b3-body {
+      width: 156mm;
+      height: 104mm;
+      margin: 0.5mm auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      justify-content: flex-start;
+    }
+    .b3-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid #0f172a;
+      padding-bottom: 1mm;
+      margin-bottom: 1.5mm;
+      flex: 0 0 auto;
+    }
+    .b3-title {
+      font-size: 8pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .b3-hint {
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .b3-sample-fill {
+      font-size: 9pt;
+      color: #0f172a;
+      line-height: 1;
+    }
+    .b3-columns-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      flex: 1;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .b3-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      padding: 0 2mm;
+    }
+    .b3-vdivider {
+      width: 1px;
+      background: #94a3b8;
+      margin: 0 3mm;
+      align-self: stretch;
+    }
+    .b3-q-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5mm 0;
+      height: 8.5mm;
+      box-sizing: border-box;
+    }
+    .b3-q-num {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #0f172a;
+      width: 7mm;
+      text-align: right;
+      margin-right: 2.5mm;
+      flex: 0 0 7mm;
+    }
+    .b3-bubbles-group {
+      display: flex;
+      gap: 3.5mm;
+      align-items: center;
+      flex: 1;
+      justify-content: flex-end;
+    }
+    .b3-bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 6.2mm;
+      height: 6.2mm;
+      flex: 0 0 6.2mm;
+      border-radius: 50%;
+      border: 1.8px solid #0f172a;
+      font-weight: 800;
+      font-size: 8pt;
+      color: #0f172a;
+      background: #ffffff;
+      box-sizing: border-box;
+    }
+
+    /* ── RAMA 2: EVALUACIÓN FOCALIZADA SIN BORRADOR (1 A 3 PREGUNTAS) ── */
+    .card-a5.branch2-nogrid-card {
+      padding: 2.5mm 3mm;
+    }
+    .b2-body {
+      width: 156mm;
+      height: 104mm;
+      margin: 0.5mm auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      box-sizing: border-box;
+    }
+    .b2-q-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
+      gap: 1.5mm;
+      padding: 1mm 0;
+    }
+    .b2-q-header {
+      display: flex;
+      gap: 2mm;
+      font-size: 8.5pt;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    .b2-q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .b2-q-prompt {
+      font-weight: 600;
+      flex: 1;
+    }
+    .b2-omr-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1mm;
+      width: 100%;
+    }
+    .b2-omr-opt {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      width: 37mm;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .b2-free-row {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-top: 1mm;
+    }
+    .b2-free-tag {
+      font-size: 9pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .b2-free-box {
+      width: 35mm;
+      height: 8mm;
+      border: 1.6px solid #0f172a;
+      border-radius: 2px;
+      background: #ffffff;
+    }
+    .b2-divider {
+      width: 100%;
+      height: 1px;
+      background: #cbd5e1;
+      margin: 1mm 0;
+    }
+
+    /* ── HOJAS/FICHAS INDIVIDUALES A4 (1 ALUMNO POR HOJA ENTERA) ── */
+    .card-a4-h {
+      width: 282mm;
+      min-width: 282mm;
+      max-width: 282mm;
+      height: 196mm;
+      min-height: 196mm;
+      max-height: 196mm;
+      flex: 0 0 282mm;
+      border: 1mm solid #000000;
+      padding: 3mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+
+    .card-a4-v {
+      width: 196mm;
+      min-width: 196mm;
+      max-width: 196mm;
+      height: 282mm;
+      min-height: 282mm;
+      max-height: 282mm;
+      flex: 0 0 196mm;
+      border: 1mm solid #000000;
+      padding: 3mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+
+    .card-a4-h .card-header,
+    .card-a4-v .card-header {
+      width: 100%;
+      height: 20mm;
+      min-height: 20mm;
+      max-height: 20mm;
+      flex: 0 0 20mm;
+      padding: 0 16mm 1mm 16mm;
+      box-sizing: border-box;
+    }
+
+    .a4-h-body,
+    .a4-v-body {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 1.5mm 16mm;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .a4-q-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1 1 auto;
+      gap: 1.5mm;
+      padding: 1mm 0;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .a4-q-item:last-child {
+      border-bottom: none;
+    }
+
+    .a4-q-header {
+      display: flex;
+      gap: 2mm;
+      font-size: 9pt;
+      color: #0f172a;
+      line-height: 1.25;
+    }
+    .a4-q-num {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .a4-q-prompt {
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .a4-grid-wrapper {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 1mm 0;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .notebook-grid-a4-h {
+      display: grid !important;
+      grid-template-columns: repeat(26, 1fr) !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+      width: 100% !important;
+      height: 22mm !important;
+    }
+    .notebook-grid-a4-h i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+    }
+
+    .notebook-grid-a4-v {
+      display: grid !important;
+      grid-template-columns: repeat(20, 1fr) !important;
+      grid-template-rows: repeat(5, 1fr) !important;
+      width: 100% !important;
+      height: 38mm !important;
+    }
+    .card-a4-v-4q .notebook-grid-a4-v {
+      height: 28mm !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
+    .notebook-grid-a4-v i {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      display: block;
+    }
+
+    .a4-footer-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-top: 1mm;
+    }
+
+    .card-a4-v-5q .a4-q-item {
+      padding: 1.5mm 0;
+      gap: 1.5mm;
+    }

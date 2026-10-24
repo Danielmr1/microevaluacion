@@ -1,0 +1,846 @@
+    /* ========================================================= */
+    /* VISTA 2: ESCÁNER DE AULA (CÁMARA MÓVIL) — SCANWING (Tanda 3)*/
+    /* ========================================================= */
+    #view-scan {
+      flex-direction: column;
+      position: relative;
+      background: #181512;
+    }
+
+    .session-bar {
+      background: #1f1b17;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.82rem;
+      z-index: 15;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .session-field {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .session-field label {
+      color: #a8a29e;
+      font-weight: 600;
+    }
+
+    .session-badge-active {
+      background: #181512;
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    .session-counter {
+      margin-left: auto;
+      background: rgba(0, 180, 216, 0.15);
+      color: var(--accent-cyan);
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      border: 1px solid rgba(0, 180, 216, 0.35);
+    }
+
+    /* Tarjeta de Aviso si la sesión no está generada */
+    .session-guardrail-card {
+      margin: 20px auto;
+      max-width: 500px;
+      background: #1f1b17;
+      border: 2px dashed var(--accent-amber);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .guardrail-icon {
+      font-size: 2.8rem;
+    }
+
+    .guardrail-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent-amber);
+    }
+
+    .guardrail-desc {
+      font-size: 0.88rem;
+      color: #d6d3d1;
+      line-height: 1.45;
+    }
+
+    .btn-arm-session {
+      background: var(--accent-amber);
+      color: #181512;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      box-shadow: 0 4px 12px rgba(255, 183, 3, 0.35);
+    }
+
+    /* Visor de Cámara */
+    .viewport-container {
+      position: relative;
+      flex: 1;
+      background: #181512;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    canvas.overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .camera-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      gap: 12px;
+      z-index: 4;
+      color: #94a3b8;
+    }
+
+    .placeholder-icon {
+      font-size: 3rem;
+      background: #1f2937;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed #374151;
+    }
+
+    .placeholder-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .placeholder-desc {
+      font-size: 0.85rem;
+      max-width: 320px;
+      line-height: 1.4;
+    }
+
+    /* ── MODO INMERSIVO DE CÁMARA ──────────────────────────────────────
+       Con la cámara encendida el visor pasa a ocupar TODA la pantalla y todo
+       lo demás se vuelve overlay. Estas reglas se habían perdido al refactorizar
+       el portal con pestañas: solo quedaban 4 y, sin las otras, la barra de
+       sesión y el panel de nómina seguían ocupando altura en el flujo normal,
+       así que el visor recibía únicamente el espacio sobrante y parecía que
+       "sobraban botones".
+       En el celular en horizontal (la orientación de escaneo) el alto es lo
+       escaso, por eso la media query de más abajo achica medidores y botón. */
+
+    body.camera-active {
+      overflow: hidden;
+    }
+
+    /* Con la cámara activa el header pasa a ser un contenedor flotante
+       mínimo: solo queda el botón de linterna (header-actions).
+       La marca, versión e info del docente se ocultan para liberar pantalla. */
+    body.camera-active header {
+      position: absolute;
+      top: 0; right: 0;
+      left: auto;
+      background: transparent;
+      border-bottom: none;
+      padding: 6px 8px;
+      z-index: 30;
+      pointer-events: none;
+      justify-content: flex-end;
+    }
+    body.camera-active header .brand,
+    body.camera-active header .btn-header-bank,
+    body.camera-active header #user-menu-wrap,
+    body.camera-active header #user-info,
+    body.camera-active header #btn-fullscreen {
+      display: none !important;
+    }
+    body.camera-active header .header-actions {
+      pointer-events: auto;
+    }
+
+    body.camera-active .tab-bar {
+      display: none;
+    }
+    body.camera-active .camera-placeholder {
+      display: none;
+    }
+
+    /* El visor sale del flujo y toma la pantalla completa */
+    body.camera-active .viewport-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      z-index: 10;
+    }
+
+    /* La barra de sesión y la nómina se ocultan mientras la cámara está activa.
+       El docente no mira el salón ni el objetivo mientras enfoca una ficha;
+       esa info reaparece en el modal post-captura. */
+    body.camera-active .session-bar,
+    body.camera-active #roster-panel {
+      display: none !important;
+    }
+
+    /* El panel de controles (con ▶ Iniciar Cámara y ↩ Volver a Fichas)
+       se oculta completamente una vez que la cámara está encendida.
+       El único botón accesible durante el escaneo es #btn-exit-scanner. */
+    body.camera-active .controls-panel {
+      display: none !important;
+    }
+
+    /* El botón flotante de salida aparece SOLO con la cámara activa */
+    body.camera-active #btn-exit-scanner {
+      display: block !important;
+    }
+
+    /* La fila de medidores flota sobre el borde inferior del video.
+       Ya no contiene un botón, solo los tres indicadores de calidad. */
+    body.camera-active .quality-metrics {
+      position: absolute;
+      bottom: 24px;
+      left: 16px;
+      right: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    /* Acá estaban .hud-guide y .corner-bracket (el rectángulo fijo con las 4
+       esquinas celestes). Se eliminaron junto con su markup: su proporción
+       dependía del tamaño de pantalla y no de la ficha, así que inducía a
+       encuadrar mal, y duplicaba al cuadrilátero dinámico del canvas.
+       No volver a agregarlas. */
+
+    /* Indicador de Estado Flotante */
+    .status-badge {
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(24, 21, 18, 0.94);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(0, 180, 216, 0.4);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      transition: all 0.2s ease;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #FFB703;
+      box-shadow: 0 0 8px #FFB703;
+    }
+    .status-badge.locked {
+      background: rgba(22, 101, 52, 0.9);
+      border-color: #22c55e;
+    }
+    .status-badge.locked .status-dot {
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    /* Medidores de Calidad en Vivo */
+    .quality-metrics {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      gap: 12px;
+      z-index: 10;
+    }
+    /* Con la cámara apagada no hay nada que medir todavía: se ocultan los tres
+       medidores y en la fila queda solamente el botón de iniciar cámara, que
+       así ocupa el ancho completo como antes hacía el panel de control. */
+    body:not(.camera-active) .quality-metrics .metric-card {
+      display: none;
+    }
+    .metric-card {
+      flex: 1;
+      background: rgba(24, 21, 18, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 183, 3, 0.2);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #ef4444;
+      border-radius: 3px;
+      transition: width 0.1s ease, background 0.2s;
+    }
+
+    /* Panel de Control Inferior */
+    .controls-panel {
+      background: #111827;
+      border-top: 1px solid #1f2937;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+    .action-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn-main {
+      flex: 1;
+      background: var(--accent-amber);
+      color: #181512;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(255, 183, 3, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-main:hover {
+      background: #f59e0b;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #292522;
+      color: #e7e5e4;
+      border: 1px solid #44403c;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Modal de Captura Congelada */
+    .capture-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      padding: 10px;
+      overflow: hidden;
+      justify-content: center;
+      align-items: center;
+    }
+    .capture-modal.open {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .card-preview-box {
+      background: #1f2937;
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: 1px solid #374151;
+      max-width: 480px;
+      margin: auto;
+      width: 100%;
+      max-height: 96dvh;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .modal-col-left {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-img-container {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1.5px solid #22c55e;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-img-container img {
+      width: 100%;
+      height: auto;
+      max-height: 14vh;
+      object-fit: contain;
+      display: block;
+    }
+    .modal-col-right {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .modal-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .student-badge-result {
+      background: #0f172a;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-left: 4px solid #22c55e;
+    }
+    .badge-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .badge-details {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      margin-top: 2px;
+      display: flex;
+      gap: 8px;
+    }
+    .metrics-summary {
+      display: none !important;
+    }
+    #modal-pending-list {
+      display: none !important;
+    }
+    .btn-next {
+      background: #22c55e;
+      color: #000;
+      border: none;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+      width: 100%;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+    }
+
+    /* Toast Flotante */
+    #toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid #38bdf8;
+      color: #f8fafc;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      z-index: 100001;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* ── CELULAR EN HORIZONTAL: la orientación real de escaneo ─────────
+       La ficha A5 es apaisada y enterFullscreen() bloquea la pantalla en
+       horizontal, así que este es el caso normal, no la excepción. En
+       horizontal el alto es lo escaso: sin estas reglas, los medidores y los
+       botones conservaban los tamaños de escritorio y se apretaban contra el
+       video. Reglas recuperadas del diseño original (backup v2.5.0). */
+    @media (orientation: landscape) and (max-height: 550px), (max-height: 520px) {
+      body.camera-active .quality-metrics {
+        bottom: 12px;
+        left: 10px;
+        right: 10px;
+        /* 360px para los 3 medidores solos (sin botón) */
+        max-width: 360px;
+        gap: 6px;
+      }
+      .metric-card {
+        padding: 4px 8px;
+      }
+      .metric-header {
+        font-size: 0.62rem;
+        margin-bottom: 2px;
+      }
+      .progress-bar-bg {
+        height: 5px;
+      }
+      body.camera-active #btn-exit-scanner {
+        top: 6px;
+        left: 8px;
+        padding: 6px 10px;
+        font-size: 0.76rem;
+      }
+      body.camera-active header {
+        padding: 4px 12px;
+      }
+      .header-actions .btn-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 600px) {
+      .card-preview-box {
+        max-width: 680px;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 12px;
+        max-height: 94dvh;
+      }
+      .modal-col-left {
+        width: 35%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .preview-img-container img {
+        max-height: 55vh;
+      }
+      .modal-col-right {
+        width: 65%;
+        max-height: 86vh;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+    }
+
+    /* VISTA DE IMPRESIÓN (CTRL + P) */
+    @media print {
+      html, body {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      header,
+      .tab-bar,
+      .teacher-panel,
+      .flow-topbar,
+      .btn-flow-back,
+      #view-hub,
+      #view-classrooms,
+      #view-scan,
+      .controls-panel,
+      .capture-modal,
+      #dependency-error-banner,
+      #toast-msg,
+      #login-overlay,
+      .btn-print-action,
+      .modal,
+      .modal-backdrop,
+      #user-menu-wrap,
+      .user-menu-dropdown {
+        display: none !important;
+      }
+      #view-create {
+        display: block !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: none !important;
+      }
+      /* Garantía estricta: ocultar cualquier elemento dentro de view-create que no sea pages-container o booklet-container */
+      #view-create > :not(#pages-container):not(#booklet-container) {
+        display: none !important;
+      }
+
+      /* MODO CARTILLAS (Por defecto o sin clase print-mode-booklet) */
+      body:not(.print-mode-booklet) #booklet-container {
+        display: none !important;
+      }
+      body:not(.print-mode-booklet) #pages-container {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+      }
+
+      /* MODO CUADERNILLO DE PREGUNTAS */
+      body.print-mode-booklet #pages-container {
+        display: none !important;
+      }
+      body.print-mode-booklet #booklet-container {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body.print-mode-booklet .sheet-booklet-quad {
+        box-shadow: none !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        min-height: 210mm !important;
+        max-height: 210mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+      }
+      body.print-mode-booklet .sheet-booklet-quad .quad-row {
+        height: 105mm !important;
+      }
+      body.print-mode-booklet .sheet-booklet-quad .booklet-quad-item {
+        flex: 0 0 148.5mm !important;
+        width: 148.5mm !important;
+        max-width: 148.5mm !important;
+        min-width: 148.5mm !important;
+        height: 105mm !important;
+        padding: 4mm 8mm !important;
+        box-sizing: border-box !important;
+      }
+      body.print-mode-booklet .sheet-booklet-landscape {
+        box-shadow: none !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        min-height: 210mm !important;
+        max-height: 210mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        position: relative !important;
+      }
+      body.print-mode-booklet .booklet-half {
+        flex: 0 0 148.5mm !important;
+        width: 148.5mm !important;
+        max-width: 148.5mm !important;
+        min-width: 148.5mm !important;
+        height: 100% !important;
+        padding: 6mm 10mm !important;
+        box-sizing: border-box !important;
+      }
+      body.print-mode-booklet .booklet-divider {
+        position: absolute !important;
+        left: 148.5mm !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 0 !important;
+        border-left: 1.5px dashed #64748b !important;
+        z-index: 10 !important;
+      }
+      body.print-mode-booklet .booklet-divider-h {
+        position: absolute !important;
+        top: 105mm !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 0 !important;
+        border-top: 1.5px dashed #64748b !important;
+        z-index: 10 !important;
+      }
+      body.print-mode-booklet .sheet-booklet-portrait {
+        box-shadow: none !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        margin: 0 !important;
+        padding: 8mm 12mm !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      body.print-mode-booklet .sheet-booklet-quad:last-child,
+      body.print-mode-booklet .sheet-booklet-landscape:last-child,
+      body.print-mode-booklet .sheet-booklet-portrait:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+      /* ── UNA HOJA = UNA PÁGINA ──
+         El alto explícito (275mm) más la ausencia de margin-bottom son lo que
+         elimina el desfase: antes eran 289mm de contenido + 8mm de margen
+         dentro de una caja de 285mm, así que el navegador partía cada hoja en
+         dos páginas (10 páginas para 5 hojas) y la ficha de abajo quedaba
+         cortada, con sus ArUco al filo del papel.
+         275mm entra incluso con el margen de 1cm que Chrome usa por defecto
+         en el diálogo de impresión (caja imprimible 190 x 277mm).
+         No volver a poner width:100% aquí: la ficha mide 186mm y con
+         width:100% quedaba más ancha que su propia hoja. */
+      .sheet-a4,
+      .sheet-a4-quad-v {
+        box-shadow: none !important;
+        width: 188mm !important;
+        height: 275mm !important;
+        min-height: 0 !important;
+        max-height: 275mm !important;
+        margin: 0 auto !important;
+        padding: 2mm 0 !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      .sheet-a4-quad-v {
+        padding: 3mm 2mm !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
+      /* Evita una página en blanco al final. */
+      .sheet-a4:last-child,
+      .sheet-a4-quad-v:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+
+      /* ── HOJA A4 CON 4 O 2 ALUMNOS (CARTILLAS OMR HORIZONTALES) ── */
+      body:not(.print-mode-booklet) .sheet-a4-quad,
+      body:not(.print-mode-booklet) .sheet-a4-split {
+        box-shadow: none !important;
+        width: 275mm !important;
+        height: 188mm !important;
+        min-height: 0 !important;
+        max-height: 188mm !important;
+        margin: 0 auto !important;
+        padding: 3mm 4mm !important;
+        overflow: hidden !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+      }
+      body:not(.print-mode-booklet) .sheet-a4-quad {
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
+      body:not(.print-mode-booklet) .sheet-a4-split {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+      }
+      body:not(.print-mode-booklet) .sheet-a4-quad:last-child,
+      body:not(.print-mode-booklet) .sheet-a4-split:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+      .card-a5,
+      .card-a5-v-r3,
+      .card-a5-v-free,
+      .card-a6-r3,
+      .card-a6-v {
+        border: 1mm solid #000000 !important;
+      }
+    }
