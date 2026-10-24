@@ -7,9 +7,21 @@
       if (!sel) return;
       sel.innerHTML = '<option value="">— Elige un salón —</option>';
       ClassroomData.getClassroomList().forEach(cls => {
+        const fullCls = (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroom)
+          ? ClassroomData.getClassroom(cls.id)
+          : null;
+        const stage = fullCls?.gradeStage || cls.gradeStage;
+        const level = fullCls?.gradeLevel || cls.gradeLevel;
+        let gradePart = '';
+        if (level) {
+          const numMatch = String(level).match(/\d+/);
+          const num = numMatch ? numMatch[0] : level;
+          const stageShort = (stage && String(stage).toLowerCase().includes('sec')) ? 'sec' : 'pri';
+          gradePart = ` — ${num}° ${stageShort}`;
+        }
         const opt = document.createElement('option');
         opt.value = cls.id;
-        opt.textContent = `${cls.name}  (${cls.count} alumnos)`;
+        opt.textContent = `${cls.name} (${cls.count} alum)${gradePart}`;
         sel.appendChild(opt);
       });
       // Restaurar selección si hay sesión activa
