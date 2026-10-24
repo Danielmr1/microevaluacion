@@ -1063,6 +1063,8 @@ function renderSimBankList() {
   }
   if (emptyEl) emptyEl.style.display = 'none';
 
+  const isRama1 = (currentBranchMode === 'rama1' || (typeof simState !== 'undefined' && simState && simState.branch === 'rama1'));
+
   bankList.forEach((q, idx) => {
     const item = document.createElement('div');
     item.style.cssText = 'background:#FFFFFF; border:1.5px solid rgba(43, 33, 24, 0.14); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; box-shadow:0 2px 6px rgba(43, 33, 24, 0.04);';
@@ -1071,23 +1073,57 @@ function renderSimBankList() {
     header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px;';
 
     const hasRubric = !!(q.hasRubric || q.rubric);
-    const badgeHtml = hasRubric
-      ? '<span style="background:#F3E8FF; color:#6B21A8; border:1px solid #C084FC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px;">🤖 Con Rúbrica IA</span>'
-      : '<span style="background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px;">⚡ Pregunta Rápida</span>';
 
-    header.innerHTML = `
-      <div style="display:flex; align-items:center; gap:8px;">
-        ${badgeHtml}
-        <span style="font-size:0.82rem; font-weight:800; color:#2B2118;">Opción ${idx + 1}</span>
-      </div>
-    `;
+    const titleGroup = document.createElement('div');
+    titleGroup.style.cssText = 'display:flex; align-items:center; gap:8px;';
 
-    const btnSelect = document.createElement('button');
-    btnSelect.type = 'button';
-    btnSelect.textContent = '✓ Seleccionar';
-    btnSelect.style.cssText = 'background:#0284C7; border:none; color:#FFFFFF; border-radius:8px; padding:6px 14px; font-size:0.78rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(2, 132, 199, 0.25); transition:all 0.15s;';
-    btnSelect.onclick = () => selectSimBankQuestion(q);
-    header.appendChild(btnSelect);
+    const badgeContainer = document.createElement('div');
+    badgeContainer.style.display = 'inline-flex';
+    badgeContainer.style.alignItems = 'center';
+
+    if (hasRubric) {
+      const badgeBtn = document.createElement('button');
+      badgeBtn.type = 'button';
+      badgeBtn.className = 'sim-badge-rubric-clickable';
+      badgeBtn.style.cssText = 'background:#F3E8FF; color:#6B21A8; border:1px solid #C084FC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;';
+      badgeBtn.title = 'Clic para ver la rúbrica y análisis pedagógico de IA';
+      badgeBtn.innerHTML = '🤖 Con Rúbrica IA <span style="font-size:0.75rem;">👁️</span>';
+      badgeBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof handleViewQuestionRubric === 'function') handleViewQuestionRubric(q);
+      };
+      badgeContainer.appendChild(badgeBtn);
+    } else {
+      const badgeSpan = document.createElement('span');
+      badgeSpan.style.cssText = 'background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px;';
+      badgeSpan.textContent = '⚡ Pregunta Rápida';
+      badgeContainer.appendChild(badgeSpan);
+    }
+    titleGroup.appendChild(badgeContainer);
+
+    const optLabel = document.createElement('span');
+    optLabel.style.cssText = 'font-size:0.82rem; font-weight:800; color:#2B2118;';
+    optLabel.textContent = `Opción ${idx + 1}`;
+    titleGroup.appendChild(optLabel);
+
+    header.appendChild(titleGroup);
+
+    const btnAction = document.createElement('button');
+    btnAction.type = 'button';
+
+    if (!hasRubric && isRama1) {
+      // En Formativa con IA sin rúbrica: Generar Rúbrica
+      btnAction.textContent = '✨ Generar Rúbrica';
+      btnAction.style.cssText = 'background:linear-gradient(135deg, #7c3aed, #4f46e5); border:none; color:#FFFFFF; border-radius:8px; padding:6px 12px; font-size:0.76rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(124, 58, 237, 0.25); display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap;';
+      btnAction.title = 'Analizar este problema con Gemini para generar su solución y rúbrica';
+      btnAction.onclick = () => handleUpgradeSimBankQuestion(q, btnAction, badgeContainer);
+    } else {
+      // Tiene rúbrica O no es Rama 1: Seleccionar directamente
+      btnAction.textContent = '✓ Seleccionar';
+      btnAction.style.cssText = 'background:#0284C7; border:none; color:#FFFFFF; border-radius:8px; padding:6px 14px; font-size:0.78rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(2, 132, 199, 0.25); transition:all 0.15s; white-space:nowrap;';
+      btnAction.onclick = () => selectSimBankQuestion(q);
+    }
+    header.appendChild(btnAction);
 
     const promptText = document.createElement('div');
     promptText.style.cssText = 'font-size:0.85rem; color:#2B2118; font-weight:700; line-height:1.45;';
@@ -1113,6 +1149,96 @@ function renderSimBankList() {
   });
 }
 
+async function handleUpgradeSimBankQuestion(q, btnEl, badgeContainer) {
+  if (!q || !q.prompt) return;
+
+  const g = (typeof gradoDelSalonSeleccionado === 'function') ? gradoDelSalonSeleccionado() : null;
+  const gradoLabel = g ? (g.texto || `${g.level}° de ${g.stage}`) : (q.gradeText || '4° de primaria');
+
+  const origBtnText = btnEl.innerHTML;
+  btnEl.disabled = true;
+  btnEl.innerHTML = '⏳ Analizando...';
+  btnEl.style.opacity = '0.75';
+  btnEl.style.cursor = 'wait';
+
+  if (typeof showToast === 'function') {
+    showToast('🤖 Consultando a Gemini para generar la rúbrica pedagógica (~20-30 seg)...');
+  }
+
+  try {
+    const res = await SupabaseClient.generateRubric({
+      prompt: q.prompt,
+      grado: gradoLabel
+    });
+
+    if (res && res.ok && res.rubrica) {
+      q.rubric = res.rubrica;
+      q.hasRubric = true;
+
+      const evFull = (typeof ClassroomData !== 'undefined' && ClassroomData.getEvaluation)
+        ? (ClassroomData.getEvaluation(q.id) || q)
+        : q;
+      evFull.rubric = res.rubrica;
+      evFull.hasRubric = true;
+      if (Array.isArray(evFull.questions)) {
+        evFull.questions.forEach(subQ => {
+          if (subQ.prompt === q.prompt) {
+            subQ.rubric = res.rubrica;
+            subQ.hasRubric = true;
+          }
+        });
+      }
+      if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+        ClassroomData.saveCustomEvaluation(evFull);
+      }
+      if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+        SupabaseClient.saveEvaluation(evFull).catch(e => console.warn('[Sim Upgrade Question Cloud]', e));
+      }
+
+      if (badgeContainer) {
+        badgeContainer.innerHTML = '';
+        const badgeBtn = document.createElement('button');
+        badgeBtn.type = 'button';
+        badgeBtn.className = 'sim-badge-rubric-clickable';
+        badgeBtn.style.cssText = 'background:#F3E8FF; color:#6B21A8; border:1px solid #C084FC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;';
+        badgeBtn.title = 'Clic para ver la rúbrica y análisis pedagógico de IA';
+        badgeBtn.innerHTML = '🤖 Con Rúbrica IA <span style="font-size:0.75rem;">👁️</span>';
+        badgeBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (typeof handleViewQuestionRubric === 'function') handleViewQuestionRubric(q);
+        };
+        badgeContainer.appendChild(badgeBtn);
+      }
+
+      btnEl.disabled = false;
+      btnEl.style.opacity = '1';
+      btnEl.style.cursor = 'pointer';
+      btnEl.style.background = '#0284C7';
+      btnEl.style.boxShadow = '0 2px 6px rgba(2, 132, 199, 0.25)';
+      btnEl.textContent = '✓ Seleccionar';
+      btnEl.title = 'Seleccionar esta pregunta';
+      btnEl.onclick = () => selectSimBankQuestion(q);
+
+      if (typeof showToast === 'function') {
+        showToast('✅ Rúbrica generada con éxito. Ya puedes seleccionar esta pregunta.');
+      }
+    } else {
+      btnEl.disabled = false;
+      btnEl.innerHTML = origBtnText;
+      btnEl.style.opacity = '1';
+      btnEl.style.cursor = 'pointer';
+      const err = (res && res.error) || 'No se pudo generar la rúbrica.';
+      if (typeof showToast === 'function') showToast('⚠️ Error: ' + err);
+    }
+  } catch (err) {
+    btnEl.disabled = false;
+    btnEl.innerHTML = origBtnText;
+    btnEl.style.opacity = '1';
+    btnEl.style.cursor = 'pointer';
+    if (typeof showToast === 'function') showToast('⚠️ Error de conexión: ' + (err?.message || err));
+  }
+}
+
 function selectSimBankQuestion(q) {
   if (currentSimSlotScope === 'rama3') {
     r3State.bankQuestions[currentSimSlot] = {
@@ -1136,8 +1262,9 @@ function selectSimBankQuestion(q) {
 
   if (simState.branch === 'rama1' && !q.hasRubric && !q.rubric) {
     if (typeof showToast === 'function') {
-      showToast('⚠️ Para Formativa con IA la pregunta requiere análisis y rúbrica pedagógica.');
+      showToast('⚠️ Para Formativa con IA debes generar la rúbrica pedagógica primero.');
     }
+    return;
   }
 
   simState.questions[currentSimSlot] = {
@@ -1531,6 +1658,7 @@ if (typeof window !== 'undefined') {
   window.setSimPickerTab = setSimPickerTab;
   window.renderSimBankList = renderSimBankList;
   window.selectSimBankQuestion = selectSimBankQuestion;
+  window.handleUpgradeSimBankQuestion = handleUpgradeSimBankQuestion;
   window.handleSimAnalyzeAI = handleSimAnalyzeAI;
   window.saveSimCustomQuestion = saveSimCustomQuestion;
   window.buildSimulatorEvaluation = buildSimulatorEvaluation;
