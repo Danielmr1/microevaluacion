@@ -141,3 +141,36 @@ Todo asistente de inteligencia artificial o desarrollador que opere en este repo
   * Ante cualquier enlace, imagen o referente externo, el asistente DEBE inspeccionar el contenido real (abrir la página o analizar la imagen) ANTES de opinar o planificar.
   * Ante la menor ambigüedad o decisión de diseño (colores, tonos, estructura), el asistente **TIENE LA OBLIGACIÓN DE PREGUNTAR PRIMERO** y acordar el camino antes de modificar archivos o escribir código nuevo.
   * Queda prohibido sobrecargar pantallas con botones duplicados, textos explicativos no pedidos o plantillas genéricas de IA para "rellenar espacio".
+
+---
+
+## 16. Protocolo de Bloqueo por Asunción (Tolerancia Cero y Palabras de Control)
+* **Prohibición de Ejecución Anticipada:** El asistente tiene terminantemente prohibido modificar archivos, escribir código o dar por resuelta una tarea de diseño/layout sin que el usuario haya aprobado explícitamente el plan técnico y las dimensiones reales.
+* **Prohibición de Falso Éxito:** Queda estrictamente vetado declarar una solución como funcional o dar números de versión para subir a GitHub sin haber verificado con evidencia física y mediciones concretas en el entorno (DOM, resolución, scroll, proporciones).
+* **Palabras Clave de Control Inmediato:**
+  * Si el usuario escribe **"DETENTE"**, **"ESTÁS ASUMIENDO"**, **"NO CAMBIES DE TEMA"** o cualquier señalamiento de asunción:
+    1. El asistente DEBE frenar en seco de forma inmediata.
+    2. Tiene prohibido generar código, parches o justificaciones en ese turno.
+    3. Debe responder únicamente reconociendo el punto específico señalado y esperando la instrucción directa del usuario.
+* **Requisito Previo Obligatorio para Cambios de Layout:**
+  * Ante cualquier cambio de visualización o layout, el asistente DEBE presentar primero:
+    1. Las medidas y límites reales del problema (ej. ancho en mm y px de una hoja A4 vs ancho de viewport disponible).
+    2. La causa exacta por la que falla el comportamiento actual.
+    3. La propuesta técnica clara en lenguaje directo, sin código.
+  * Solo una vez que el usuario responda confirmando o autorizando esa propuesta, el asistente tiene permiso de tocar archivos.
+
+---
+
+## 17. Guardarraíl de Límite Estricto de 50 Preguntas en el Banco y Sincronización entre Dispositivos
+* **Tope Máximo Absoluto de 50 Preguntas por Cuenta:**
+  * Un usuario NUNCA debe tener más de 50 preguntas en total en su cuenta (distribuidas libremente entre cualquier grado o etapa).
+  * El sistema SIEMPRE debe mostrar en el Banco el 100% de las preguntas del usuario (hasta 50), sin preguntas ocultas ni límites artificiales de consulta.
+  * Si el usuario alcanza 50 preguntas e intenta crear la pregunta #51, el sistema **TIENE TERMINANTEMENTE PROHIBIDO** guardar o generar dicha pregunta (ni en Supabase ni en `localStorage` ni mediante llamadas a IA); debe bloquear la acción y notificar al docente que debe eliminar previamente alguna pregunta que ya no use.
+* **Aislamiento Total de la Cartilla OMR (Rama 3):**
+  * Los casilleros numerados y hojas de respuestas de la Cartilla OMR (de 6 a 20 burbujas) son plantillas de sesión temporales (`SESSION_EVALUATIONS`) y **JAMÁS deben contar para el límite de 50 preguntas del banco**.
+  * Solo los problemas matemáticos reales con consigna didáctica redactados individualmente pueden ingresar al banco y consumir cupo.
+* **Sincronización Bidireccional y Cero Preguntas Fantasma:**
+  * Al abrir el Banco de Preguntas o el selector de fichas, el sistema debe sincronizar automáticamente con Supabase en segundo plano para reflejar cambios hechos en otros dispositivos sin requerir recargar la página (F5).
+  * Si una pregunta se elimina en un dispositivo, el borrado debe replicarse en Supabase y eliminarse del `localStorage` de todos los dispositivos del docente, quedando estrictamente prohibido revivir preguntas eliminadas como "preguntas fantasma".
+  * Ante fallos de conexión o expiración de tokens, las preguntas guardadas deben encolarse en la cola offline (`microeval_sync_queue`) y sincronizarse automáticamente al restablecerse la red.
+
