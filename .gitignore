@@ -62,10 +62,8 @@ scanner.html
 plantilla_a5.html
 
 # ── Copias sueltas de la librería de QR ────────────────────────────────
-# La librería está EMBEBIDA dentro de index.html (ver el <script> inline
-# con "var QRCode=..."). Estos dos archivos no se cargan desde ningún lado.
 qrcode.min.js
-qrcode.bundle.js
+# qrcode.bundle.js es el bundle compilado local necesario para el renderizado de QR (en index.html y sw.js)
 
 # ── Entorno de desarrollo ──────────────────────────────────────────────
 # La aplicación no tiene build ni dependencias en tiempo de ejecución:
