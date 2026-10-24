@@ -126,6 +126,40 @@
   const STORAGE_KEY_SAVED_SESSIONS = 'microeval_saved_sessions_v1';
   const MAX_SAVED_SESSIONS = 8;
   const STORAGE_KEY_SYNC_QUEUE = 'microeval_pending_sync_v1';
+  const MAX_BANK_QUESTIONS = 50;
+
+  /**
+   * Cuenta el total de preguntas legítimas registradas en el banco (todos los grados),
+   * excluyendo casilleros ficticios de cartilla OMR (Rama 3).
+   */
+  function countTotalBankQuestions() {
+    const seen = new Set();
+    let count = 0;
+    Object.values(EVALUATIONS).forEach(ev => {
+      if (!ev || !ev.prompt) return;
+      if (ev.branch === 'rama3' || (ev.id && String(ev.id).startsWith('eval_r3_'))) return;
+      const rootPrompt = String(ev.prompt || '').trim();
+      if (/^Pregunta\s+\d+$/i.test(rootPrompt) || rootPrompt.startsWith('Cartilla de respuestas')) return;
+
+      if (Array.isArray(ev.questions) && ev.questions.length > 0) {
+        ev.questions.forEach(q => {
+          if (!q || !q.prompt) return;
+          const p = String(q.prompt).trim();
+          if (/^Pregunta\s+\d+$/i.test(p) || p.startsWith('Cartilla de respuestas')) return;
+          if (!seen.has(p)) {
+            seen.add(p);
+            count++;
+          }
+        });
+      } else {
+        if (!seen.has(rootPrompt)) {
+          seen.add(rootPrompt);
+          count++;
+        }
+      }
+    });
+    return count;
+  }
 
   function queueForSync(item) {
     if (typeof window === 'undefined' || !window.localStorage) return;
@@ -196,7 +230,9 @@
     };
 
     if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveEvaluation === 'function') {
-      window.SupabaseClient.saveEvaluation(payload).catch(err => {
+      window.SupabaseClient.saveEvaluation(payload).then(res => {
+        if (!res) queueForSync(payload);
+      }).catch(err => {
         console.warn('[Guardrail] Error al sincronizar con Supabase, encolando:', err && err.message);
         queueForSync(payload);
       });
@@ -223,7 +259,9 @@
           questions: [q]
         };
         if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveEvaluation === 'function') {
-          window.SupabaseClient.saveEvaluation(singlePayload).catch(() => queueForSync(singlePayload));
+          window.SupabaseClient.saveEvaluation(singlePayload).then(res => {
+            if (!res) queueForSync(singlePayload);
+          }).catch(() => queueForSync(singlePayload));
         } else {
           queueForSync(singlePayload);
         }
@@ -608,6 +646,18 @@
     if (evalData.branch === 'rama3' || String(id).startsWith('eval_r3_') || String(promptLimpio).startsWith('Cartilla de respuestas')) {
       SESSION_EVALUATIONS[id] = newEval;
       return newEval;
+    }
+
+    // GUARDARRAÍL LÍMITE DE 50 PREGUNTAS:
+    // Si es una pregunta NUEVA (no existe previa ni por id ni por enunciado) y ya se llegó al máximo de 50:
+    if (!previa && !idPorEnunciado) {
+      const totalActual = countTotalBankQuestions();
+      if (totalActual >= MAX_BANK_QUESTIONS) {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+        }
+        return null;
+      }
     }
 
     EVALUATIONS[id] = newEval;
@@ -1234,6 +1284,8 @@
     isQuestionInSavedSession,
     getQuestionSavedSessions,
     MAX_SAVED_SESSIONS,
+    MAX_BANK_QUESTIONS,
+    getBankQuestionsCount: countTotalBankQuestions,
     flushSyncQueue,
     purgeNonCompliantData,
 
@@ -1299,12 +1351,16 @@
      * Nunca se pierde lo que la copia local tiene y la de la base no.
      */
     setRecentEvaluations(list) {
+      if (!Array.isArray(list)) return;
+
+      const cloudPrompts = new Set();
       (list || []).forEach(ev => {
         if (!ev || !ev.prompt) return;
         const promptLimpio = String(ev.prompt || '').trim();
         if (ev.branch === 'rama3' || /^Pregunta\s+\d+$/i.test(promptLimpio) || promptLimpio.startsWith('Cartilla de respuestas')) {
           return;
         }
+        cloudPrompts.add(promptLimpio);
 
         const idLocal = Object.keys(EVALUATIONS)
           .find(k => EVALUATIONS[k] && EVALUATIONS[k].prompt === ev.prompt);
@@ -1325,6 +1381,31 @@
           questionCount: ev.question_count || ev.questionCount || (previa ? previa.questionCount : null) || undefined,
           questions: ev.questions || (previa ? previa.questions : null) || undefined
         });
+      });
+
+      // Sincronizar eliminaciones de la nube:
+      // Si la lista de la nube no contiene una pregunta, y dicha pregunta no está pendiente en la cola de subida local,
+      // significa que fue eliminada desde otro dispositivo o desde Supabase. Se remueve para evitar preguntas fantasma.
+      let pendingPrompts = new Set();
+      try {
+        const rawQueue = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE);
+        if (rawQueue) {
+          const qArr = JSON.parse(rawQueue);
+          if (Array.isArray(qArr)) qArr.forEach(item => { if (item.prompt) pendingPrompts.add(String(item.prompt).trim()); });
+        }
+      } catch (e) {}
+
+      // Solo depurar si la lista es válida
+      Object.keys(EVALUATIONS).forEach(k => {
+        const ev = EVALUATIONS[k];
+        if (!ev) return;
+        const p = String(ev.prompt || '').trim();
+        if (ev.branch === 'rama3' || /^Pregunta\s+\d+$/i.test(p) || p.startsWith('Cartilla de respuestas')) return;
+
+        // Si no está en Supabase y tampoco está pendiente en la cola local de subida:
+        if (!cloudPrompts.has(p) && !pendingPrompts.has(p)) {
+          delete EVALUATIONS[k];
+        }
       });
 
       if (typeof window !== 'undefined' && window.localStorage) {

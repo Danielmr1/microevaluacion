@@ -998,6 +998,16 @@ function openSimQuestionPicker(slotIdx) {
   renderSimBankList();
   updateSimPromptCounter();
 
+  // Sincronización en segundo plano con Supabase para reflejar cambios entre dispositivos
+  if (typeof SupabaseClient !== 'undefined' && SupabaseClient.loadRecentEvaluations) {
+    SupabaseClient.loadRecentEvaluations().then(recent => {
+      if (recent && typeof ClassroomData !== 'undefined' && ClassroomData.setRecentEvaluations) {
+        ClassroomData.setRecentEvaluations(recent);
+        renderSimBankList();
+      }
+    }).catch(e => console.warn('[Sim Picker Sync Cloud]', e));
+  }
+
   modal.style.display = 'flex';
 }
 
@@ -1195,6 +1205,17 @@ function insertExpFromPopover(scope) {
 window.insertExpFromPopover = insertExpFromPopover;
 
 function setSimPickerTab(tab) {
+  if (tab === 'new') {
+    if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
+      if (ClassroomData.getBankQuestionsCount() >= 50) {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+        }
+        return;
+      }
+    }
+  }
+
   simPickerActiveTab = tab;
   const tabBank = document.getElementById('sim-tab-bank');
   const tabNew = document.getElementById('sim-tab-new');
@@ -1476,6 +1497,15 @@ function selectSimBankQuestion(q) {
 }
 
 async function handleSimAnalyzeAI() {
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
+    if (ClassroomData.getBankQuestionsCount() >= 50) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+      }
+      return;
+    }
+  }
+
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
   if (!prompt) {
     if (typeof showToast === 'function') showToast('⚠️ Escribe el enunciado primero.');
@@ -1715,6 +1745,7 @@ async function handleSimAnalyzeAI() {
 
 window._viewCurrentDraftRubric = () => {
   if (!simCurrentRubric) return;
+
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
   const opts = {
     A: (document.getElementById('sim-opt-a')?.value || '').trim(),
@@ -1752,6 +1783,15 @@ function editSimDraftQuestion() {
 window.editSimDraftQuestion = editSimDraftQuestion;
 
 function saveSimCustomQuestion() {
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
+    if (ClassroomData.getBankQuestionsCount() >= 50) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+      }
+      return;
+    }
+  }
+
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
   if (!prompt) {
     if (typeof showToast === 'function') showToast('⚠️ Escribe el enunciado de la pregunta.');

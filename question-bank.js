@@ -557,6 +557,16 @@ function openBankManagerModal() {
   renderBankManagerGradeTabs();
   renderBankManagerFilterPills();
   renderBankManagerQuestions();
+
+  // Sincronización en segundo plano con Supabase para reflejar cambios entre dispositivos
+  if (typeof SupabaseClient !== 'undefined' && SupabaseClient.loadRecentEvaluations) {
+    SupabaseClient.loadRecentEvaluations().then(recent => {
+      if (recent && typeof ClassroomData !== 'undefined' && ClassroomData.setRecentEvaluations) {
+        ClassroomData.setRecentEvaluations(recent);
+        renderBankManagerQuestions();
+      }
+    }).catch(err => console.warn('[Bank Manager Sync Error]', err));
+  }
 }
 
 function closeBankManagerModal() {
@@ -764,6 +774,32 @@ function renderBankManagerQuestions() {
       const opts = q.options ? Object.values(q.options).join(' ').toLowerCase() : '';
       return p.includes(bankManagerSearchQuery) || opts.includes(bankManagerSearchQuery);
     });
+  }
+
+  // Actualizar indicador global de capacidad (máximo 50 preguntas en toda la cuenta)
+  const totalBankCount = (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount)
+    ? ClassroomData.getBankQuestionsCount()
+    : allGradeQuestions.length;
+  const isFull = totalBankCount >= 50;
+
+  const capBadge = document.getElementById('bm-global-capacity-badge');
+  const capText = document.getElementById('bm-global-capacity-text');
+  if (capBadge && capText) {
+    capBadge.style.background = isFull ? '#fee2e2' : '#f0fdf4';
+    capBadge.style.color = isFull ? '#dc2626' : '#15803d';
+    capBadge.style.border = isFull ? '1.5px solid #fca5a5' : '1.5px solid #bbf7d0';
+    capText.textContent = `${totalBankCount} / 50 en tu banco${isFull ? ' (Lleno)' : ''}`;
+  }
+
+  const btnAdd = document.getElementById('btn-toggle-add-question');
+  if (btnAdd) {
+    if (isFull) {
+      btnAdd.style.opacity = '0.65';
+      btnAdd.title = 'Límite máximo de 50 preguntas alcanzado. Elimina alguna para agregar una nueva.';
+    } else {
+      btnAdd.style.opacity = '1';
+      btnAdd.title = 'Agregar nueva pregunta a este grado';
+    }
   }
 
   if (summaryText) {
@@ -1125,6 +1161,16 @@ function toggleBankManagerAddForm(show) {
   const target = (typeof show === 'boolean') ? show : !isVisible;
 
   if (target) {
+    // Guardarraíl: Máximo 50 preguntas en toda la cuenta
+    if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
+      if (ClassroomData.getBankQuestionsCount() >= 50) {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+        }
+        return;
+      }
+    }
+
     // Resetear formulario a Estado 1 (Ingreso)
     const formFields = document.getElementById('bm-new-form-fields');
     const consolidated = document.getElementById('bm-new-consolidated-card');
@@ -1212,6 +1258,15 @@ function updateBMPromptCounter() {
 }
 
 async function handleSaveQuestionFromManager() {
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
+    if (ClassroomData.getBankQuestionsCount() >= 50) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+      }
+      return;
+    }
+  }
+
   if (!bankManagerActiveGrade) {
     showToast('⚠️ Selecciona un grado primero.');
     return;
@@ -1441,6 +1496,15 @@ window._viewCurrentBMDraftRubric = () => {
  * Apta para evaluación focalizada de contenido (Rama 2) y cartillas (Rama 3).
  */
 async function handleSaveQuickQuestionFromManager() {
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
+    if (ClassroomData.getBankQuestionsCount() >= 50) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+      }
+      return;
+    }
+  }
+
   if (!bankManagerActiveGrade) {
     showToast('⚠️ Selecciona un grado primero.');
     return;

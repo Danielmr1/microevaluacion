@@ -677,6 +677,18 @@
     }
 
     /* Alta de una evaluación nueva. */
+    // Guardarraíl: Máximo 50 preguntas en la nube por usuario
+    try {
+      const { count, error: countErr } = await client
+        .from('microeval_evaluations')
+        .select('*', { count: 'exact', head: true })
+        .eq('teacher_id', user.id);
+      if (!countErr && typeof count === 'number' && count >= 50) {
+        console.warn('[SupabaseClient] Límite de 50 preguntas alcanzado en la nube.');
+        return null;
+      }
+    } catch (e) {}
+
     const intentos = [
       Object.assign({ teacher_id: user.id, prompt: prompt, title: d.title || 'Evaluación' }, campos),
       // Sin las columnas de grado, conservando tipo, alternativas y rúbrica
@@ -719,7 +731,7 @@
    */
   async function loadRecentEvaluations() {
     const client = getClient();
-    if (!client) return [];
+    if (!client) return null;
 
     const { data, error } = await client
       .from('microeval_evaluations')
@@ -727,7 +739,7 @@
       .order('last_used_at', { ascending: false })
       .limit(50);
 
-    if (error) { console.error('[SupabaseClient] Error cargando evaluaciones:', error.message); return []; }
+    if (error) { console.error('[SupabaseClient] Error cargando evaluaciones:', error.message); return null; }
     return (data || []).filter(ev => {
       const p = String(ev.prompt || '').trim();
       return p && !/^Pregunta\s+\d+$/i.test(p) && !p.startsWith('Cartilla de respuestas') && ev.branch !== 'rama3';

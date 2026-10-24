@@ -1,6 +1,6 @@
 // Service Worker para Microevaluación A5 (PWA) — v3.9.2
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.10.22';
+const CACHE_NAME = 'microeval-cache-v3.10.23';
 
 const PRECACHE_ASSETS = [
   './',
@@ -19,14 +19,14 @@ const PRECACHE_ASSETS = [
   './aruco.bundle.js?v=3.0.6',
   './jsqr.min.js?v=3.0.6',
   // Módulos de la aplicación
-  './classroom-data.js?v=3.3.8',
-  './supabase-client.js?v=3.5.7',
+  './classroom-data.js?v=3.10.23',
+  './supabase-client.js?v=3.10.23',
   './roi-processor.js?v=3.2.50',
   './scanner.js?v=3.3.8',
   './results-manager.js?v=3.1.90',
   './classroom-manager.js?v=3.10.14',
-  './question-bank.js?v=3.10.22',
-  './card-simulator.js?v=3.10.22',
+  './question-bank.js?v=3.10.23',
+  './card-simulator.js?v=3.10.23',
   './card-exam-builder.js?v=3.10.9',
   './card-formativa.js?v=3.10.16',
   './card-focalizada.js?v=3.10.16',
