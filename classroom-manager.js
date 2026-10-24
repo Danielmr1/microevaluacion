@@ -317,14 +317,20 @@ function openClassroomModal(classroomId) {
     btnAddStudent.title = isRoomLocked ? `Bloqueado: salón en uso en "${roomUsage.sessionTitle || 'evaluación'}"` : 'Agregar nuevo alumno';
   }
 
-  if (badgeEl) badgeEl.style.background = cls.color || '#3b82f6';
-  if (nameEl) nameEl.textContent = `Aula: ${cls.name}`;
+  if (nameEl) nameEl.textContent = `Salón: ${cls.name}`;
 
-  const gradeText = ClassroomData.formatGrade(cls.gradeStage, cls.gradeLevel) || 'Sin grado asignado';
+  let gradeText = 'Sin grado asignado';
+  if (cls.gradeLevel && cls.gradeStage) {
+    const stageShort = String(cls.gradeStage).toLowerCase().includes('sec') ? 'secundaria' : 'primaria';
+    gradeText = `${cls.gradeLevel}° ${stageShort}`;
+  } else if (ClassroomData && ClassroomData.formatGrade) {
+    gradeText = ClassroomData.formatGrade(cls.gradeStage, cls.gradeLevel) || 'Sin grado asignado';
+  }
   if (gradeEl) gradeEl.textContent = gradeText;
 
   const students = cls.students || [];
-  if (countEl) countEl.textContent = `${students.length} estudiante(s) registrado(s)`;
+  const studentWord = students.length === 1 ? 'alumno' : 'alumnos';
+  if (countEl) countEl.textContent = `${students.length} ${studentWord}`;
 
   if (btnDelete) {
     btnDelete.style.display = 'inline-flex';

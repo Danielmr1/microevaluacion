@@ -44,7 +44,7 @@
   <script src="roi-processor.js?v=3.2.50"></script>
   <script src="scanner.js?v=3.3.8"></script>
   <script src="results-manager.js?v=3.1.90"></script>
-  <script src="classroom-manager.js?v=3.10.12"></script>
+  <script src="classroom-manager.js?v=3.10.13"></script>
   <script src="question-bank.js?v=3.2.71"></script>
   <script src="card-simulator.js?v=3.10.9"></script>
   <script src="card-exam-builder.js?v=3.10.9"></script>
@@ -597,7 +597,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.12</span>
+              Versión <span id="user-profile-version-tag">v3.10.13</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1832,14 +1832,11 @@
       
       <!-- Header del Modal: Acento Dorado Solar Mariposa -->
       <div style="padding:16px 20px; border-bottom:1.5px solid #E5DCCE; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to right, #FBF8F3, #F5EEE2); border-top:4px solid #F59E0B;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <span id="mgr-modal-room-badge" style="width:14px; height:36px; border-radius:4px; display:inline-block; background:linear-gradient(180deg, #00B4D8 0%, #0F172A 100%); box-shadow:0 1px 3px rgba(0,180,216,0.4);"></span>
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <h3 id="mgr-modal-room-name" style="margin:0; font-size:1.18rem; font-weight:800; color:#2C2219;">Aula</h3>
-              <span id="mgr-modal-room-grade" style="font-size:0.75rem; font-weight:800; color:#B45309; background:#FEF3C7; padding:2px 9px; border-radius:6px; border:1px solid #FCD34D;">—</span>
-            </div>
-            <span id="mgr-modal-room-students-count" style="font-size:0.74rem; color:#786C5E; font-weight:700;">0 estudiantes registrados</span>
+        <div>
+          <h3 id="mgr-modal-room-name" style="margin:0 0 4px 0; font-size:1.18rem; font-weight:800; color:#2C2219;">Salón</h3>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span id="mgr-modal-room-students-count" style="font-size:0.78rem; color:#786C5E; font-weight:700;">0 alumnos</span>
+            <span id="mgr-modal-room-grade" style="font-size:0.75rem; font-weight:800; color:#B45309; background:#FEF3C7; padding:2px 9px; border-radius:6px; border:1px solid #FCD34D;">—</span>
           </div>
         </div>
         <button type="button" onclick="closeClassroomModal()" style="background:transparent; border:none; color:#786C5E; font-size:1.2rem; cursor:pointer; padding:6px 8px; line-height:1; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; transition:color 0.15s;" title="Cerrar">
