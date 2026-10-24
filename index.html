@@ -45,8 +45,8 @@
   <script src="scanner.js?v=3.3.8"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.10.14"></script>
-  <script src="question-bank.js?v=3.10.20"></script>
-  <script src="card-simulator.js?v=3.10.20"></script>
+  <script src="question-bank.js?v=3.10.21"></script>
+  <script src="card-simulator.js?v=3.10.21"></script>
   <script src="card-exam-builder.js?v=3.10.9"></script>
   <script src="card-formativa.js?v=3.10.16"></script>
   <script src="card-focalizada.js?v=3.10.16"></script>
@@ -597,7 +597,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.20</span>
+              Versión <span id="user-profile-version-tag">v3.10.21</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2433,151 +2433,207 @@
         <!-- Body de Preguntas -->
         <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FDFCF7;">
           
-          <!-- Formulario Crear Pregunta para el Grado (colapsable) -->
-          <div id="bank-manager-add-form" style="display: none; background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 14px; padding: 18px; box-shadow: 0 4px 14px rgba(2,132,199,0.08);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <h4 id="bank-manager-form-title" style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #0369a1; display: inline-flex; align-items: center; gap: 7px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                <span>Redactar Pregunta de Alternativas con IA</span>
-              </h4>
-              <button type="button" onclick="toggleBankManagerAddForm(false)" style="background: transparent; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; padding: 4px;" title="Cerrar">✕</button>
-            </div>
-
-            <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 4px;">
-              Enunciado del problema <span style="color: #dc2626;">*</span>
-            </label>
-                        <!-- Barra de Herramientas de Estructuras y Símbolos Matemáticos -->
-            <div class="math-symbols-toolbar" style="background:#EDE8DF; border:1px solid rgba(43,33,24,0.18); border-radius:8px; padding:5px 8px; margin-bottom:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <!-- Grupo de Estructuras Tipo Word (Fracción, Raíz, Exponente) -->
-              <div style="display:inline-flex; align-items:center; gap:4px; background:rgba(43,33,24,0.06); padding:2px 4px; border-radius:6px;">
-                <button type="button" class="math-sym-btn" onclick="toggleMathPopover('frac', 'bm')" title="Fracción apilada (arriba / abajo)" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
-                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="5.5" y="2.5" width="9" height="5" rx="1" stroke-dasharray="2 1.5"/>
-                    <line x1="3" y1="10" x2="17" y2="10" stroke-width="1.8"/>
-                    <rect x="5.5" y="12.5" width="9" height="5" rx="1" stroke-dasharray="2 1.5"/>
-                  </svg>
-                </button>
-                <button type="button" class="math-sym-btn" onclick="toggleMathPopover('sqrt', 'bm')" title="Raíz cuadrada con trazo superior" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
-                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2.5 11.5 L4.5 11 L6.5 16.5 L9.5 4 L17.5 4" stroke-width="1.7"/>
-                    <rect x="9.5" y="7.5" width="7" height="6.5" rx="1" stroke-dasharray="2 1.5"/>
-                  </svg>
-                </button>
-                <button type="button" class="math-sym-btn" onclick="toggleMathPopover('exp', 'bm')" title="Exponente / Superíndice" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
-                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 16 L10 6 M10 16 L4 6" stroke-width="1.7"/>
-                    <rect x="11.5" y="3" width="6" height="5.5" rx="1" stroke-dasharray="1.8 1.4"/>
-                  </svg>
-                </button>
+          <!-- Modal Ventana Centrada: Redactar Pregunta para el Grado -->
+          <div id="modal-bank-add" style="display:none; position:fixed; inset:0; background:rgba(43,33,24,0.6); backdrop-filter:blur(3px); z-index:10050; align-items:center; justify-content:center; padding:16px;">
+            <div id="bank-manager-add-form" style="background:#F8F6F0; border:1.5px solid #2B2118; border-radius:18px; max-width:580px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 45px -10px rgba(43,33,24,0.35);">
+              
+              <!-- Cabecera del Modal -->
+              <div style="background:#EDE8DF; padding:12px 16px; border-bottom:1.5px solid rgba(43,33,24,0.15); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B2118" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <span id="bank-manager-form-title" style="font-size:0.88rem; font-weight:800; color:#2B2118;">Redactar Pregunta de Alternativas</span>
+                  <span id="bank-manager-form-grade-tag" style="background:#FEF3C7; border:1.5px solid #D97706; color:#92400E; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:6px; white-space:nowrap;"></span>
+                </div>
+                <button type="button" onclick="toggleBankManagerAddForm(false)" style="background:transparent; border:none; color:#2B2118; font-size:1.3rem; font-weight:700; cursor:pointer; opacity:0.75; padding:2px 4px; line-height:1;" title="Cerrar">✕</button>
               </div>
 
-              <span style="width:1px; height:18px; background:rgba(43,33,24,0.22); margin:0 2px;"></span>
+              <!-- Contenido Scrollable -->
+              <div style="padding:16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; background:#F8F6F0;">
+                
+                <!-- Estado 1: Formulario de Redacción / Ingreso -->
+                <div id="bm-new-form-fields" style="display:flex; flex-direction:column; gap:12px;">
+                  <div>
+                    <label style="display:block; font-size:0.78rem; font-weight:700; color:#334155; margin-bottom:4px;">
+                      Enunciado del problema <span style="color:#dc2626;">*</span>
+                    </label>
 
-              <!-- Grupo de Símbolos y Operadores -->
-              <div style="display:inline-flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" title="Multiplicación (×)">×</button>
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" title="División (÷)">÷</button>
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" title="Más o menos (±)">±</button>
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" title="Diferente (≠)">≠</button>
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" title="Menor o igual (≤)">≤</button>
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" title="Mayor o igual (≥)">≥</button>
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" title="Grados (°)">°</button>
-                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" title="Número Pi (π)">π</button>
-              </div>
-            </div>
+                    <!-- Barra de Herramientas de Estructuras y Símbolos Matemáticos -->
+                    <div class="math-symbols-toolbar" style="background:#EDE8DF; border:1px solid rgba(43,33,24,0.18); border-radius:8px; padding:5px 8px; margin-bottom:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                      <!-- Grupo de Estructuras Tipo Word (Fracción, Raíz, Exponente) -->
+                      <div style="display:inline-flex; align-items:center; gap:4px; background:rgba(43,33,24,0.06); padding:2px 4px; border-radius:6px;">
+                        <button type="button" class="math-sym-btn" onclick="toggleMathPopover('frac', 'bm')" title="Fracción apilada (arriba / abajo)" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
+                          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5.5" y="2.5" width="9" height="5" rx="1" stroke-dasharray="2 1.5"/>
+                            <line x1="3" y1="10" x2="17" y2="10" stroke-width="1.8"/>
+                            <rect x="5.5" y="12.5" width="9" height="5" rx="1" stroke-dasharray="2 1.5"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="math-sym-btn" onclick="toggleMathPopover('sqrt', 'bm')" title="Raíz cuadrada con trazo superior" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
+                          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2.5 11.5 L4.5 11 L6.5 16.5 L9.5 4 L17.5 4" stroke-width="1.7"/>
+                            <rect x="9.5" y="7.5" width="7" height="6.5" rx="1" stroke-dasharray="2 1.5"/>
+                          </svg>
+                        </button>
+                        <button type="button" class="math-sym-btn" onclick="toggleMathPopover('exp', 'bm')" title="Exponente / Superíndice" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
+                          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 16 L10 6 M10 16 L4 6" stroke-width="1.7"/>
+                            <rect x="11.5" y="3" width="6" height="5.5" rx="1" stroke-dasharray="1.8 1.4"/>
+                          </svg>
+                        </button>
+                      </div>
 
-            <!-- Popovers Asistidos tipo Word para Estructuras Matemáticas (BM) -->
-            <div id="bm-math-popover-frac" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
-              <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Fracción:</span>
-              <div style="display:inline-flex; flex-direction:column; align-items:center; gap:2px;">
-                <input type="text" id="bm-frac-num" placeholder="Num" style="width:60px; text-align:center; padding:3px 5px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
-                <div style="width:100%; height:1.5px; background:#2B2118;"></div>
-                <input type="text" id="bm-frac-den" placeholder="Den" style="width:60px; text-align:center; padding:3px 5px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
-              </div>
-              <button type="button" onclick="insertFractionFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
-              <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
-            </div>
+                      <span style="width:1px; height:18px; background:rgba(43,33,24,0.22); margin:0 2px;"></span>
 
-            <div id="bm-math-popover-sqrt" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
-              <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Raíz cuadrada:</span>
-              <div style="display:inline-flex; align-items:center;">
-                <span style="font-size:1.3rem; font-family:serif; line-height:1; margin-right:2px; font-weight:bold;">√</span>
-                <input type="text" id="bm-sqrt-rad" placeholder="Número o expresión" style="width:130px; padding:3px 6px; font-size:0.82rem; border:1.5px solid #2B2118; border-top:2px solid #2B2118; border-radius:6px; background:#fff;">
-              </div>
-              <button type="button" onclick="insertSqrtFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
-              <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
-            </div>
+                      <!-- Grupo de Símbolos y Operadores -->
+                      <div style="display:inline-flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" title="Multiplicación (×)">×</button>
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" title="División (÷)">÷</button>
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" title="Más o menos (±)">±</button>
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" title="Diferente (≠)">≠</button>
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" title="Menor o igual (≤)">≤</button>
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" title="Mayor o igual (≥)">≥</button>
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" title="Grados (°)">°</button>
+                        <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" title="Número Pi (π)">π</button>
+                      </div>
+                    </div>
 
-            <div id="bm-math-popover-exp" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
-              <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Exponente:</span>
-              <div style="display:inline-flex; align-items:baseline; gap:3px;">
-                <input type="text" id="bm-exp-base" placeholder="Base (ej: x)" style="width:75px; padding:3px 6px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
-                <input type="text" id="bm-exp-val" placeholder="Exp (ej: 2)" style="width:65px; padding:2px 5px; font-size:0.78rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff; transform:translateY(-3px);">
-              </div>
-              <button type="button" onclick="insertExpFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
-              <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
-            </div>
+                    <!-- Popovers Asistidos tipo Word para Estructuras Matemáticas (BM) -->
+                    <div id="bm-math-popover-frac" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
+                      <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Fracción:</span>
+                      <div style="display:inline-flex; flex-direction:column; align-items:center; gap:2px;">
+                        <input type="text" id="bm-frac-num" placeholder="Num" style="width:60px; text-align:center; padding:3px 5px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
+                        <div style="width:100%; height:1.5px; background:#2B2118;"></div>
+                        <input type="text" id="bm-frac-den" placeholder="Den" style="width:60px; text-align:center; padding:3px 5px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
+                      </div>
+                      <button type="button" onclick="insertFractionFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
+                      <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
+                    </div>
 
-            <textarea id="bm-prompt" class="form-control" rows="3" maxlength="160" oninput="updateBMPromptCounter()" onfocus="trackMathInputFocus(this)"
-              placeholder="Ej: Si una bolsa de arroz pesa 3/4 de kg, ¿cuántos kg pesan 6 bolsas iguales?"
-              style="font-size: 0.88rem; width: 100%; box-sizing: border-box; margin-bottom: 4px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; color: #0f172a;"></textarea>
+                    <div id="bm-math-popover-sqrt" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
+                      <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Raíz cuadrada:</span>
+                      <div style="display:inline-flex; align-items:center;">
+                        <span style="font-size:1.3rem; font-family:serif; line-height:1; margin-right:2px; font-weight:bold;">√</span>
+                        <input type="text" id="bm-sqrt-rad" placeholder="Número o expresión" style="width:130px; padding:3px 6px; font-size:0.82rem; border:1.5px solid #2B2118; border-top:2px solid #2B2118; border-radius:6px; background:#fff;">
+                      </div>
+                      <button type="button" onclick="insertSqrtFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
+                      <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
+                    </div>
 
-            <!-- Vista Previa en Vivo del Enunciado (BM) -->
-            <div id="bm-prompt-live-preview" style="display:none; background:#FFFFFF; border:1.5px dashed rgba(43,33,24,0.25); border-radius:8px; padding:7px 10px; margin-bottom:6px; font-size:0.88rem; color:#0f172a;">
-              <div style="font-size:0.65rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:3px;">Vista previa física del enunciado:</div>
-              <div id="bm-prompt-live-preview-content" style="line-height:1.45;"></div>
-            </div>
+                    <div id="bm-math-popover-exp" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
+                      <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Exponente:</span>
+                      <div style="display:inline-flex; align-items:baseline; gap:3px;">
+                        <input type="text" id="bm-exp-base" placeholder="Base (ej: x)" style="width:75px; padding:3px 6px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
+                        <input type="text" id="bm-exp-val" placeholder="Exp (ej: 2)" style="width:65px; padding:2px 5px; font-size:0.78rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff; transform:translateY(-3px);">
+                      </div>
+                      <button type="button" onclick="insertExpFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
+                      <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
+                    </div>
 
-            <div style="display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 0.72rem;">
-              <span id="bm-prompt-hint" style="color: #64748b;">Máximo 3 líneas en la ficha</span>
-              <span id="bm-prompt-counter" style="color: #64748b; font-weight: 700;">0 / 160</span>
-            </div>
+                    <textarea id="bm-prompt" class="form-control" rows="3" maxlength="160" oninput="updateBMPromptCounter()" onfocus="trackMathInputFocus(this)"
+                      placeholder="Escribe el enunciado aquí..."
+                      style="font-size:0.88rem; width:100%; box-sizing:border-box; margin-bottom:4px; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:8px; color:#0f172a;"></textarea>
 
-            <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-              4 Alternativas y Clave Correcta <span style="color: #dc2626;">*</span>
-            </label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
-              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <input type="radio" id="bm-rad-a" name="bm-correct" value="A" checked style="accent-color: #16a34a; cursor: pointer;">
-                <label for="bm-rad-a" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">A)</label>
-                <input type="text" id="bm-opt-a" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa A" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <input type="radio" id="bm-rad-b" name="bm-correct" value="B" style="accent-color: #16a34a; cursor: pointer;">
-                <label for="bm-rad-b" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">B)</label>
-                <input type="text" id="bm-opt-b" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa B" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <input type="radio" id="bm-rad-c" name="bm-correct" value="C" style="accent-color: #16a34a; cursor: pointer;">
-                <label for="bm-rad-c" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">C)</label>
-                <input type="text" id="bm-opt-c" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa C" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <input type="radio" id="bm-rad-d" name="bm-correct" value="D" style="accent-color: #16a34a; cursor: pointer;">
-                <label for="bm-rad-d" style="font-weight: 800; color: #0284c7; font-size: 0.82rem; cursor: pointer; min-width: 18px;">D)</label>
-                <input type="text" id="bm-opt-d" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa D" style="font-size: 0.82rem; padding: 5px 8px; flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a;">
-              </div>
-            </div>
+                    <!-- Vista Previa en Vivo del Enunciado (BM) -->
+                    <div id="bm-prompt-live-preview" style="display:none; background:#FFFFFF; border:1.5px dashed rgba(43,33,24,0.25); border-radius:8px; padding:7px 10px; margin-bottom:6px; font-size:0.88rem; color:#0f172a;">
+                      <div style="font-size:0.65rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:3px;">Vista previa física del enunciado:</div>
+                      <div id="bm-prompt-live-preview-content" style="line-height:1.45;"></div>
+                    </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-              <span id="bm-status-hint" style="font-size: 0.75rem; color: #64748b;">
-                ℹ️ Selecciona la clave correcta. Usa "⚡ Pregunta Rápida" para evaluación directa (Ramas 2 y 3) o "✨ Analizar con IA" para rúbrica de procedimiento (Rama 1).
-              </span>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                <button type="button" onclick="toggleBankManagerAddForm(false)"
-                  style="background: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
-                  Cancelar
-                </button>
-                <button id="btn-bm-save-quick" type="button" onclick="handleSaveQuickQuestionFromManager()"
-                  title="Guarda de inmediato las 4 alternativas y la clave sin consultar a la IA. Apta para Rama 2 y Rama 3."
-                  style="background: #059669; border: none; color: #ffffff; border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; box-shadow: 0 2px 6px rgba(5,150,105,0.2);">
-                  ⚡ Guardar Pregunta Rápida
-                </button>
-                <button id="btn-bm-save" type="button" onclick="handleSaveQuestionFromManager()"
-                  title="Genera la solución canónica, criterios pedagógicos y errores frecuentes con Gemini. Obligatorio para evaluar procedimiento en Rama 1."
-                  style="background: #2563eb; border: none; color: #ffffff; border-radius: 8px; padding: 8px 16px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; box-shadow: 0 2px 6px rgba(37,99,235,0.25);">
-                  ✨ Analizar con IA y Guardar
-                </button>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.72rem;">
+                      <span id="bm-prompt-hint" style="color:#64748b;">Máximo 3 líneas en la ficha</span>
+                      <span id="bm-prompt-counter" style="color:#64748b; font-weight:700;">0 / 160</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style="display:block; font-size:0.78rem; font-weight:700; color:#334155; margin-bottom:6px;">
+                      4 Alternativas (marca el círculo verde de la <strong style="color:#15803D;">clave correcta</strong>):
+                    </label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <input type="radio" id="bm-rad-a" name="bm-correct" value="A" checked style="accent-color:#16a34a; cursor:pointer;">
+                        <label for="bm-rad-a" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">A)</label>
+                        <input type="text" id="bm-opt-a" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa A" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                      </div>
+                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <input type="radio" id="bm-rad-b" name="bm-correct" value="B" style="accent-color:#16a34a; cursor:pointer;">
+                        <label for="bm-rad-b" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">B)</label>
+                        <input type="text" id="bm-opt-b" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa B" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                      </div>
+                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <input type="radio" id="bm-rad-c" name="bm-correct" value="C" style="accent-color:#16a34a; cursor:pointer;">
+                        <label for="bm-rad-c" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">C)</label>
+                        <input type="text" id="bm-opt-c" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa C" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                      </div>
+                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <input type="radio" id="bm-rad-d" name="bm-correct" value="D" style="accent-color:#16a34a; cursor:pointer;">
+                        <label for="bm-rad-d" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">D)</label>
+                        <input type="text" id="bm-opt-d" class="form-control" onfocus="trackMathInputFocus(this)" placeholder="Alternativa D" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <span id="bm-status-hint" style="font-size:0.75rem; color:#64748b;">
+                      ℹ️ Selecciona la clave correcta. Usa "⚡ Pregunta Rápida" para evaluación directa (Ramas 2 y 3) o "✨ Generar Rúbrica y Guardar" para rúbrica de procedimiento (Rama 1).
+                    </span>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                      <button type="button" onclick="toggleBankManagerAddForm(false)"
+                        style="background:#ffffff; border:1px solid #cbd5e1; color:#475569; border-radius:8px; padding:8px 14px; font-size:0.82rem; font-weight:700; cursor:pointer;">
+                        Cancelar
+                      </button>
+                      <button id="btn-bm-save-quick" type="button" onclick="handleSaveQuickQuestionFromManager()"
+                        title="Guarda de inmediato las 4 alternativas y la clave sin consultar a la IA. Apta para Rama 2 y Rama 3."
+                        style="background:#059669; border:none; color:#ffffff; border-radius:8px; padding:8px 14px; font-size:0.82rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s; box-shadow:0 2px 6px rgba(5,150,105,0.2);">
+                        ⚡ Guardar Pregunta Rápida
+                      </button>
+                      <button id="btn-bm-save" type="button" onclick="handleSaveQuestionFromManager()"
+                        title="Genera la solución canónica, criterios pedagógicos y errores frecuentes con Gemini. Obligatorio para evaluar procedimiento en Rama 1."
+                        style="background:#2563eb; border:none; color:#ffffff; border-radius:8px; padding:8px 16px; font-size:0.82rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s; box-shadow:0 2px 6px rgba(37,99,235,0.25);">
+                        ✨ Generar Rúbrica y Guardar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Estado 2: Vista Consolidada con Éxito y Auto-Corrección de Clave -->
+                <div id="bm-new-consolidated-card" style="display:none; flex-direction:column; gap:10px;">
+                  <div style="background:#FFFFFF; border:1.5px solid #86EFAC; border-radius:14px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                      <span style="font-size:0.75rem; font-weight:800; color:#15803D; display:flex; align-items:center; gap:5px;">
+                        ✅ Análisis completado con éxito (Guardada en el Banco)
+                      </span>
+                      <button type="button" onclick="window._viewCurrentBMDraftRubric()" style="background:#f5f3ff; border:1.5px solid #c4b5fd; color:#6d28d9; border-radius:8px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                        👁️ Ver rúbrica
+                      </button>
+                    </div>
+
+                    <!-- Banner de corrección automática de clave si aplica -->
+                    <div id="bm-consolidated-key-notice"></div>
+
+                    <!-- Enunciado Maquetado Físico -->
+                    <div style="background:#F8F6F0; border:1.2px solid rgba(43,33,24,0.18); border-radius:8px; padding:10px 12px;">
+                      <div style="font-size:0.68rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Enunciado del Problema</div>
+                      <div id="bm-consolidated-prompt" style="font-size:0.88rem; color:#0f172a; font-weight:600; line-height:1.45;"></div>
+                    </div>
+
+                    <!-- Alternativas -->
+                    <div id="bm-consolidated-options" style="display:flex; flex-direction:column; gap:6px;"></div>
+
+                    <!-- Enlace discreto para modificar -->
+                    <div style="display:flex; justify-content:flex-end; margin-top:2px;">
+                      <button type="button" onclick="editBMDraftQuestion()" style="background:transparent; border:none; color:#64748b; font-size:0.76rem; font-weight:700; cursor:pointer; text-decoration:underline;">
+                        ✏️ Modificar enunciado o alternativas
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="button" onclick="toggleBankManagerAddForm(false)"
+                    style="width:100%; background:#0284C7; border:none; color:#fff; border-radius:10px; padding:12px; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(2,132,199,0.35); transition:all 0.15s;">
+                    ✓ Listo / Cerrar
+                  </button>
+                </div>
+
               </div>
             </div>
           </div>
