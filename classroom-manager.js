@@ -338,30 +338,33 @@ function openClassroomModal(classroomId) {
     } else {
       if (emptyEl) emptyEl.style.display = 'none';
       listEl.innerHTML = students.map((s, idx) => `
-        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.78rem; gap:10px;">
-          <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-            <span style="color:#64748b; font-weight:800; font-size:0.7rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #E4DCD0; border-radius:10px; padding:9px 14px; font-size:0.78rem; gap:10px; box-shadow:0 1px 3px rgba(44,34,25,0.04); transition:all 0.15s;">
+          <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+            <span style="color:#786C5E; font-weight:800; font-size:0.72rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
             <div style="display:flex; flex-direction:column; min-width:0;">
-              <span style="color:#0f172a; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escaparHtml(s.name)}</span>
-              <span style="color:#0284c7; font-size:0.7rem; font-weight:600; margin-top:2px;">
-                📱 ${escaparHtml(s.shortName || generateShortName(s.name))}
+              <span style="color:#1E1B18; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.86rem;">${escaparHtml(s.name)}</span>
+              <span style="display:inline-flex; align-items:center; gap:4px; color:#0284c7; font-size:0.72rem; font-weight:700; margin-top:2px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                ${escaparHtml(s.shortName || generateShortName(s.name))}
               </span>
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
             ${isRoomLocked ? `
-            <span style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:4px 9px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;" title="Bloqueado: salón en sesión">
-              🔒 En sesión
+            <span style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:5px 10px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px;" title="Bloqueado: salón en sesión">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              En sesión
             </span>` : `
             <button type="button" onclick="openEditStudentModal('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', '${escaparHtml(s.shortName || '').replace(/'/g, "\\'")}')"
               title="Editar nombre"
-              style="background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
-              ✏️ Editar
+              style="background:#E0F2FE; border:1px solid #7DD3FC; color:#0369A1; border-radius:6px; padding:5px 10px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar
             </button>
             <button type="button" onclick="handleDeleteStudent('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', this)"
               title="Eliminar este alumno del salón"
-              style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; border-radius:6px; padding:4px 8px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;">
-              🗑️
+              style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; border-radius:6px; padding:5px 9px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
             </button>`}
           </div>
         </div>
@@ -414,6 +417,24 @@ function closeAddClassroomModal() {
 }
 
 /* ── FORMULARIO INLINE: AGREGAR ALUMNO EN MODAL ── */
+function handleInlineStudentFullnameInput(value) {
+  const clean = cleanName(value || '');
+  const countEl = document.getElementById('mgr-inline-char-count');
+  if (countEl) {
+    countEl.textContent = `${clean.length}/45`;
+    countEl.style.color = (clean.length > 45) ? '#ef4444' : '#786C5E';
+  }
+  const autoShort = generateShortName(clean);
+  const badgeText = document.getElementById('mgr-inline-shortname-text');
+  if (badgeText) {
+    badgeText.textContent = autoShort || '—';
+  }
+  const inShort = document.getElementById('mgr-inline-student-shortname');
+  if (inShort) {
+    inShort.value = autoShort || '';
+  }
+}
+
 function toggleAddStudentForm(force) {
   const classroomId = currentSelectedClassroomId;
   if (classroomId && typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse) {
@@ -434,8 +455,7 @@ function toggleAddStudentForm(force) {
       fnInput.value = '';
       fnInput.focus();
     }
-    const snInput = document.getElementById('mgr-inline-student-shortname');
-    if (snInput) snInput.value = '';
+    handleInlineStudentFullnameInput('');
   }
 }
 
@@ -452,11 +472,10 @@ async function handleSaveInlineStudent() {
   }
 
   const fnInput = document.getElementById('mgr-inline-student-fullname');
-  const snInput = document.getElementById('mgr-inline-student-shortname');
   const btnSave = document.getElementById('btn-save-inline-student');
 
   const fullName = cleanName(fnInput?.value || '');
-  let shortName = cleanName(snInput?.value || '');
+  const shortName = generateShortName(fullName);
 
   const val = validateStudentNames(fullName, shortName);
   if (!val.valid) {
@@ -464,21 +483,14 @@ async function handleSaveInlineStudent() {
     return;
   }
 
-  if (!shortName) shortName = generateShortName(fullName);
-
   const cls = ClassroomData.getClassroom(classroomId);
   if (!cls) return;
 
   // Chequeo de duplicados contra la nómina actual
   const normFull = normalizeTextForComparison(fullName);
-  const normShort = normalizeTextForComparison(shortName);
   for (const st of (cls.students || [])) {
     if (normalizeTextForComparison(st.name) === normFull) {
       showToast(`⚠️ Ya existe otro estudiante con el nombre "${st.name}" en este salón.`);
-      return;
-    }
-    if (normalizeTextForComparison(st.shortName) === normShort) {
-      showToast(`⚠️ El nombre corto "${shortName}" ya pertenece a otro estudiante. Elige uno diferente.`);
       return;
     }
   }
@@ -1932,4 +1944,5 @@ if (typeof window !== 'undefined') {
   window.closeEditStudentModal = closeEditStudentModal;
   window.saveEditStudent = saveEditStudent;
   window.handleEditStudentFullnameInput = handleEditStudentFullnameInput;
+  window.handleInlineStudentFullnameInput = handleInlineStudentFullnameInput;
 }
