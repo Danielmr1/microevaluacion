@@ -1061,8 +1061,17 @@ function handleViewQuestionRubric(q) {
       `;
     }
 
-    // Confianza del modelo
-    const confVal = r.confianza ? Math.round(Number(r.confianza) <= 1 ? Number(r.confianza) * 100 : Number(r.confianza)) : null;
+    // Confianza del modelo: normaliza 0.0-1.0 (decimal), 1-5 (escala Likert), 1-10 o 0-100 (%)
+    let confVal = null;
+    if (r.confianza != null && r.confianza !== '') {
+      const n = Number(r.confianza);
+      if (isFinite(n) && n > 0) {
+        if (n <= 1) confVal = Math.round(n * 100);
+        else if (n <= 5) confVal = Math.round((n / 5) * 100);
+        else if (n <= 10) confVal = Math.round((n / 10) * 100);
+        else confVal = Math.min(100, Math.round(n));
+      }
+    }
     const confBadge = confVal != null
       ? `<div style="margin-top:12px; padding-top:8px; border-top:1px solid #e2e8f0; font-size:0.7rem; color:#64748b; display:flex; justify-content:space-between; align-items:center;">
            <span>Análisis pedagógico generado por IA (Gemini)</span>
@@ -2121,7 +2130,16 @@ function renderRubricPanel(r, meta) {
       '</div>'
     : '';
 
-  const conf = Math.round((r.confianza || 0) * 100);
+  let conf = 100;
+  if (r.confianza != null && r.confianza !== '') {
+    const n = Number(r.confianza);
+    if (isFinite(n) && n > 0) {
+      if (n <= 1) conf = Math.round(n * 100);
+      else if (n <= 5) conf = Math.round((n / 5) * 100);
+      else if (n <= 10) conf = Math.round((n / 10) * 100);
+      else conf = Math.min(100, Math.round(n));
+    }
+  }
   const seg = meta && meta.ms ? ' · ' + (meta.ms / 1000).toFixed(1) + ' s' : '';
   const modelo = meta && meta.modelo ? escaparHtml(meta.modelo) + seg : '';
 
