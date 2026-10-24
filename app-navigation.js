@@ -138,7 +138,7 @@ if (typeof window !== 'undefined') {
           titleEl.style.display = 'inline-flex';
           titleEl.classList.add('topbar-modality-pill');
           if (branch === 'classrooms') {
-            titleEl.textContent = 'Salones';
+            titleEl.textContent = 'Salones y Alumnos';
           } else if (branch === 'bank') {
             titleEl.textContent = 'Banco de Preguntas';
           } else if (branch === 'saved-sessions') {

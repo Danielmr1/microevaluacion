@@ -93,14 +93,14 @@ function renderClassroomManager(selectedClassId = null) {
   const count = classrooms.length;
 
   if (badgeOccupancy) {
-    badgeOccupancy.textContent = `${count} de ${MAX_CAMPUS_CLASSROOMS} aulas`;
+    badgeOccupancy.textContent = `${count} de ${MAX_CAMPUS_CLASSROOMS} salones`;
   }
 
   if (btnAdd) {
     const isFull = count >= MAX_CAMPUS_CLASSROOMS;
     btnAdd.disabled = isSessionLocked || isFull;
     if (isFull) {
-      btnAdd.title = 'Capacidad máxima de 10 aulas completada';
+      btnAdd.title = 'Capacidad máxima de 10 salones completada';
     } else if (isSessionLocked) {
       btnAdd.title = 'Bloqueado durante evaluación activa';
     } else {
