@@ -45,8 +45,8 @@
   <script src="scanner.js?v=3.3.8"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.10.14"></script>
-  <script src="question-bank.js?v=3.10.19"></script>
-  <script src="card-simulator.js?v=3.10.19"></script>
+  <script src="question-bank.js?v=3.10.20"></script>
+  <script src="card-simulator.js?v=3.10.20"></script>
   <script src="card-exam-builder.js?v=3.10.9"></script>
   <script src="card-formativa.js?v=3.10.16"></script>
   <script src="card-focalizada.js?v=3.10.16"></script>
@@ -597,7 +597,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.19</span>
+              Versión <span id="user-profile-version-tag">v3.10.20</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2446,29 +2446,88 @@
             <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 4px;">
               Enunciado del problema <span style="color: #dc2626;">*</span>
             </label>
-                        <!-- Barra de Símbolos Matemáticos Rápidos -->
-            <div class="math-symbols-toolbar">
-              <span style="font-size: 0.68rem; font-weight: 800; color: #475569; margin-right: 2px;">Fórmulas:</span>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('²')" title="Al cuadrado (x²)">x²</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('³')" title="Al cubo (x³)">x³</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('ⁿ')" title="Exponente (xⁿ)">xⁿ</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('√(')" title="Raíz cuadrada (√)">√( )</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('½')" title="Un medio (½)">½</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¼')" title="Un cuarto (¼)">¼</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('¾')" title="Tres cuartos (¾)">¾</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol(' / ')" title="Fracción libre (a/b)">a/b</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" title="Grados (°)">°</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" title="Número Pi (π)">π</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" title="Multiplicación (×)">×</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" title="División (÷)">÷</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" title="Más o menos (±)">±</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" title="Diferente (≠)">≠</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" title="Menor o igual (≤)">≤</button>
-              <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" title="Mayor o igual (≥)">≥</button>
+                        <!-- Barra de Herramientas de Estructuras y Símbolos Matemáticos -->
+            <div class="math-symbols-toolbar" style="background:#EDE8DF; border:1px solid rgba(43,33,24,0.18); border-radius:8px; padding:5px 8px; margin-bottom:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <!-- Grupo de Estructuras Tipo Word (Fracción, Raíz, Exponente) -->
+              <div style="display:inline-flex; align-items:center; gap:4px; background:rgba(43,33,24,0.06); padding:2px 4px; border-radius:6px;">
+                <button type="button" class="math-sym-btn" onclick="toggleMathPopover('frac', 'bm')" title="Fracción apilada (arriba / abajo)" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
+                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5.5" y="2.5" width="9" height="5" rx="1" stroke-dasharray="2 1.5"/>
+                    <line x1="3" y1="10" x2="17" y2="10" stroke-width="1.8"/>
+                    <rect x="5.5" y="12.5" width="9" height="5" rx="1" stroke-dasharray="2 1.5"/>
+                  </svg>
+                </button>
+                <button type="button" class="math-sym-btn" onclick="toggleMathPopover('sqrt', 'bm')" title="Raíz cuadrada con trazo superior" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
+                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2.5 11.5 L4.5 11 L6.5 16.5 L9.5 4 L17.5 4" stroke-width="1.7"/>
+                    <rect x="9.5" y="7.5" width="7" height="6.5" rx="1" stroke-dasharray="2 1.5"/>
+                  </svg>
+                </button>
+                <button type="button" class="math-sym-btn" onclick="toggleMathPopover('exp', 'bm')" title="Exponente / Superíndice" style="display:inline-flex; align-items:center; justify-content:center; padding:3px 6px;">
+                  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 16 L10 6 M10 16 L4 6" stroke-width="1.7"/>
+                    <rect x="11.5" y="3" width="6" height="5.5" rx="1" stroke-dasharray="1.8 1.4"/>
+                  </svg>
+                </button>
+              </div>
+
+              <span style="width:1px; height:18px; background:rgba(43,33,24,0.22); margin:0 2px;"></span>
+
+              <!-- Grupo de Símbolos y Operadores -->
+              <div style="display:inline-flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('×')" title="Multiplicación (×)">×</button>
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('÷')" title="División (÷)">÷</button>
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('±')" title="Más o menos (±)">±</button>
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≠')" title="Diferente (≠)">≠</button>
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≤')" title="Menor o igual (≤)">≤</button>
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('≥')" title="Mayor o igual (≥)">≥</button>
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('°')" title="Grados (°)">°</button>
+                <button type="button" class="math-sym-btn" onclick="insertMathSymbol('π')" title="Número Pi (π)">π</button>
+              </div>
             </div>
+
+            <!-- Popovers Asistidos tipo Word para Estructuras Matemáticas (BM) -->
+            <div id="bm-math-popover-frac" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Fracción:</span>
+              <div style="display:inline-flex; flex-direction:column; align-items:center; gap:2px;">
+                <input type="text" id="bm-frac-num" placeholder="Num" style="width:60px; text-align:center; padding:3px 5px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
+                <div style="width:100%; height:1.5px; background:#2B2118;"></div>
+                <input type="text" id="bm-frac-den" placeholder="Den" style="width:60px; text-align:center; padding:3px 5px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
+              </div>
+              <button type="button" onclick="insertFractionFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
+              <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
+            </div>
+
+            <div id="bm-math-popover-sqrt" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Raíz cuadrada:</span>
+              <div style="display:inline-flex; align-items:center;">
+                <span style="font-size:1.3rem; font-family:serif; line-height:1; margin-right:2px; font-weight:bold;">√</span>
+                <input type="text" id="bm-sqrt-rad" placeholder="Número o expresión" style="width:130px; padding:3px 6px; font-size:0.82rem; border:1.5px solid #2B2118; border-top:2px solid #2B2118; border-radius:6px; background:#fff;">
+              </div>
+              <button type="button" onclick="insertSqrtFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
+              <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
+            </div>
+
+            <div id="bm-math-popover-exp" style="display:none; background:#F8F6F0; border:1.5px solid #2B2118; border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 4px 12px rgba(43,33,24,0.12); align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-size:0.75rem; font-weight:800; color:#2B2118;">Exponente:</span>
+              <div style="display:inline-flex; align-items:baseline; gap:3px;">
+                <input type="text" id="bm-exp-base" placeholder="Base (ej: x)" style="width:75px; padding:3px 6px; font-size:0.82rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff;">
+                <input type="text" id="bm-exp-val" placeholder="Exp (ej: 2)" style="width:65px; padding:2px 5px; font-size:0.78rem; border:1.5px solid #2B2118; border-radius:6px; background:#fff; transform:translateY(-3px);">
+              </div>
+              <button type="button" onclick="insertExpFromPopover('bm')" style="background:#0284c7; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:0.78rem; font-weight:700; cursor:pointer;">✓ Insertar</button>
+              <button type="button" onclick="closeMathPopovers('bm')" style="background:transparent; border:none; color:#64748b; font-size:0.82rem; cursor:pointer;">✕</button>
+            </div>
+
             <textarea id="bm-prompt" class="form-control" rows="3" maxlength="160" oninput="updateBMPromptCounter()" onfocus="trackMathInputFocus(this)"
               placeholder="Ej: Si una bolsa de arroz pesa 3/4 de kg, ¿cuántos kg pesan 6 bolsas iguales?"
               style="font-size: 0.88rem; width: 100%; box-sizing: border-box; margin-bottom: 4px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; color: #0f172a;"></textarea>
+
+            <!-- Vista Previa en Vivo del Enunciado (BM) -->
+            <div id="bm-prompt-live-preview" style="display:none; background:#FFFFFF; border:1.5px dashed rgba(43,33,24,0.25); border-radius:8px; padding:7px 10px; margin-bottom:6px; font-size:0.88rem; color:#0f172a;">
+              <div style="font-size:0.65rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:3px;">Vista previa física del enunciado:</div>
+              <div id="bm-prompt-live-preview-content" style="line-height:1.45;"></div>
+            </div>
+
             <div style="display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 0.72rem;">
               <span id="bm-prompt-hint" style="color: #64748b;">Máximo 3 líneas en la ficha</span>
               <span id="bm-prompt-counter" style="color: #64748b; font-weight: 700;">0 / 160</span>

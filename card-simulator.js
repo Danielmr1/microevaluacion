@@ -1059,10 +1059,12 @@ function updateSimPromptCounter() {
 window.updateSimPromptCounter = updateSimPromptCounter;
 
 // ── ASISTENTE DE ESTRUCTURAS MATEMÁTICAS TIPO WORD (FRAC, SQRT, EXP) ──
-function toggleMathPopover(type) {
-  const popFrac = document.getElementById('sim-math-popover-frac');
-  const popSqrt = document.getElementById('sim-math-popover-sqrt');
-  const popExp = document.getElementById('sim-math-popover-exp');
+function toggleMathPopover(type, scope) {
+  const isBM = (scope === 'bm');
+  const prefix = isBM ? 'bm-' : 'sim-';
+  const popFrac = document.getElementById(prefix + 'math-popover-frac');
+  const popSqrt = document.getElementById(prefix + 'math-popover-sqrt');
+  const popExp = document.getElementById(prefix + 'math-popover-exp');
 
   const target = (type === 'frac') ? popFrac : (type === 'sqrt') ? popSqrt : popExp;
   const isCurrentlyOpen = target && target.style.display === 'flex';
@@ -1075,15 +1077,15 @@ function toggleMathPopover(type) {
     target.style.display = 'flex';
 
     // Obtener posible texto seleccionado en el textarea
-    const ta = document.getElementById('sim-new-prompt');
+    const ta = isBM ? document.getElementById('bm-prompt') : document.getElementById('sim-new-prompt');
     let sel = '';
     if (ta && ta.selectionStart != null && ta.selectionEnd != null && ta.selectionStart !== ta.selectionEnd) {
       sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
     }
 
     if (type === 'frac') {
-      const numInput = document.getElementById('sim-frac-num');
-      const denInput = document.getElementById('sim-frac-den');
+      const numInput = document.getElementById(prefix + 'frac-num');
+      const denInput = document.getElementById(prefix + 'frac-den');
       if (numInput && denInput) {
         if (sel.includes('/')) {
           const parts = sel.split('/');
@@ -1101,14 +1103,14 @@ function toggleMathPopover(type) {
         setTimeout(() => numInput.focus(), 60);
       }
     } else if (type === 'sqrt') {
-      const radInput = document.getElementById('sim-sqrt-rad');
+      const radInput = document.getElementById(prefix + 'sqrt-rad');
       if (radInput) {
         radInput.value = sel || '';
         setTimeout(() => radInput.focus(), 60);
       }
     } else if (type === 'exp') {
-      const baseInput = document.getElementById('sim-exp-base');
-      const expInput = document.getElementById('sim-exp-val');
+      const baseInput = document.getElementById(prefix + 'exp-base');
+      const expInput = document.getElementById(prefix + 'exp-val');
       if (baseInput && expInput) {
         if (/^\d+$/.test(sel)) {
           baseInput.value = '';
@@ -1124,19 +1126,23 @@ function toggleMathPopover(type) {
 }
 window.toggleMathPopover = toggleMathPopover;
 
-function closeMathPopovers() {
-  const popFrac = document.getElementById('sim-math-popover-frac');
-  const popSqrt = document.getElementById('sim-math-popover-sqrt');
-  const popExp = document.getElementById('sim-math-popover-exp');
-  if (popFrac) popFrac.style.display = 'none';
-  if (popSqrt) popSqrt.style.display = 'none';
-  if (popExp) popExp.style.display = 'none';
+function closeMathPopovers(scope) {
+  const prefixes = scope ? [(scope === 'bm' ? 'bm-' : 'sim-')] : ['sim-', 'bm-'];
+  prefixes.forEach(prefix => {
+    const popFrac = document.getElementById(prefix + 'math-popover-frac');
+    const popSqrt = document.getElementById(prefix + 'math-popover-sqrt');
+    const popExp = document.getElementById(prefix + 'math-popover-exp');
+    if (popFrac) popFrac.style.display = 'none';
+    if (popSqrt) popSqrt.style.display = 'none';
+    if (popExp) popExp.style.display = 'none';
+  });
 }
 window.closeMathPopovers = closeMathPopovers;
 
-function insertFractionFromPopover() {
-  const num = (document.getElementById('sim-frac-num')?.value || '').trim();
-  const den = (document.getElementById('sim-frac-den')?.value || '').trim();
+function insertFractionFromPopover(scope) {
+  const prefix = (scope === 'bm') ? 'bm-' : 'sim-';
+  const num = (document.getElementById(prefix + 'frac-num')?.value || '').trim();
+  const den = (document.getElementById(prefix + 'frac-den')?.value || '').trim();
   if (!num || !den) {
     if (typeof showToast === 'function') showToast('⚠️ Ingresa el numerador y el denominador.');
     return;
@@ -1145,12 +1151,13 @@ function insertFractionFromPopover() {
   if (typeof insertMathSymbol === 'function') {
     insertMathSymbol(token);
   }
-  closeMathPopovers();
+  closeMathPopovers(scope);
 }
 window.insertFractionFromPopover = insertFractionFromPopover;
 
-function insertSqrtFromPopover() {
-  const rad = (document.getElementById('sim-sqrt-rad')?.value || '').trim();
+function insertSqrtFromPopover(scope) {
+  const prefix = (scope === 'bm') ? 'bm-' : 'sim-';
+  const rad = (document.getElementById(prefix + 'sqrt-rad')?.value || '').trim();
   if (!rad) {
     if (typeof showToast === 'function') showToast('⚠️ Ingresa el número bajo el radical.');
     return;
@@ -1159,13 +1166,14 @@ function insertSqrtFromPopover() {
   if (typeof insertMathSymbol === 'function') {
     insertMathSymbol(token);
   }
-  closeMathPopovers();
+  closeMathPopovers(scope);
 }
 window.insertSqrtFromPopover = insertSqrtFromPopover;
 
-function insertExpFromPopover() {
-  const base = (document.getElementById('sim-exp-base')?.value || '').trim();
-  const exp = (document.getElementById('sim-exp-val')?.value || '').trim();
+function insertExpFromPopover(scope) {
+  const prefix = (scope === 'bm') ? 'bm-' : 'sim-';
+  const base = (document.getElementById(prefix + 'exp-base')?.value || '').trim();
+  const exp = (document.getElementById(prefix + 'exp-val')?.value || '').trim();
   if (!exp) {
     if (typeof showToast === 'function') showToast('⚠️ Ingresa el exponente.');
     return;
@@ -1182,7 +1190,7 @@ function insertExpFromPopover() {
   if (typeof insertMathSymbol === 'function') {
     insertMathSymbol(token);
   }
-  closeMathPopovers();
+  closeMathPopovers(scope);
 }
 window.insertExpFromPopover = insertExpFromPopover;
 

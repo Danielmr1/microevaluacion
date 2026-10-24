@@ -1130,6 +1130,8 @@ function toggleBankManagerAddForm(show) {
     const promptInput = document.getElementById('bm-prompt');
     if (promptInput) promptInput.focus();
     updateBMPromptCounter();
+  } else {
+    if (typeof closeMathPopovers === 'function') closeMathPopovers('bm');
   }
 }
 
@@ -1137,6 +1139,8 @@ function updateBMPromptCounter() {
   const ta = document.getElementById('bm-prompt');
   const counter = document.getElementById('bm-prompt-counter');
   const hint = document.getElementById('bm-prompt-hint');
+  const livePreview = document.getElementById('bm-prompt-live-preview');
+  const liveContent = document.getElementById('bm-prompt-live-preview-content');
   if (!ta) return;
 
   const withFrac = hasFractions(ta.value);
@@ -1156,11 +1160,26 @@ function updateBMPromptCounter() {
       hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
     } else if (withFrac) {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 2 líneas (ajuste por fracciones)';
+      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' con fracciones (máx 2 en A6, 105 car.)';
       hint.style.color = '#0284c7';
     } else {
       hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 3 (compatible A6, A5 y A4)';
       hint.style.color = '#64748b';
+    }
+  }
+
+  // Vista Previa Física en Vivo de Estructuras Matemáticas
+  const rawVal = (ta.value || '').trim();
+  const hasSpecialMath = /\\frac\{|\[frac:|\\sqrt\{|\^\{|[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\b\d+\s*\/\s*\d+\b/.test(rawVal);
+  if (livePreview && liveContent) {
+    if (rawVal && (withFrac || hasSpecialMath)) {
+      livePreview.style.display = 'block';
+      const escapeFn = (typeof escaparHtml === 'function') ? escaparHtml : (t => t);
+      const formatFn = (typeof formatMathHtml === 'function') ? formatMathHtml : (t => t);
+      liveContent.innerHTML = formatFn(escapeFn(rawVal));
+    } else {
+      livePreview.style.display = 'none';
+      liveContent.innerHTML = '';
     }
   }
 }
