@@ -143,23 +143,29 @@ function renderClassroomManager(selectedClassId = null) {
     if (i < count) {
       // Aula Ocupada
       const cls = classrooms[i];
-      const gradeText = ClassroomData.formatGrade(cls.gradeStage, cls.gradeLevel) || 'Sin grado asignado';
+      let gradeText = 'Sin grado asignado';
+      if (cls.gradeLevel && cls.gradeStage) {
+        const stageShort = String(cls.gradeStage).toLowerCase().includes('sec') ? 'secundaria' : 'primaria';
+        gradeText = `${cls.gradeLevel}° ${stageShort}`;
+      } else if (ClassroomData && ClassroomData.formatGrade) {
+        gradeText = ClassroomData.formatGrade(cls.gradeStage, cls.gradeLevel) || 'Sin grado asignado';
+      }
       const color = cls.color || '#3b82f6';
 
       const roomUsage = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse) ? ClassroomData.isClassroomInUse(cls.id) : { inUse: false };
-      const lockBadge = roomUsage.inUse ? `<span style="background:rgba(255, 183, 3, 0.16); color:#FFB703; border:1px solid #FFB703; border-radius:4px; padding:2px 7px; font-size:0.65rem; font-weight:800; margin-left:auto; display:inline-flex; align-items:center; gap:2px;" title="Protegido: en uso en ${escaparHtml(roomUsage.sessionTitle)}">🔒 En Sesión</span>` : '';
+      const lockBadge = roomUsage.inUse ? `<span style="background:rgba(255, 183, 3, 0.16); color:#FFB703; border:1px solid #FFB703; border-radius:4px; padding:2px 7px; font-size:0.65rem; font-weight:800; display:inline-flex; align-items:center; gap:3px;" title="Protegido: en uso en ${escaparHtml(roomUsage.sessionTitle)}">🔒 En Sesión</span>` : '';
 
       cardHtml = `
         <div class="campus-room-card is-occupied" style="border-left-color: ${color};" onclick="openClassroomModal('${cls.id}')" title="Clic para gestionar el aula y nómina de estudiantes">
           <div class="room-card-top">
+            <span class="room-students-count" style="display:inline-flex; align-items:center; gap:4px; font-weight:700; color:#dcd8ce; font-size:0.75rem;">👥 ${cls.count}</span>
             <span class="room-grade-badge">${escaparHtml(gradeText)}</span>
-            ${lockBadge}
           </div>
           <div class="room-name-row">
             <span class="room-name">${escaparHtml(cls.name)}</span>
           </div>
-          <div class="room-card-bottom">
-            <span class="room-students-count">👥 ${cls.count} estudiante${cls.count === 1 ? '' : 's'}</span>
+          <div class="room-card-bottom" style="min-height:20px;">
+            ${lockBadge}
           </div>
         </div>
       `;
