@@ -966,6 +966,11 @@ function openSimQuestionPicker(slotIdx) {
     summaryBox.innerHTML = '';
   }
 
+  const formFields = document.getElementById('sim-new-form-fields');
+  const consolidatedCard = document.getElementById('sim-new-consolidated-card');
+  if (formFields) formFields.style.display = 'flex';
+  if (consolidatedCard) consolidatedCard.style.display = 'none';
+
   const btnSave = document.getElementById('sim-btn-save-custom');
   if (btnSave) {
     if (simState.branch === 'rama1') {
@@ -1608,38 +1613,57 @@ async function handleSimAnalyzeAI() {
         }).catch(err => console.warn('[SupabaseClient] Sincronización en segundo plano:', err));
       }
 
-      // Renderizar resumen pedagógico de la Rúbrica en la caja
-      if (summaryBox) {
-        const criterios = Array.isArray(res.rubrica.criterios) ? res.rubrica.criterios : [];
-        const criteriosHtml = criterios.map(c => `
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.73rem; padding:3px 0; border-bottom:1px dashed #e2e8f0;">
-            <span style="color:#334155;">• ${escaparHtml(c.desc || '')}</span>
-            <span style="font-weight:800; color:#0284c7; white-space:nowrap; margin-left:8px;">${c.peso || 1} pt</span>
-          </div>
-        `).join('');
+      // Transición al Estado Consolidado (Rama 1: Formativa con IA)
+      if (simState.branch === 'rama1') {
+        const formFields = document.getElementById('sim-new-form-fields');
+        const consolidatedCard = document.getElementById('sim-new-consolidated-card');
+        const promptEl = document.getElementById('sim-consolidated-prompt');
+        const optionsEl = document.getElementById('sim-consolidated-options');
+        const noticeEl = document.getElementById('sim-consolidated-key-notice');
 
-        summaryBox.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <div style="font-size:0.75rem; font-weight:800; color:#15803d; display:flex; align-items:center; gap:5px;">
-              <span>✅ Pregunta guardada con éxito en el Banco</span>
-            </div>
-            <button type="button" onclick="window._viewCurrentDraftRubric()" style="background:#f5f3ff; border:1px solid #c4b5fd; color:#6d28d9; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer;">
-              👁️ Ver Rúbrica
-            </button>
-          </div>
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:7px 10px; margin-bottom:6px;">
-            <div style="font-size:0.7rem; font-weight:800; color:#475569; text-transform:uppercase; margin-bottom:2px;">Respuesta Canónica (IA):</div>
-            <div style="font-size:0.86rem; font-weight:800; color:#0f172a;">${escaparHtml(canon || 'N/A')}</div>
-          </div>
-          ${criteriosHtml ? `
-            <div style="margin-top:6px;">
-              <div style="font-size:0.68rem; font-weight:800; color:#475569; text-transform:uppercase; margin-bottom:3px;">Criterios de Evaluación:</div>
-              ${criteriosHtml}
-            </div>
-          ` : ''}
-          ${keyNoticeHtml}
-        `;
-        summaryBox.style.display = 'block';
+        if (formFields) formFields.style.display = 'none';
+
+        if (promptEl) {
+          promptEl.innerHTML = (typeof formatMathHtml === 'function')
+            ? formatMathHtml(escaparHtml(prompt))
+            : escaparHtml(prompt);
+        }
+
+        if (noticeEl) {
+          noticeEl.innerHTML = keyNoticeHtml;
+        }
+
+        if (optionsEl) {
+          if (isMC) {
+            const opts = { A: optA, B: optB, C: optC, D: optD };
+            const activeKey = document.querySelector('input[name="sim-new-correct"]:checked')?.value || 'A';
+            optionsEl.innerHTML = ['A', 'B', 'C', 'D'].map(k => {
+              const isCorrect = (k === activeKey);
+              const optVal = opts[k] || '';
+              const optFormatted = (typeof formatMathHtml === 'function')
+                ? formatMathHtml(escaparHtml(optVal))
+                : escaparHtml(optVal);
+              return `
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; border:${isCorrect ? '1.5px solid #10b981' : '1px solid rgba(43,33,24,0.15)'}; background:${isCorrect ? '#f0fdf4' : '#ffffff'};">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-weight:800; font-size:0.75rem; background:${isCorrect ? '#10b981' : 'rgba(43,33,24,0.08)'}; color:${isCorrect ? '#ffffff' : '#2B2118'};">${k}</span>
+                    <span style="font-size:0.84rem; color:#1e293b; font-weight:${isCorrect ? '700' : '500'};">${optFormatted}</span>
+                  </div>
+                  ${isCorrect ? '<span style="font-size:0.7rem; font-weight:800; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:6px;">✓ Clave Correcta</span>' : ''}
+                </div>
+              `;
+            }).join('');
+            optionsEl.style.display = 'flex';
+          } else {
+            optionsEl.style.display = 'none';
+          }
+        }
+
+        if (consolidatedCard) consolidatedCard.style.display = 'flex';
+      } else if (summaryBox) {
+        // En ramas no-IA se conserva el summaryBox si correspondiera
+        summaryBox.innerHTML = keyNoticeHtml;
+        if (keyNoticeHtml) summaryBox.style.display = 'block';
       }
 
       // Habilitar el botón principal inferior
@@ -1691,6 +1715,29 @@ window._viewCurrentDraftRubric = () => {
     handleViewQuestionRubric({ prompt, options: opts, correct, rubric: simCurrentRubric });
   }
 };
+
+function editSimDraftQuestion() {
+  const formFields = document.getElementById('sim-new-form-fields');
+  const consolidatedCard = document.getElementById('sim-new-consolidated-card');
+  if (formFields) formFields.style.display = 'flex';
+  if (consolidatedCard) consolidatedCard.style.display = 'none';
+
+  if (simState.branch === 'rama1') {
+    simCurrentRubric = null;
+    const btnSave = document.getElementById('sim-btn-save-custom');
+    if (btnSave) {
+      btnSave.disabled = true;
+      btnSave.style.background = '#94a3b8';
+      btnSave.style.cursor = 'not-allowed';
+      btnSave.innerHTML = '🔒 Asignar a la Ficha (Genera la rúbrica primero)';
+    }
+    const aiStatus = document.getElementById('sim-ai-status');
+    if (aiStatus) {
+      aiStatus.textContent = '';
+    }
+  }
+}
+window.editSimDraftQuestion = editSimDraftQuestion;
 
 function saveSimCustomQuestion() {
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
