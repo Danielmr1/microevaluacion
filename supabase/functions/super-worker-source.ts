@@ -407,7 +407,10 @@ function validarRubrica(r) {
     : [];
 
   let confianza = Number(r.confianza);
-  if (!isFinite(confianza)) confianza = 0;
+  if (!isFinite(confianza) || confianza <= 0) confianza = 1;
+  else if (confianza > 1 && confianza <= 5) confianza = confianza / 5;
+  else if (confianza > 5 && confianza <= 10) confianza = confianza / 10;
+  else if (confianza > 10 && confianza <= 100) confianza = confianza / 100;
   confianza = Math.max(0, Math.min(1, confianza));
 
   const criterios = normalizarCriterios(r.criterios, r.procedimiento_esperado);

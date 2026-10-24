@@ -64,7 +64,7 @@ const ESQUEMA_RUBRICA = {
       }
     },
     avisos: { type: 'ARRAY', items: { type: 'STRING' } },
-    confianza: { type: 'NUMBER' }
+    confianza: { type: 'NUMBER', description: 'Nivel de certeza en la solución y criterios, número decimal de 0.0 a 1.0 (ej. 1.0 = certeza total).' }
   },
   required: [
     'respuesta_canonica', 'criterios', 'puntaje_total', 'solucion_pasos',
@@ -157,7 +157,8 @@ function construirPromptRubrica(datos) {
     '3. En "respuestas_aceptables" poné TODAS las formas en que un alumno podría escribir válidamente lo mismo.',
     '4. En "variantes_aceptables" poné otros MÉTODOS correctos para ese grado.',
     '5. En "errores_previsibles" poné errores REALES que cometería un alumno de ese grado en ESTE problema.',
-    '6. CRITERIOS DE PUNTAJE ("criterios"): De 1 a 3 criterios que sumen exactamente 4.0 puntos.'
+    '6. CRITERIOS DE PUNTAJE ("criterios"): De 1 a 3 criterios que sumen exactamente 4.0 puntos.',
+    '7. "confianza" es un número decimal entre 0.0 y 1.0 sobre la certeza de tu propia resolución y rúbrica (ej. 1.0 = certeza total sin dudas ni ambigüedades).'
   ];
   return lineas.filter(l => l !== '').join('\n');
 }
@@ -171,7 +172,7 @@ function construirPromptPregunta(datos) {
     '',
     'REGLAS OBLIGATORIAS:',
     '1. El problema debe ser 100% de MATEMÁTICA, ajustado a la edad y nivel del grado indicado.',
-    '2. RESTRICCIÓN FÍSICA ESTRICTA DE ESPACIO: El enunciado ("prompt") debe tener un MÁXIMO ABSOLUTO DE 240 CARACTERES (de 1 a 3 líneas concisas). Debe caber en la ranura física de la ficha A5 sin desbordar ni tapar la cuadrícula de cálculo.',
+    '2. RESTRICCIÓN FÍSICA ESTRICTA DE ESPACIO: El enunciado ("prompt") debe tener un MÁXIMO ABSOLUTO DE 160 CARACTERES si no tiene fracciones, o MÁXIMO 105 CARACTERES si incluye fracciones (de 1 a 3 líneas concisas para ser 100% compatible universalmente con cartillas A6 y fichas A5 sin desbordar ni tapar la cuadrícula de cálculo).',
     '3. Genera 4 alternativas completas (A, B, C, D). Solo una es la correcta.',
     '4. Las 3 alternativas incorrectas (distractores) deben basarse en errores conceptuales, de cálculo o de planteamiento típicos que cometen los alumnos de este grado.',
     '5. Asigna la clave correcta de forma aleatoria entre A, B, C y D.',
@@ -223,7 +224,8 @@ function construirPromptChat(datos) {
     '1. Responde de forma cálida, humana, profesional y clara en español. Mantén total coherencia con el hilo y contexto previo de la conversación.',
     '2. MEMORIA CONVERSACIONAL: Si el docente hace referencia a un salón, grado o tema mencionado en los turnos anteriores (ej. "ese salón", "el grado anterior", "sus alumnos", "de ese grado"), identifica inmediatamente de cuál se trata usando el HISTORIAL y el Contexto del aula. NUNCA le vuelvas a preguntar qué grado o salón es si ya fue indicado o aclarado previamente.',
     '3. Si el docente pide la lista de alumnos de un grado o salón específico:',
-    '   - Busca dicho salón en el "Contexto del aula" y enumera la lista de sus alumnos de forma clara, ordenada y legible.',
+    '   - Busca dicho salón en el "Contexto del aula".',
+    '   - Presenta la lista OBLIGATORIAMENTE en formato de TABLA Markdown limpia con columnas: | N° | Estudiante |.',
     '   - Setea action: "none", action_label: "", out_of_scope: false.',
     '4. Si el docente expresa la intención de CREAR, AGREGAR o REGISTRAR un SALÓN o AULA (ej. "quiero crear un salón", "cómo agrego un aula", "registrar clase", "nuevo salón"):',
     '   - Explica brevemente que puede hacerlo importando su nómina desde Excel/CSV o ingresándolos a mano.',
@@ -235,11 +237,12 @@ function construirPromptChat(datos) {
     '7. Si el docente expresa la intención de comparar salones o ver estadísticas:',
     '   - Setea action: "open_comparative_table", action_label: "📊 Cuadro Comparativo", out_of_scope: false.',
     '8. Si el docente pregunta sobre sus salones, sesiones o alumnos actuales (ej. cuántos salones tiene, qué salones tiene, cuántas sesiones guardadas tiene):',
-    '   - Consulta los datos del "Contexto del aula" y responde con las cifras y nombres exactos.',
+    '   - Consulta los datos del "Contexto del aula" y responde resumiendo la información en una TABLA Markdown clara (ej: columnas | N° | Salón | Grado | Total Alumnos | para salones, o | N° | Salón | Modalidad | Preguntas | para sesiones).',
     '   - Setea action: "none", action_label: "", out_of_scope: false.',
     '9. Si es una consulta pedagógica, duda conceptual de matemática, saludo o pregunta general sobre el sistema:',
     '   - Responde pedagógicamente.',
-    '   - Setea action: "none", action_label: "", out_of_scope: false.'
+    '   - Setea action: "none", action_label: "", out_of_scope: false.',
+    '10. REGLA DE FORMATO VISUAL: Siempre que presentes datos tabulares, comparaciones, listas de alumnos, sesiones o salones, utiliza SIEMPRE formato de tabla Markdown (| Columna 1 | Columna 2 |) para que la interfaz las dibuje como tablas compactas interactivas. IMPORTANTE: En la respuesta JSON, cada fila de la tabla Markdown DEBE estar separada por saltos de línea (\\n) reales (una línea para cabecera, una para separador |---|---| y una para cada fila de datos). NO concatenes las filas con doble barra (| |) en un solo renglón.'
   ];
   return lineas.filter(Boolean).join('\n');
 }
@@ -398,7 +401,14 @@ function validarRubrica(r) {
     supuestos: lista(r.supuestos),
     errores_previsibles: errores,
     avisos: lista(r.avisos),
-    confianza: typeof r.confianza === 'number' ? r.confianza : 1
+    confianza: (() => {
+      let conf = typeof r.confianza === 'number' ? r.confianza : Number(r.confianza);
+      if (!isFinite(conf) || conf <= 0) return 1;
+      if (conf > 1 && conf <= 5) conf = conf / 5;
+      else if (conf > 5 && conf <= 10) conf = conf / 10;
+      else if (conf > 10 && conf <= 100) conf = conf / 100;
+      return Math.max(0, Math.min(1, conf));
+    })()
   };
 }
 
@@ -456,10 +466,12 @@ Deno.serve(async (req) => {
       const promptText = construirPromptPregunta({ grado, tema });
       const rawQuestion = await llamarGemini(promptText, ESQUEMA_PREGUNTA, 0.7);
 
-      // Limitar estrictamente el prompt a 240 caracteres (límite físico ficha A5)
+      // Limitar estrictamente el prompt según el guardarraíl (160 caracteres estándar / 105 con fracciones)
       let cleanPrompt = String(rawQuestion.prompt || '').trim();
-      if (cleanPrompt.length > 240) {
-        cleanPrompt = cleanPrompt.slice(0, 237).trim() + '...';
+      const withFrac = /[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\b\d+\s*\/\s*\d+\b/.test(cleanPrompt);
+      const maxLen = withFrac ? 105 : 160;
+      if (cleanPrompt.length > maxLen) {
+        cleanPrompt = cleanPrompt.slice(0, maxLen - 3).trim() + '...';
       }
 
       const criterios = normalizarCriterios(rawQuestion.criterios, rawQuestion.procedimiento_paso_a_paso);
