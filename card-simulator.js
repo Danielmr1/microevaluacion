@@ -1306,18 +1306,22 @@ function renderSimBankList() {
 
     const promptText = document.createElement('div');
     promptText.style.cssText = 'font-size:0.85rem; color:#2B2118; font-weight:700; line-height:1.45;';
-    promptText.textContent = q.prompt;
+    promptText.innerHTML = (typeof formatMathHtml === 'function')
+      ? formatMathHtml(escaparHtml(q.prompt || ''))
+      : escaparHtml(q.prompt || '');
 
     const optsGrid = document.createElement('div');
     optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem;';
     ['A', 'B', 'C', 'D'].forEach(letter => {
       const isCorrect = (q.correct || 'A').toUpperCase() === letter;
       const optVal = q.options ? q.options[letter] : '';
+      const optSafe = escaparHtml(optVal || '—');
+      const optFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(optSafe) : optSafe;
       const optDiv = document.createElement('div');
       optDiv.style.cssText = isCorrect
         ? 'color:#15803D; font-weight:800; background:#DCFCE7; padding:5px 9px; border-radius:7px; border:1.5px solid #86EFAC;'
         : 'color:#4B3A2C; font-weight:600; padding:5px 9px; background:#F8F6F0; border-radius:7px; border:1px solid rgba(43, 33, 24, 0.12);';
-      optDiv.textContent = `${letter}) ${optVal || '—'}` + (isCorrect ? ' ✓' : '');
+      optDiv.innerHTML = `${letter}) ${optFormatted}` + (isCorrect ? ' ✓' : '');
       optsGrid.appendChild(optDiv);
     });
 

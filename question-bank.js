@@ -847,7 +847,9 @@ function renderBankManagerQuestions() {
     // Enunciado
     const promptText = document.createElement('div');
     promptText.style.cssText = 'font-size:0.92rem; color:#181512; font-weight:700; line-height:1.45;';
-    promptText.textContent = q.prompt;
+    promptText.innerHTML = (typeof formatMathHtml === 'function')
+      ? formatMathHtml(escaparHtml(q.prompt || ''))
+      : escaparHtml(q.prompt || '');
 
     // Alternativas en 2 columnas
     const optsGrid = document.createElement('div');
@@ -855,13 +857,15 @@ function renderBankManagerQuestions() {
     ['A', 'B', 'C', 'D'].forEach(letter => {
       const isCorrect = (q.correct || 'A').toUpperCase() === letter;
       const optVal = q.options ? q.options[letter] : '';
+      const optSafe = escaparHtml(optVal || '—');
+      const optFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(optSafe) : optSafe;
       const optDiv = document.createElement('div');
       optDiv.style.cssText = isCorrect
         ? 'color:#181512; font-weight:800; background:#fff8e1; padding:6px 10px; border-radius:6px; border:1.5px solid #FFB703; box-shadow:0 0 0 1.5px rgba(0,180,216,0.3);'
         : 'color:#181512; padding:6px 10px; background:#F8F6F0; border-radius:6px; border:1px solid #dcd8ce;';
       optDiv.innerHTML = isCorrect
-        ? `<span>${letter}) ${escaparHtml(optVal || '—')}</span> <span style="color:#00B4D8; font-weight:900;">✓ (Clave)</span>`
-        : `${letter}) ${escaparHtml(optVal || '—')}`;
+        ? `<span>${letter}) ${optFormatted}</span> <span style="color:#00B4D8; font-weight:900;">✓ (Clave)</span>`
+        : `${letter}) ${optFormatted}`;
       optsGrid.appendChild(optDiv);
     });
 
@@ -954,14 +958,16 @@ function handleViewQuestionRubric(q) {
     }
   }
 
-  const promptText = escaparHtml(q.prompt || '');
+  const promptSafe = escaparHtml(q.prompt || '');
+  const promptText = (typeof formatMathHtml === 'function') ? formatMathHtml(promptSafe) : promptSafe;
   let optsHtml = '';
   if (q.options) {
     optsHtml = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; font-size:0.75rem;">
         ${['A', 'B', 'C', 'D'].map(l => {
           const isCorrect = (q.correct || 'A').toUpperCase() === l;
-          const val = escaparHtml(q.options[l] || '');
+          const valSafe = escaparHtml(q.options[l] || '');
+          const val = (typeof formatMathHtml === 'function') ? formatMathHtml(valSafe) : valSafe;
           return `
             <div style="padding:5px 8px; border-radius:6px; ${isCorrect ? 'background:#dcfce7; color:#15803d; font-weight:800; border:1.5px solid #86efac;' : 'background:#ffffff; color:#475569; border:1px solid #e2e8f0;'}">
               ${l}) ${val} ${isCorrect ? '✓ (Clave Correcta)' : ''}
