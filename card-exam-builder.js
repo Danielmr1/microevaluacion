@@ -705,8 +705,15 @@ function openRama3QuestionPicker(slotIdx) {
   if (!modal) return;
 
   const g = gradoDelSalonSeleccionado();
-  if (title) title.textContent = `Configurar Pregunta ${slotIdx + 1} (Examen OMR)`;
-  if (gradeTag) gradeTag.textContent = g.texto || 'Sin grado asignado';
+  if (title) title.textContent = `Configurar Pregunta ${slotIdx + 1}`;
+  if (gradeTag) {
+    let tagText = g.texto || 'Sin grado asignado';
+    if (g?.level && g?.stage) {
+      const stageName = (String(g.stage).toLowerCase().includes('sec')) ? 'Secundaria' : 'Primaria';
+      tagText = `${g.level}° ${stageName}`;
+    }
+    gradeTag.textContent = tagText;
+  }
 
   // En Rama 3 Modo B: NO hay sección IA, SIEMPRE son alternativas A, B, C, D
   const aiSection = document.getElementById('sim-new-ai-section');

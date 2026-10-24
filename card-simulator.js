@@ -915,7 +915,14 @@ function openSimQuestionPicker(slotIdx) {
 
   const g = gradoDelSalonSeleccionado();
   if (title) title.textContent = `Configurar Pregunta ${slotIdx + 1}`;
-  if (gradeTag) gradeTag.textContent = g.texto || 'Sin grado asignado';
+  if (gradeTag) {
+    let tagText = g.texto || 'Sin grado asignado';
+    if (g?.level && g?.stage) {
+      const stageName = (String(g.stage).toLowerCase().includes('sec')) ? 'Secundaria' : 'Primaria';
+      tagText = `${g.level}° ${stageName}`;
+    }
+    gradeTag.textContent = tagText;
+  }
 
   // Mostrar u ocultar sección IA según la rama
   const aiSection = document.getElementById('sim-new-ai-section');
