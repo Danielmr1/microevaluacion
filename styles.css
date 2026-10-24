@@ -7737,9 +7737,24 @@
       display: flex;
       flex-direction: column;
     }
+    .mgr-student-lock-badge-mobile {
+      display: none !important;
+    }
+    .mgr-student-lock-badge-desktop {
+      display: inline-flex !important;
+    }
     @media (max-width: 640px) {
       .manual-classroom-top-row {
         grid-template-columns: 1fr;
         gap: 10px;
+      }
+      .mgr-student-lock-badge-mobile {
+        display: inline-flex !important;
+      }
+      .mgr-student-lock-badge-desktop {
+        display: none !important;
+      }
+      .mgr-student-card-locked .mgr-student-actions {
+        display: none !important;
       }
     }

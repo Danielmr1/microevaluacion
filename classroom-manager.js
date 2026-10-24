@@ -350,20 +350,27 @@ function openClassroomModal(classroomId) {
     } else {
       if (emptyEl) emptyEl.style.display = 'none';
       listEl.innerHTML = students.map((s, idx) => `
-        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #EAE3D6; border-left:3.5px solid #00B4D8; border-radius:10px; padding:10px 14px; font-size:0.78rem; gap:10px; box-shadow:0 1px 3px rgba(44,34,25,0.05); transition:all 0.15s;">
+        <div class="mgr-student-item ${isRoomLocked ? 'mgr-student-card-locked' : ''}" style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #EAE3D6; border-left:3.5px solid #00B4D8; border-radius:10px; padding:10px 14px; font-size:0.78rem; gap:10px; box-shadow:0 1px 3px rgba(44,34,25,0.05); transition:all 0.15s;">
           <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
             <span style="color:#8C7D6B; font-weight:800; font-size:0.74rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
-            <div style="display:flex; flex-direction:column; min-width:0;">
+            <div style="display:flex; flex-direction:column; min-width:0; flex:1;">
               <span style="color:#1E1B18; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.88rem;">${escaparHtml(s.name)}</span>
-              <span style="display:inline-flex; align-items:center; gap:5px; color:#0369A1; font-size:0.73rem; font-weight:800; background:#E0F2FE; border:1px solid #BAE6FD; padding:2px 8px; border-radius:5px; width:fit-content; margin-top:3px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                ${escaparHtml(s.shortName || generateShortName(s.name))}
-              </span>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:3px; flex-wrap:nowrap; min-width:0;">
+                <span style="display:inline-flex; align-items:center; gap:5px; color:#0369A1; font-size:0.73rem; font-weight:800; background:#E0F2FE; border:1px solid #BAE6FD; padding:2px 8px; border-radius:5px; width:fit-content; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  ${escaparHtml(s.shortName || generateShortName(s.name))}
+                </span>
+                ${isRoomLocked ? `
+                <span class="mgr-student-lock-badge-mobile" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:2px 8px; font-size:0.72rem; font-weight:700; align-items:center; gap:4px; flex-shrink:0; white-space:nowrap;" title="Bloqueado: salón en sesión">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  En sesión
+                </span>` : ''}
+              </div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+          <div class="mgr-student-actions" style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
             ${isRoomLocked ? `
-            <span style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:5px 10px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px;" title="Bloqueado: salón en sesión">
+            <span class="mgr-student-lock-badge-desktop" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:5px 10px; font-size:0.72rem; font-weight:700; align-items:center; gap:5px;" title="Bloqueado: salón en sesión">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               En sesión
             </span>` : `
