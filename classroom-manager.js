@@ -552,6 +552,24 @@ function exportClassroomRosterToExcel() {
 }
 
 /* ── FUNCIONES DE EDICIÓN Y BORRADO DE ALUMNOS (FLUJO 2) ── */
+function handleEditStudentFullnameInput(value) {
+  const clean = cleanName(value || '');
+  const countEl = document.getElementById('edit-student-char-count');
+  if (countEl) {
+    countEl.textContent = `${clean.length}/45`;
+    countEl.style.color = (clean.length > 45) ? '#ef4444' : '#786C5E';
+  }
+  const autoShort = generateShortName(clean);
+  const badgeText = document.getElementById('edit-student-shortname-text');
+  if (badgeText) {
+    badgeText.textContent = autoShort || '—';
+  }
+  const inShort = document.getElementById('edit-student-shortname');
+  if (inShort) {
+    inShort.value = autoShort || '';
+  }
+}
+
 function openEditStudentModal(classroomId, studentCode, currentFullName, currentShortName) {
   const roomUsage = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse)
     ? ClassroomData.isClassroomInUse(classroomId)
@@ -570,6 +588,8 @@ function openEditStudentModal(classroomId, studentCode, currentFullName, current
   if (inCode) inCode.value = studentCode || '';
   if (inFull) inFull.value = currentFullName || '';
   if (inShort) inShort.value = currentShortName || '';
+
+  handleEditStudentFullnameInput(currentFullName || '');
 
   if (modal) modal.style.display = 'flex';
   setTimeout(() => { if (inFull) inFull.focus(); }, 50);
@@ -591,7 +611,7 @@ async function saveEditStudent() {
   }
   const studentCode = document.getElementById('edit-student-code')?.value;
   const fullName = cleanName(document.getElementById('edit-student-fullname')?.value || '');
-  let shortName = cleanName(document.getElementById('edit-student-shortname')?.value || '');
+  const shortName = generateShortName(fullName);
 
   const val = validateStudentNames(fullName, shortName);
   if (!val.valid) {
@@ -599,25 +619,16 @@ async function saveEditStudent() {
     return;
   }
 
-  if (!shortName) {
-    shortName = generateShortName(fullName);
-  }
-
   // Validar duplicados contra el resto de alumnos del mismo salón
   const cls = ClassroomData.getClassroom(classroomId);
   if (cls && cls.students) {
     const normFull = normalizeTextForComparison(fullName);
-    const normShort = normalizeTextForComparison(shortName);
 
     for (const st of cls.students) {
       if (st.id === studentCode) continue; // Mismo alumno que se está editando
 
       if (normalizeTextForComparison(st.name) === normFull) {
         showToast(`⚠️ Ya existe otro estudiante con el nombre "${st.name}" en este salón.`);
-        return;
-      }
-      if (normalizeTextForComparison(st.shortName) === normShort) {
-        showToast(`⚠️ El nombre corto "${shortName}" ya pertenece a otro estudiante (${st.name}). Elige uno diferente.`);
         return;
       }
     }
@@ -1181,8 +1192,8 @@ function validateStudentNames(fullName, shortName) {
   const cleanFull = cleanName(fullName);
   const cleanShort = cleanName(shortName);
 
-  if (!cleanFull || cleanFull.length < 3 || cleanFull.length > 60) {
-    return { valid: false, error: 'El nombre completo debe tener entre 3 y 60 letras.' };
+  if (!cleanFull || cleanFull.length < 3 || cleanFull.length > 45) {
+    return { valid: false, error: 'El nombre completo debe tener entre 3 y 45 letras.' };
   }
   if (RE_PROHIBITED_CHARS.test(cleanFull) || !RE_ALLOWED_STUDENT_CHARS.test(cleanFull)) {
     return { valid: false, error: `El nombre "${cleanFull}" contiene caracteres no permitidos (no se permiten %, $, #, números ni símbolos especiales).` };
@@ -1917,4 +1928,8 @@ if (typeof window !== 'undefined') {
   window.exportClassroomRosterToExcel = exportClassroomRosterToExcel;
   window.switchClassroomManagerTab = switchClassroomManagerTab;
   window.navigateToClassroomSession = navigateToClassroomSession;
+  window.openEditStudentModal = openEditStudentModal;
+  window.closeEditStudentModal = closeEditStudentModal;
+  window.saveEditStudent = saveEditStudent;
+  window.handleEditStudentFullnameInput = handleEditStudentFullnameInput;
 }
