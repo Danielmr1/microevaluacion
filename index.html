@@ -597,7 +597,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.5</span>
+              Versión <span id="user-profile-version-tag">v3.10.7</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -925,6 +925,10 @@
           <!-- Lado Derecho: Selector de Salón y Grado a la derecha debajo -->
           <div style="flex:1 1 320px; max-width:440px; min-width:260px; display:flex; flex-direction:column; align-items:flex-end;">
             <select id="builder-classroom" class="form-control" onchange="onClassroomSelectChanged(this.value)"
+              onfocus="if(typeof restoreClassroomSelectOptions==='function')restoreClassroomSelectOptions(this)"
+              onpointerdown="if(typeof restoreClassroomSelectOptions==='function')restoreClassroomSelectOptions(this)"
+              onmousedown="if(typeof restoreClassroomSelectOptions==='function')restoreClassroomSelectOptions(this)"
+              onblur="if(typeof updateClassroomSelectDisplay==='function')updateClassroomSelectDisplay(this)"
               style="width:100%; font-size:0.95rem; font-weight:700; padding:9px 14px; box-sizing:border-box;">
             </select>
 

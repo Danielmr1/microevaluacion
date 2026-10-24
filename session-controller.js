@@ -2,6 +2,31 @@
 // session-controller.js — Microevaluación A5 v3.2.61
 // MÓDULO: GESTIÓN DE SESIONES, SALONES, GRADOS Y RESUMEN EVALUATIVO
 // =============================================================================
+    function updateClassroomSelectDisplay(sel) {
+      if (!sel) sel = document.getElementById('builder-classroom');
+      if (!sel) return;
+      const idx = sel.selectedIndex;
+      if (idx > 0 && sel.options[idx]) {
+        const opt = sel.options[idx];
+        if (opt.dataset && opt.dataset.name) {
+          opt.textContent = opt.dataset.name;
+        }
+      }
+    }
+    if (typeof window !== 'undefined') window.updateClassroomSelectDisplay = updateClassroomSelectDisplay;
+
+    function restoreClassroomSelectOptions(sel) {
+      if (!sel) sel = document.getElementById('builder-classroom');
+      if (!sel) return;
+      for (let i = 0; i < sel.options.length; i++) {
+        const opt = sel.options[i];
+        if (opt.dataset && opt.dataset.fullLabel) {
+          opt.textContent = opt.dataset.fullLabel;
+        }
+      }
+    }
+    if (typeof window !== 'undefined') window.restoreClassroomSelectOptions = restoreClassroomSelectOptions;
+
     function renderClassroomSelect() {
       const sel = document.getElementById('builder-classroom');
       if (!sel) return;
@@ -12,21 +37,27 @@
           : null;
         const stage = fullCls?.gradeStage || cls.gradeStage;
         const level = fullCls?.gradeLevel || cls.gradeLevel;
-        let gradePart = '';
+        let metaPart = `${cls.count} alum`;
         if (level) {
           const numMatch = String(level).match(/\d+/);
           const num = numMatch ? numMatch[0] : level;
           const stageShort = (stage && String(stage).toLowerCase().includes('sec')) ? 'sec' : 'pri';
-          gradePart = ` — ${num}° ${stageShort}`;
+          metaPart += ` | ${num}° ${stageShort}`;
         }
+        const fullLabel = `${cls.name}  [${metaPart}]`;
         const opt = document.createElement('option');
         opt.value = cls.id;
-        opt.textContent = `${cls.name} (${cls.count} alum)${gradePart}`;
+        opt.textContent = fullLabel;
+        opt.dataset.name = cls.name;
+        opt.dataset.fullLabel = fullLabel;
         sel.appendChild(opt);
       });
       // Restaurar selección si hay sesión activa
       const session = ClassroomData.getActiveSession();
-      if (session && session.classroomId) sel.value = session.classroomId;
+      if (session && session.classroomId) {
+        sel.value = session.classroomId;
+        updateClassroomSelectDisplay(sel);
+      }
 
       // El selector de grado depende del salón elegido
       renderGradeSelect(sel.value || null);
@@ -59,6 +90,7 @@
         }
 
         hideWizardSteps();
+        if (typeof restoreClassroomSelectOptions === 'function') restoreClassroomSelectOptions(bSel);
         renderGradeSelect(null);
         updateClassroomActionsVisibility(null);
         return;
@@ -101,6 +133,9 @@
 
       // Ocultar acciones de salón (importar / crear a mano / plantilla) al seleccionar un salón
       updateClassroomActionsVisibility(classId);
+
+      // Contraer visualmente la opción seleccionada a solo el nombre del salón
+      if (typeof updateClassroomSelectDisplay === 'function') updateClassroomSelectDisplay(bSel);
     }
 
     /* ── GRADO DEL SALÓN ──────────────────────────────────────────────
@@ -173,11 +208,13 @@
         return;
       }
 
-      // Con grado: solo se muestra el grado debajo del selector, sin textos explicativos ni etiquetas redundantes.
+      // Con grado: muestra cantidad de alumnos y grado debajo del selector, sin textos explicativos redundantes.
       sel.value = cls.gradeStage + ':' + cls.gradeLevel;
       sel.style.display = 'none';
       if (readonly) readonly.style.display = 'flex';
-      if (readValue) readValue.textContent = grade;
+      const studentCount = (cls && cls.students) ? cls.students.length : (cls && cls.count ? cls.count : 0);
+      const countLabel = studentCount === 1 ? '1 alumno' : `${studentCount} alumnos`;
+      if (readValue) readValue.textContent = grade ? `${countLabel} • ${grade}` : countLabel;
       if (hint) {
         hint.textContent = '';
         hint.style.display = 'none';
@@ -1071,7 +1108,10 @@
       }
 
       const sel = document.getElementById('builder-classroom');
-      if (sel) sel.value = session.classroomId;
+      if (sel) {
+        sel.value = session.classroomId;
+        if (typeof updateClassroomSelectDisplay === 'function') updateClassroomSelectDisplay(sel);
+      }
       renderGradeSelect(session.classroomId);
 
       const badge = document.getElementById('nav-students-badge');
@@ -1563,6 +1603,7 @@
       if (sel) {
         sel.value = sess.classroomId;
         sel.style.borderColor = ClassroomData.getClassroomColor(sess.classroomId);
+        if (typeof updateClassroomSelectDisplay === 'function') updateClassroomSelectDisplay(sel);
       }
       if (typeof renderGradeSelect === 'function') renderGradeSelect(sess.classroomId);
 

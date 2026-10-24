@@ -1032,9 +1032,22 @@ if (typeof window !== 'undefined') {
       if (noClsAlert) noClsAlert.style.display = 'none';
 
       classrooms.forEach(cls => {
+        const count = (cls.microeval_students || []).length;
+        const stage = cls.grade_stage || cls.gradeStage;
+        const level = cls.grade_level || cls.gradeLevel;
+        let metaPart = `${count} alum`;
+        if (level) {
+          const numMatch = String(level).match(/\d+/);
+          const num = numMatch ? numMatch[0] : level;
+          const stageShort = (stage && String(stage).toLowerCase().includes('sec')) ? 'sec' : 'pri';
+          metaPart += ` | ${num}° ${stageShort}`;
+        }
+        const fullLabel = `${cls.name}  [${metaPart}]`;
         const opt = document.createElement('option');
         opt.value = cls.id;  // UUID del salón en Supabase
-        opt.textContent = `${cls.name}  (${(cls.microeval_students || []).length} alumnos)`;
+        opt.textContent = fullLabel;
+        opt.dataset.name = cls.name;
+        opt.dataset.fullLabel = fullLabel;
         opt.dataset.color = cls.color || '#3b82f6';
         sel.appendChild(opt);
       });
@@ -1046,6 +1059,9 @@ if (typeof window !== 'undefined') {
         sel.value = selectClassroomId;
         onClassroomSelectChanged(selectClassroomId);
       } else {
+        if (sel.value && typeof updateClassroomSelectDisplay === 'function') {
+          updateClassroomSelectDisplay(sel);
+        }
         renderGradeSelect(sel.value || null);
         updateClassroomActionsVisibility(sel.value || null);
       }
