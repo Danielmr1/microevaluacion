@@ -338,13 +338,13 @@ function openClassroomModal(classroomId) {
     } else {
       if (emptyEl) emptyEl.style.display = 'none';
       listEl.innerHTML = students.map((s, idx) => `
-        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #E4DCD0; border-radius:10px; padding:9px 14px; font-size:0.78rem; gap:10px; box-shadow:0 1px 3px rgba(44,34,25,0.04); transition:all 0.15s;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #EAE3D6; border-left:3.5px solid #00B4D8; border-radius:10px; padding:10px 14px; font-size:0.78rem; gap:10px; box-shadow:0 1px 3px rgba(44,34,25,0.05); transition:all 0.15s;">
           <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
-            <span style="color:#786C5E; font-weight:800; font-size:0.72rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
+            <span style="color:#8C7D6B; font-weight:800; font-size:0.74rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
             <div style="display:flex; flex-direction:column; min-width:0;">
-              <span style="color:#1E1B18; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.86rem;">${escaparHtml(s.name)}</span>
-              <span style="display:inline-flex; align-items:center; gap:4px; color:#0284c7; font-size:0.72rem; font-weight:700; margin-top:2px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span style="color:#1E1B18; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.88rem;">${escaparHtml(s.name)}</span>
+              <span style="display:inline-flex; align-items:center; gap:5px; color:#0369A1; font-size:0.73rem; font-weight:800; background:#E0F2FE; border:1px solid #BAE6FD; padding:2px 8px; border-radius:5px; width:fit-content; margin-top:3px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 ${escaparHtml(s.shortName || generateShortName(s.name))}
               </span>
             </div>
@@ -357,13 +357,13 @@ function openClassroomModal(classroomId) {
             </span>` : `
             <button type="button" onclick="openEditStudentModal('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', '${escaparHtml(s.shortName || '').replace(/'/g, "\\'")}')"
               title="Editar nombre"
-              style="background:#E0F2FE; border:1px solid #7DD3FC; color:#0369A1; border-radius:6px; padding:5px 10px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s;">
+              style="background:#E0F2FE; border:1.5px solid #38BDF8; color:#0369A1; border-radius:6px; padding:5px 11px; font-size:0.75rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 2px rgba(2,132,199,0.15); transition:all 0.15s;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Editar
             </button>
             <button type="button" onclick="handleDeleteStudent('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', this)"
               title="Eliminar este alumno del salón"
-              style="background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; border-radius:6px; padding:5px 9px; font-size:0.74rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s;">
+              style="background:#FFF1F2; border:1.5px solid #FDA4AF; color:#E11D48; border-radius:6px; padding:5px 9px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
             </button>`}
           </div>
