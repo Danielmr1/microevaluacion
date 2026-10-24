@@ -7726,6 +7726,46 @@
       background: #bae6fd;
     }
 
+    /* FÓRMULAS MATEMÁTICAS EN ENUNCIADO (FRACCIONES APILADAS Y RADICALES) */
+    .math-frac {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      font-size: 0.85em;
+      line-height: 1.05;
+      padding: 0 2px;
+      margin: 0 1px;
+    }
+    .math-num {
+      border-bottom: 1.5px solid currentColor;
+      padding-bottom: 1px;
+      display: block;
+    }
+    .math-den {
+      padding-top: 1px;
+      display: block;
+    }
+    .math-sqrt {
+      display: inline-flex;
+      align-items: baseline;
+      vertical-align: middle;
+      margin: 0 1px;
+    }
+    .math-rad {
+      font-size: 1.15em;
+      line-height: 1;
+      margin-right: -1px;
+      font-weight: 700;
+    }
+    .math-radicand {
+      border-top: 1.4px solid currentColor;
+      padding-top: 1px;
+      padding-left: 2px;
+      padding-right: 2px;
+      display: inline-block;
+    }
+
     /* Disposición responsiva de Alta de Salón manual */
     .manual-classroom-top-row {
       display: grid;

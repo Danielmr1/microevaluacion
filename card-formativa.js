@@ -17,9 +17,10 @@ const FORMATIVA_FIDUCIALS_A5 = `
 `;
 
 function formativaEscape(t) {
-  return (typeof escaparHtml === 'function')
+  const s = (typeof escaparHtml === 'function')
     ? escaparHtml(t)
     : String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return (typeof formatMathHtml === 'function') ? formatMathHtml(s) : s;
 }
 
 /**

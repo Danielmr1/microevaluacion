@@ -978,8 +978,11 @@ function setPrintPageOrientation(orientation) {
  */
 function renderBookletQuestionHTML(q, idx, isCompact = false) {
   const escape = (typeof escaparHtml === 'function')
-    ? escaparHtml
-    : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    ? (t => (typeof formatMathHtml === 'function' ? formatMathHtml(escaparHtml(t)) : escaparHtml(t)))
+    : (t => {
+        const s = String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        return (typeof formatMathHtml === 'function') ? formatMathHtml(s) : s;
+      });
 
   const num = q.num || (idx + 1);
   const prompt = escape(q.prompt || `Pregunta ${num}`);

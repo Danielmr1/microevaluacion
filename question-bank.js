@@ -26,8 +26,29 @@ const PROMPT_CHARS_PER_LINE = 52;
 
 function hasFractions(text) {
   if (!text) return false;
-  return /[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\b\d+\s*\/\s*\d+\b/.test(text);
+  return /\\frac\{|\[frac:|[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\b\d+\s*\/\s*\d+\b/.test(text);
 }
+window.hasFractions = hasFractions;
+
+/**
+ * Convierte tokens de matemáticas (\frac{a}{b}, \sqrt{x}, ^{n}) en HTML estructurado
+ * para renderizado visual idéntico a Word (fracciones apiladas y raíz con techo).
+ */
+function formatMathHtml(safeText) {
+  if (!safeText) return '';
+  // 1. \frac{numerador}{denominador} -> fracción apilada con barra horizontal
+  let out = safeText.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '<span class="math-frac"><span class="math-num">$1</span><span class="math-den">$2</span></span>');
+  // 2. [frac:num/den] sintaxis alternativa
+  out = out.replace(/\[frac:\s*([^\/\]]+)\/([^\]]+)\]/g, '<span class="math-frac"><span class="math-num">$1</span><span class="math-den">$2</span></span>');
+  // 3. \sqrt{radicando} -> radical con techo continuo cubriendo el contenido
+  out = out.replace(/\\sqrt\{([^{}]+)\}/g, '<span class="math-sqrt"><span class="math-rad">√</span><span class="math-radicand">$1</span></span>');
+  // 4. [sqrt:radicando]
+  out = out.replace(/\[sqrt:\s*([^\]]+)\]/g, '<span class="math-sqrt"><span class="math-rad">√</span><span class="math-radicand">$1</span></span>');
+  // 5. ^{exponente} -> superíndice
+  out = out.replace(/\^\{([^{}]+)\}/g, '<sup>$1</sup>');
+  return out;
+}
+window.formatMathHtml = formatMathHtml;
 
 // ── SEGUIMIENTO DE ENFOQUE E INSERCIÓN DE SÍMBOLOS MATEMÁTICOS ──
 let lastFocusedMathInput = null;
