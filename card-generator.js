@@ -336,7 +336,9 @@ function renderAllPrintPages(classId, evaluation) {
       if (typeof QRCode !== 'undefined' && QRCode.toString) {
         QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
           if (err) return;
-          const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
+          const el = sheetEl.querySelector(`[data-qr-id="${st.id}"]`)
+                  || sheetEl.querySelector(`[id="qr-box-${st.id}"]`)
+                  || document.getElementById('qr-box-' + st.id);
           if (el) el.innerHTML = svg;
         });
       }
@@ -409,7 +411,9 @@ function renderAllPrintPages(classId, evaluation) {
         [sTL, sTR, sBL, sBR].filter(Boolean).forEach(st => {
           QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
-            const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
+            const el = sheetEl.querySelector(`[data-qr-id="${st.id}"]`)
+                  || sheetEl.querySelector(`[id="qr-box-${st.id}"]`)
+                  || document.getElementById('qr-box-' + st.id);
             if (el) el.innerHTML = svg;
           });
         });
@@ -454,7 +458,9 @@ function renderAllPrintPages(classId, evaluation) {
         [sLeft, sRight].filter(Boolean).forEach(st => {
           QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
-            const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
+            const el = sheetEl.querySelector(`[data-qr-id="${st.id}"]`)
+                  || sheetEl.querySelector(`[id="qr-box-${st.id}"]`)
+                  || document.getElementById('qr-box-' + st.id);
             if (el) el.innerHTML = svg;
           });
         });
@@ -500,7 +506,9 @@ function renderAllPrintPages(classId, evaluation) {
         [sLeft, sRight].filter(Boolean).forEach(st => {
           QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
             if (err) return;
-            const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
+            const el = sheetEl.querySelector(`[data-qr-id="${st.id}"]`)
+                  || sheetEl.querySelector(`[id="qr-box-${st.id}"]`)
+                  || document.getElementById('qr-box-' + st.id);
             if (el) el.innerHTML = svg;
           });
         });
@@ -553,7 +561,9 @@ function renderAllPrintPages(classId, evaluation) {
       [sTop, sBot].filter(Boolean).forEach(st => {
         QRCode.toString(getCardQRPayload(st.id, evaluation), { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }, (err, svg) => {
           if (err) return;
-          const el = sheetEl.querySelector('#qr-box-' + st.id) || sheetEl.querySelector('[data-qr-id="' + st.id + '"]');
+          const el = sheetEl.querySelector(`[data-qr-id="${st.id}"]`)
+                  || sheetEl.querySelector(`[id="qr-box-${st.id}"]`)
+                  || document.getElementById('qr-box-' + st.id);
           if (el) el.innerHTML = svg;
         });
       });

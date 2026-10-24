@@ -214,7 +214,7 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
             </div>
           </div>
           <div class="a6-qr-block">
-            <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+            <div class="a6-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
           </div>
         </div>
         <div class="aruco-tr-number">${orderNumber}</div>
@@ -339,7 +339,7 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
           </div>
         </div>
         <div class="a6-qr-block">
-          <div class="a6-qr-box" id="qr-box-${student.id}"></div>
+          <div class="a6-qr-box" id="qr-box-${student.id}" data-qr-id="${student.id}"></div>
         </div>
       </div>
       <div class="aruco-tr-number">${orderNumber}</div>
