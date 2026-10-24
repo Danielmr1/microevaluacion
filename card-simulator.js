@@ -960,6 +960,34 @@ function openSimQuestionPicker(slotIdx) {
     aiStatus.style.color = simCurrentRubric ? '#4ade80' : '#a5b4fc';
   }
 
+  const summaryBox = document.getElementById('sim-rubric-summary-box');
+  if (summaryBox) {
+    summaryBox.style.display = 'none';
+    summaryBox.innerHTML = '';
+  }
+
+  const btnSave = document.getElementById('sim-btn-save-custom');
+  if (btnSave) {
+    if (simState.branch === 'rama1') {
+      if (simCurrentRubric) {
+        btnSave.disabled = false;
+        btnSave.style.background = '#0284C7';
+        btnSave.style.cursor = 'pointer';
+        btnSave.innerHTML = '✓ Asignar a la Ficha';
+      } else {
+        btnSave.disabled = true;
+        btnSave.style.background = '#94a3b8';
+        btnSave.style.cursor = 'not-allowed';
+        btnSave.innerHTML = '🔒 Asignar a la Ficha (Genera la rúbrica primero)';
+      }
+    } else {
+      btnSave.disabled = false;
+      btnSave.style.background = '#0284C7';
+      btnSave.style.cursor = 'pointer';
+      btnSave.innerHTML = '💾 Asignar a la Ficha';
+    }
+  }
+
   setSimPickerTab('bank');
   closeMathPopovers();
   renderSimBankList();
@@ -1437,14 +1465,26 @@ async function handleSimAnalyzeAI() {
     return;
   }
 
+  const isMC = (simState.type === 'mc');
+  const optA = (document.getElementById('sim-opt-a')?.value || '').trim();
+  const optB = (document.getElementById('sim-opt-b')?.value || '').trim();
+  const optC = (document.getElementById('sim-opt-c')?.value || '').trim();
+  const optD = (document.getElementById('sim-opt-d')?.value || '').trim();
+
+  if (isMC && (!optA || !optB || !optC || !optD)) {
+    if (typeof showToast === 'function') showToast('⚠️ Completa las 4 alternativas (A, B, C, D) antes de generar la rúbrica.');
+    return;
+  }
+
   const g = gradoDelSalonSeleccionado();
   const btn = document.getElementById('sim-btn-analyze-ai');
   const statusEl = document.getElementById('sim-ai-status');
+  const summaryBox = document.getElementById('sim-rubric-summary-box');
 
   const origText = btn ? btn.textContent : '';
   if (btn) {
     btn.disabled = true;
-    btn.textContent = '⏳ Analizando con Gemini (~20 seg)...';
+    btn.textContent = '⏳ Generando rúbrica con Gemini (~20 seg)...';
   }
   if (statusEl) {
     statusEl.textContent = 'Calculando solución canónica y rúbrica...';
@@ -1459,11 +1499,166 @@ async function handleSimAnalyzeAI() {
         statusEl.textContent = '✅ Análisis completado con éxito';
         statusEl.style.color = '#4ade80';
       }
-      if (typeof showToast === 'function') showToast('✓ Rúbrica pedagógica generada por IA');
+
+      // Extraer solución canónica
+      let canon = '';
+      if (typeof res.rubrica === 'object' && res.rubrica !== null) {
+        canon = res.rubrica.solucion_canonica || res.rubrica.respuesta_canonica || res.rubrica.canonico || '';
+      }
+      canon = String(canon || '').trim();
+
+      // Comparación y corrección automática de la clave en alternativas
+      let keyNoticeHtml = '';
+      if (isMC) {
+        const opts = { A: optA, B: optB, C: optC, D: optD };
+        const currentSelected = document.querySelector('input[name="sim-new-correct"]:checked')?.value || 'A';
+
+        const matchesCanonical = (optVal, canonVal) => {
+          if (!optVal || !canonVal) return false;
+          const clean = s => String(s).toLowerCase().replace(/^(s\/|\$|s\/\.|\s+)/g, '').replace(/[^\w\d\.\,\/]/g, '').trim();
+          if (clean(optVal) === clean(canonVal)) return true;
+          const m1 = String(optVal).match(/-?\d+(?:[\.,]\d+)?/);
+          const m2 = String(canonVal).match(/-?\d+(?:[\.,]\d+)?/);
+          return !!(m1 && m2 && m1[0] === m2[0]);
+        };
+
+        let matchingKey = null;
+        for (const k of ['A', 'B', 'C', 'D']) {
+          if (matchesCanonical(opts[k], canon)) {
+            matchingKey = k;
+            break;
+          }
+        }
+
+        if (matchingKey) {
+          if (matchingKey !== currentSelected) {
+            const radTarget = document.getElementById('sim-rad-' + matchingKey.toLowerCase());
+            if (radTarget) radTarget.checked = true;
+            keyNoticeHtml = `
+              <div style="background:#ecfdf5; border:1.5px solid #10b981; border-radius:8px; padding:7px 10px; margin-top:8px; font-size:0.75rem; color:#065f46; font-weight:700;">
+                💡 Clave corregida automáticamente a <strong>${matchingKey}) ${escaparHtml(opts[matchingKey])}</strong> (coincidente con la solución canónica de la IA).
+              </div>
+            `;
+            if (typeof showToast === 'function') showToast(`💡 Clave ajustada a ${matchingKey}) ${opts[matchingKey]}`);
+          } else {
+            keyNoticeHtml = `
+              <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:6px 10px; margin-top:8px; font-size:0.74rem; color:#166534; font-weight:700;">
+                ✓ Clave correcta confirmada: <strong>${currentSelected}) ${escaparHtml(opts[currentSelected])}</strong> coincide con la solución canónica.
+              </div>
+            `;
+          }
+        } else {
+          keyNoticeHtml = `
+            <div style="background:#fef2f2; border:1.5px solid #ef4444; border-radius:8px; padding:7px 10px; margin-top:8px; font-size:0.75rem; color:#991b1b; font-weight:700;">
+              ⚠️ La solución deducida por la IA (<strong>${escaparHtml(canon)}</strong>) no coincide con ninguna de las opciones (A, B, C, D). Revisa tus alternativas o confirma la clave correcta.
+            </div>
+          `;
+          if (typeof showToast === 'function') showToast('⚠️ La solución de la IA no coincide con las opciones.');
+        }
+      }
+
+      // Guardar automáticamente la pregunta en el Banco
+      const activeCorrectKey = document.querySelector('input[name="sim-new-correct"]:checked')?.value || 'A';
+      const curOpts = { A: optA, B: optB, C: optC, D: optD };
+      const expAns = isMC ? (curOpts[activeCorrectKey] || canon) : (canon || prompt);
+
+      const savedBankQ = {
+        id: 'q_custom_' + Date.now(),
+        prompt: prompt,
+        options: curOpts,
+        correct: activeCorrectKey,
+        expectedAnswer: expAns,
+        rubric: simCurrentRubric,
+        hasRubric: true,
+        gradeStage: g?.stage || null,
+        gradeLevel: g?.level || null,
+        gradeText: g?.texto || null
+      };
+
+      if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+        ClassroomData.saveCustomEvaluation({
+          title: 'Pregunta con rúbrica IA',
+          type: isMC ? 'mc' : 'free',
+          questionCount: 1,
+          prompt: prompt,
+          expectedAnswer: expAns,
+          options: savedBankQ.options,
+          correct: activeCorrectKey,
+          rubric: simCurrentRubric,
+          questions: [savedBankQ],
+          gradeStage: g?.stage || null,
+          gradeLevel: g?.level || null,
+          gradeText: g?.texto || null
+        });
+      }
+
+      if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+        SupabaseClient.saveEvaluation({
+          prompt: prompt,
+          expectedAnswer: expAns,
+          title: 'Pregunta con rúbrica IA',
+          rubric: simCurrentRubric,
+          gradeStage: g?.stage,
+          gradeLevel: g?.level,
+          gradeText: g?.texto,
+          type: isMC ? 'mc' : 'free',
+          questionCount: 1,
+          options: savedBankQ.options,
+          correct: activeCorrectKey
+        }).catch(err => console.warn('[SupabaseClient] Sincronización en segundo plano:', err));
+      }
+
+      // Renderizar resumen pedagógico de la Rúbrica en la caja
+      if (summaryBox) {
+        const criterios = Array.isArray(res.rubrica.criterios) ? res.rubrica.criterios : [];
+        const criteriosHtml = criterios.map(c => `
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.73rem; padding:3px 0; border-bottom:1px dashed #e2e8f0;">
+            <span style="color:#334155;">• ${escaparHtml(c.desc || '')}</span>
+            <span style="font-weight:800; color:#0284c7; white-space:nowrap; margin-left:8px;">${c.peso || 1} pt</span>
+          </div>
+        `).join('');
+
+        summaryBox.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="font-size:0.75rem; font-weight:800; color:#15803d; display:flex; align-items:center; gap:5px;">
+              <span>✅ Pregunta guardada con éxito en el Banco</span>
+            </div>
+            <button type="button" onclick="window._viewCurrentDraftRubric()" style="background:#f5f3ff; border:1px solid #c4b5fd; color:#6d28d9; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer;">
+              👁️ Ver Rúbrica
+            </button>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:7px 10px; margin-bottom:6px;">
+            <div style="font-size:0.7rem; font-weight:800; color:#475569; text-transform:uppercase; margin-bottom:2px;">Respuesta Canónica (IA):</div>
+            <div style="font-size:0.86rem; font-weight:800; color:#0f172a;">${escaparHtml(canon || 'N/A')}</div>
+          </div>
+          ${criteriosHtml ? `
+            <div style="margin-top:6px;">
+              <div style="font-size:0.68rem; font-weight:800; color:#475569; text-transform:uppercase; margin-bottom:3px;">Criterios de Evaluación:</div>
+              ${criteriosHtml}
+            </div>
+          ` : ''}
+          ${keyNoticeHtml}
+        `;
+        summaryBox.style.display = 'block';
+      }
+
+      // Habilitar el botón principal inferior
+      const btnSave = document.getElementById('sim-btn-save-custom');
+      if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.style.background = '#0284C7';
+        btnSave.style.cursor = 'pointer';
+        btnSave.innerHTML = '✓ Asignar a la Ficha';
+        setTimeout(() => {
+          btnSave.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 80);
+      }
+
+      if (typeof showToast === 'function') showToast('✓ Rúbrica generada y pregunta guardada en el Banco');
     } else {
       const err = (res && res.error) || 'No se pudo generar la rúbrica.';
       if (statusEl) {
-        statusEl.textContent = '❌ Error al analizar con IA';
+        statusEl.textContent = '❌ Error al generar rúbrica con IA';
         statusEl.style.color = '#ef4444';
       }
       if (typeof showToast === 'function') showToast('⚠️ Error: ' + err);
@@ -1481,6 +1676,21 @@ async function handleSimAnalyzeAI() {
     }
   }
 }
+
+window._viewCurrentDraftRubric = () => {
+  if (!simCurrentRubric) return;
+  const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
+  const opts = {
+    A: (document.getElementById('sim-opt-a')?.value || '').trim(),
+    B: (document.getElementById('sim-opt-b')?.value || '').trim(),
+    C: (document.getElementById('sim-opt-c')?.value || '').trim(),
+    D: (document.getElementById('sim-opt-d')?.value || '').trim()
+  };
+  const correct = document.querySelector('input[name="sim-new-correct"]:checked')?.value || 'A';
+  if (typeof handleViewQuestionRubric === 'function') {
+    handleViewQuestionRubric({ prompt, options: opts, correct, rubric: simCurrentRubric });
+  }
+};
 
 function saveSimCustomQuestion() {
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();

@@ -46,7 +46,7 @@
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-manager.js?v=3.10.14"></script>
   <script src="question-bank.js?v=3.10.16"></script>
-  <script src="card-simulator.js?v=3.10.16"></script>
+  <script src="card-simulator.js?v=3.10.17"></script>
   <script src="card-exam-builder.js?v=3.10.9"></script>
   <script src="card-formativa.js?v=3.10.16"></script>
   <script src="card-focalizada.js?v=3.10.16"></script>
@@ -597,7 +597,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.16</span>
+              Versión <span id="user-profile-version-tag">v3.10.17</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2327,13 +2327,16 @@
             </p>
             <button type="button" id="sim-btn-analyze-ai" onclick="handleSimAnalyzeAI()"
               style="width:100%; background:linear-gradient(135deg, #0284C7, #0369A1); border:none; color:#FFFFFF; border-radius:8px; padding:10px; font-size:0.84rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(2,132,199,0.3);">
-              ✨ Analizar con IA (Gemini)
+              ✨ Generar Rúbrica
             </button>
+            <div id="sim-rubric-summary-box" style="display:none; margin-top:10px; padding:10px 12px; background:#FFFFFF; border:1.5px solid #86EFAC; border-radius:10px;">
+              <!-- Rellenado dinámicamente al generar rúbrica -->
+            </div>
           </div>
 
           <button type="button" id="sim-btn-save-custom" onclick="saveSimCustomQuestion()"
             style="width:100%; background:#0284C7; border:none; color:#fff; border-radius:10px; padding:12px; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(2,132,199,0.35); transition:all 0.15s;">
-            💾 Guardar y Asignar a la Ficha
+            💾 Asignar a la Ficha
           </button>
         </div>
       </div>
