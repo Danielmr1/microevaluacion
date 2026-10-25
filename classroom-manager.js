@@ -277,16 +277,16 @@ function openClassroomModal(classroomId) {
     if (isRoomLocked && sessionsInUse.length > 0) {
       const badgesHtml = sessionsInUse.map(sess => `
         <button type="button" class="classroom-session-badge" onclick="navigateToClassroomSession('${cls.id}', '${sess.id || ''}')"
-          style="background:#0284c7; color:#ffffff; border:none; border-radius:6px; padding:4px 11px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 3px rgba(2,132,199,0.3); transition:all 0.15s;"
+          style="background:#18202F; color:#ffffff; border:1px solid rgba(245, 184, 46, 0.45); border-radius:6px; padding:4px 11px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 3px rgba(0,0,0,0.15); transition:all 0.15s;"
           title="Ir a esta evaluación en curso">
-          ${escaparHtml(sess.title)} <span style="font-size:0.85rem;">→</span>
+          ${escaparHtml(sess.title)} <span style="font-size:0.85rem; color:#F5B82E;">→</span>
         </button>
       `).join(' ');
 
       bannerEl.innerHTML = `
-        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:0.82rem; color:#92400e; width:100%;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:0.80rem; color:#78350f; width:100%;">
           <span style="font-size:1.1rem; flex-shrink:0;">🔒</span>
-          <b style="color:#78350f; white-space:nowrap;">Salón en uso en:</b>
+          <b style="color:#2C2219; white-space:nowrap;">Salón en uso en:</b>
           <div style="display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap;">
             ${badgesHtml}
           </div>
@@ -294,6 +294,8 @@ function openClassroomModal(classroomId) {
       `;
       bannerEl.style.display = 'flex';
       bannerEl.style.alignItems = 'center';
+      bannerEl.style.background = 'rgba(245, 184, 46, 0.10)';
+      bannerEl.style.borderBottom = '1px solid rgba(245, 184, 46, 0.25)';
     } else {
       bannerEl.style.display = 'none';
       bannerEl.innerHTML = '';
@@ -341,18 +343,18 @@ function openClassroomModal(classroomId) {
     } else {
       if (emptyEl) emptyEl.style.display = 'none';
       listEl.innerHTML = students.map((s, idx) => `
-        <div class="mgr-student-item ${isRoomLocked ? 'mgr-student-card-locked' : ''}" style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #EAE3D6; border-left:3.5px solid #00B4D8; border-radius:10px; padding:10px 14px; font-size:0.78rem; gap:10px; box-shadow:0 1px 3px rgba(44,34,25,0.05); transition:all 0.15s;">
+        <div class="mgr-student-item ${isRoomLocked ? 'mgr-student-card-locked' : ''}" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255, 255, 255, 0.90); border:1px solid rgba(245, 184, 46, 0.30); border-radius:10px; padding:11px 15px; font-size:0.78rem; gap:10px; box-shadow:0 1px 4px rgba(19, 23, 34, 0.04); transition:all 0.15s;">
           <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
             <span style="color:#8C7D6B; font-weight:800; font-size:0.74rem; width:24px; flex-shrink:0;">#${idx + 1}</span>
             <div style="display:flex; flex-direction:column; min-width:0; flex:1;">
-              <span style="color:#1E1B18; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.88rem;">${escaparHtml(s.name)}</span>
+              <span style="color:#181512; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.88rem;">${escaparHtml(s.name)}</span>
               <div style="display:flex; align-items:center; gap:8px; margin-top:3px; flex-wrap:nowrap; min-width:0;">
-                <span style="display:inline-flex; align-items:center; gap:5px; color:#0369A1; font-size:0.73rem; font-weight:800; background:#E0F2FE; border:1px solid #BAE6FD; padding:2px 8px; border-radius:5px; width:fit-content; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0;">
+                <span style="display:inline-flex; align-items:center; gap:5px; color:#0284C7; font-size:0.73rem; font-weight:800; background:rgba(41,182,246,0.12); border:1px solid rgba(41,182,246,0.25); padding:2px 8px; border-radius:5px; width:fit-content; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0;">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   ${escaparHtml(s.shortName || generateShortName(s.name))}
                 </span>
                 ${isRoomLocked ? `
-                <span class="mgr-student-lock-badge-mobile" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:2px 8px; font-size:0.72rem; font-weight:700; align-items:center; gap:4px; flex-shrink:0; white-space:nowrap;" title="Bloqueado: salón en sesión">
+                <span class="mgr-student-lock-badge-mobile" style="background:rgba(245, 184, 46, 0.15); border:1px solid rgba(245, 184, 46, 0.35); color:#F5B82E; border-radius:6px; padding:2px 8px; font-size:0.72rem; font-weight:800; align-items:center; gap:4px; flex-shrink:0; white-space:nowrap;" title="Bloqueado: salón en sesión">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   En sesión
                 </span>` : ''}
@@ -361,21 +363,22 @@ function openClassroomModal(classroomId) {
           </div>
           <div class="mgr-student-actions" style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
             ${isRoomLocked ? `
-            <span class="mgr-student-lock-badge-desktop" style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; border-radius:6px; padding:5px 10px; font-size:0.72rem; font-weight:700; align-items:center; gap:5px;" title="Bloqueado: salón en sesión">
+            <span class="mgr-student-lock-badge-desktop" style="background:rgba(245, 184, 46, 0.15); border:1px solid rgba(245, 184, 46, 0.35); color:#F5B82E; border-radius:6px; padding:5px 10px; font-size:0.72rem; font-weight:800; align-items:center; gap:5px;" title="Bloqueado: salón en sesión">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               En sesión
             </span>` : `
             <button type="button" onclick="openEditStudentModal('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', '${escaparHtml(s.shortName || '').replace(/'/g, "\\'")}')"
               title="Editar nombre"
-              style="background:#E0F2FE; border:1.5px solid #38BDF8; color:#0369A1; border-radius:6px; padding:5px 11px; font-size:0.75rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 2px rgba(2,132,199,0.15); transition:all 0.15s;">
+              style="background:rgba(41, 182, 246, 0.10); border:1px solid rgba(41, 182, 246, 0.30); color:#0284C7; border-radius:6px; padding:5px 11px; font-size:0.75rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 1px 2px rgba(2,132,199,0.10); transition:all 0.15s;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Editar
             </button>
             <button type="button" onclick="handleDeleteStudent('${cls.id}', '${s.id}', '${escaparHtml(s.name).replace(/'/g, "\\'")}', this)"
               title="Eliminar este alumno del salón"
-              style="background:#FFF1F2; border:1.5px solid #FDA4AF; color:#E11D48; border-radius:6px; padding:5px 9px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            </button>`}
+              style="background:rgba(254, 242, 242, 0.8); border:1px solid #FECDD3; color:#E11D48; border-radius:6px; padding:5px 9px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; transition:all 0.15s;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+            `}
           </div>
         </div>
       `).join('');
