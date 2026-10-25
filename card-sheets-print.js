@@ -116,19 +116,19 @@ function renderAllPrintPages(classId, evaluation) {
           ${sTL ? createA6Card(sTL, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
           <div class="quad-vcut">
             <div class="quad-vcut-line"></div>
-            <span class="quad-vcut-text">✂️</span>
+            <span class="quad-vcut-text"></span>
             <div class="quad-vcut-line"></div>
           </div>
           ${sTR ? createA6Card(sTR, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
         </div>
         <div class="quad-hcut">
-          <span>✂️ cortar por aquí ✂️</span>
+          <span>cortar por aquí</span>
         </div>
         <div class="quad-row">
           ${sBL ? createA6Card(sBL, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
           <div class="quad-vcut">
             <div class="quad-vcut-line"></div>
-            <span class="quad-vcut-text">✂️</span>
+            <span class="quad-vcut-text"></span>
             <div class="quad-vcut-line"></div>
           </div>
           ${sBR ? createA6Card(sBR, classroom, evaluation) : '<div class="card-a6-empty"></div>'}
@@ -176,7 +176,7 @@ function renderAllPrintPages(classId, evaluation) {
         ${createA5VerticalR3Card(sLeft, classroom, evaluation)}
         <div class="dual-vcut">
           <div class="dual-vcut-line"></div>
-          <span class="dual-vcut-text">✂️ cortar por aquí</span>
+          <span class="dual-vcut-text">cortar por aquí</span>
           <div class="dual-vcut-line"></div>
         </div>
         ${sRight ? createA5VerticalR3Card(sRight, classroom, evaluation) : '<div class="card-a5-v-empty"></div>'}
@@ -224,7 +224,7 @@ function renderAllPrintPages(classId, evaluation) {
         ${createA5VerticalCard(sLeft, classroom, evaluation)}
         <div class="dual-vcut">
           <div class="dual-vcut-line"></div>
-          <span class="dual-vcut-text">✂️ cortar por aquí</span>
+          <span class="dual-vcut-text">cortar por aquí</span>
           <div class="dual-vcut-line"></div>
         </div>
         ${sRight ? createA5VerticalCard(sRight, classroom, evaluation) : '<div class="card-a5-v-empty"></div>'}
@@ -280,7 +280,7 @@ function renderAllPrintPages(classId, evaluation) {
     sheetEl.innerHTML = `
       ${createA5Card(sTop, classroom, evaluation)}
       <div class="cut-line">
-        <span>✂️ cortar por aquí ✂️</span>
+        <span>cortar por aquí</span>
       </div>
       ${sBot ? createA5Card(sBot, classroom, evaluation) : '<div class="card-a5-placeholder"></div>'}
     `;

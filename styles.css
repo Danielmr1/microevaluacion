@@ -1004,8 +1004,8 @@
     .sheet-a4 {
       background: white;
       width: 188mm;
-      height: 275mm;
-      padding: 2mm 0;
+      height: 285mm;
+      padding: 11mm 0 0 0;
       margin: 6mm auto;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
@@ -4398,11 +4398,11 @@
       .sheet-a4-v-single {
         box-shadow: none !important;
         width: 188mm !important;
-        height: 275mm !important;
+        height: 285mm !important;
         min-height: 0 !important;
-        max-height: 275mm !important;
+        max-height: 285mm !important;
         margin: 0 auto !important;
-        padding: 2mm 0 !important;
+        padding: 11mm 0 0 0 !important;
         overflow: hidden !important;
         page-break-after: always !important;
         break-after: page !important;
@@ -4410,12 +4410,13 @@
         break-inside: avoid !important;
       }
       .sheet-a4-quad-v {
-        padding: 3mm 2mm !important;
+        padding: 11mm 2mm 3mm 2mm !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
       }
       .sheet-a4-v-single {
+        padding: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;

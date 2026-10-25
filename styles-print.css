@@ -441,8 +441,8 @@
     .sheet-a4 {
       background: white;
       width: 188mm;
-      height: 275mm;
-      padding: 2mm 0;
+      height: 285mm;
+      padding: 11mm 0 0 0;
       margin: 6mm auto;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
