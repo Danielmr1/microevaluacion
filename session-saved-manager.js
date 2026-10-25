@@ -81,7 +81,11 @@
         const maxSess = res.max || (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
         showToast(`✓ Sesión guardada con éxito (${res.count}/${maxSess})`);
         if (btnSave) {
-          btnSave.style.background = '#059669';
+          btnSave.style.background = '#EFECE3';
+          btnSave.style.color = '#0369A1';
+          btnSave.style.borderColor = 'rgba(41, 182, 246, 0.35)';
+          btnSave.style.boxShadow = 'none';
+          btnSave.classList.add('is-saved');
           btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada (${res.count}/${maxSess})`;
         }
         if (typeof updateDiscardOrDeleteButtonState === 'function') {

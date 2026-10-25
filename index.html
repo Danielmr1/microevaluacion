@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.51</span>
+              Versión <span id="user-profile-version-tag">v3.10.52</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1372,16 +1372,16 @@
           <div class="summary-sidebar-panel">
 
             <!-- Cabecera unificada: Salón de Clases + Grado + Chip de Modo de Corrección -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding-bottom:12px; border-bottom:1.5px solid rgba(220, 214, 202, 0.7);">
               <div>
-                <span style="font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:1px;">Salón de Clases</span>
-                <span id="summary-classroom-info" style="font-size:1.02rem; font-weight:800; color:#0284c7;"></span>
+                <span style="font-size:0.65rem; font-weight:700; color:#786C5E; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:1px;">Salón de Clases</span>
+                <span id="summary-classroom-info" style="font-size:1.02rem; font-weight:800; color:#131722;"></span>
               </div>
               <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
-                <span id="summary-grade-badge" style="font-size:0.72rem; font-weight:800; color:#15803d; background:#dcfce7; padding:3px 10px; border-radius:6px; border:1px solid #86efac;"></span>
-                <span id="summary-header-mode-container" style="display:inline-flex; align-items:center; gap:5px; font-size:0.7rem; font-weight:700; color:#475569; background:#f1f5f9; padding:2px 8px; border-radius:6px;">
-                  <span id="summary-header-mode-icon" style="display:inline-flex; align-items:center; color:#0284c7;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>
-                  <span id="summary-header-mode-title">OMR</span>
+                <span id="summary-grade-badge" style="font-size:0.72rem; font-weight:800; color:#0284C7; background:rgba(41, 182, 246, 0.15); padding:3px 10px; border-radius:6px; border:1px solid rgba(41, 182, 246, 0.35);"></span>
+                <span id="summary-header-mode-container" style="display:inline-flex; align-items:center; gap:5px; font-size:0.7rem; font-weight:700; color:#92400E; background:rgba(245, 184, 46, 0.16); padding:2px 8px; border-radius:6px; border:1px solid rgba(245, 184, 46, 0.40);">
+                  <span id="summary-header-mode-icon" style="display:inline-flex; align-items:center; color:#B45309;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>
+                  <span id="summary-header-mode-title" style="color:#92400E; font-weight:800;">OMR</span>
                 </span>
                 <span id="summary-header-mode-subtitle" style="display:none;"></span>
               </div>
@@ -1390,12 +1390,12 @@
             <!-- Contenedor dinámico de Pregunta(s) / Pauta de Claves -->
             <div id="summary-questions-container" style="display:flex; flex-direction:column; gap:8px;">
               <div style="margin-bottom:6px;">
-                <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Consigna</span>
-                <div id="summary-prompt" style="font-size:0.88rem; font-weight:600; color:#1e293b; line-height:1.4;"></div>
+                <span style="font-size:0.68rem; font-weight:700; color:#786C5E; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Consigna</span>
+                <div id="summary-prompt" style="font-size:0.88rem; font-weight:600; color:#181512; line-height:1.4;"></div>
               </div>
               <div style="margin-bottom:6px;">
-                <span style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Respuesta esperada</span>
-                <div id="summary-answer" style="font-size:0.88rem; font-weight:800; color:#15803d;"></div>
+                <span style="font-size:0.68rem; font-weight:700; color:#786C5E; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Respuesta esperada</span>
+                <div id="summary-answer" style="font-size:0.88rem; font-weight:800; color:#0284C7;"></div>
               </div>
               <div id="summary-rubric" style="padding:8px 12px; border-radius:8px; font-size:0.78rem; font-weight:700;"></div>
             </div>

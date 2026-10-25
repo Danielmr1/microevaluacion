@@ -242,7 +242,7 @@
         const clsInfo = document.getElementById('summary-classroom-info');
         if (clsInfo) {
           clsInfo.textContent = `${cls.name} (${cls.students.length} alumnos)`;
-          clsInfo.style.color = color;
+          clsInfo.style.color = '#131722';
         }
         const gradeText = ClassroomData.getClassroomGrade(wizardClassroomId);
         const gradeBadge = document.getElementById('summary-grade-badge');
@@ -250,6 +250,11 @@
           if (gradeText) {
             gradeBadge.textContent = gradeText;
             gradeBadge.style.display = 'inline-block';
+            gradeBadge.style.color = '#0284C7';
+            gradeBadge.style.background = 'rgba(41, 182, 246, 0.15)';
+            gradeBadge.style.border = '1px solid rgba(41, 182, 246, 0.35)';
+            gradeBadge.style.borderRadius = '6px';
+            gradeBadge.style.padding = '3px 10px';
           } else {
             gradeBadge.style.display = 'none';
           }
@@ -287,22 +292,22 @@
           } else if (isBranch2) {
             // RAMA 2: Visualización de Focalizada (1 a 3 preguntas)
             qContainer.innerHTML = (wizardEval.questions || []).map((q, idx) => `
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; margin-bottom:6px;">
+              <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:10px 12px; margin-bottom:6px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <strong style="color:#047857; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta ${idx + 1}</strong>
+                  <strong style="color:#0284C7; font-size:0.78rem; font-weight:800; text-transform:uppercase;">📌 Pregunta ${idx + 1}</strong>
                   ${isOMR ? `
-                    <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${q.correct}</span>
+                    <span style="background:rgba(41, 182, 246, 0.14); color:#0284C7; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:5px; border:1px solid rgba(41, 182, 246, 0.35);">Clave: ${q.correct}</span>
                   ` : `
-                    <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Rpta: ${escaparHtml(q.expectedAnswer || '')}</span>
+                    <span style="background:rgba(41, 182, 246, 0.14); color:#0284C7; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:5px; border:1px solid rgba(41, 182, 246, 0.35);">Rpta: ${escaparHtml(q.expectedAnswer || '')}</span>
                   `}
                 </div>
-                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(q.prompt)}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#181512; margin-bottom:6px; line-height:1.35;">${escaparHtml(q.prompt)}</div>
                 ${isOMR && q.options ? `
-                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
-                    <div style="${q.correct === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q.options.A || '—')}</div>
-                    <div style="${q.correct === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q.options.B || '—')}</div>
-                    <div style="${q.correct === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q.options.C || '—')}</div>
-                    <div style="${q.correct === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q.options.D || '—')}</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#57534E;">
+                    <div style="${q.correct === 'A' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q.options.A || '—')}</div>
+                    <div style="${q.correct === 'B' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q.options.B || '—')}</div>
+                    <div style="${q.correct === 'C' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q.options.C || '—')}</div>
+                    <div style="${q.correct === 'D' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q.options.D || '—')}</div>
                   </div>
                 ` : ''}
               </div>
@@ -311,31 +316,31 @@
             const q1 = wizardEval.questions[0];
             const q2 = wizardEval.questions[1];
             qContainer.innerHTML = `
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; margin-bottom:6px;">
+              <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:10px 12px; margin-bottom:6px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <strong style="color:#0284c7; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta 1</strong>
-                  <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${q1.correct}</span>
+                  <strong style="color:#0284C7; font-size:0.78rem; font-weight:800; text-transform:uppercase;">📌 Pregunta 1</strong>
+                  <span style="background:rgba(41, 182, 246, 0.14); color:#0284C7; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:5px; border:1px solid rgba(41, 182, 246, 0.35);">Clave: ${q1.correct}</span>
                 </div>
-                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(q1.prompt)}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
-                  <div style="${q1.correct === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q1.options?.A || '—')}</div>
-                  <div style="${q1.correct === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q1.options?.B || '—')}</div>
-                  <div style="${q1.correct === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q1.options?.C || '—')}</div>
-                  <div style="${q1.correct === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q1.options?.D || '—')}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#181512; margin-bottom:6px; line-height:1.35;">${escaparHtml(q1.prompt)}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#57534E;">
+                  <div style="${q1.correct === 'A' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q1.options?.A || '—')}</div>
+                  <div style="${q1.correct === 'B' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q1.options?.B || '—')}</div>
+                  <div style="${q1.correct === 'C' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q1.options?.C || '—')}</div>
+                  <div style="${q1.correct === 'D' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q1.options?.D || '—')}</div>
                 </div>
               </div>
 
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px;">
+              <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:10px 12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <strong style="color:#6366f1; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta 2</strong>
-                  <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${q2.correct}</span>
+                  <strong style="color:#0284C7; font-size:0.78rem; font-weight:800; text-transform:uppercase;">📌 Pregunta 2</strong>
+                  <span style="background:rgba(41, 182, 246, 0.14); color:#0284C7; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:5px; border:1px solid rgba(41, 182, 246, 0.35);">Clave: ${q2.correct}</span>
                 </div>
-                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(q2.prompt)}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
-                  <div style="${q2.correct === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q2.options?.A || '—')}</div>
-                  <div style="${q2.correct === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q2.options?.B || '—')}</div>
-                  <div style="${q2.correct === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q2.options?.C || '—')}</div>
-                  <div style="${q2.correct === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q2.options?.D || '—')}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#181512; margin-bottom:6px; line-height:1.35;">${escaparHtml(q2.prompt)}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#57534E;">
+                  <div style="${q2.correct === 'A' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(q2.options?.A || '—')}</div>
+                  <div style="${q2.correct === 'B' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(q2.options?.B || '—')}</div>
+                  <div style="${q2.correct === 'C' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(q2.options?.C || '—')}</div>
+                  <div style="${q2.correct === 'D' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(q2.options?.D || '—')}</div>
                 </div>
               </div>
             `;
@@ -344,17 +349,17 @@
             const correctKey = q.correct || (wizardEval.expectedAnswer ? wizardEval.expectedAnswer.replace(/[^ABCD]/g, '') : 'A');
             const opts = q.options || wizardEval.options || {};
             qContainer.innerHTML = `
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px;">
+              <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:10px 12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <strong style="color:#0284c7; font-size:0.78rem; text-transform:uppercase;">📌 Pregunta</strong>
-                  <span style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid #86efac;">Clave: ${correctKey}</span>
+                  <strong style="color:#0284C7; font-size:0.78rem; font-weight:800; text-transform:uppercase;">📌 Pregunta</strong>
+                  <span style="background:rgba(41, 182, 246, 0.14); color:#0284C7; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:5px; border:1px solid rgba(41, 182, 246, 0.35);">Clave: ${correctKey}</span>
                 </div>
-                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; margin-bottom:6px; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#475569;">
-                  <div style="${correctKey === 'A' ? 'color:#15803d; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(opts.A || '—')}</div>
-                  <div style="${correctKey === 'B' ? 'color:#15803d; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(opts.B || '—')}</div>
-                  <div style="${correctKey === 'C' ? 'color:#15803d; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(opts.C || '—')}</div>
-                  <div style="${correctKey === 'D' ? 'color:#15803d; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(opts.D || '—')}</div>
+                <div style="font-size:0.86rem; font-weight:600; color:#181512; margin-bottom:6px; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.74rem; color:#57534E;">
+                  <div style="${correctKey === 'A' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>A)</strong> ${escaparHtml(opts.A || '—')}</div>
+                  <div style="${correctKey === 'B' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>B)</strong> ${escaparHtml(opts.B || '—')}</div>
+                  <div style="${correctKey === 'C' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>C)</strong> ${escaparHtml(opts.C || '—')}</div>
+                  <div style="${correctKey === 'D' ? 'color:#0284C7; font-weight:800;' : ''}"><strong>D)</strong> ${escaparHtml(opts.D || '—')}</div>
                 </div>
               </div>
             `;
@@ -363,14 +368,14 @@
             const tiene = !!(wizardEval.rubric);
             qContainer.innerHTML = `
               <div style="margin-bottom:6px;">
-                <span style="font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Consigna</span>
-                <div style="font-size:0.86rem; font-weight:600; color:#1e293b; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
+                <span style="font-size:0.65rem; font-weight:700; color:#786C5E; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Consigna</span>
+                <div style="font-size:0.86rem; font-weight:600; color:#181512; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
               </div>
               <div style="margin-bottom:6px;">
-                <span style="font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Respuesta esperada</span>
-                <div style="font-size:0.86rem; font-weight:800; color:#15803d;">${escaparHtml(wizardEval.expectedAnswer)}</div>
+                <span style="font-size:0.65rem; font-weight:700; color:#786C5E; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Respuesta esperada</span>
+                <div style="font-size:0.86rem; font-weight:800; color:#0284C7;">${escaparHtml(wizardEval.expectedAnswer)}</div>
               </div>
-              <div style="padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; ${tiene ? 'color:#15803d; background:#dcfce7; border:1px solid #86efac;' : 'color:#b45309; background:#fef3c7; border:1px solid #fcd34d;'}">
+              <div style="padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; ${tiene ? 'color:#0284C7; background:rgba(41, 182, 246, 0.14); border:1px solid rgba(41, 182, 246, 0.35);' : 'color:#92400E; background:rgba(245, 184, 46, 0.16); border:1px solid rgba(245, 184, 46, 0.40);'}">
                 ${tiene ? '✅ Rúbrica lista con IA' : '⚠️ Sin rúbrica'}
               </div>
             `;
@@ -398,52 +403,74 @@
         }
 
         // Configuración de corrección seleccionada (ahora mostrada arriba en el encabezado)
+        const modeContainer = document.getElementById('summary-header-mode-container');
         const modeIcon = document.getElementById('summary-header-mode-icon');
         const modeTitle = document.getElementById('summary-header-mode-title');
         const modeSubtitle = document.getElementById('summary-header-mode-subtitle');
         const configBadge = document.getElementById('summary-config-badge');
         if (configBadge) configBadge.style.display = 'none';
 
+        if (modeContainer) {
+          modeContainer.style.background = 'rgba(245, 184, 46, 0.16)';
+          modeContainer.style.color = '#92400E';
+          modeContainer.style.border = '1px solid rgba(245, 184, 46, 0.40)';
+        }
+
         if (isBranch3) {
-          if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>';
+          if (modeIcon) {
+            modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>';
+            modeIcon.style.color = '#B45309';
+          }
           if (modeTitle) {
             modeTitle.textContent = 'OMR';
-            modeTitle.style.color = '#0284c7';
+            modeTitle.style.color = '#92400E';
             modeTitle.title = 'Escaneo rápido de alternativas marcadas.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isBranch2) {
-          if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+          if (modeIcon) {
+            modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+            modeIcon.style.color = '#B45309';
+          }
           if (modeTitle) {
             modeTitle.textContent = 'Directa';
-            modeTitle.style.color = '#059669';
+            modeTitle.style.color = '#92400E';
             modeTitle.title = 'Corrección directa de respuesta sin evaluar procedimiento.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isOMR) {
           const currentMode = (session && session.correctionMode) || 'quick';
           if (currentMode === 'quick') {
-            if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+            if (modeIcon) {
+              modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+              modeIcon.style.color = '#B45309';
+            }
             if (modeTitle) {
               modeTitle.textContent = 'OMR Rápido';
-              modeTitle.style.color = '#0284c7';
+              modeTitle.style.color = '#92400E';
               modeTitle.title = 'Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.';
             }
           } else {
-            if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>';
+            if (modeIcon) {
+              modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>';
+              modeIcon.style.color = '#B45309';
+            }
             if (modeTitle) {
               modeTitle.textContent = 'Formativa IA';
-              modeTitle.style.color = '#4f46e5';
+              modeTitle.style.color = '#92400E';
               modeTitle.title = 'Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.';
             }
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else {
           // Respuesta Libre tradicional
-          if (modeIcon) modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
+          if (modeIcon) {
+            modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
+            modeIcon.style.color = '#B45309';
+          }
           if (modeTitle) {
             modeTitle.textContent = 'Respuesta Libre';
-            modeTitle.style.color = '#059669';
+            modeTitle.style.color = '#92400E';
             modeTitle.title = 'Lectura de cuadrícula y respuesta manuscrita evaluadas mediante IA y rúbrica formativa.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
@@ -761,9 +788,11 @@
 
         if (btnSave) {
           btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg><span>Guardada</span>`;
-          btnSave.style.background = '#059669';
-          btnSave.style.color = '#ffffff';
-          btnSave.style.borderColor = '#047857';
+          btnSave.style.background = '#EFECE3';
+          btnSave.style.color = '#0369A1';
+          btnSave.style.borderColor = 'rgba(41, 182, 246, 0.35)';
+          btnSave.style.boxShadow = 'none';
+          btnSave.classList.add('is-saved');
         }
       } else {
         btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Descartar</span>`;
@@ -774,9 +803,11 @@
 
         if (btnSave) {
           btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span>Guardar</span>`;
-          btnSave.style.background = '';
-          btnSave.style.color = '';
-          btnSave.style.borderColor = '';
+          btnSave.style.background = '#FFFBEB';
+          btnSave.style.color = '#92400E';
+          btnSave.style.borderColor = '#F5B82E';
+          btnSave.style.boxShadow = '0 1px 3px rgba(245, 184, 46, 0.20)';
+          btnSave.classList.remove('is-saved');
         }
       }
     }
