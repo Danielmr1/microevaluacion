@@ -457,7 +457,21 @@ function renderBankManagerQuestions() {
 /**
  * Muestra la rúbrica pedagógica completa y análisis de IA para una pregunta del banco.
  */
-function handleViewQuestionRubric(q) {
+function handleViewQuestionRubric(questionOrId) {
+  if (!questionOrId) return;
+  let q = questionOrId;
+  if (typeof questionOrId === 'string') {
+    if (typeof ClassroomData !== 'undefined') {
+      if (typeof ClassroomData.getAllIndividualMCQuestions === 'function') {
+        const all = ClassroomData.getAllIndividualMCQuestions();
+        q = all ? all.find(item => String(item.id) === String(questionOrId)) : null;
+      }
+      if (!q && typeof ClassroomData.getIndividualMCQuestions === 'function') {
+        const all = ClassroomData.getIndividualMCQuestions(bankManagerActiveStage, bankManagerActiveGrade);
+        q = all ? all.find(item => String(item.id) === String(questionOrId)) : null;
+      }
+    }
+  }
   if (!q) return;
 
   // Buscar la rúbrica asociada en la pregunta o en ClassroomData
@@ -474,18 +488,18 @@ function handleViewQuestionRubric(q) {
 
   if (!r) {
     showAIDialog({
-      icon: 'ℹ️',
+      icon: `<div style="width:30px; height:30px; border-radius:50%; background:rgba(2, 132, 199, 0.12); border:1.5px solid rgba(2, 132, 199, 0.35); display:inline-flex; align-items:center; justify-content:center; color:#0284C7;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>`,
       title: 'Sin Rúbrica Registrada',
       bodyHtml: `
         <div style="text-align:center; padding:18px 8px;">
           <div style="font-size:2.2rem; margin-bottom:8px;">📝</div>
-          <div style="font-size:0.95rem; font-weight:800; color:#1e293b; margin-bottom:6px;">Esta pregunta no tiene rúbrica cargada aún</div>
-          <div style="font-size:0.78rem; color:#64748b; line-height:1.45; max-width:400px; margin:0 auto;">
+          <div style="font-size:0.95rem; font-weight:800; color:#181512; margin-bottom:6px;">Esta pregunta no tiene rúbrica cargada aún</div>
+          <div style="font-size:0.78rem; color:#64748B; line-height:1.45; max-width:400px; margin:0 auto;">
             Las preguntas creadas con el asistente incluyen automáticamente su análisis canónico, criterios de evaluación y errores previsibles de IA.
           </div>
         </div>
       `,
-      buttons: [{ label: 'Entendido', style: 'padding:8px 16px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#0284c7; color:#fff;', onClick: () => {} }]
+      buttons: []
     });
     return;
   }
@@ -504,14 +518,14 @@ function handleViewQuestionRubric(q) {
   let optsHtml = '';
   if (q.options) {
     optsHtml = `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; font-size:0.75rem;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; font-size:0.78rem;">
         ${['A', 'B', 'C', 'D'].map(l => {
           const isCorrect = (q.correct || 'A').toUpperCase() === l;
           const valSafe = escaparHtml(q.options[l] || '');
           const val = (typeof formatMathHtml === 'function') ? formatMathHtml(valSafe) : valSafe;
           return `
-            <div style="padding:5px 8px; border-radius:6px; ${isCorrect ? 'background:#dcfce7; color:#15803d; font-weight:800; border:1.5px solid #86efac;' : 'background:#ffffff; color:#475569; border:1px solid #e2e8f0;'}">
-              ${l}) ${val} ${isCorrect ? '✓ (Clave Correcta)' : ''}
+            <div style="padding:7px 10px; border-radius:8px; ${isCorrect ? 'background:#ECFDF5; color:#065F46; font-weight:800; border:1.5px solid #10B981; box-shadow:0 1px 3px rgba(16,185,129,0.15);' : 'background:#FAF8F5; color:#44403C; border:1.2px solid #E2DCD2;'}">
+              <span style="font-weight:800; ${isCorrect ? 'color:#047857;' : 'color:#78716C;'}">${l})</span> ${val} ${isCorrect ? '<span style="color:#047857; font-weight:800; margin-left:4px;">✓ (Clave Correcta)</span>' : ''}
             </div>
           `;
         }).join('')}
@@ -520,9 +534,12 @@ function handleViewQuestionRubric(q) {
   }
 
   const questionBlock = `
-    <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:14px;">
-      <div style="font-size:0.68rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Enunciado del Problema</div>
-      <div style="font-size:0.88rem; color:#0f172a; font-weight:600; line-height:1.45;">${promptText}</div>
+    <div style="background:rgba(255, 255, 255, 0.90); border:1.5px solid #DCD8CE; border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 6px rgba(43,33,24,0.03);">
+      <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+        <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
+        Enunciado del Problema
+      </div>
+      <div style="font-size:0.92rem; color:#181512; font-weight:700; line-height:1.5;">${promptText}</div>
       ${optsHtml}
     </div>
   `;
@@ -531,25 +548,29 @@ function handleViewQuestionRubric(q) {
 
   if (typeof r === 'object' && r !== null) {
     const canonica = r.respuesta_canonica || r.solucion || r.canonical_answer || (q.options && q.correct ? q.options[q.correct] : '');
-    const unidad = r.unidad ? `<div style="text-align:right;"><span style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; display:block;">Unidad</span><strong style="color:#0284c7; font-size:0.85rem;">${escaparHtml(r.unidad)}</strong></div>` : '';
+    const unidad = r.unidad ? `<div style="text-align:right;"><span style="font-size:0.65rem; color:#64748B; font-weight:800; text-transform:uppercase; display:block;">Unidad</span><strong style="color:#0284C7; font-size:0.88rem; font-weight:900;">${escaparHtml(r.unidad)}</strong></div>` : '';
 
-    // Criterios de evaluación
+    // Criterios de evaluación (Hero Turquesa Irisado)
     let criteriosHtml = '';
     if (Array.isArray(r.criterios) && r.criterios.length > 0) {
       criteriosHtml = `
         <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
-            Criterios de Evaluación ${r.puntaje_total ? `· Total ${escaparHtml(String(r.puntaje_total))} pt` : ''}
+          <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+            <span style="display:flex; align-items:center; gap:6px;">
+              <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
+              Criterios de Evaluación
+            </span>
+            ${r.puntaje_total ? `<span style="background:rgba(2,132,199,0.12); color:#0284C7; border:1px solid rgba(2,132,199,0.30); border-radius:6px; padding:2px 8px; font-weight:900; font-size:0.68rem;">Total ${escaparHtml(String(r.puntaje_total))} pt</span>` : ''}
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; flex-direction:column; gap:8px;">
             ${r.criterios.map(c => `
-              <div style="display:flex; gap:8px; align-items:flex-start; padding:8px 10px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px;">
-                <span style="flex:0 0 auto; background:#e0f2fe; color:#0369a1; border-radius:6px; padding:2px 7px; font-size:0.7rem; font-weight:800; white-space:nowrap;">
+              <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:#FFFFFF; border:1.2px solid #E2DCD2; border-radius:8px; box-shadow:0 1px 3px rgba(43,33,24,0.03);">
+                <span style="flex:0 0 auto; background:#0284C7; color:#FFFFFF; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:900; white-space:nowrap; box-shadow:0 2px 4px rgba(2,132,199,0.25);">
                   ${escaparHtml(String(c.peso || '1'))} pt
                 </span>
                 <span style="flex:1; min-width:0;">
-                  <div style="font-size:0.78rem; font-weight:700; color:#0f172a;">${escaparHtml(c.nombre || '')}</div>
-                  <div style="font-size:0.72rem; color:#475569; line-height:1.4;">${escaparHtml(c.que_se_espera || c.descripcion || '')}</div>
+                  <div style="font-size:0.80rem; font-weight:800; color:#181512; margin-bottom:2px;">${escaparHtml(c.nombre || '')}</div>
+                  <div style="font-size:0.74rem; color:#57534E; line-height:1.45;">${escaparHtml(c.que_se_espera || c.descripcion || '')}</div>
                 </span>
               </div>
             `).join('')}
@@ -562,12 +583,16 @@ function handleViewQuestionRubric(q) {
     let pasosHtml = '';
     if (Array.isArray(r.solucion_pasos) && r.solucion_pasos.length > 0) {
       pasosHtml = `
-        <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Procedimiento de Resolución</div>
-          <div style="display:flex; flex-direction:column; gap:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+        <div style="margin-top:14px;">
+          <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
+            Procedimiento de Resolución
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px; background:#FAF8F5; border:1.2px solid #E2DCD2; border-radius:10px; padding:12px 14px;">
             ${r.solucion_pasos.map((p, i) => `
-              <div style="font-size:0.78rem; color:#334155; line-height:1.45;">
-                <span style="color:#7c3aed; font-weight:800;">${i + 1}.</span> ${escaparHtml(p)}
+              <div style="font-size:0.78rem; color:#2B2118; line-height:1.45; display:flex; gap:6px; align-items:baseline;">
+                <span style="color:#0284C7; font-weight:900; flex-shrink:0;">${i + 1}.</span>
+                <span>${escaparHtml(p)}</span>
               </div>
             `).join('')}
           </div>
@@ -575,9 +600,12 @@ function handleViewQuestionRubric(q) {
       `;
     } else if (r.procedimiento_esperado) {
       pasosHtml = `
-        <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Procedimiento Esperado</div>
-          <div style="font-size:0.78rem; color:#334155; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; line-height:1.45;">
+        <div style="margin-top:14px;">
+          <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
+            Procedimiento Esperado
+          </div>
+          <div style="font-size:0.78rem; color:#2B2118; background:#FAF8F5; border:1.2px solid #E2DCD2; border-radius:10px; padding:12px 14px; line-height:1.45;">
             ${escaparHtml(r.procedimiento_esperado)}
           </div>
         </div>
@@ -588,13 +616,16 @@ function handleViewQuestionRubric(q) {
     let erroresHtml = '';
     if (Array.isArray(r.errores_previsibles) && r.errores_previsibles.length > 0) {
       erroresHtml = `
-        <div style="margin-top:12px;">
-          <div style="font-size:0.68rem; font-weight:800; color:#dc2626; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Errores Previsibles Detectados por IA</div>
-          <div style="display:flex; flex-direction:column; gap:5px;">
+        <div style="margin-top:14px;">
+          <div style="font-size:0.70rem; font-weight:800; color:#B45309; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#B45309;"></span>
+            Errores Previsibles Detectados por IA
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
             ${r.errores_previsibles.map(e => `
-              <div style="font-size:0.75rem; color:#334155; background:#ffffff; border:1px solid #fecaca; border-radius:6px; padding:6px 10px; line-height:1.4;">
-                <span style="background:#fee2e2; color:#dc2626; border-radius:4px; padding:1px 6px; font-size:0.65rem; font-weight:800; margin-right:6px;">${escaparHtml(e.tipo || 'Error')}</span>
-                ${escaparHtml(e.descripcion || '')}
+              <div style="font-size:0.76rem; color:#2B2118; background:#FFFFFF; border:1.2px solid #FED7AA; border-radius:8px; padding:8px 12px; line-height:1.4; display:flex; gap:8px; align-items:baseline;">
+                <span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; border-radius:4px; padding:2px 7px; font-size:0.66rem; font-weight:800; flex-shrink:0;">${escaparHtml(e.tipo || 'Error')}</span>
+                <span>${escaparHtml(e.descripcion || '')}</span>
               </div>
             `).join('')}
           </div>
@@ -614,22 +645,25 @@ function handleViewQuestionRubric(q) {
       }
     }
     const confBadge = confVal != null
-      ? `<div style="margin-top:12px; padding-top:8px; border-top:1px solid #e2e8f0; font-size:0.7rem; color:#64748b; display:flex; justify-content:space-between; align-items:center;">
-           <span>Análisis pedagógico generado por IA (Gemini)</span>
-           <span>Confianza: <strong style="color:${confVal >= 70 ? '#16a34a' : confVal >= 40 ? '#d97706' : '#dc2626'};">${confVal}%</strong></span>
+      ? `<div style="margin-top:14px; padding-top:10px; border-top:1.5px solid #E2DCD2; font-size:0.72rem; color:#64748B; display:flex; justify-content:space-between; align-items:center;">
+           <span style="display:flex; align-items:center; gap:6px;">
+             <span style="color:#0284C7; font-weight:800;">✦</span> Análisis pedagógico generado por IA (Gemini)
+           </span>
+           <span>Confianza: <strong style="color:${confVal >= 70 ? '#0284C7' : confVal >= 40 ? '#D97706' : '#DC2626'}; font-weight:900;">${confVal}%</strong></span>
          </div>`
       : '';
 
     rubricContentHtml = `
-      <div style="border:1.5px solid #d8b4fe; border-radius:10px; background:#faf5ff; padding:14px;">
-        <div style="font-size:0.72rem; font-weight:800; color:#7c3aed; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-          <span>📋</span> Rúbrica Pedagógica de Corrección
+      <div style="border:2px solid #0284C7; border-radius:14px; background:rgba(255, 255, 255, 0.95); padding:16px; box-shadow:0 4px 18px rgba(2, 132, 199, 0.12), 0 0 0 2px rgba(245, 184, 46, 0.25);">
+        <div style="font-size:0.74rem; font-weight:900; color:#0284C7; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.12); color:#0284C7; font-size:0.75rem;">📋</span>
+          <span>Rúbrica Pedagógica de Corrección</span>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#FAF8F5; border:1.5px solid #E2DCD2; border-radius:10px; padding:12px 16px; margin-bottom:12px;">
           <div>
-            <span style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase;">Respuesta Canónica</span>
-            <div style="font-size:1.25rem; font-weight:900; color:#16a34a;">${escaparHtml(canonica || '—')}</div>
+            <span style="font-size:0.68rem; color:#64748B; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Respuesta Canónica</span>
+            <div style="font-size:1.35rem; font-weight:900; color:#0F172A; line-height:1.2;">${escaparHtml(canonica || '—')}</div>
           </div>
           ${unidad}
         </div>
@@ -642,18 +676,18 @@ function handleViewQuestionRubric(q) {
     `;
   } else {
     rubricContentHtml = `
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; font-size:0.8rem; color:#334155; white-space:pre-wrap; line-height:1.5;">
+      <div style="background:#FAF8F5; border:1.5px solid #E2DCD2; border-radius:10px; padding:14px; font-size:0.82rem; color:#2B2118; white-space:pre-wrap; line-height:1.5;">
         ${escaparHtml(String(r))}
       </div>
     `;
   }
 
   showAIDialog({
-    icon: '📋',
+    icon: `<div style="width:30px; height:30px; border-radius:50%; background:rgba(2, 132, 199, 0.12); border:1.5px solid rgba(2, 132, 199, 0.35); display:inline-flex; align-items:center; justify-content:center; color:#0284C7;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 12l2 2 4-4"/></svg></div>`,
     title: 'Rúbrica y Análisis Pedagógico (IA)',
     bodyHtml: questionBlock + rubricContentHtml,
-    maxWidth: '650px',
-    buttons: [{ label: 'Cerrar', style: 'padding:8px 18px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#0284c7; color:#fff;', onClick: () => {} }]
+    maxWidth: '680px',
+    buttons: []
   });
 }
 

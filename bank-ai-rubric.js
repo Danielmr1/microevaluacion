@@ -28,24 +28,37 @@ function showAIDialog({ icon = '⚠️', title = 'Aviso de IA', bodyHtml = '', b
   const actionsEl = document.getElementById('ai-dialog-actions');
   if (!modal) return;
 
-  if (box) box.style.maxWidth = maxWidth || '520px';
+  if (box) box.style.maxWidth = maxWidth || '650px';
 
-  iconEl.textContent = icon;
-  titleEl.textContent = title;
-  bodyEl.innerHTML = bodyHtml;
-  actionsEl.innerHTML = '';
+  if (iconEl) {
+    if (typeof icon === 'string' && (icon.startsWith('<') || icon.includes('<svg') || icon.includes('<div'))) {
+      iconEl.innerHTML = icon;
+    } else {
+      iconEl.textContent = icon;
+    }
+  }
+  if (titleEl) titleEl.textContent = title;
+  if (bodyEl) bodyEl.innerHTML = bodyHtml;
 
-  buttons.forEach(btn => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = btn.label;
-    b.style.cssText = btn.style || 'padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer; border:none; background:#3b82f6; color:#fff;';
-    b.onclick = () => {
-      closeAIDialogModal();
-      if (typeof btn.onClick === 'function') btn.onClick();
-    };
-    actionsEl.appendChild(b);
-  });
+  if (actionsEl) {
+    actionsEl.innerHTML = '';
+    if (buttons && buttons.length > 0) {
+      actionsEl.style.display = 'flex';
+      buttons.forEach(btn => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = btn.label;
+        b.style.cssText = btn.style || 'padding:8px 18px; border-radius:10px; font-weight:800; font-size:0.84rem; cursor:pointer; border:1.5px solid #1E2533; background:#0284C7; color:#fff;';
+        b.onclick = () => {
+          closeAIDialogModal();
+          if (typeof btn.onClick === 'function') btn.onClick();
+        };
+        actionsEl.appendChild(b);
+      });
+    } else {
+      actionsEl.style.display = 'none';
+    }
+  }
 
   modal.style.display = 'flex';
 }

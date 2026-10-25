@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.56</span>
+              Versión <span id="user-profile-version-tag">v3.10.57</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1857,18 +1857,20 @@
 
   <div id="toast-msg"></div>
  
-  <!-- Modal de Diálogo y Advertencias de IA (Gemini) -->
-  <div id="ai-dialog-modal" onclick="if(event.target === this) closeAIDialogModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(4px); z-index:10010; align-items:center; justify-content:center; padding:16px;">
-    <div id="ai-dialog-box" style="background:#1e293b; border:1.5px solid #475569; border-radius:16px; max-width:520px; width:100%; box-shadow:0 20px 40px rgba(0,0,0,0.6); overflow:hidden; animation:fadeIn 0.2s ease;">
-      <div id="ai-dialog-header" style="padding:14px 18px; border-bottom:1px solid #334155; display:flex; align-items:center; gap:10px;">
-        <span id="ai-dialog-icon" style="font-size:1.3rem;">⚠️</span>
-        <h4 id="ai-dialog-title" style="margin:0; font-size:0.95rem; font-weight:800; color:#f8fafc; flex:1;">Título</h4>
-        <button type="button" onclick="closeAIDialogModal()" style="background:transparent; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:2px 6px; line-height:1;" title="Cerrar">✕</button>
+  <!-- Modal de Diálogo y Rúbricas de IA (Gemini - Glassmorphism Mariposa) -->
+  <div id="ai-dialog-modal" class="classroom-glass-backdrop" onclick="if(event.target === this) closeAIDialogModal()" style="display:none; position:fixed; inset:0; background:rgba(19,23,34,0.65); backdrop-filter:blur(14px) saturate(160%); -webkit-backdrop-filter:blur(14px) saturate(160%); z-index:10010; align-items:center; justify-content:center; padding:16px;">
+    <div id="ai-dialog-box" class="classroom-glass-card" style="width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; animation:fadeIn 0.2s ease;">
+      <div id="ai-dialog-header" class="classroom-glass-header" style="padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+          <span id="ai-dialog-icon" style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">⚠️</span>
+          <h4 id="ai-dialog-title" style="margin:0; font-size:1.05rem; font-weight:800; color:#181512; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Título</h4>
+        </div>
+        <button type="button" onclick="closeAIDialogModal()" style="background:transparent; border:none; color:#64748b; font-size:1.3rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px; transition:color 0.15s ease;" title="Cerrar">✕</button>
       </div>
-      <div id="ai-dialog-body" style="padding:16px 18px; font-size:0.85rem; color:#cbd5e1; line-height:1.5; max-height:75vh; overflow-y:auto;">
+      <div id="ai-dialog-body" style="padding:18px 20px; font-size:0.85rem; color:#181512; line-height:1.5; overflow-y:auto; flex:1;">
         <!-- Mensaje y detalles -->
       </div>
-      <div id="ai-dialog-actions" style="padding:12px 18px; background:#0f172a; border-top:1px solid #334155; display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+      <div id="ai-dialog-actions" style="display:none; padding:14px 20px; background:rgba(255,255,255,0.45); border-top:1.5px solid rgba(220,214,202,0.7); gap:10px; justify-content:flex-end; flex-wrap:wrap;">
         <!-- Botones dinámicos -->
       </div>
     </div>
