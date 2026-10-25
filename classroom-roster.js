@@ -41,10 +41,21 @@ function toggleAddStudentForm(force, isEdit = false) {
   const show = (force !== undefined) ? !!force : !isVisible;
   box.style.display = show ? 'block' : 'none';
 
-  // Efecto de difuminado/enfoque en la lista de alumnos
+  // Contraer u ocultar la barra de herramientas principal mientras se edita o crea un alumno
+  const toolbar = document.getElementById('mgr-classroom-actions-toolbar');
+  if (toolbar) {
+    toolbar.style.display = show ? 'none' : 'flex';
+  }
+
+  // Ocultar e inhabilitar botones de editar y eliminar de cada alumno (manteniendo la nómina 100% nítida)
   const listEl = document.getElementById('mgr-modal-students-list');
   if (listEl) {
+    listEl.classList.toggle('mgr-roster-editing', show);
     listEl.classList.toggle('mgr-students-dimmed', show);
+    const actionBtns = listEl.querySelectorAll('.mgr-student-actions button');
+    actionBtns.forEach(btn => {
+      btn.disabled = show;
+    });
   }
 
   const editIdInput = document.getElementById('mgr-inline-student-edit-id');

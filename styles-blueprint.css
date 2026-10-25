@@ -1326,15 +1326,10 @@
       transform: translateY(-1px);
     }
 
-    #mgr-modal-students-list {
-      transition: filter 0.22s ease, opacity 0.22s ease;
-    }
-
-    #mgr-modal-students-list.mgr-students-dimmed {
-      filter: blur(2.5px);
-      opacity: 0.40;
-      pointer-events: none;
-      user-select: none;
+    /* Ocultar botones de acción individuales durante la creación/edición de alumnos (nómina nítida) */
+    #mgr-modal-students-list.mgr-roster-editing .mgr-student-actions,
+    #mgr-modal-students-list.mgr-students-dimmed .mgr-student-actions {
+      display: none !important;
     }
 
     /* ==========================================================
