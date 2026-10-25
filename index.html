@@ -623,7 +623,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.42</span>
+              Versión <span id="user-profile-version-tag">v3.10.43</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1873,13 +1873,12 @@
     </div>
   </div>
 
-  <!-- Modal: Gestión de Aula y Estudiantes (Plano del Colegio) -->
-  <!-- Modal: Gestión de Aula y Estudiantes (Plano del Colegio - Paleta Mariposa Opción B) -->
-  <div id="modal-manage-classroom" onclick="if(event.target === this) closeClassroomModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#FAF7F2; border:2px solid #E2D7C5; border-radius:18px; width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(44,34,25,0.25); overflow:hidden;">
+  <!-- Modal: Gestión de Aula y Estudiantes (Plano del Colegio - Glassmorphism) -->
+  <div id="modal-manage-classroom" class="classroom-glass-backdrop" onclick="if(event.target === this) closeClassroomModal()" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div class="classroom-glass-card" style="width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
       
       <!-- Header del Modal: Acento Dorado Solar Mariposa -->
-      <div style="padding:16px 20px; border-bottom:1.5px solid #E5DCCE; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to right, #FBF8F3, #F5EEE2); border-top:4px solid #F59E0B;">
+      <div class="classroom-glass-header" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-top:4px solid #F59E0B;">
         <div>
           <h3 id="mgr-modal-room-name" style="margin:0 0 4px 0; font-size:1.18rem; font-weight:800; color:#2C2219;">Salón</h3>
           <div style="display:flex; align-items:center; gap:10px;">
@@ -1896,7 +1895,7 @@
       <div id="mgr-modal-room-lock-banner" style="display:none; padding:10px 20px; background:#FFFBEB; border-bottom:1.5px solid #FDE68A; font-size:0.75rem; color:#92400E; font-weight:700; align-items:center; gap:8px;"></div>
 
       <!-- Barra de Herramientas del Salón -->
-      <div style="padding:10px 20px; background:#F1ECE2; border-bottom:1.5px solid #E5DCCE; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div class="classroom-glass-toolbar" style="padding:10px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <div style="display:flex; gap:8px; align-items:center;">
           <button id="btn-toggle-add-student" type="button" onclick="toggleAddStudentForm()"
             style="display:inline-flex; align-items:center; gap:6px; background:#00B4D8; border:none; color:#ffffff; border-radius:7px; padding:7px 14px; font-size:0.76rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(0,180,216,0.35); transition:all 0.15s;">
@@ -1973,11 +1972,11 @@
   </div>
 
   <!-- Modal: Alta de Nuevo Salón al Plano (Plano del Colegio) -->
-  <div id="modal-add-classroom" onclick="if(event.target === this) closeAddClassroomModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:18px; width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(15,23,42,0.25); overflow:hidden;">
+  <div id="modal-add-classroom" class="classroom-glass-backdrop" onclick="if(event.target === this) closeAddClassroomModal()" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div class="classroom-glass-card" style="width:100%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
       
       <!-- Header -->
-      <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+      <div class="classroom-glass-header" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px;">
           <span style="font-size:1.3rem;">➕</span>
           <div>
@@ -1988,7 +1987,7 @@
       </div>
 
       <!-- Selector de Método: Importar Excel vs Crear a Mano -->
-      <div style="display:flex; border-bottom:1px solid #e2e8f0; background:#f1f5f9;">
+      <div class="classroom-glass-tabs" style="display:flex;">
         <button id="btn-tab-import" type="button" onclick="switchManagerCreateTab('import')"
           style="flex:1; padding:12px; font-size:0.82rem; font-weight:800; cursor:pointer; border:none; border-bottom:2px solid #2563eb; background:#ffffff; color:#1d4ed8; transition:all 0.15s;">
           📂 Importar Excel / CSV
@@ -2012,8 +2011,8 @@
             </p>
             <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
               <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.74rem;">
-                <strong style="color:#0f172a;">Formato — Apellidos, Nombres:</strong>
-                <span style="color:#64748b;"> Obligatorio. Formato: <strong>Apellidos, Nombres</strong> (un alumno por fila).</span>
+                <strong style="color:#0f172a;">Formato obligatorio:</strong>
+                <span style="color:#334155;"> <strong>Apellidos, Nombres</strong> (un alumno por fila).</span>
               </div>
             </div>
             <button onclick="downloadEmptyRosterTemplate()" type="button"
@@ -2077,10 +2076,10 @@
     </div>
   </div>
 
-  <!-- Modal: Editar Alumno (Estética Mariposa y Nombre Corto Automático) -->
-  <div id="modal-edit-student" onclick="if(event.target === this) closeEditStudentModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#FAF7F2; border:1.5px solid #DDD5C7; border-radius:18px; width:100%; max-width:440px; box-shadow:0 25px 50px -12px rgba(44,34,25,0.25); overflow:hidden;">
-      <div style="padding:16px 20px; border-bottom:1px solid #E5DCCE; display:flex; justify-content:space-between; align-items:center; background:#F3EEE4;">
+  <!-- Modal: Editar Alumno (Glassmorphism y Nombre Corto Automático) -->
+  <div id="modal-edit-student" class="classroom-glass-backdrop" onclick="if(event.target === this) closeEditStudentModal()" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div class="classroom-glass-card" style="width:100%; max-width:440px; overflow:hidden;">
+      <div class="classroom-glass-header" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
         <h3 style="margin:0; font-size:0.96rem; font-weight:800; color:#2C2219; display:flex; align-items:center; gap:8px;">
           <span>✏️</span> Editar Alumno
         </h3>
