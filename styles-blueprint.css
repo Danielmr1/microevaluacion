@@ -974,7 +974,7 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      filter: blur(80px);
+      filter: blur(50px);
       transform: translate3d(0, 0, 0);
       will-change: transform;
     }
@@ -987,40 +987,40 @@
     /* Capa 1: Flujo acuático turquesa / cian suave */
     .session-fluid-layer.layer-cyan {
       background:
-        radial-gradient(circle at 18% 78%, rgba(41, 182, 246, 0.16) 0%, transparent 55%),
-        radial-gradient(circle at 82% 82%, rgba(0, 153, 216, 0.13) 0%, transparent 50%),
-        radial-gradient(circle at 50% 92%, rgba(77, 208, 225, 0.18) 0%, transparent 60%);
-      animation: sessionBreathLayer1 15s ease-in-out infinite alternate;
+        radial-gradient(circle at 18% 78%, rgba(41, 182, 246, 0.20) 0%, transparent 55%),
+        radial-gradient(circle at 82% 82%, rgba(0, 153, 216, 0.16) 0%, transparent 50%),
+        radial-gradient(circle at 50% 92%, rgba(77, 208, 225, 0.22) 0%, transparent 60%);
+      animation: sessionBreathLayer1 8.5s ease-in-out infinite alternate;
     }
 
     /* Capa 2: Ocelos dorados cálidos (modo multiply para mezcla acuarelada limpia sobre papel) */
     .session-fluid-layer.layer-gold {
       background:
-        radial-gradient(ellipse at 32% 32%, rgba(245, 184, 46, 0.20) 0%, rgba(200, 131, 8, 0.12) 40%, transparent 65%),
-        radial-gradient(ellipse at 70% 38%, rgba(245, 184, 46, 0.18) 0%, rgba(200, 131, 8, 0.10) 45%, transparent 65%),
-        radial-gradient(circle at 50% 22%, rgba(254, 243, 199, 0.35) 0%, transparent 35%);
+        radial-gradient(ellipse at 32% 32%, rgba(245, 184, 46, 0.24) 0%, rgba(200, 131, 8, 0.14) 40%, transparent 65%),
+        radial-gradient(ellipse at 70% 38%, rgba(245, 184, 46, 0.20) 0%, rgba(200, 131, 8, 0.12) 45%, transparent 65%),
+        radial-gradient(circle at 50% 22%, rgba(254, 243, 199, 0.40) 0%, transparent 35%);
       mix-blend-mode: multiply;
-      animation: sessionBreathLayer2 17.2s ease-in-out infinite alternate;
+      animation: sessionBreathLayer2 9.0s ease-in-out infinite alternate;
     }
 
     /* Capa 3: Relieve de profundidad y sombra cálida */
     .session-fluid-layer.layer-depth {
       background:
-        radial-gradient(circle at 35% 35%, rgba(180, 150, 110, 0.10) 0%, transparent 45%),
-        radial-gradient(circle at 68% 40%, rgba(180, 150, 110, 0.08) 0%, transparent 45%),
-        radial-gradient(circle at 50% 60%, rgba(148, 163, 184, 0.08) 0%, transparent 70%);
-      animation: sessionBreathLayer3 13.5s ease-in-out infinite alternate;
+        radial-gradient(circle at 35% 35%, rgba(180, 150, 110, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 68% 40%, rgba(180, 150, 110, 0.10) 0%, transparent 45%),
+        radial-gradient(circle at 50% 60%, rgba(148, 163, 184, 0.10) 0%, transparent 70%);
+      animation: sessionBreathLayer3 8.0s ease-in-out infinite alternate;
     }
 
     /* Capa 4: Velo marfil y reflejos sutiles */
     .session-fluid-layer.layer-veil {
       inset: -80px;
       background:
-        radial-gradient(ellipse at 50% 12%, rgba(255, 255, 255, 0.45) 0%, transparent 60%),
-        radial-gradient(circle at 12% 42%, rgba(41, 182, 246, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 88% 42%, rgba(245, 184, 46, 0.14) 0%, transparent 45%);
+        radial-gradient(ellipse at 50% 12%, rgba(255, 255, 255, 0.50) 0%, transparent 60%),
+        radial-gradient(circle at 12% 42%, rgba(41, 182, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 88% 42%, rgba(245, 184, 46, 0.16) 0%, transparent 45%);
       mix-blend-mode: soft-light;
-      animation: sessionBreathLayer1 18.7s ease-in-out infinite alternate-reverse;
+      animation: sessionBreathLayer1 8.8s ease-in-out infinite alternate-reverse;
     }
 
     /* Micro-grano táctil orgánico */
@@ -1032,21 +1032,33 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
-    /* Keyframes de vaivén pausado */
+    /* Keyframes de vaivén orgánico (8 a 9 segundos) */
     @keyframes sessionBreathLayer1 {
-      0% { transform: translate3d(0, -28px, 0) scale(1); }
-      50% { transform: translate3d(0, 0, 0) scale(1.015); }
-      100% { transform: translate3d(0, 28px, 0) scale(0.99); }
+      0% { transform: translate3d(0, -32px, 0) scale(1); }
+      50% { transform: translate3d(0, 0, 0) scale(1.02); }
+      100% { transform: translate3d(0, 32px, 0) scale(0.985); }
     }
 
     @keyframes sessionBreathLayer2 {
-      0% { transform: translate3d(0, 32px, 0) scale(0.985); }
-      50% { transform: translate3d(0, 0, 0) scale(1.02); }
-      100% { transform: translate3d(0, -32px, 0) scale(1.01); }
+      0% { transform: translate3d(0, 36px, 0) scale(0.98); }
+      50% { transform: translate3d(0, 0, 0) scale(1.025); }
+      100% { transform: translate3d(0, -36px, 0) scale(1.015); }
     }
 
     @keyframes sessionBreathLayer3 {
-      0% { transform: translate3d(0, -20px, 0); }
-      100% { transform: translate3d(0, 20px, 0); }
+      0% { transform: translate3d(0, -24px, 0); }
+      100% { transform: translate3d(0, 24px, 0); }
+    }
+
+    /* Modo Ahorro de Batería y Accesibilidad: Si el dispositivo activa ahorro de energía o reducción de movimiento,
+       se congelan las animaciones al 100% liberando el compositor de GPU (0% consumo adicional) */
+    @media (prefers-reduced-motion: reduce) {
+      .session-fluid-canvas {
+        filter: blur(50px);
+      }
+      .session-fluid-layer {
+        animation: none !important;
+        transform: none !important;
+      }
     }
 
