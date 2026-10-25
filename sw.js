@@ -1,6 +1,6 @@
 // Service Worker para Microevaluación A5 (PWA) — v3.9.2
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.10.32';
+const CACHE_NAME = 'microeval-cache-v3.10.38';
 
 const PRECACHE_ASSETS = [
   './',
@@ -28,21 +28,26 @@ const PRECACHE_ASSETS = [
   './classroom-data.js',
   './classroom-bank-data.js',
   './classroom-session-data.js',
-  './supabase-client.js?v=3.10.23',
+  './supabase-client.js',
+  './supabase-ai-service.js',
   './roi-processor.js?v=3.2.50',
   './scanner.js?v=3.3.8',
+  './scanner-result-modal.js',
   './results-manager.js?v=3.1.90',
   './classroom-importer.js',
   './classroom-roster.js',
+  './classroom-manual-form.js',
   './classroom-manager.js',
   './bank-tools-math.js',
   './bank-ai-rubric.js',
   './bank-manager-modal.js',
+  './bank-manager-form.js',
   './question-bank.js',
   './sim-card-layout.js',
   './sim-card-picker.js',
   './card-simulator.js',
-  './card-exam-builder.js?v=3.10.9',
+  './card-builder-focalizada.js',
+  './card-exam-builder.js',
   './card-formativa.js?v=3.10.16',
   './card-focalizada.js?v=3.10.16',
   './card-cartilla.js?v=3.8.9',
@@ -52,7 +57,8 @@ const PRECACHE_ASSETS = [
   './session-saved-manager.js',
   './session-summary-view.js',
   './session-controller.js',
-  './app-navigation.js?v=3.10.12',
+  './app-scroll-effects.js',
+  './app-navigation.js',
   './copilot-analytics.js',
   './copilot-ai.js',
   './copilot-command.js',
