@@ -81,12 +81,16 @@ function renderBankManagerStageTabs() {
       'font-size:0.8rem',
       'font-weight:700',
       'cursor:pointer',
-      'border:none',
       'transition:all 0.15s',
       isActive
-        ? 'background:#00B4D8; color:#ffffff; font-weight:700; box-shadow:0 1px 4px rgba(0,180,216,0.35);'
-        : 'background:transparent; color:#64748b;'
+        ? 'background:#18202F; color:#FAF7F0; font-weight:800; border:1.5px solid #F5B82E; box-shadow:0 2px 6px rgba(24,32,47,0.25);'
+        : 'background:transparent; color:#57534E; border:1.5px solid transparent;'
     ].join(';');
+
+    if (!isActive) {
+      btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(43,33,24,0.06)'; btn.style.color = '#18202F'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; btn.style.color = '#57534E'; });
+    }
 
     btn.onclick = () => {
       bankManagerActiveStage = s.stage;
@@ -149,13 +153,13 @@ function renderBankManagerGradeTabs() {
       'cursor:pointer',
       'transition:all 0.15s',
       isActive
-        ? 'background:#00B4D8; color:#ffffff; font-weight:700; border:1.5px solid #00B4D8; box-shadow:0 2px 6px rgba(0,180,216,0.35);'
-        : 'background:#f8fafc; color:#475569; border:1.5px solid #e2e8f0;'
+        ? 'background:#0284C7; color:#ffffff; font-weight:800; border:1.5px solid #0284C7; box-shadow:0 2px 8px rgba(2,132,199,0.35);'
+        : 'background:#F3EFE6; color:#57534E; border:1.5px solid #DED8C8;'
     ].join(';');
 
     if (!isActive) {
-      btn.addEventListener('mouseenter', () => { btn.style.background = '#f1f5f9'; btn.style.borderColor = '#cbd5e1'; });
-      btn.addEventListener('mouseleave', () => { btn.style.background = '#f8fafc'; btn.style.borderColor = '#e2e8f0'; });
+      btn.addEventListener('mouseenter', () => { btn.style.background = '#EFE9DC'; btn.style.borderColor = '#CFC7B4'; btn.style.color = '#18202F'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = '#F3EFE6'; btn.style.borderColor = '#DED8C8'; btn.style.color = '#57534E'; });
     }
 
     btn.onclick = () => {
@@ -207,9 +211,14 @@ function renderBankManagerFilterPills() {
       'cursor:pointer',
       'transition:all 0.15s',
       isActive
-        ? 'background:#e0f7fa; color:#007791; font-weight:700; border:1.5px solid #00B4D8;'
-        : 'background:#ffffff; color:#64748b; border:1.5px solid #e2e8f0;'
+        ? 'background:rgba(245, 184, 46, 0.18); color:#92400E; font-weight:800; border:1.5px solid #D99B16; box-shadow:0 1px 4px rgba(217,155,22,0.2);'
+        : 'background:#FAF8F5; color:#64748b; border:1.5px solid #DCD6CA;'
     ].join(';');
+
+    if (!isActive) {
+      btn.addEventListener('mouseenter', () => { btn.style.background = '#F3EFE8'; btn.style.borderColor = '#CFC7B4'; btn.style.color = '#18202F'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = '#FAF8F5'; btn.style.borderColor = '#DCD6CA'; btn.style.color = '#64748b'; });
+    }
 
     btn.onclick = () => {
       bankManagerFilterType = f.key;
@@ -271,10 +280,12 @@ function renderBankManagerQuestions() {
   const capBadge = document.getElementById('bm-global-capacity-badge');
   const capText = document.getElementById('bm-global-capacity-text');
   if (capBadge && capText) {
-    capBadge.style.background = isFull ? '#fee2e2' : '#f0fdf4';
-    capBadge.style.color = isFull ? '#dc2626' : '#15803d';
-    capBadge.style.border = isFull ? '1.5px solid #fca5a5' : '1.5px solid #bbf7d0';
-    capText.textContent = `${totalBankCount} / 50 en tu banco${isFull ? ' (Lleno)' : ''}`;
+    capBadge.style.background = isFull ? '#F9EFEA' : '#FAF5E8';
+    capBadge.style.color = isFull ? '#9A3412' : '#92400E';
+    capBadge.style.border = isFull ? '1.5px solid #E7C6B9' : '1.5px solid #F5B82E';
+    capText.innerHTML = isFull
+      ? `<strong style="color:#9A3412; font-weight:800;">50 / 50 en tu banco (Lleno)</strong>`
+      : `<strong style="color:#18202F; font-weight:800;">${totalBankCount}</strong> / 50 en tu banco`;
   }
 
   const btnAdd = document.getElementById('btn-toggle-add-question');
@@ -315,7 +326,7 @@ function renderBankManagerQuestions() {
   // Renderizar preguntas de forma clara y unificada (sin textos redundantes sobre el enunciado)
   filtered.forEach(q => {
     const card = document.createElement('div');
-    card.style.cssText = 'background:#ffffff; border:1.5px solid #dcd8ce; border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; box-shadow:0 2px 8px rgba(43,33,24,0.04);';
+    card.className = 'bank-question-card';
 
     // Cabecera superior: exclusivamente acciones a la derecha
     const header = document.createElement('div');
@@ -398,11 +409,19 @@ function renderBankManagerQuestions() {
     if (hasRubric) {
       const btnRubric = document.createElement('button');
       btnRubric.type = 'button';
-      btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Ver Rúbrica de IA</span>';
+      btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Ver Rúbrica de IA</span>';
       btnRubric.title = 'Ver la solución canónica, criterios y errores frecuentes generados por la IA';
-      btnRubric.style.cssText = 'background:#F8F6F0; border:1.5px solid #dcd8ce; color:#181512; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
-      btnRubric.addEventListener('mouseenter', () => { btnRubric.style.background = '#6d28d9'; btnRubric.style.color = '#ffffff'; });
-      btnRubric.addEventListener('mouseleave', () => { btnRubric.style.background = '#f5f3ff'; btnRubric.style.color = '#6d28d9'; });
+      btnRubric.style.cssText = 'background:#18202F; border:1.5px solid rgba(41, 182, 246, 0.45); color:#FAF7F0; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(24,32,47,0.18);';
+      btnRubric.addEventListener('mouseenter', () => {
+        btnRubric.style.background = '#222B3D';
+        btnRubric.style.borderColor = '#29B6F6';
+        btnRubric.style.boxShadow = '0 3px 10px rgba(41, 182, 246, 0.35)';
+      });
+      btnRubric.addEventListener('mouseleave', () => {
+        btnRubric.style.background = '#18202F';
+        btnRubric.style.borderColor = 'rgba(41, 182, 246, 0.45)';
+        btnRubric.style.boxShadow = '0 2px 6px rgba(24,32,47,0.18)';
+      });
       btnRubric.onclick = () => {
         handleViewQuestionRubric(q);
       };
