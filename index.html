@@ -625,7 +625,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.38</span>
+              Versión <span id="user-profile-version-tag">v3.10.39</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1353,6 +1353,17 @@
         <div id="summary-sessions-numbers-list" class="sessions-numbers-list">
           <!-- Botones [ 1 ] [ 2 ] [ 3 ]... generados dinámicamente -->
         </div>
+      </div>
+
+      <!-- Fondo Fluido Orgánico en Vaivén (Exclusivo para la Vista de Sesiones — Paleta Acuarela Scanwing) -->
+      <div id="session-fluid-backdrop" class="session-fluid-stage" aria-hidden="true">
+        <div class="session-fluid-canvas">
+          <div class="session-fluid-layer layer-cyan"></div>
+          <div class="session-fluid-layer layer-gold"></div>
+          <div class="session-fluid-layer layer-depth"></div>
+          <div class="session-fluid-layer layer-veil"></div>
+        </div>
+        <div class="session-fluid-grain"></div>
       </div>
 
       <!-- ── PASO 5: Resumen y Fichas Listas (Two-Pane Split Layout) ── -->

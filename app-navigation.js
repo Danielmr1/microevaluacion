@@ -394,6 +394,7 @@ if (typeof window !== 'undefined') {
         try { Scanner.stopCamera(); } catch (e) {}
       }
       document.body.classList.remove('camera-active');
+      document.body.classList.remove('has-active-split');
       document.title = 'Microevaluación';
       closeBankManagerModal();
       if (typeof closeSavedSessionsModal === 'function') closeSavedSessionsModal();
