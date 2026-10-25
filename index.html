@@ -181,9 +181,7 @@
 
     /* MODO CLARO UNIFICADO PARA SALONES Y MODALES — PALETA SCANWING (Tanda 2) */
     #view-classrooms {
-      background: radial-gradient(circle at 50% 0%, rgba(0, 180, 216, 0.08) 0%, rgba(249, 248, 243, 0) 65%),
-                  radial-gradient(circle at 15% 45%, rgba(255, 183, 3, 0.06) 0%, rgba(249, 248, 243, 0) 55%),
-                  #F9F8F3 !important;
+      background: transparent !important;
       color: #181512 !important;
     }
 
@@ -625,7 +623,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.41</span>
+              Versión <span id="user-profile-version-tag">v3.10.42</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1533,8 +1531,19 @@
   <!-- ========================================================= -->
   <!-- VISTA: GESTIÓN DE SALONES Y NÓMINAS (FLUJO 2)              -->
   <!-- ========================================================= -->
-  <div id="view-classrooms" class="view-content" style="padding: 0;">
-    <div class="mgr-content-wrapper" style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px;">
+  <div id="view-classrooms" class="view-content" style="padding: 0; position: relative;">
+    <!-- Fondo Fluido Orgánico en Vaivén (Exclusivo para Salones y Alumnos — Opción A: Cian Cenital Protagonista) -->
+    <div id="classrooms-fluid-backdrop" class="classrooms-fluid-stage" aria-hidden="true">
+      <div class="session-fluid-canvas">
+        <div class="session-fluid-layer classroom-layer-cyan"></div>
+        <div class="session-fluid-layer classroom-layer-gold"></div>
+        <div class="session-fluid-layer classroom-layer-depth"></div>
+        <div class="session-fluid-layer classroom-layer-veil"></div>
+      </div>
+      <div class="session-fluid-grain"></div>
+    </div>
+
+    <div class="mgr-content-wrapper" style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1;">
 
       <!-- Banner de advertencia: Evaluación en curso -->
       <div id="mgr-active-session-warning" style="display: none; background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 12px; padding: 14px 16px; color: #92400e; font-size: 0.82rem; line-height: 1.4; align-items: center; gap: 10px;">

@@ -941,7 +941,8 @@
         max-width: none !important;
         overflow: visible !important;
       }
-      .session-fluid-stage {
+      .session-fluid-stage,
+      .classrooms-fluid-stage {
         display: none !important;
       }
     }
@@ -1056,6 +1057,65 @@
       0% { transform: translate3d(-30px, 34px, 0) scale(1.015); }
       50% { transform: translate3d(0, 0, 0) scale(0.985); }
       100% { transform: translate3d(36px, -30px, 0) scale(1.02); }
+    }
+
+    /* ==========================================================
+       FONDO FLUIDO ORGÁNICO EN VAIVÉN (SALONES Y ALUMNOS)
+       Opción A: Inversión Vertical con Cian/Celeste Protagonista Cenital
+       ========================================================== */
+    .classrooms-fluid-stage {
+      display: none;
+      position: fixed;
+      inset: -120px;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background-color: var(--bg-paper, #F9F8F3);
+    }
+
+    #view-classrooms.active .classrooms-fluid-stage,
+    body:has(#view-classrooms.active) .classrooms-fluid-stage {
+      display: block;
+    }
+
+    /* Capa 1: Corriente cian/celeste protagonista (Cenital y Esquinas Superiores) */
+    .session-fluid-layer.classroom-layer-cyan {
+      background:
+        radial-gradient(ellipse at 50% 10%, rgba(0, 180, 216, 0.28) 0%, rgba(41, 182, 246, 0.18) 40%, transparent 68%),
+        radial-gradient(circle at 14% 18%, rgba(41, 182, 246, 0.26) 0%, transparent 55%),
+        radial-gradient(circle at 86% 18%, rgba(77, 208, 225, 0.24) 0%, transparent 55%),
+        radial-gradient(circle at 50% 42%, rgba(2, 132, 199, 0.15) 0%, transparent 60%);
+      animation: sessionWaveCyan 7.5s ease-in-out infinite alternate;
+    }
+
+    /* Capa 2: Ocelos dorados cálidos (Base y Esquinas Inferiores) */
+    .session-fluid-layer.classroom-layer-gold {
+      background:
+        radial-gradient(ellipse at 25% 82%, rgba(245, 184, 46, 0.22) 0%, rgba(200, 131, 8, 0.12) 40%, transparent 65%),
+        radial-gradient(ellipse at 78% 84%, rgba(245, 184, 46, 0.20) 0%, rgba(200, 131, 8, 0.10) 45%, transparent 65%),
+        radial-gradient(circle at 50% 90%, rgba(254, 243, 199, 0.35) 0%, transparent 40%);
+      mix-blend-mode: multiply;
+      animation: sessionWaveGold 9.8s ease-in-out infinite alternate;
+    }
+
+    /* Capa 3: Relieve y profundidad inferior */
+    .session-fluid-layer.classroom-layer-depth {
+      background:
+        radial-gradient(circle at 35% 72%, rgba(180, 150, 110, 0.11) 0%, transparent 45%),
+        radial-gradient(circle at 68% 68%, rgba(180, 150, 110, 0.09) 0%, transparent 45%),
+        radial-gradient(circle at 50% 30%, rgba(148, 163, 184, 0.08) 0%, transparent 70%);
+      animation: sessionWaveDepth 11.2s ease-in-out infinite;
+    }
+
+    /* Capa 4: Velo marfil flotante con destellos de cielo */
+    .session-fluid-layer.classroom-layer-veil {
+      inset: -100px;
+      background:
+        radial-gradient(ellipse at 50% 85%, rgba(255, 255, 255, 0.45) 0%, transparent 60%),
+        radial-gradient(circle at 15% 15%, rgba(41, 182, 246, 0.20) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(245, 184, 46, 0.14) 0%, transparent 45%);
+      mix-blend-mode: soft-light;
+      animation: sessionWaveVeil 13.5s ease-in-out infinite alternate;
     }
 
     /* Modo Ahorro de Batería y Accesibilidad: Si el dispositivo activa ahorro de energía o reducción de movimiento,
