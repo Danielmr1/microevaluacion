@@ -524,7 +524,7 @@ function handleViewQuestionRubric(questionOrId) {
           const valSafe = escaparHtml(q.options[l] || '');
           const val = (typeof formatMathHtml === 'function') ? formatMathHtml(valSafe) : valSafe;
           return `
-            <div style="padding:7px 10px; border-radius:8px; ${isCorrect ? 'background:#ECFDF5; color:#065F46; font-weight:800; border:1.5px solid #10B981; box-shadow:0 1px 3px rgba(16,185,129,0.15);' : 'background:#FAF8F5; color:#44403C; border:1.2px solid #E2DCD2;'}">
+            <div style="padding:7px 10px; border-radius:8px; ${isCorrect ? 'background:rgba(16, 185, 129, 0.12); color:#065F46; font-weight:800; border:1.5px solid rgba(16, 185, 129, 0.45); box-shadow:0 1px 3px rgba(16,185,129,0.12);' : 'background:rgba(255, 255, 255, 0.65); color:#44403C; border:1.2px solid rgba(220, 214, 202, 0.8);'}">
               <span style="font-weight:800; ${isCorrect ? 'color:#047857;' : 'color:#78716C;'}">${l})</span> ${val} ${isCorrect ? '<span style="color:#047857; font-weight:800; margin-left:4px;">✓ (Clave Correcta)</span>' : ''}
             </div>
           `;
@@ -534,7 +534,7 @@ function handleViewQuestionRubric(questionOrId) {
   }
 
   const questionBlock = `
-    <div style="background:rgba(255, 255, 255, 0.90); border:1.5px solid #DCD8CE; border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 6px rgba(43,33,24,0.03);">
+    <div style="background:rgba(255, 255, 255, 0.50); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1.5px solid rgba(220, 214, 202, 0.7); border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 6px rgba(43,33,24,0.03);">
       <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
         <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
         Enunciado del Problema
@@ -564,7 +564,7 @@ function handleViewQuestionRubric(questionOrId) {
           </div>
           <div style="display:flex; flex-direction:column; gap:8px;">
             ${r.criterios.map(c => `
-              <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:#FFFFFF; border:1.2px solid #E2DCD2; border-radius:8px; box-shadow:0 1px 3px rgba(43,33,24,0.03);">
+              <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:rgba(255, 255, 255, 0.70); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:8px; box-shadow:0 1px 3px rgba(43,33,24,0.03);">
                 <span style="flex:0 0 auto; background:#0284C7; color:#FFFFFF; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:900; white-space:nowrap; box-shadow:0 2px 4px rgba(2,132,199,0.25);">
                   ${escaparHtml(String(c.peso || '1'))} pt
                 </span>
@@ -588,7 +588,7 @@ function handleViewQuestionRubric(questionOrId) {
             <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
             Procedimiento de Resolución
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px; background:#FAF8F5; border:1.2px solid #E2DCD2; border-radius:10px; padding:12px 14px;">
+          <div style="display:flex; flex-direction:column; gap:6px; background:rgba(255, 255, 255, 0.60); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:12px 14px;">
             ${r.solucion_pasos.map((p, i) => `
               <div style="font-size:0.78rem; color:#2B2118; line-height:1.45; display:flex; gap:6px; align-items:baseline;">
                 <span style="color:#0284C7; font-weight:900; flex-shrink:0;">${i + 1}.</span>
@@ -605,7 +605,7 @@ function handleViewQuestionRubric(questionOrId) {
             <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
             Procedimiento Esperado
           </div>
-          <div style="font-size:0.78rem; color:#2B2118; background:#FAF8F5; border:1.2px solid #E2DCD2; border-radius:10px; padding:12px 14px; line-height:1.45;">
+          <div style="font-size:0.78rem; color:#2B2118; background:rgba(255, 255, 255, 0.60); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:12px 14px; line-height:1.45;">
             ${escaparHtml(r.procedimiento_esperado)}
           </div>
         </div>
@@ -623,7 +623,7 @@ function handleViewQuestionRubric(questionOrId) {
           </div>
           <div style="display:flex; flex-direction:column; gap:6px;">
             ${r.errores_previsibles.map(e => `
-              <div style="font-size:0.76rem; color:#2B2118; background:#FFFFFF; border:1.2px solid #FED7AA; border-radius:8px; padding:8px 12px; line-height:1.4; display:flex; gap:8px; align-items:baseline;">
+              <div style="font-size:0.76rem; color:#2B2118; background:rgba(255, 255, 255, 0.70); border:1.2px solid rgba(254, 215, 170, 0.9); border-radius:8px; padding:8px 12px; line-height:1.4; display:flex; gap:8px; align-items:baseline;">
                 <span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; border-radius:4px; padding:2px 7px; font-size:0.66rem; font-weight:800; flex-shrink:0;">${escaparHtml(e.tipo || 'Error')}</span>
                 <span>${escaparHtml(e.descripcion || '')}</span>
               </div>
@@ -645,7 +645,7 @@ function handleViewQuestionRubric(questionOrId) {
       }
     }
     const confBadge = confVal != null
-      ? `<div style="margin-top:14px; padding-top:10px; border-top:1.5px solid #E2DCD2; font-size:0.72rem; color:#64748B; display:flex; justify-content:space-between; align-items:center;">
+      ? `<div style="margin-top:14px; padding-top:10px; border-top:1.5px solid rgba(220, 214, 202, 0.7); font-size:0.72rem; color:#64748B; display:flex; justify-content:space-between; align-items:center;">
            <span style="display:flex; align-items:center; gap:6px;">
              <span style="color:#0284C7; font-weight:800;">✦</span> Análisis pedagógico generado por IA (Gemini)
            </span>
@@ -654,13 +654,13 @@ function handleViewQuestionRubric(questionOrId) {
       : '';
 
     rubricContentHtml = `
-      <div style="border:2px solid #0284C7; border-radius:14px; background:rgba(255, 255, 255, 0.95); padding:16px; box-shadow:0 4px 18px rgba(2, 132, 199, 0.12), 0 0 0 2px rgba(245, 184, 46, 0.25);">
+      <div style="border:2px solid #0284C7; border-radius:14px; background:rgba(2, 132, 199, 0.05); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); padding:16px; box-shadow:0 4px 18px rgba(2, 132, 199, 0.10), 0 0 0 2px rgba(245, 184, 46, 0.25);">
         <div style="font-size:0.74rem; font-weight:900; color:#0284C7; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
           <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.12); color:#0284C7; font-size:0.75rem;">📋</span>
           <span>Rúbrica Pedagógica de Corrección</span>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; background:#FAF8F5; border:1.5px solid #E2DCD2; border-radius:10px; padding:12px 16px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255, 255, 255, 0.65); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
           <div>
             <span style="font-size:0.68rem; color:#64748B; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Respuesta Canónica</span>
             <div style="font-size:1.35rem; font-weight:900; color:#0F172A; line-height:1.2;">${escaparHtml(canonica || '—')}</div>
@@ -676,7 +676,7 @@ function handleViewQuestionRubric(questionOrId) {
     `;
   } else {
     rubricContentHtml = `
-      <div style="background:#FAF8F5; border:1.5px solid #E2DCD2; border-radius:10px; padding:14px; font-size:0.82rem; color:#2B2118; white-space:pre-wrap; line-height:1.5;">
+      <div style="background:rgba(255, 255, 255, 0.60); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:14px; font-size:0.82rem; color:#2B2118; white-space:pre-wrap; line-height:1.5;">
         ${escaparHtml(String(r))}
       </div>
     `;
