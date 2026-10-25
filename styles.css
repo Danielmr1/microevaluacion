@@ -1004,8 +1004,8 @@
     .sheet-a4 {
       background: white;
       width: 188mm;
-      height: 285mm;
-      padding: 11mm 0 0 0;
+      height: 286mm;
+      padding: 10mm 0 0 0;
       margin: 6mm auto;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
@@ -1022,15 +1022,15 @@
     }
 
     /* ── HOJA A4 CON 4 ALUMNOS (CARTILLA OMR HASTA 8 PREGUNTAS) ─────
-       Orientación Horizontal (Landscape: 275 x 188 mm).
-       Cuadrícula de 2 x 2 cartillas A6 (136 x 92 mm cada una).
+       Orientación Horizontal (Landscape: 276 x 194 mm).
+       Cuadrícula de 2 x 2 cartillas A6 (132 x 89 mm cada una).
        1 sola columna vertical de burbujas por estudiante. */
     .sheet-a4-quad {
       background: #ffffff;
-      width: 275mm;
-      height: 188mm;
+      width: 276mm;
+      height: 194mm;
       margin: 6mm auto;
-      padding: 3mm 4mm;
+      padding: 4mm 2mm;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
@@ -1056,28 +1056,41 @@
     }
 
     .quad-hcut {
-      height: 4mm;
+      height: 8mm;
+      flex: 0 0 8mm;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.62rem;
       color: #64748b;
-      border-top: 1px dashed #94a3b8;
-      border-bottom: 1px dashed #94a3b8;
-      background: #f8fafc;
+      position: relative;
       letter-spacing: 0.5px;
       user-select: none;
-      margin: 0 -4mm;
+      margin: 0 -2mm;
+    }
+    .quad-hcut::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 1px dashed #94a3b8;
+    }
+    .quad-hcut span {
+      position: relative;
+      background: white;
+      padding: 0 8px;
     }
 
     .quad-vcut {
-      width: 3mm;
+      width: 8mm;
+      flex: 0 0 8mm;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-      background: #f8fafc;
+      background: #ffffff;
       user-select: none;
     }
 
@@ -1599,7 +1612,8 @@
     }
 
     .dual-vcut {
-      width: 3mm;
+      width: 8mm;
+      flex: 0 0 8mm;
       height: calc(100% + 6mm);
       margin: -3mm 0;
       display: flex;
@@ -1607,7 +1621,7 @@
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-      background: #f8fafc;
+      background: #ffffff;
       user-select: none;
     }
 
@@ -2606,11 +2620,11 @@
     .fiducial-br { bottom: 5mm; right: 5mm; }
     .fiducial-bl { bottom: 5mm; left: 5mm; }
 
-    /* Línea de corte: 3mm exactos entre las dos fichas. */
+    /* Línea de corte: 8mm holgados y limpios entre las dos fichas. */
     .cut-line {
       width: 186mm;
-      height: 3mm;
-      flex: 0 0 3mm;
+      height: 8mm;
+      flex: 0 0 8mm;
       position: relative;
       display: flex;
       align-items: center;
@@ -4398,11 +4412,11 @@
       .sheet-a4-v-single {
         box-shadow: none !important;
         width: 188mm !important;
-        height: 285mm !important;
+        height: 286mm !important;
         min-height: 0 !important;
-        max-height: 285mm !important;
+        max-height: 286mm !important;
         margin: 0 auto !important;
-        padding: 11mm 0 0 0 !important;
+        padding: 10mm 0 0 0 !important;
         overflow: hidden !important;
         page-break-after: always !important;
         break-after: page !important;
@@ -4410,7 +4424,7 @@
         break-inside: avoid !important;
       }
       .sheet-a4-quad-v {
-        padding: 11mm 2mm 3mm 2mm !important;
+        padding: 12mm 2mm 0 2mm !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
@@ -4434,12 +4448,12 @@
       body:not(.print-mode-booklet) .sheet-a4-split,
       body:not(.print-mode-booklet) .sheet-a4-h-single {
         box-shadow: none !important;
-        width: 275mm !important;
-        height: 188mm !important;
+        width: 276mm !important;
+        height: 194mm !important;
         min-height: 0 !important;
-        max-height: 188mm !important;
+        max-height: 194mm !important;
         margin: 0 auto !important;
-        padding: 3mm 4mm !important;
+        padding: 4mm 2mm !important;
         overflow: hidden !important;
         page-break-after: always !important;
         break-after: page !important;
@@ -4466,6 +4480,22 @@
       body:not(.print-mode-booklet) .sheet-a4-h-single:last-child {
         page-break-after: auto !important;
         break-after: auto !important;
+      }
+      .cut-line {
+        height: 8mm !important;
+        flex: 0 0 8mm !important;
+      }
+      .quad-hcut {
+        height: 8mm !important;
+        flex: 0 0 8mm !important;
+      }
+      .quad-vcut {
+        width: 8mm !important;
+        flex: 0 0 8mm !important;
+      }
+      .dual-vcut {
+        width: 8mm !important;
+        flex: 0 0 8mm !important;
       }
       .card-a5,
       .card-a5-v-r3,
