@@ -435,14 +435,18 @@ function switchManagerCreateTab(tab) {
   const contentManual = document.getElementById('manager-tab-manual-content');
 
   if (btnImport) {
-    btnImport.style.border = isImport ? '1.5px solid #2563eb' : '1.5px solid #cbd5e1';
-    btnImport.style.background = isImport ? '#eff6ff' : '#ffffff';
-    btnImport.style.color = isImport ? '#1d4ed8' : '#64748b';
+    btnImport.classList.toggle('is-active', isImport);
+    btnImport.style.background = isImport ? '#FFFFFF' : 'transparent';
+    btnImport.style.color = isImport ? '#131722' : '#64748B';
+    btnImport.style.boxShadow = isImport ? '0 2px 8px rgba(19, 23, 34, 0.10), 0 0 0 1.5px rgba(245, 184, 46, 0.50)' : 'none';
+    btnImport.style.border = 'none';
   }
   if (btnManual) {
-    btnManual.style.border = !isImport ? '1.5px solid #2563eb' : '1.5px solid #cbd5e1';
-    btnManual.style.background = !isImport ? '#eff6ff' : '#ffffff';
-    btnManual.style.color = !isImport ? '#1d4ed8' : '#64748b';
+    btnManual.classList.toggle('is-active', !isImport);
+    btnManual.style.background = !isImport ? '#FFFFFF' : 'transparent';
+    btnManual.style.color = !isImport ? '#131722' : '#64748B';
+    btnManual.style.boxShadow = !isImport ? '0 2px 8px rgba(19, 23, 34, 0.10), 0 0 0 1.5px rgba(245, 184, 46, 0.50)' : 'none';
+    btnManual.style.border = 'none';
   }
   if (contentImport) contentImport.style.display = isImport ? 'block' : 'none';
   if (contentManual) contentManual.style.display = !isImport ? 'block' : 'none';

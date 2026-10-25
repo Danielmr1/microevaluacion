@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.47</span>
+              Versión <span id="user-profile-version-tag">v3.10.48</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1979,60 +1979,64 @@
       <!-- Header -->
       <div class="classroom-glass-header" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:1.3rem;">➕</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C88308" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
           <div>
-            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#0f172a;">Agregar Nuevo Salón</h3>
+            <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#181512;">Agregar Nuevo Salón</h3>
           </div>
         </div>
-        <button type="button" onclick="closeAddClassroomModal()" style="background:transparent; border:none; color:#64748b; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Cerrar">✕</button>
+        <button type="button" onclick="closeAddClassroomModal()" style="background:transparent; border:none; color:#64748b; font-size:1.3rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;" title="Cerrar">✕</button>
       </div>
 
-      <!-- Selector de Método: Importar Excel vs Crear a Mano -->
-      <div class="classroom-glass-tabs" style="display:flex;">
-        <button id="btn-tab-import" type="button" onclick="switchManagerCreateTab('import')"
-          style="flex:1; padding:12px; font-size:0.82rem; font-weight:800; cursor:pointer; border:none; border-bottom:2px solid #2563eb; background:#ffffff; color:#1d4ed8; transition:all 0.15s;">
-          📂 Importar Excel / CSV
-        </button>
-        <button id="btn-tab-manual" type="button" onclick="switchManagerCreateTab('manual')"
-          style="flex:1; padding:12px; font-size:0.82rem; font-weight:800; cursor:pointer; border:none; border-bottom:2px solid transparent; background:transparent; color:#64748b; transition:all 0.15s;">
-          ✍️ Crear a Mano
-        </button>
+      <!-- Selector de Método: Segmented Control tipo Píldora -->
+      <div class="classroom-glass-tabs">
+        <div class="classroom-segmented-track">
+          <button id="btn-tab-import" type="button" class="classroom-segmented-tab is-active" onclick="switchManagerCreateTab('import')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8M8 17h8M10 9h1"/></svg>
+            Importar Excel / CSV
+          </button>
+          <button id="btn-tab-manual" type="button" class="classroom-segmented-tab" onclick="switchManagerCreateTab('manual')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C88308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Redactar
+          </button>
+        </div>
       </div>
 
       <!-- Cuerpo con Scroll -->
       <div style="flex:1; overflow-y:auto; padding:20px;">
         <!-- Método 1: Importar Excel / CSV -->
         <div id="manager-tab-import-content">
-          <div style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:12px; padding:14px; margin-bottom:14px;">
-            <div style="display:flex; align-items:center; gap:8px; font-weight:800; color:#0369a1; font-size:0.85rem; margin-bottom:8px;">
-              <span>ℹ️</span> ¿Cómo preparar tu lista de alumnos?
+          <div class="classroom-info-card">
+            <div style="display:flex; align-items:center; gap:8px; font-weight:800; color:#0284c7; font-size:0.85rem; margin-bottom:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>¿Cómo preparar tu lista de alumnos?</span>
             </div>
             <p style="font-size:0.77rem; color:#334155; line-height:1.45; margin:0 0 10px;">
               El archivo solo necesita:
             </p>
             <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
-              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.74rem;">
+              <div class="classroom-format-pill">
                 <strong style="color:#0f172a;">Formato obligatorio:</strong>
-                <span style="color:#334155;"> <strong>Apellidos, Nombres</strong> (un alumno por fila).</span>
+                <span style="color:#181512;"> <strong>Apellidos, Nombres</strong> (un alumno por fila).</span>
               </div>
             </div>
             <button onclick="downloadEmptyRosterTemplate()" type="button"
-              style="display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid #0284c7; color:#0284c7; border-radius:6px; padding:6px 12px; font-size:0.72rem; font-weight:700; cursor:pointer;">
-              ⬇️ Descargar plantilla vacía (.csv)
+              style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.7); border:1px solid rgba(2,132,199,0.35); color:#0284c7; border-radius:8px; padding:7px 14px; font-size:0.74rem; font-weight:700; cursor:pointer; transition:all 0.15s ease;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Descargar plantilla vacía (.csv)
             </button>
           </div>
 
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <input type="file" id="manager-excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleExcelImport(this)">
-            <button type="button" onclick="document.getElementById('manager-excel-file-input').click()"
-              style="display:inline-flex; align-items:center; gap:8px; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:11px 20px; font-size:0.85rem; font-weight:700; cursor:pointer; box-shadow:0 2px 4px rgba(37,99,235,0.25);">
-              📂 Seleccionar archivo (.xlsx / .csv) e importar
+            <button type="button" onclick="document.getElementById('manager-excel-file-input').click()" class="btn-classroom-primary-action">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#131722" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Seleccionar archivo (.xlsx / .csv) e importar
             </button>
             <span id="manager-excel-import-status" style="font-size:0.74rem; color:#64748b;"></span>
           </div>
         </div>
 
-        <!-- Método 2: Crear a Mano -->
+        <!-- Método 2: Redactar -->
         <div id="manager-tab-manual-content" style="display:none;">
           <div style="display:flex; flex-direction:column; gap:14px;">
             <div>
@@ -2066,9 +2070,9 @@
                 style="font-size:0.88rem; width:100%; box-sizing:border-box; background:#F8F6F0; border:1.5px solid #dcd8ce; border-radius:8px; padding:10px 12px; color:#181512; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;"></textarea>
             </div>
 
-            <button type="button" id="btn-mgr-save-classroom" onclick="handleCreateClassroomManualFromManager()"
-              style="background:#10b981; border:none; color:#fff; border-radius:10px; padding:13px; font-size:0.92rem; font-weight:800; cursor:pointer; margin-top:4px; box-shadow:0 4px 12px rgba(16,185,129,0.25); display:flex; align-items:center; justify-content:center; gap:8px;">
-              ✓ Guardar Salón
+            <button type="button" id="btn-mgr-save-classroom" onclick="handleCreateClassroomManualFromManager()" class="btn-classroom-primary-action" style="width:100%; padding:13px; font-size:0.92rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131722" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
+              Guardar Salón
             </button>
           </div>
         </div>

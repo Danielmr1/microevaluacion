@@ -1191,27 +1191,118 @@
     }
 
     .classroom-glass-card {
-      background: rgba(255, 255, 255, 0.72) !important;
+      background: rgba(248, 245, 238, 0.88) !important;
       backdrop-filter: blur(28px) saturate(180%) !important;
       -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-      border: 1.5px solid rgba(255, 255, 255, 0.90) !important;
+      border: 2px solid #1E2533 !important;
       box-shadow:
-        0 30px 65px -12px rgba(15, 23, 42, 0.22),
-        0 0 0 1px rgba(255, 255, 255, 0.8) inset,
+        0 20px 50px rgba(19, 23, 34, 0.25),
+        0 0 0 3px rgba(245, 184, 46, 0.40),
         0 1px 4px rgba(0, 0, 0, 0.04) !important;
       border-radius: 20px !important;
     }
 
     .classroom-glass-header {
-      background: rgba(255, 255, 255, 0.45) !important;
+      background: rgba(255, 255, 255, 0.50) !important;
       backdrop-filter: blur(16px) !important;
       -webkit-backdrop-filter: blur(16px) !important;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.6) !important;
+      border-bottom: 1.5px solid rgba(220, 214, 202, 0.7) !important;
     }
 
     .classroom-glass-tabs {
-      background: rgba(241, 245, 249, 0.45) !important;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.6) !important;
+      background: transparent !important;
+      border-bottom: none !important;
+      padding: 10px 20px 0 !important;
+    }
+
+    /* Selector de Método: Segmented Control (Píldoras) */
+    .classroom-segmented-track {
+      display: flex;
+      background: #EBE6DA;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      border: 1px solid rgba(30, 37, 51, 0.08);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .classroom-segmented-tab {
+      flex: 1;
+      padding: 9px 14px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #64748B;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      outline: none;
+    }
+
+    .classroom-segmented-tab.is-active {
+      background: #FFFFFF !important;
+      color: #131722 !important;
+      box-shadow: 0 2px 8px rgba(19, 23, 34, 0.10), 0 0 0 1.5px rgba(245, 184, 46, 0.50) !important;
+    }
+
+    .classroom-segmented-tab:hover:not(.is-active) {
+      color: #1E2533;
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    /* Caja Informativa Turquesa y Mini-Ficha de Formato */
+    .classroom-info-card {
+      background: rgba(41, 182, 246, 0.08);
+      border: 1px solid rgba(41, 182, 246, 0.25);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .classroom-format-pill {
+      background: #FAF8F2;
+      border: 1px dashed rgba(41, 182, 246, 0.35);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.74rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #181512;
+    }
+
+    /* Botón de Acción Principal Ámbar Dorado Vibrante (Opción A) */
+    .btn-classroom-primary-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #F5B82E;
+      color: #131722;
+      border: 1.5px solid #F59E0B;
+      border-radius: 10px;
+      padding: 11px 22px;
+      font-size: 0.86rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(245, 184, 46, 0.35);
+      transition: all 0.18s ease;
+    }
+
+    .btn-classroom-primary-action:hover:not(:disabled) {
+      background: #FFC300;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 184, 46, 0.45);
+    }
+
+    .btn-classroom-primary-action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
     }
 
     .classroom-glass-toolbar {
