@@ -78,14 +78,17 @@
     }
 
     .campus-occupancy-pill {
-      font-size: 0.76rem;
-      font-weight: 800;
-      color: #00B4D8;
-      background: #2B2118;
-      border: 1.5px solid #5c4a3b;
-      padding: 5px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      background: #18202F;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 6px 14px;
       border-radius: 20px;
       letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .btn-campus-add {
@@ -100,14 +103,14 @@
       font-size: 0.82rem;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(255, 183, 3, 0.35);
+      box-shadow: 0 4px 14px rgba(245, 184, 46, 0.35);
       transition: all 0.18s ease;
     }
 
     .btn-campus-add:hover:not(:disabled) {
       background: #ffc300;
       transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(255, 183, 3, 0.45);
+      box-shadow: 0 6px 20px rgba(245, 184, 46, 0.45);
     }
 
     .btn-campus-add:disabled {
@@ -116,57 +119,53 @@
       box-shadow: none;
     }
 
-    /* ── ESTRUCTURA CAD CON MUROS CONTINUOS (BLUEPRINT) ── */
+    /* ── ESTRUCTURA DEL COLEGIO: 10 SALONES EN 2 PABELLONES Y PATIO CENTRAL ── */
     .campus-building-cad {
-      background-color: #081d30;
-      background-image: 
-        linear-gradient(rgba(0, 180, 216, 0.14) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 180, 216, 0.14) 1px, transparent 1px);
-      background-size: 20px 20px;
-      border: 2.5px solid #00B4D8;
-      border-radius: 12px;
-      box-shadow: 0 0 16px rgba(0, 180, 216, 0.22), inset 0 0 30px rgba(0, 0, 0, 0.6);
+      background-color: #131722;
+      border: 1.5px solid rgba(41, 182, 246, 0.25);
+      border-radius: 16px;
+      box-shadow: inset 0 2px 24px rgba(0, 0, 0, 0.6), 0 12px 32px rgba(0, 0, 0, 0.25);
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
-      /* PC por defecto: orientación apaisada (horizontal 5x2) */
+      /* PC por defecto: orientación apaisada (horizontal 5x2) con separación armónica */
       display: flex;
       flex-direction: column;
       width: 100%;
+      padding: 12px;
+      gap: 8px;
     }
 
-    /* Pabellón en PC: 5 aulas continuas de izquierda a derecha */
+    /* Pabellón en PC: 5 aulas con separación limpia de 10px */
     .campus-cad-wing {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
       width: 100%;
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    /* Pasillo y Patio Central en PC: franja horizontal continua */
+    /* Pasillo y Patio Central del Colegio: división serena y limpia sin guiones de pista */
     .campus-cad-corridor {
-      height: 24px;
-      background: rgba(0, 180, 216, 0.12);
-      border-top: 1.5px solid rgba(0, 180, 216, 0.45);
-      border-bottom: 1.5px solid rgba(0, 180, 216, 0.45);
+      height: 12px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(41, 182, 246, 0.12);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 16px;
+      padding: 0;
       box-sizing: border-box;
       user-select: none;
     }
 
     .corridor-decor-line {
-      width: 100%;
-      height: 1px;
-      background: repeating-linear-gradient(90deg, #00B4D8 0, #00B4D8 8px, transparent 8px, transparent 16px);
-      opacity: 0.85;
+      display: none;
     }
 
-    /* AULAS CONTINUAS (Cero huecos, muros tabique continuos) */
+    /* AULAS DEL COLEGIO (Tarjetas individuales con su propio respiro) */
     .campus-room-card {
       margin: 0;
       padding: 14px 14px;
@@ -178,28 +177,23 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: background 0.2s ease, outline 0.2s ease;
-      background: rgba(42, 32, 24, 0.90);
+      border-radius: 12px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Muros interiores continuos en PC (5x2):
-       Cada aula tiene borde derecho que actúa como tabique con la siguiente */
-    .wing-north .campus-room-card:not(:last-child),
-    .wing-south .campus-room-card:not(:last-child) {
-      border-right: 1.5px solid rgba(0, 180, 216, 0.25);
-    }
-
-    /* Hover técnico de aula en blueprint */
-    .campus-room-card:hover {
-      background: #382B21 !important;
-      outline: 2px solid #FFB703;
-      outline-offset: -2px;
-      z-index: 5;
-    }
-
-    /* Aula Ocupada */
+    /* Aula Ocupada: Anillo dorado cálido y superficie nocturna */
     .campus-room-card.is-occupied {
-      border-top: 3.5px solid #00B4D8;
+      background: linear-gradient(180deg, #1E2533 0%, #171C26 100%);
+      border: 1px solid rgba(245, 184, 46, 0.35);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .campus-room-card.is-occupied:hover {
+      background: linear-gradient(180deg, #252E40 0%, #1A212E 100%) !important;
+      border-color: #F5B82E;
+      box-shadow: 0 8px 24px -6px rgba(245, 184, 46, 0.28), 0 0 0 1px rgba(245, 184, 46, 0.4);
+      transform: translateY(-2px);
+      z-index: 5;
     }
 
     .room-card-top {
@@ -220,12 +214,12 @@
 
     .room-grade-badge {
       font-size: 0.65rem;
-      font-weight: 800;
+      font-weight: 700;
       padding: 2px 7px;
-      border-radius: 4px;
-      background: #1C1510;
-      color: #caf0f8;
-      border: 1px solid rgba(0, 180, 216, 0.45);
+      border-radius: 6px;
+      background: rgba(41, 182, 246, 0.15);
+      color: #38BDF8;
+      border: 1px solid rgba(41, 182, 246, 0.30);
       white-space: nowrap;
     }
 
@@ -235,8 +229,8 @@
 
     .room-name {
       font-size: 0.95rem;
-      font-weight: 900;
-      color: #FFFDF8;
+      font-weight: 800;
+      color: #FFFFFF;
       text-transform: uppercase;
       letter-spacing: 0.02em;
       overflow: hidden;
@@ -255,8 +249,8 @@
 
     .room-students-count {
       font-weight: 600;
-      color: #dcd8ce;
-      font-size: 0.72rem;
+      color: #CBD5E1;
+      font-size: 0.75rem;
     }
 
     .room-status-door {
@@ -265,27 +259,25 @@
       font-weight: 800;
     }
 
-    /* Aula Disponible / Libre (Solo +) */
+    /* Aula Disponible / Libre del Colegio (Contenedor translúcido sutil) */
     .campus-room-card.is-available {
-      background: rgba(8, 29, 48, 0.55);
-      border-top: 3px dashed rgba(0, 180, 216, 0.3);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1.5px dashed rgba(41, 182, 246, 0.18);
+      border-radius: 12px;
       align-items: center;
       justify-content: center;
       text-align: center;
+      box-shadow: none;
+    }
+
+    .campus-room-card.is-available:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(245, 184, 46, 0.45);
+      transform: translateY(-1px);
     }
 
     .room-available-plus {
-      font-size: 2rem;
-      font-weight: 300;
-      color: rgba(0, 180, 216, 0.45);
-      line-height: 1;
-      transition: all 0.18s ease;
-      user-select: none;
-    }
-
-    .campus-room-card.is-available:hover .room-available-plus {
-      color: #FFB703;
-      transform: scale(1.2);
+      display: none;
     }
 
     /* =============================================================================
@@ -300,28 +292,24 @@
          Pabellón Izquierdo (5 aulas) | Pasillo Vertical | Pabellón Derecho (5 aulas) */
       .campus-building-cad {
         display: grid;
-        grid-template-columns: 1fr 20px 1fr;
+        grid-template-columns: 1fr 12px 1fr;
+        padding: 8px;
+        gap: 8px;
         width: 100%;
       }
 
-      /* Cada ala se apila verticalmente con 5 aulas continuas */
+      /* Cada ala se apila verticalmente con 5 aulas con separación táctil */
       .campus-cad-wing {
         display: flex;
         flex-direction: column;
+        gap: 8px;
         width: 100%;
-      }
-
-      /* Muros interiores continuos en Celular (2x5):
-         Tabiques horizontales entre aulas apiladas */
-      .wing-north .campus-room-card:not(:last-child),
-      .wing-south .campus-room-card:not(:last-child) {
-        border-right: none !important;
-        border-bottom: 1.5px solid rgba(0, 180, 216, 0.28) !important;
       }
 
       .campus-room-card {
         min-height: 96px;
-        padding: 8px;
+        padding: 10px 8px;
+        border-radius: 10px;
       }
 
       .room-name {
@@ -331,12 +319,10 @@
       /* Pasillo Central en Celular: Eje vertical continuo entre ambos pabellones */
       .campus-cad-corridor {
         height: auto;
-        width: 100%;
-        background: rgba(2, 132, 199, 0.22);
-        border-top: none;
-        border-bottom: none;
-        border-left: 2px solid #0284c7;
-        border-right: 2px solid #0284c7;
+        width: 12px;
+        background: transparent;
+        border: none;
+        border-right: 1px solid rgba(41, 182, 246, 0.12);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -345,9 +331,7 @@
       }
 
       .corridor-decor-line {
-        width: 1px;
-        height: 100%;
-        background: repeating-linear-gradient(to bottom, #38bdf8 0, #38bdf8 6px, transparent 6px, transparent 12px);
+        display: none;
       }
     }
 

@@ -84,7 +84,7 @@ function renderClassroomManager(selectedClassId = null) {
   const count = classrooms.length;
 
   if (badgeOccupancy) {
-    badgeOccupancy.textContent = `${count} de ${MAX_CAMPUS_CLASSROOMS} salones`;
+    badgeOccupancy.innerHTML = `<span style="color:#ffffff; font-weight:800;">${count} de ${MAX_CAMPUS_CLASSROOMS}</span> <span style="color:#38BDF8; font-weight:700;">salones</span>`;
   }
 
   if (btnAdd) {
@@ -144,7 +144,7 @@ function renderClassroomManager(selectedClassId = null) {
       const color = cls.color || '#3b82f6';
 
       const roomUsage = (typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse) ? ClassroomData.isClassroomInUse(cls.id) : { inUse: false };
-      const lockBadge = roomUsage.inUse ? `<span style="background:rgba(255, 183, 3, 0.16); color:#FFB703; border:1px solid #FFB703; border-radius:4px; padding:2px 7px; font-size:0.65rem; font-weight:800; display:inline-flex; align-items:center; gap:3px;" title="Protegido: en uso en ${escaparHtml(roomUsage.sessionTitle)}">🔒 En Sesión</span>` : '';
+      const lockBadge = roomUsage.inUse ? `<span style="background:rgba(245, 184, 46, 0.15); color:#F5B82E; border:1px solid rgba(245, 184, 46, 0.35); border-radius:6px; padding:2px 7px; font-size:0.65rem; font-weight:800; display:inline-flex; align-items:center; gap:3px;" title="Protegido: en uso en ${escaparHtml(roomUsage.sessionTitle)}">🔒 En Sesión</span>` : '';
 
       cardHtml = `
         <div class="campus-room-card is-occupied" style="border-left-color: ${color};" onclick="openClassroomModal('${cls.id}')" title="Clic para gestionar el aula y nómina de estudiantes">
