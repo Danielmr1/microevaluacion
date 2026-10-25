@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.49</span>
+              Versión <span id="user-profile-version-tag">v3.10.50</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -1916,14 +1916,16 @@
 
       <!-- Formulario Rápido Desplegable para Agregar Alumno -->
       <div id="mgr-inline-add-student-box" style="display:none; padding:14px 20px; background:#FAF8F2; border-bottom:1.5px solid rgba(220, 214, 202, 0.8); border-top:1.5px solid rgba(245, 184, 46, 0.40);">
+        <input type="hidden" id="mgr-inline-student-edit-id" value="">
         <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
           <div style="flex:2; min-width:200px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-              <label style="font-size:0.72rem; font-weight:800; color:#3D3126; text-transform:uppercase; letter-spacing:0.02em;">Nombre Completo del Estudiante</label>
+              <label id="mgr-inline-student-label" style="font-size:0.72rem; font-weight:800; color:#3D3126; text-transform:uppercase; letter-spacing:0.02em;">Nombre Completo del Estudiante</label>
               <span id="mgr-inline-char-count" style="font-size:0.70rem; color:#786C5E; font-weight:700;">0/45</span>
             </div>
             <input type="text" id="mgr-inline-student-fullname" class="form-control" maxlength="45" placeholder="Apellidos, Nombres"
               oninput="handleInlineStudentFullnameInput(this.value)"
+              onkeydown="if(event.key === 'Enter') handleSaveInlineStudent()"
               style="width:100%; font-size:0.86rem; font-weight:600; padding:9px 12px; background:#FFFFFF; border:1.5px solid #D8CEC0; color:#1E1B18; border-radius:8px; box-sizing:border-box; outline:none; transition:all 0.15s;"
               onfocus="this.style.borderColor='#F5B82E'; this.style.boxShadow='0 0 0 3px rgba(245, 184, 46, 0.25)';"
               onblur="this.style.borderColor='#D8CEC0'; this.style.boxShadow='none';">

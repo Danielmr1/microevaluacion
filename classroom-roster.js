@@ -26,7 +26,7 @@ function handleInlineStudentFullnameInput(value) {
   }
 }
 
-function toggleAddStudentForm(force) {
+function toggleAddStudentForm(force, isEdit = false) {
   const classroomId = currentSelectedClassroomId;
   if (classroomId && typeof ClassroomData !== 'undefined' && ClassroomData.isClassroomInUse) {
     const inUse = ClassroomData.isClassroomInUse(classroomId);
@@ -40,11 +40,32 @@ function toggleAddStudentForm(force) {
   const isVisible = box.style.display !== 'none';
   const show = (force !== undefined) ? !!force : !isVisible;
   box.style.display = show ? 'block' : 'none';
+
+  // Efecto de difuminado/enfoque en la lista de alumnos
+  const listEl = document.getElementById('mgr-modal-students-list');
+  if (listEl) {
+    listEl.classList.toggle('mgr-students-dimmed', show);
+  }
+
+  const editIdInput = document.getElementById('mgr-inline-student-edit-id');
+  const labelEl = document.getElementById('mgr-inline-student-label');
+  const fnInput = document.getElementById('mgr-inline-student-fullname');
+
   if (show) {
-    const fnInput = document.getElementById('mgr-inline-student-fullname');
+    if (!isEdit) {
+      if (editIdInput) editIdInput.value = '';
+      if (labelEl) labelEl.textContent = 'Nombre Completo del Estudiante';
+      if (fnInput) {
+        fnInput.value = '';
+        fnInput.focus();
+      }
+      handleInlineStudentFullnameInput('');
+    }
+  } else {
+    if (editIdInput) editIdInput.value = '';
+    if (labelEl) labelEl.textContent = 'Nombre Completo del Estudiante';
     if (fnInput) {
       fnInput.value = '';
-      fnInput.focus();
     }
     handleInlineStudentFullnameInput('');
   }
@@ -58,9 +79,13 @@ async function handleSaveInlineStudent() {
     ? ClassroomData.isClassroomInUse(classroomId)
     : { inUse: false };
   if (inUse.inUse) {
-    showToast(`⚠️ No se pueden agregar alumnos a un salón con sesión activa o guardada ("${inUse.sessionTitle}").`);
+    showToast(`⚠️ No se pueden realizar cambios en un salón con sesión activa o guardada ("${inUse.sessionTitle}").`);
     return;
   }
+
+  const editIdEl = document.getElementById('mgr-inline-student-edit-id');
+  const isEditing = !!(editIdEl && editIdEl.value);
+  const studentCode = isEditing ? editIdEl.value : null;
 
   const fnInput = document.getElementById('mgr-inline-student-fullname');
   const btnSave = document.getElementById('btn-save-inline-student');
@@ -80,6 +105,7 @@ async function handleSaveInlineStudent() {
   // Chequeo de duplicados contra la nómina actual
   const normFull = normalizeTextForComparison(fullName);
   for (const st of (cls.students || [])) {
+    if (isEditing && st.id === studentCode) continue; // Omitir el alumno en edición
     if (normalizeTextForComparison(st.name) === normFull) {
       showToast(`⚠️ Ya existe otro estudiante con el nombre "${st.name}" en este salón.`);
       return;
@@ -91,32 +117,59 @@ async function handleSaveInlineStudent() {
       btnSave.disabled = true;
       btnSave.textContent = '⏳';
     }
-    showToast('⏳ Guardando alumno...');
 
-    const currentList = (cls.students || []).map(s => ({
-      fullName: s.name,
-      shortName: s.shortName
-    }));
-    currentList.push({ fullName, shortName });
+    if (isEditing) {
+      showToast('⏳ Guardando cambios...');
+      const ok = await SupabaseClient.updateStudent(classroomId, studentCode, fullName, shortName);
+      if (!ok) {
+        showToast('❌ No se pudo actualizar el alumno en la base de datos.');
+        return;
+      }
 
-    const ok = await SupabaseClient.importStudents(classroomId, currentList);
-    if (!ok) {
-      showToast('❌ No se pudo guardar el alumno en la base de datos.');
-      return;
+      if (typeof ClassroomData !== 'undefined' && ClassroomData.updateStudent) {
+        ClassroomData.updateStudent(classroomId, studentCode, fullName, shortName);
+      }
+
+      toggleAddStudentForm(false);
+
+      const user = await SupabaseClient.getCurrentUser();
+      if (user) {
+        await loadAndRenderClassrooms(user, classroomId);
+      } else {
+        renderClassroomSelect();
+        renderClassroomManager();
+      }
+
+      openClassroomModal(classroomId);
+      showToast('✅ Alumno actualizado con éxito');
+    } else {
+      showToast('⏳ Guardando alumno...');
+
+      const currentList = (cls.students || []).map(s => ({
+        fullName: s.name,
+        shortName: s.shortName
+      }));
+      currentList.push({ fullName, shortName });
+
+      const ok = await SupabaseClient.importStudents(classroomId, currentList);
+      if (!ok) {
+        showToast('❌ No se pudo guardar el alumno en la base de datos.');
+        return;
+      }
+
+      const user = await SupabaseClient.getCurrentUser();
+      if (user) {
+        await loadAndRenderClassrooms(user, classroomId);
+      }
+
+      toggleAddStudentForm(false);
+      renderClassroomManager(classroomId);
+      openClassroomModal(classroomId);
+      showToast(`✅ Alumno "${fullName}" agregado.`);
     }
-
-    const user = await SupabaseClient.getCurrentUser();
-    if (user) {
-      await loadAndRenderClassrooms(user, classroomId);
-    }
-
-    toggleAddStudentForm(false);
-    renderClassroomManager(classroomId);
-    openClassroomModal(classroomId);
-    showToast(`✅ Alumno "${fullName}" agregado.`);
   } catch (err) {
     console.error('[handleSaveInlineStudent Error]', err);
-    showToast('❌ Error al agregar alumno: ' + (err.message || 'error'));
+    showToast('❌ Error: ' + (err.message || 'error'));
   } finally {
     if (btnSave) {
       btnSave.disabled = false;
@@ -181,21 +234,28 @@ function openEditStudentModal(classroomId, studentCode, currentFullName, current
     showToast(`⚠️ No se pueden editar estudiantes mientras este salón esté en uso en: "${roomUsage.sessionTitle}".`);
     return;
   }
-  const inClassId = document.getElementById('edit-student-class-id');
-  const inCode = document.getElementById('edit-student-code');
-  const inFull = document.getElementById('edit-student-fullname');
-  const inShort = document.getElementById('edit-student-shortname');
-  const modal = document.getElementById('modal-edit-student');
 
-  if (inClassId) inClassId.value = classroomId || '';
-  if (inCode) inCode.value = studentCode || '';
-  if (inFull) inFull.value = currentFullName || '';
-  if (inShort) inShort.value = currentShortName || '';
+  // Activar la barra superior unificada en modo edición
+  toggleAddStudentForm(true, true);
 
-  handleEditStudentFullnameInput(currentFullName || '');
+  const editIdInput = document.getElementById('mgr-inline-student-edit-id');
+  if (editIdInput) editIdInput.value = studentCode || '';
 
-  if (modal) modal.style.display = 'flex';
-  setTimeout(() => { if (inFull) inFull.focus(); }, 50);
+  const labelEl = document.getElementById('mgr-inline-student-label');
+  if (labelEl) labelEl.textContent = 'Editar Nombre del Estudiante';
+
+  const fnInput = document.getElementById('mgr-inline-student-fullname');
+  if (fnInput) {
+    fnInput.value = currentFullName || '';
+    handleInlineStudentFullnameInput(currentFullName || '');
+    fnInput.focus();
+    fnInput.select();
+  }
+
+  const box = document.getElementById('mgr-inline-add-student-box');
+  if (box) {
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 function closeEditStudentModal() {

@@ -391,6 +391,9 @@ function openClassroomModal(classroomId) {
 function closeClassroomModal() {
   const modal = document.getElementById('modal-manage-classroom');
   if (modal) modal.style.display = 'none';
+  if (typeof toggleAddStudentForm === 'function') {
+    toggleAddStudentForm(false);
+  }
   currentSelectedClassroomId = null;
 }
 
