@@ -942,7 +942,8 @@
         overflow: visible !important;
       }
       .session-fluid-stage,
-      .classrooms-fluid-stage {
+      .classrooms-fluid-stage,
+      .bank-fluid-stage {
         display: none !important;
       }
     }
@@ -1146,7 +1147,7 @@
     }
 
     #view-classrooms .mgr-content-wrapper {
-      transition: opacity 0.25s ease, transform 0.25s ease;
+      transition: opacity 0.15s ease, transform 0.15s ease;
     }
 
     .classroom-glass-backdrop {
@@ -1188,5 +1189,137 @@
 
     .classroom-glass-content {
       background: rgba(255, 255, 255, 0.35) !important;
+    }
+
+    /* ==========================================================
+       FONDO FLUIDO ORGÁNICO EN VAIVÉN (BANCO DE PREGUNTAS)
+       Opción B: Halo Central Dorado Cálido con Marea Fluida de 60s
+       ========================================================== */
+    .bank-fluid-stage {
+      display: none;
+      position: fixed;
+      inset: -120px;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background-color: var(--bg-paper, #F9F8F3);
+    }
+
+    #view-bank.active .bank-fluid-stage,
+    body:has(#view-bank.active) .bank-fluid-stage {
+      display: block;
+    }
+
+    /* Ocultar el contenedor de tarjetas al abrir el modal de redacción de preguntas */
+    body:has(#modal-bank-add:not([style*="none"])) #view-bank .mgr-content-wrapper {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+      transform: scale(0.98);
+      transition: none !important;
+    }
+
+    #view-bank .mgr-content-wrapper {
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    /* Capa 1: Halo Central Dorado Cálido Protagonista (70% de presencia) */
+    .session-fluid-layer.bank-layer-gold {
+      background:
+        radial-gradient(circle at 50% 45%, rgba(245, 184, 46, 0.32) 0%, rgba(255, 183, 3, 0.20) 38%, transparent 65%),
+        radial-gradient(ellipse at 35% 35%, rgba(254, 243, 199, 0.50) 0%, transparent 45%),
+        radial-gradient(ellipse at 65% 55%, rgba(245, 184, 46, 0.24) 0%, transparent 50%);
+      animation: bankWaveGold60 58s ease-in-out infinite alternate;
+    }
+
+    /* Capa 2: Marea Ámbar de Profundidad y Contraste Cálido */
+    .session-fluid-layer.bank-layer-amber {
+      background:
+        radial-gradient(ellipse at 42% 60%, rgba(217, 119, 6, 0.20) 0%, rgba(200, 131, 8, 0.12) 40%, transparent 65%),
+        radial-gradient(circle at 62% 30%, rgba(245, 184, 46, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(254, 243, 199, 0.35) 0%, transparent 40%);
+      mix-blend-mode: multiply;
+      animation: bankWaveAmber60 64s ease-in-out infinite alternate;
+    }
+
+    /* Capa 3: Corriente Cian / Celeste Secundaria (Esquinas Perimetrales Cruzadas) */
+    .session-fluid-layer.bank-layer-cyan {
+      background:
+        radial-gradient(circle at 14% 18%, rgba(41, 182, 246, 0.20) 0%, transparent 45%),
+        radial-gradient(circle at 86% 82%, rgba(0, 180, 216, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 50% 20%, rgba(77, 208, 225, 0.12) 0%, transparent 55%);
+      animation: bankWaveCyan60 62s ease-in-out infinite alternate-reverse;
+    }
+
+    /* Capa 4: Velo Marfil Flotante con Destellos de Estudio */
+    .session-fluid-layer.bank-layer-veil {
+      inset: -100px;
+      background:
+        radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.45) 0%, transparent 60%),
+        radial-gradient(circle at 82% 25%, rgba(245, 184, 46, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 18% 75%, rgba(41, 182, 246, 0.12) 0%, transparent 45%);
+      mix-blend-mode: soft-light;
+      animation: bankWaveVeil60 68s ease-in-out infinite alternate;
+    }
+
+    /* Keyframes de Marea Lenta (~60 segundos con intercambio fluido de cuadrantes) */
+    @keyframes bankWaveGold60 {
+      0% {
+        transform: translate3d(-35px, -28px, 0) scale(1);
+      }
+      25% {
+        transform: translate3d(20px, 32px, 0) scale(1.025);
+      }
+      50% {
+        transform: translate3d(55px, 45px, 0) scale(0.985);
+      }
+      75% {
+        transform: translate3d(-10px, -15px, 0) scale(1.015);
+      }
+      100% {
+        transform: translate3d(-35px, -28px, 0) scale(1);
+      }
+    }
+
+    @keyframes bankWaveAmber60 {
+      0% {
+        transform: translate3d(40px, 32px, 0) scale(0.985);
+      }
+      25% {
+        transform: translate3d(-20px, -18px, 0) scale(1.02);
+      }
+      50% {
+        transform: translate3d(-50px, -40px, 0) scale(1.01);
+      }
+      75% {
+        transform: translate3d(15px, 18px, 0) scale(0.98);
+      }
+      100% {
+        transform: translate3d(40px, 32px, 0) scale(0.985);
+      }
+    }
+
+    @keyframes bankWaveCyan60 {
+      0% {
+        transform: translate3d(-25px, 30px, 0) scale(1.01);
+      }
+      50% {
+        transform: translate3d(35px, -32px, 0) scale(0.99);
+      }
+      100% {
+        transform: translate3d(-25px, 30px, 0) scale(1.01);
+      }
+    }
+
+    @keyframes bankWaveVeil60 {
+      0% {
+        transform: translate3d(20px, -25px, 0) scale(0.99);
+      }
+      50% {
+        transform: translate3d(-25px, 28px, 0) scale(1.02);
+      }
+      100% {
+        transform: translate3d(20px, -25px, 0) scale(0.99);
+      }
     }
 

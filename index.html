@@ -180,7 +180,8 @@
     }
 
     /* MODO CLARO UNIFICADO PARA SALONES Y MODALES — PALETA SCANWING (Tanda 2) */
-    #view-classrooms {
+    #view-classrooms,
+    #view-bank {
       background: transparent !important;
       color: #181512 !important;
     }
@@ -623,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.44</span>
+              Versión <span id="user-profile-version-tag">v3.10.45</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2426,8 +2427,19 @@
   <!-- ========================================================= -->
   <!-- VISTA: GESTIÓN DE BANCO DE PREGUNTAS POR GRADO             -->
   <!-- ========================================================= -->
-  <div id="view-bank" class="view-content" style="padding: 0;">
-    <div class="mgr-content-wrapper" style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px;">
+  <div id="view-bank" class="view-content" style="padding: 0; position: relative;">
+    <!-- Fondo Fluido Orgánico en Vaivén (Exclusivo para Banco de Preguntas — Opción B: Halo Central Dorado con Marea de 60s) -->
+    <div id="bank-fluid-backdrop" class="bank-fluid-stage" aria-hidden="true">
+      <div class="session-fluid-canvas">
+        <div class="session-fluid-layer bank-layer-gold"></div>
+        <div class="session-fluid-layer bank-layer-amber"></div>
+        <div class="session-fluid-layer bank-layer-cyan"></div>
+        <div class="session-fluid-layer bank-layer-veil"></div>
+      </div>
+      <div class="session-fluid-grain"></div>
+    </div>
+
+    <div class="mgr-content-wrapper" style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1;">
       
       <!-- Contenedor Maestro: Banco de Preguntas -->
       <div style="background: #ffffff; border: 2px solid #2B2118; border-radius: 18px; box-shadow: 0 0 0 3px #FFB703, 0 8px 30px rgba(43, 33, 24, 0.08); overflow: hidden; display: flex; flex-direction: column;">
@@ -2484,12 +2496,12 @@
         <!-- Body de Preguntas -->
         <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FDFCF7;">
           
-          <!-- Modal Ventana Centrada: Redactar Pregunta para el Grado -->
-          <div id="modal-bank-add" style="display:none; position:fixed; inset:0; background:rgba(43,33,24,0.6); backdrop-filter:blur(3px); z-index:10050; align-items:center; justify-content:center; padding:16px;">
-            <div id="bank-manager-add-form" style="background:#F8F6F0; border:1.5px solid #2B2118; border-radius:18px; max-width:580px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 45px -10px rgba(43,33,24,0.35);">
+          <!-- Modal Ventana Centrada: Redactar Pregunta para el Grado (Glassmorphism sobre fondo dorado puro) -->
+          <div id="modal-bank-add" class="classroom-glass-backdrop" style="display:none; position:fixed; inset:0; z-index:10050; align-items:center; justify-content:center; padding:16px;">
+            <div id="bank-manager-add-form" class="classroom-glass-card" style="border-radius:18px; max-width:580px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden;">
               
               <!-- Cabecera del Modal -->
-              <div style="background:#EDE8DF; padding:12px 16px; border-bottom:1.5px solid rgba(43,33,24,0.15); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+              <div class="classroom-glass-header" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; border-top:4px solid #FFB703;">
                 <div style="display:flex; align-items:center; gap:8px;">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B2118" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   <span id="bank-manager-form-title" style="font-size:0.88rem; font-weight:800; color:#2B2118;">Redactar Pregunta de Alternativas</span>
@@ -2499,7 +2511,7 @@
               </div>
 
               <!-- Contenido Scrollable -->
-              <div style="padding:16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; background:#F8F6F0;">
+              <div class="classroom-glass-content" style="padding:16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px;">
                 
                 <!-- Estado 1: Formulario de Redacción / Ingreso -->
                 <div id="bm-new-form-fields" style="display:flex; flex-direction:column; gap:12px;">
