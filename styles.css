@@ -4175,7 +4175,6 @@
       }
       header,
       .tab-bar,
-      .teacher-panel,
       .flow-topbar,
       .btn-flow-back,
       #view-hub,
@@ -4190,9 +4189,27 @@
       .modal,
       .modal-backdrop,
       #user-menu-wrap,
-      .user-menu-dropdown {
+      .user-menu-dropdown,
+      .summary-sticky-sidebar,
+      .summary-sessions-strip,
+      #summary-inline-results-container,
+      #step-classroom,
+      #step-eval-type,
+      #step-new-form,
+      #step-bank,
+      #branch-3-options,
+      #sheet-simulator-container,
+      .teacher-panel-header,
+      .sim-grid-toggle-btn,
+      .sim-grid-stepper,
+      .session-fluid-stage,
+      .session-fluid-grain,
+      .classrooms-fluid-stage,
+      .bank-fluid-stage {
         display: none !important;
       }
+
+      /* Contenedores de la jerarquía activa hasta el visor de documentos */
       #view-create {
         display: block !important;
         background: transparent !important;
@@ -4201,10 +4218,44 @@
         border: none !important;
         width: 100% !important;
         max-width: none !important;
+        overflow: visible !important;
+        min-height: 0 !important;
       }
-      /* Garantía estricta: ocultar cualquier elemento dentro de view-create que no sea pages-container o booklet-container */
-      #view-create > :not(#pages-container):not(#booklet-container) {
-        display: none !important;
+
+      #view-create .teacher-panel,
+      .teacher-panel {
+        display: block !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        max-width: none !important;
+        overflow: visible !important;
+        min-height: 0 !important;
+      }
+
+      #step-summary {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+      }
+
+      .summary-document-viewport {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
       }
 
       /* MODO CARTILLAS (Por defecto o sin clase print-mode-booklet) */
@@ -4343,7 +4394,8 @@
          No volver a poner width:100% aquí: la ficha mide 186mm y con
          width:100% quedaba más ancha que su propia hoja. */
       .sheet-a4,
-      .sheet-a4-quad-v {
+      .sheet-a4-quad-v,
+      .sheet-a4-v-single {
         box-shadow: none !important;
         width: 188mm !important;
         height: 275mm !important;
@@ -4363,16 +4415,23 @@
         flex-direction: column !important;
         justify-content: space-between !important;
       }
+      .sheet-a4-v-single {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
       /* Evita una página en blanco al final. */
       .sheet-a4:last-child,
-      .sheet-a4-quad-v:last-child {
+      .sheet-a4-quad-v:last-child,
+      .sheet-a4-v-single:last-child {
         page-break-after: auto !important;
         break-after: auto !important;
       }
 
       /* ── HOJA A4 CON 4 O 2 ALUMNOS (CARTILLAS OMR HORIZONTALES) ── */
       body:not(.print-mode-booklet) .sheet-a4-quad,
-      body:not(.print-mode-booklet) .sheet-a4-split {
+      body:not(.print-mode-booklet) .sheet-a4-split,
+      body:not(.print-mode-booklet) .sheet-a4-h-single {
         box-shadow: none !important;
         width: 275mm !important;
         height: 188mm !important;
@@ -4397,8 +4456,13 @@
         flex-direction: row !important;
         justify-content: space-between !important;
       }
+      body:not(.print-mode-booklet) .sheet-a4-h-single {
+        align-items: center !important;
+        justify-content: center !important;
+      }
       body:not(.print-mode-booklet) .sheet-a4-quad:last-child,
-      body:not(.print-mode-booklet) .sheet-a4-split:last-child {
+      body:not(.print-mode-booklet) .sheet-a4-split:last-child,
+      body:not(.print-mode-booklet) .sheet-a4-h-single:last-child {
         page-break-after: auto !important;
         break-after: auto !important;
       }
@@ -4406,7 +4470,9 @@
       .card-a5-v-r3,
       .card-a5-v-free,
       .card-a6-r3,
-      .card-a6-v {
+      .card-a6-v,
+      .card-a4-h,
+      .card-a4-v {
         border: 1mm solid #000000 !important;
       }
     }

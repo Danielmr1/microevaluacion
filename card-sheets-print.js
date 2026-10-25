@@ -358,7 +358,11 @@ function printEvaluationSheets(classId) {
     document.body.classList.remove('print-mode-booklet');
     document.body.classList.add('print-mode-sheets');
     const container = document.getElementById('pages-container');
-    const isLandscape = container && (container.querySelector('.sheet-a4-quad:not(.sheet-a4-quad-v)') || container.querySelector('.sheet-a4-split'));
+    const isLandscape = container && (
+      container.querySelector('.sheet-a4-quad:not(.sheet-a4-quad-v)') ||
+      container.querySelector('.sheet-a4-split') ||
+      container.querySelector('.sheet-a4-h-single')
+    );
     setPrintPageOrientation(isLandscape ? 'landscape' : 'portrait');
   }
 
@@ -396,7 +400,9 @@ if (typeof window !== 'undefined' && window.addEventListener) {
 
     const container = document.getElementById('pages-container');
     if (container && container.style.display !== 'none' && container.children.length > 0) {
-      const isLandscape = container.querySelector('.sheet-a4-quad:not(.sheet-a4-quad-v)') || container.querySelector('.sheet-a4-split');
+      const isLandscape = container.querySelector('.sheet-a4-quad:not(.sheet-a4-quad-v)') ||
+                          container.querySelector('.sheet-a4-split') ||
+                          container.querySelector('.sheet-a4-h-single');
       setPrintPageOrientation(isLandscape ? 'landscape' : 'portrait');
 
       let classroom = null;
