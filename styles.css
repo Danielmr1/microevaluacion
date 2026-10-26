@@ -7942,6 +7942,18 @@
         border-color: #dcd8ce !important;
         box-shadow: 0 2px 8px rgba(43, 33, 24, 0.04) !important;
       }
+      .bank-question-card {
+        padding: 12px 10px !important;
+      }
+      .bank-card-rubric-drawer {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
     }
 
     /* ==========================================================================

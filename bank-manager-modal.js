@@ -628,7 +628,7 @@ function buildInlineRubricDrawerHtml(questionOrId) {
   const r = getQuestionRubricData(q);
   if (!r) {
     return `
-      <div class="bank-card-rubric-drawer" style="margin-top:12px; padding:16px; background:#FAF7F0; border:1.5px dashed #CBD5E1; border-radius:12px; text-align:center; color:#64748B;">
+      <div class="bank-card-rubric-drawer" style="margin-top:14px; padding-top:14px; border-top:1.5px solid rgba(2, 132, 199, 0.22); text-align:center; color:#64748B;">
         <div style="font-size:0.88rem; font-weight:800; color:#181512; margin-bottom:4px;">Sin Rúbrica Registrada</div>
         <div style="font-size:0.75rem; color:#64748B;">Esta pregunta aún no cuenta con análisis de procedimiento cargado.</div>
       </div>
@@ -643,7 +643,7 @@ function buildInlineRubricDrawerHtml(questionOrId) {
     let criteriosHtml = '';
     if (Array.isArray(r.criterios) && r.criterios.length > 0) {
       criteriosHtml = `
-        <div style="margin-top:12px;">
+        <div style="margin-top:2px;">
           <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
             <span style="display:flex; align-items:center; gap:6px;">
               <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
@@ -653,7 +653,7 @@ function buildInlineRubricDrawerHtml(questionOrId) {
           </div>
           <div style="display:flex; flex-direction:column; gap:8px;">
             ${r.criterios.map(c => `
-              <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:8px; box-shadow:0 1px 3px rgba(43,33,24,0.03);">
+              <div style="display:flex; gap:10px; align-items:flex-start; padding:8px 12px; background:#FAF8F5; border:1px solid #DCD8CE; border-radius:8px;">
                 <span style="flex:0 0 auto; background:#0284C7; color:#FFFFFF; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:900; white-space:nowrap; box-shadow:0 2px 4px rgba(2,132,199,0.25);">
                   ${escaparHtml(String(c.peso || '1'))} pt
                 </span>
@@ -672,12 +672,12 @@ function buildInlineRubricDrawerHtml(questionOrId) {
     let pasosHtml = '';
     if (Array.isArray(r.solucion_pasos) && r.solucion_pasos.length > 0) {
       pasosHtml = `
-        <div style="margin-top:14px;">
+        <div style="margin-top:2px;">
           <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
             <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
             Procedimiento de Resolución
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px; background:rgba(255, 255, 255, 0.80); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:12px 14px;">
+          <div style="display:flex; flex-direction:column; gap:6px; background:#FAF8F5; border:1px solid #DCD8CE; border-radius:8px; padding:10px 12px;">
             ${r.solucion_pasos.map((p, i) => `
               <div style="font-size:0.78rem; color:#2B2118; line-height:1.45; display:flex; gap:6px; align-items:baseline;">
                 <span style="color:#0284C7; font-weight:900; flex-shrink:0;">${i + 1}.</span>
@@ -689,12 +689,12 @@ function buildInlineRubricDrawerHtml(questionOrId) {
       `;
     } else if (r.procedimiento_esperado) {
       pasosHtml = `
-        <div style="margin-top:14px;">
+        <div style="margin-top:2px;">
           <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
             <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
             Procedimiento Esperado
           </div>
-          <div style="font-size:0.78rem; color:#2B2118; background:rgba(255, 255, 255, 0.80); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:12px 14px; line-height:1.45;">
+          <div style="font-size:0.78rem; color:#2B2118; background:#FAF8F5; border:1px solid #DCD8CE; border-radius:8px; padding:10px 12px; line-height:1.45;">
             ${escaparHtml(r.procedimiento_esperado)}
           </div>
         </div>
@@ -705,16 +705,22 @@ function buildInlineRubricDrawerHtml(questionOrId) {
     let erroresHtml = '';
     if (Array.isArray(r.errores_previsibles) && r.errores_previsibles.length > 0) {
       erroresHtml = `
-        <div style="margin-top:14px;">
+        <div style="margin-top:2px;">
           <div style="font-size:0.70rem; font-weight:800; color:#B45309; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
             <span style="width:6px; height:6px; border-radius:50%; background:#B45309;"></span>
             Errores Previsibles Detectados por IA
           </div>
           <div style="display:flex; flex-direction:column; gap:6px;">
             ${r.errores_previsibles.map(e => `
-              <div style="font-size:0.76rem; color:#2B2118; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(254, 215, 170, 0.9); border-radius:8px; padding:8px 12px; line-height:1.4; display:flex; gap:8px; align-items:baseline;">
-                <span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; border-radius:4px; padding:2px 7px; font-size:0.66rem; font-weight:800; flex-shrink:0;">${escaparHtml(e.tipo || 'Error')}</span>
-                <span>${escaparHtml(e.descripcion || '')}</span>
+              <div style="background:#FFFDF9; border:1px solid #FDE68A; border-radius:8px; padding:8px 10px; display:flex; flex-direction:column; gap:4px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; border-radius:4px; padding:1px 6px; font-size:0.68rem; font-weight:800; display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    ${escaparHtml(e.tipo || 'Error')}
+                  </span>
+                </div>
+                <div style="font-size:0.75rem; color:#2B2118; line-height:1.45;">
+                  ${escaparHtml(e.descripcion || '')}
+                </div>
               </div>
             `).join('')}
           </div>
@@ -734,7 +740,7 @@ function buildInlineRubricDrawerHtml(questionOrId) {
       }
     }
     const confBadge = confVal != null
-      ? `<div style="margin-top:14px; padding-top:10px; border-top:1.5px solid rgba(220, 214, 202, 0.7); font-size:0.72rem; color:#64748B; display:flex; justify-content:space-between; align-items:center;">
+      ? `<div style="margin-top:4px; padding-top:8px; border-top:1px solid #DCD8CE; font-size:0.72rem; color:#64748B; display:flex; justify-content:space-between; align-items:center;">
            <span style="display:flex; align-items:center; gap:6px;">
              <span style="color:#0284C7; font-weight:800;">✦</span> Análisis pedagógico generado por IA (Gemini)
            </span>
@@ -743,19 +749,13 @@ function buildInlineRubricDrawerHtml(questionOrId) {
       : '';
 
     return `
-      <div class="bank-card-rubric-drawer" style="margin-top:12px; border:1.8px solid #0284C7; border-radius:12px; background:linear-gradient(180deg, rgba(2, 132, 199, 0.04) 0%, rgba(250, 247, 240, 0.75) 100%); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); padding:16px; box-shadow:0 4px 18px rgba(2, 132, 199, 0.10), 0 0 0 2px rgba(245, 184, 46, 0.25); animation:fadeInDrawer 0.22s ease-out;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:10px; border-bottom:1.5px solid rgba(2, 132, 199, 0.15);">
-          <div style="font-size:0.76rem; font-weight:900; color:#0284C7; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:8px;">
-            <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.14); color:#0284C7; font-size:0.75rem;">📋</span>
-            <span>Rúbrica Pedagógica de Corrección (IA)</span>
-          </div>
-          <button type="button" onclick="closeInlineQuestionRubric()" style="background:#FAF7F0; border:1px solid #DCD8CE; border-radius:6px; padding:3px 9px; font-size:0.72rem; font-weight:700; color:#64748B; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;" onmouseenter="this.style.background='#F3EFE6'; this.style.color='#181512';" onmouseleave="this.style.background='#FAF7F0'; this.style.color='#64748B';">
-            <span>Ocultar</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+      <div class="bank-card-rubric-drawer" style="margin-top:14px; padding-top:14px; border-top:1.5px solid rgba(2, 132, 199, 0.25); animation:fadeInDrawer 0.22s ease-out; display:flex; flex-direction:column; gap:12px;">
+        <div style="font-size:0.76rem; font-weight:900; color:#0284C7; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:8px;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.14); color:#0284C7; font-size:0.75rem;">📋</span>
+          <span>Rúbrica Pedagógica de Corrección (IA)</span>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#FAF8F5; border:1px solid #DCD8CE; border-radius:8px; padding:10px 14px;">
           <div>
             <span style="font-size:0.68rem; color:#64748B; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Respuesta Canónica</span>
             <div style="font-size:1.35rem; font-weight:900; color:#0F172A; line-height:1.2;">${escaparHtml(canonica || '—')}</div>
@@ -771,10 +771,7 @@ function buildInlineRubricDrawerHtml(questionOrId) {
     `;
   } else {
     return `
-      <div class="bank-card-rubric-drawer" style="margin-top:12px; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:14px; font-size:0.82rem; color:#2B2118; white-space:pre-wrap; line-height:1.5;">
-        <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
-          <button type="button" onclick="closeInlineQuestionRubric()" style="background:#FAF7F0; border:1px solid #DCD8CE; border-radius:6px; padding:2px 8px; font-size:0.70rem; cursor:pointer;">Ocultar ✕</button>
-        </div>
+      <div class="bank-card-rubric-drawer" style="margin-top:14px; padding-top:14px; border-top:1.5px solid rgba(2, 132, 199, 0.22); font-size:0.82rem; color:#2B2118; white-space:pre-wrap; line-height:1.5;">
         ${escaparHtml(String(r))}
       </div>
     `;
