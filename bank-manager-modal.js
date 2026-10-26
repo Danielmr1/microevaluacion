@@ -412,11 +412,15 @@ function renderBankManagerQuestions() {
     card.className = 'bank-question-card';
     card.dataset.questionId = q.id;
 
+
+    const isEditingThisCard = (bankManagerEditingQuestionId && String(bankManagerEditingQuestionId) === String(q.id));
     const isExpanded = (bankManagerExpandedRubricQuestionId && String(bankManagerExpandedRubricQuestionId) === String(q.id));
     const hasExpandedActiveCard = !!bankManagerExpandedRubricQuestionId;
     const isNeighbor = hasExpandedActiveCard && !isExpanded;
 
-    if (isExpanded) {
+    if (isEditingThisCard) {
+      card.classList.add('is-active-edit');
+    } else if (isExpanded) {
       card.classList.add('is-active-rubric');
     } else if (isNeighbor) {
       card.classList.add('is-compressed-neighbor');
@@ -464,7 +468,6 @@ function renderBankManagerQuestions() {
       ? ClassroomData.getQuestionSavedSessions(q.id, q.prompt)
       : [];
 
-    const isEditingThisCard = (bankManagerEditingQuestionId && String(bankManagerEditingQuestionId) === String(q.id));
 
     if (inSavedSessions && inSavedSessions.length > 0) {
       // Bloqueada por estar en sesiones: solo botones directos a la sesión (sin etiqueta "En uso")
@@ -613,22 +616,23 @@ function renderBankManagerQuestions() {
       footer.appendChild(btnUpgrade);
     }
 
-    fullBody.appendChild(header);
-    fullBody.appendChild(promptText);
-    fullBody.appendChild(optsOrAnswerElement);
-    fullBody.appendChild(footer);
-
-    // Si esta tarjeta está expandida, incorporar el cajón de rúbrica in-situ
-    if (isExpanded) {
-      const drawerContainer = document.createElement('div');
-      drawerContainer.innerHTML = buildInlineRubricDrawerHtml(q);
-      fullBody.appendChild(drawerContainer);
-    }
-
-    // Si esta tarjeta está en modo edición in-situ, incorporar el cajón de edición
     if (isEditingThisCard) {
+      // En modo edición in-situ, no mostrar la vista previa estática superior (header, promptText, optsOrAnswerElement, footer)
+      // para evitar duplicar el enunciado y las alternativas sobre el editor
       const editDrawer = buildInlineEditDrawerElement(q);
       fullBody.appendChild(editDrawer);
+    } else {
+      fullBody.appendChild(header);
+      fullBody.appendChild(promptText);
+      fullBody.appendChild(optsOrAnswerElement);
+      fullBody.appendChild(footer);
+
+      // Si esta tarjeta está expandida, incorporar el cajón de rúbrica in-situ
+      if (isExpanded) {
+        const drawerContainer = document.createElement('div');
+        drawerContainer.innerHTML = buildInlineRubricDrawerHtml(q);
+        fullBody.appendChild(drawerContainer);
+      }
     }
 
     card.appendChild(fullBody);
@@ -674,7 +678,7 @@ window.executeSwap = executeSwap;
 function buildInlineEditDrawerElement(q) {
   const container = document.createElement('div');
   container.className = 'bank-card-edit-drawer';
-  container.style.cssText = 'margin-top:14px; padding-top:14px; border-top:1.5px solid rgba(2, 132, 199, 0.25); display:flex; flex-direction:column; gap:12px; animation:fadeInDrawer 0.22s ease-out;';
+  container.style.cssText = 'display:flex; flex-direction:column; gap:12px; animation:fadeInDrawer 0.22s ease-out;';
 
   if (!window._bmEditingState) window._bmEditingState = {};
   if (!window._bmEditingState[q.id]) {

@@ -8049,8 +8049,9 @@
       display: inline-flex !important;
     }
 
-    /* Tarjeta activa con rúbrica desplegada */
-    .bank-question-card.is-active-rubric {
+    /* Tarjeta activa con rúbrica o edición desplegada */
+    .bank-question-card.is-active-rubric,
+    .bank-question-card.is-active-edit {
       border: 2px solid #0284C7 !important;
       box-shadow: 0 12px 36px rgba(2, 132, 199, 0.16), 0 0 0 2px rgba(245, 184, 46, 0.35) !important;
       background: #FFFFFF !important;
