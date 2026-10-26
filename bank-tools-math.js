@@ -191,12 +191,8 @@ function updateBMPromptCounter() {
     if (len > maxChars || lines > maxLines) {
       hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
-    } else if (withFrac) {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' con fracciones (máx 2 en A6, 105 car.)';
-      hint.style.color = '#0284c7';
     } else {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 3 (compatible A6, A5 y A4)';
-      hint.style.color = '#64748b';
+      hint.textContent = '';
     }
   }
 

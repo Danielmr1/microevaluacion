@@ -40,8 +40,22 @@ function toggleBankManagerAddForm(show) {
     }
 
     const title = document.getElementById('bank-manager-form-title');
-    if (title && bankManagerActiveGrade) {
-      title.textContent = `Redactar Pregunta de Alternativas (${bankManagerActiveGrade.label})`;
+    if (title) {
+      title.textContent = 'Redactar Pregunta';
+    }
+
+    const statusHint = document.getElementById('bm-status-hint');
+    if (statusHint) {
+      statusHint.innerHTML = `
+        <div style="display:flex; align-items:flex-start; gap:6px;">
+          <span style="color:#D97706; font-weight:bold; line-height:1.2;">•</span>
+          <span><strong>Guardar sin rúbrica</strong> permite usar la pregunta solo en las modalidades Focalizada en la Respuesta y Cartilla OMR.</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:6px;">
+          <span style="color:#0284C7; font-weight:bold; line-height:1.2;">•</span>
+          <span><strong>Generar Rúbrica y Guardar</strong> permite usar la pregunta en todas las modalidades.</span>
+        </div>
+      `;
     }
 
     const promptInput = document.getElementById('bm-prompt');
@@ -371,7 +385,7 @@ async function handleSaveQuickQuestionFromManager() {
     ClassroomData.saveCustomEvaluation(evalObj);
     SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud Quick]', e));
 
-    showToast('⚡ Pregunta rápida guardada con éxito en el banco');
+    showToast('⚡ Pregunta guardada sin rúbrica con éxito en el banco');
 
     // Limpiar campos y refrescar
     if (promptInput) promptInput.value = '';
