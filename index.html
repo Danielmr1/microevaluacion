@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.68</span>
+              Versión <span id="user-profile-version-tag">v3.10.69</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2642,29 +2642,56 @@
 
                   <div>
                     <label style="display:block; font-size:0.78rem; font-weight:700; color:#334155; margin-bottom:6px;">
-                      4 Alternativas (marca el círculo verde de la <strong style="color:#15803D;">clave correcta</strong>):
+                      Tipo de respuesta <span style="color:#dc2626;">*</span>
                     </label>
-                    <div id="bm-options-grid" class="bm-options-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
-                        <input type="radio" id="bm-rad-a" name="bm-correct" value="A" checked style="accent-color:#16a34a; cursor:pointer;">
-                        <label for="bm-rad-a" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">A)</label>
-                        <input type="text" id="bm-opt-a" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa A" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                    <!-- Selector segmentado: Alternativas vs Respuesta esperada -->
+                    <div id="bm-response-type-selector" style="display:inline-flex; background:#EDE8DF; border:1px solid rgba(43,33,24,0.18); border-radius:8px; padding:3px; gap:4px; margin-bottom:12px; width:100%; box-sizing:border-box;">
+                      <button type="button" id="bm-btn-type-mc" onclick="setBMResponseType('mc')"
+                        style="flex:1; padding:7px 12px; border-radius:6px; font-size:0.80rem; font-weight:800; cursor:pointer; border:none; background:#0284C7; color:#FFFFFF; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                        <span>🔘 Alternativas</span>
+                      </button>
+                      <button type="button" id="bm-btn-type-free" onclick="setBMResponseType('free')"
+                        style="flex:1; padding:7px 12px; border-radius:6px; font-size:0.80rem; font-weight:700; cursor:pointer; border:none; background:transparent; color:#57534E; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s;">
+                        <span>✍️ Respuesta esperada</span>
+                      </button>
+                    </div>
+
+                    <!-- Bloque A: 4 Alternativas -->
+                    <div id="bm-block-mc" style="display:block;">
+                      <div style="font-size:0.75rem; font-weight:700; color:#475569; margin-bottom:6px;">
+                        Marca el círculo verde de la <strong style="color:#15803D;">clave correcta</strong>:
                       </div>
-                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
-                        <input type="radio" id="bm-rad-b" name="bm-correct" value="B" style="accent-color:#16a34a; cursor:pointer;">
-                        <label for="bm-rad-b" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">B)</label>
-                        <input type="text" id="bm-opt-b" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa B" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                      <div id="bm-options-grid" class="bm-options-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                          <input type="radio" id="bm-rad-a" name="bm-correct" value="A" checked style="accent-color:#16a34a; cursor:pointer;">
+                          <label for="bm-rad-a" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">A)</label>
+                          <input type="text" id="bm-opt-a" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa A" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                          <input type="radio" id="bm-rad-b" name="bm-correct" value="B" style="accent-color:#16a34a; cursor:pointer;">
+                          <label for="bm-rad-b" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">B)</label>
+                          <input type="text" id="bm-opt-b" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa B" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                          <input type="radio" id="bm-rad-c" name="bm-correct" value="C" style="accent-color:#16a34a; cursor:pointer;">
+                          <label for="bm-rad-c" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">C)</label>
+                          <input type="text" id="bm-opt-c" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa C" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+                          <input type="radio" id="bm-rad-d" name="bm-correct" value="D" style="accent-color:#16a34a; cursor:pointer;">
+                          <label for="bm-rad-d" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">D)</label>
+                          <input type="text" id="bm-opt-d" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa D" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+                        </div>
                       </div>
-                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
-                        <input type="radio" id="bm-rad-c" name="bm-correct" value="C" style="accent-color:#16a34a; cursor:pointer;">
-                        <label for="bm-rad-c" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">C)</label>
-                        <input type="text" id="bm-opt-c" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa C" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
-                      </div>
-                      <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
-                        <input type="radio" id="bm-rad-d" name="bm-correct" value="D" style="accent-color:#16a34a; cursor:pointer;">
-                        <label for="bm-rad-d" style="font-weight:800; color:#0284c7; font-size:0.82rem; cursor:pointer; min-width:18px;">D)</label>
-                        <input type="text" id="bm-opt-d" class="form-control" maxlength="10" onfocus="trackMathInputFocus(this)" placeholder="Alternativa D" style="font-size:0.82rem; padding:5px 8px; flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
-                      </div>
+                    </div>
+
+                    <!-- Bloque B: Respuesta esperada (sin placeholder) -->
+                    <div id="bm-block-free" style="display:none; margin-bottom:12px;">
+                      <label for="bm-expected-answer" style="display:block; font-size:0.75rem; font-weight:700; color:#475569; margin-bottom:6px;">
+                        Respuesta esperada <span style="color:#dc2626;">*</span>
+                      </label>
+                      <input type="text" id="bm-expected-answer" class="form-control" maxlength="20" onfocus="trackMathInputFocus(this)"
+                        style="font-size:0.92rem; font-weight:700; padding:9px 12px; width:100%; box-sizing:border-box; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:8px; color:#0f172a;">
                     </div>
                   </div>
 

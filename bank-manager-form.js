@@ -10,6 +10,78 @@
 // =============================================================================
 
 let bmCurrentRubric = null;
+let bmActiveResponseType = 'mc';
+
+function setBMResponseType(type) {
+  bmActiveResponseType = (type === 'free') ? 'free' : 'mc';
+  const btnMC = document.getElementById('bm-btn-type-mc');
+  const btnFree = document.getElementById('bm-btn-type-free');
+  const blockMC = document.getElementById('bm-block-mc');
+  const blockFree = document.getElementById('bm-block-free');
+  const statusHint = document.getElementById('bm-status-hint');
+
+  if (bmActiveResponseType === 'mc') {
+    if (btnMC) {
+      btnMC.style.background = '#0284C7';
+      btnMC.style.color = '#FFFFFF';
+      btnMC.style.fontWeight = '800';
+      btnMC.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+    }
+    if (btnFree) {
+      btnFree.style.background = 'transparent';
+      btnFree.style.color = '#57534E';
+      btnFree.style.fontWeight = '700';
+      btnFree.style.boxShadow = 'none';
+    }
+    if (blockMC) blockMC.style.display = 'block';
+    if (blockFree) blockFree.style.display = 'none';
+
+    if (statusHint) {
+      statusHint.innerHTML = `
+        <div style="display:flex; align-items:flex-start; gap:6px;">
+          <span style="color:#D97706; font-weight:bold; line-height:1.2;">•</span>
+          <span><strong>Guardar sin rúbrica</strong> permite usar la pregunta solo en las modalidades Focalizada en la Respuesta y Cartilla OMR.</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:6px;">
+          <span style="color:#0284C7; font-weight:bold; line-height:1.2;">•</span>
+          <span><strong>Generar Rúbrica</strong> analiza el problema pedagógicamente con IA y muestra la vista previa antes de guardar.</span>
+        </div>
+      `;
+    }
+  } else {
+    if (btnMC) {
+      btnMC.style.background = 'transparent';
+      btnMC.style.color = '#57534E';
+      btnMC.style.fontWeight = '700';
+      btnMC.style.boxShadow = 'none';
+    }
+    if (btnFree) {
+      btnFree.style.background = '#0284C7';
+      btnFree.style.color = '#FFFFFF';
+      btnFree.style.fontWeight = '800';
+      btnFree.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+    }
+    if (blockMC) blockMC.style.display = 'none';
+    if (blockFree) blockFree.style.display = 'block';
+
+    if (statusHint) {
+      statusHint.innerHTML = `
+        <div style="display:flex; align-items:flex-start; gap:6px;">
+          <span style="color:#D97706; font-weight:bold; line-height:1.2;">•</span>
+          <span><strong>Guardar sin rúbrica</strong> guarda la pregunta de desarrollo libre directamente en el banco.</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:6px;">
+          <span style="color:#0284C7; font-weight:bold; line-height:1.2;">•</span>
+          <span><strong>Generar Rúbrica</strong> analiza el problema pedagógicamente con IA y muestra la vista previa antes de guardar.</span>
+        </div>
+      `;
+    }
+
+    const expInput = document.getElementById('bm-expected-answer');
+    if (expInput) setTimeout(() => expInput.focus(), 50);
+  }
+}
+window.setBMResponseType = setBMResponseType;
 
 function toggleBankManagerAddForm(show) {
   const modal = document.getElementById('modal-bank-add');
@@ -44,19 +116,8 @@ function toggleBankManagerAddForm(show) {
       title.textContent = 'Redactar Pregunta';
     }
 
-    const statusHint = document.getElementById('bm-status-hint');
-    if (statusHint) {
-      statusHint.innerHTML = `
-        <div style="display:flex; align-items:flex-start; gap:6px;">
-          <span style="color:#D97706; font-weight:bold; line-height:1.2;">•</span>
-          <span><strong>Guardar sin rúbrica</strong> permite usar la pregunta solo en las modalidades Focalizada en la Respuesta y Cartilla OMR.</span>
-        </div>
-        <div style="display:flex; align-items:flex-start; gap:6px;">
-          <span style="color:#0284C7; font-weight:bold; line-height:1.2;">•</span>
-          <span><strong>Generar Rúbrica</strong> analiza el problema pedagógicamente con IA y muestra la vista previa antes de guardar.</span>
-        </div>
-      `;
-    }
+    // Restablecer selector a Alternativas por defecto
+    setBMResponseType('mc');
 
     const promptInput = document.getElementById('bm-prompt');
     if (promptInput) promptInput.value = '';
@@ -64,6 +125,8 @@ function toggleBankManagerAddForm(show) {
       const inp = document.getElementById('bm-opt-' + lettr);
       if (inp) inp.value = '';
     });
+    const expInput = document.getElementById('bm-expected-answer');
+    if (expInput) expInput.value = '';
     const radA = document.getElementById('bm-rad-a');
     if (radA) radA.checked = true;
 
@@ -116,13 +179,25 @@ async function handleSaveQuestionFromManager() {
     return;
   }
 
-  const optA = (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10);
-  const optB = (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10);
-  const optC = (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10);
-  const optD = (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10);
-  if (!optA || !optB || !optC || !optD) {
-    showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
-    return;
+  let optA = '', optB = '', optC = '', optD = '';
+  let freeExpectedAnswer = '';
+
+  if (bmActiveResponseType === 'free') {
+    freeExpectedAnswer = (document.getElementById('bm-expected-answer')?.value || '').trim();
+    if (!freeExpectedAnswer) {
+      document.getElementById('bm-expected-answer')?.focus();
+      showToast('⚠️ Escribe la respuesta esperada.');
+      return;
+    }
+  } else {
+    optA = (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10);
+    optB = (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10);
+    optC = (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10);
+    optD = (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10);
+    if (!optA || !optB || !optC || !optD) {
+      showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
+      return;
+    }
   }
 
   const btn = document.getElementById('btn-bm-save');
@@ -171,67 +246,89 @@ async function handleSaveQuestionFromManager() {
   }
   canon = String(canon || '').trim();
 
-  // Comparación y corrección automática de clave
-  const opts = { A: optA, B: optB, C: optC, D: optD };
-  let currentSelected = document.querySelector('input[name="bm-correct"]:checked')?.value || 'A';
-
-  const matchesCanonical = (optVal, canonVal) => {
-    if (!optVal || !canonVal) return false;
-    const clean = s => String(s).toLowerCase().replace(/^(s\/|\$|s\/\.|\s+)/g, '').replace(/[^\w\d\.\,\/]/g, '').trim();
-    if (clean(optVal) === clean(canonVal)) return true;
-    const m1 = String(optVal).match(/-?\d+(?:[\.,]\d+)?/);
-    const m2 = String(canonVal).match(/-?\d+(?:[\.,]\d+)?/);
-    return !!(m1 && m2 && m1[0] === m2[0]);
-  };
-
-  let matchingKey = null;
-  for (const k of ['A', 'B', 'C', 'D']) {
-    if (matchesCanonical(opts[k], canon)) {
-      matchingKey = k;
-      break;
-    }
-  }
-
   let keyNoticeHtml = '';
-  let activeCorrectKey = currentSelected;
 
-  if (matchingKey) {
-    activeCorrectKey = matchingKey;
-    if (matchingKey !== currentSelected) {
-      const radTarget = document.getElementById('bm-rad-' + matchingKey.toLowerCase());
-      if (radTarget) radTarget.checked = true;
-      keyNoticeHtml = `
-        <div style="background:#ecfdf5; border:1.5px solid #10b981; border-radius:8px; padding:7px 10px; margin-top:8px; font-size:0.75rem; color:#065f46; font-weight:700;">
-          💡 Clave corregida automáticamente a <strong>${matchingKey}) ${escaparHtml(opts[matchingKey])}</strong> (coincidente con la solución canónica de la IA).
-        </div>
-      `;
-      if (typeof showToast === 'function') showToast(`💡 Clave ajustada a ${matchingKey}) ${opts[matchingKey]}`);
-    } else {
+  if (bmActiveResponseType === 'free') {
+    if (canon && freeExpectedAnswer && canon.toLowerCase() !== freeExpectedAnswer.toLowerCase()) {
       keyNoticeHtml = `
         <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:6px 10px; margin-top:8px; font-size:0.74rem; color:#166534; font-weight:700;">
-          ✓ Clave correcta confirmada: <strong>${currentSelected}) ${escaparHtml(opts[currentSelected])}</strong> coincide con la solución canónica.
+          ✓ Rúbrica generada con éxito. Solución analizada por la IA: <strong>${escaparHtml(canon)}</strong>.
         </div>
       `;
     }
-  } else {
-    keyNoticeHtml = `
-      <div style="background:#fef2f2; border:1.5px solid #ef4444; border-radius:8px; padding:7px 10px; margin-top:8px; font-size:0.75rem; color:#991b1b; font-weight:700;">
-        ⚠️ La solución deducida por la IA (<strong>${escaparHtml(canon)}</strong>) no coincide con ninguna de las opciones (A, B, C, D). Revisa tus alternativas o confirma la clave correcta.
-      </div>
-    `;
-    if (typeof showToast === 'function') showToast('⚠️ La solución de la IA no coincide con las opciones.');
-  }
 
-  // Preparar borrador en memoria (Aún NO guardado en el Banco)
-  const expAns = opts[activeCorrectKey] || canon || prompt;
-  window.bmDraftQuestion = {
-    prompt: prompt,
-    options: opts,
-    correct: activeCorrectKey,
-    expectedAnswer: expAns,
-    rubric: bmCurrentRubric,
-    canon: canon
-  };
+    window.bmDraftQuestion = {
+      type: 'free',
+      prompt: prompt,
+      options: null,
+      correct: null,
+      expectedAnswer: freeExpectedAnswer,
+      rubric: bmCurrentRubric,
+      canon: canon
+    };
+  } else {
+    // Comparación y corrección automática de clave para Alternativas
+    const opts = { A: optA, B: optB, C: optC, D: optD };
+    let currentSelected = document.querySelector('input[name="bm-correct"]:checked')?.value || 'A';
+
+    const matchesCanonical = (optVal, canonVal) => {
+      if (!optVal || !canonVal) return false;
+      const clean = s => String(s).toLowerCase().replace(/^(s\/|\$|s\/\.|\s+)/g, '').replace(/[^\w\d\.\,\/]/g, '').trim();
+      if (clean(optVal) === clean(canonVal)) return true;
+      const m1 = String(optVal).match(/-?\d+(?:[\.,]\d+)?/);
+      const m2 = String(canonVal).match(/-?\d+(?:[\.,]\d+)?/);
+      return !!(m1 && m2 && m1[0] === m2[0]);
+    };
+
+    let matchingKey = null;
+    for (const k of ['A', 'B', 'C', 'D']) {
+      if (matchesCanonical(opts[k], canon)) {
+        matchingKey = k;
+        break;
+      }
+    }
+
+    let activeCorrectKey = currentSelected;
+
+    if (matchingKey) {
+      activeCorrectKey = matchingKey;
+      if (matchingKey !== currentSelected) {
+        const radTarget = document.getElementById('bm-rad-' + matchingKey.toLowerCase());
+        if (radTarget) radTarget.checked = true;
+        keyNoticeHtml = `
+          <div style="background:#ecfdf5; border:1.5px solid #10b981; border-radius:8px; padding:7px 10px; margin-top:8px; font-size:0.75rem; color:#065f46; font-weight:700;">
+            💡 Clave corregida automáticamente a <strong>${matchingKey}) ${escaparHtml(opts[matchingKey])}</strong> (coincidente con la solución canónica de la IA).
+          </div>
+        `;
+        if (typeof showToast === 'function') showToast(`💡 Clave ajustada a ${matchingKey}) ${opts[matchingKey]}`);
+      } else {
+        keyNoticeHtml = `
+          <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:6px 10px; margin-top:8px; font-size:0.74rem; color:#166534; font-weight:700;">
+            ✓ Clave correcta confirmada: <strong>${currentSelected}) ${escaparHtml(opts[currentSelected])}</strong> coincide con la solución canónica.
+          </div>
+        `;
+      }
+    } else {
+      keyNoticeHtml = `
+        <div style="background:#fef2f2; border:1.5px solid #ef4444; border-radius:8px; padding:7px 10px; margin-top:8px; font-size:0.75rem; color:#991b1b; font-weight:700;">
+          ⚠️ La solución deducida por la IA (<strong>${escaparHtml(canon)}</strong>) no coincide con ninguna de las opciones (A, B, C, D). Revisa tus alternativas o confirma la clave correcta.
+        </div>
+      `;
+      if (typeof showToast === 'function') showToast('⚠️ La solución de la IA no coincide con las opciones.');
+    }
+
+    // Preparar borrador en memoria (Aún NO guardado en el Banco)
+    const expAns = opts[activeCorrectKey] || canon || prompt;
+    window.bmDraftQuestion = {
+      type: 'mc',
+      prompt: prompt,
+      options: opts,
+      correct: activeCorrectKey,
+      expectedAnswer: expAns,
+      rubric: bmCurrentRubric,
+      canon: canon
+    };
+  }
 
   // Transición a la Vista Consolidada en el modal (Estado 2: Vista Previa)
   const formFields = document.getElementById('bm-new-form-fields');
@@ -253,25 +350,42 @@ async function handleSaveQuestionFromManager() {
   }
 
   if (optionsEl) {
-    optionsEl.style.display = 'grid';
-    optionsEl.style.gridTemplateColumns = '1fr 1fr';
-    optionsEl.style.gap = '8px';
-    optionsEl.innerHTML = ['A', 'B', 'C', 'D'].map(k => {
-      const isCorrect = (k === activeCorrectKey);
-      const optVal = opts[k] || '';
-      const optFormatted = (typeof formatMathHtml === 'function')
-        ? formatMathHtml(escaparHtml(optVal))
-        : escaparHtml(optVal);
-      return `
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:8px; border:${isCorrect ? '1.5px solid #10b981' : '1px solid rgba(43,33,24,0.15)'}; background:${isCorrect ? '#f0fdf4' : '#ffffff'}; box-sizing:border-box;">
-          <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
-            <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; min-width:22px; border-radius:50%; font-weight:800; font-size:0.75rem; background:${isCorrect ? '#10b981' : 'rgba(43,33,24,0.08)'}; color:${isCorrect ? '#ffffff' : '#2B2118'};">${k}</span>
-            <span style="font-size:0.84rem; color:#1e293b; font-weight:${isCorrect ? '700' : '500'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${optFormatted}</span>
+    if (window.bmDraftQuestion.type === 'free') {
+      optionsEl.style.display = 'block';
+      const expAns = window.bmDraftQuestion.expectedAnswer;
+      const expFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(escaparHtml(expAns)) : escaparHtml(expAns);
+      optionsEl.innerHTML = `
+        <div style="background:#FAF8F5; border:1px solid #DCD8CE; border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span style="font-size:0.65rem; color:#64748B; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Respuesta esperada</span>
+            <div style="font-size:1.15rem; font-weight:900; color:#0F172A; line-height:1.2;">${expFormatted}</div>
           </div>
-          ${isCorrect ? '<span style="font-size:0.65rem; font-weight:800; color:#15803d; background:#dcfce7; padding:1px 6px; border-radius:4px; flex-shrink:0;">✓ Clave</span>' : ''}
+          <span style="font-size:0.72rem; font-weight:800; color:#0284C7; background:rgba(2,132,199,0.10); border:1px solid rgba(2,132,199,0.25); border-radius:6px; padding:3px 8px;">✍️ Respuesta Libre</span>
         </div>
       `;
-    }).join('');
+    } else {
+      const opts = window.bmDraftQuestion.options;
+      const activeCorrectKey = window.bmDraftQuestion.correct;
+      optionsEl.style.display = 'grid';
+      optionsEl.style.gridTemplateColumns = '1fr 1fr';
+      optionsEl.style.gap = '8px';
+      optionsEl.innerHTML = ['A', 'B', 'C', 'D'].map(k => {
+        const isCorrect = (k === activeCorrectKey);
+        const optVal = opts[k] || '';
+        const optFormatted = (typeof formatMathHtml === 'function')
+          ? formatMathHtml(escaparHtml(optVal))
+          : escaparHtml(optVal);
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:8px; border:${isCorrect ? '1.5px solid #10b981' : '1px solid rgba(43,33,24,0.15)'}; background:${isCorrect ? '#f0fdf4' : '#ffffff'}; box-sizing:border-box;">
+            <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; min-width:22px; border-radius:50%; font-weight:800; font-size:0.75rem; background:${isCorrect ? '#10b981' : 'rgba(43,33,24,0.08)'}; color:${isCorrect ? '#ffffff' : '#2B2118'};">${k}</span>
+              <span style="font-size:0.84rem; color:#1e293b; font-weight:${isCorrect ? '700' : '500'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${optFormatted}</span>
+            </div>
+            ${isCorrect ? '<span style="font-size:0.65rem; font-weight:800; color:#15803d; background:#dcfce7; padding:1px 6px; border-radius:4px; flex-shrink:0;">✓ Clave</span>' : ''}
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   if (consolidatedCard) consolidatedCard.style.display = 'flex';
@@ -305,43 +419,66 @@ async function saveBMDraftQuestion(withRubric = true) {
   }
 
   const prompt = draft.prompt;
-  const opts = draft.options;
-  const activeCorrectKey = draft.correct;
-  const canon = draft.canon;
   const rubricToSave = withRubric ? (draft.rubric || bmCurrentRubric) : null;
-  const expAns = draft.expectedAnswer || opts[activeCorrectKey] || canon || prompt;
 
-  const newQ = {
-    id: 'q_custom_' + Date.now(),
-    prompt: prompt,
-    options: opts,
-    correct: activeCorrectKey,
-    expectedAnswer: expAns,
-    rubric: rubricToSave,
-    hasRubric: !!withRubric,
-    gradeStage: bankManagerActiveGrade.stage,
-    gradeLevel: Number(bankManagerActiveGrade.level),
-    gradeText: bankManagerActiveGrade.label
-  };
+  if (draft.type === 'free') {
+    const expAns = draft.expectedAnswer || draft.canon || '';
+    const evalObj = {
+      title: withRubric ? 'Pregunta de desarrollo con rúbrica IA' : 'Pregunta de respuesta libre',
+      type: 'free',
+      questionCount: 1,
+      prompt: prompt,
+      expectedAnswer: expAns,
+      options: null,
+      correct: null,
+      questions: null,
+      rubric: rubricToSave,
+      hasRubric: !!withRubric,
+      gradeStage: bankManagerActiveGrade.stage,
+      gradeLevel: Number(bankManagerActiveGrade.level),
+      gradeText: bankManagerActiveGrade.label
+    };
 
-  const evalObj = {
-    title: withRubric ? 'Pregunta de alternativa con rúbrica IA' : 'Pregunta de alternativas (rápida)',
-    type: 'mc',
-    questionCount: 1,
-    prompt: prompt,
-    expectedAnswer: expAns,
-    options: opts,
-    correct: activeCorrectKey,
-    questions: [newQ],
-    rubric: rubricToSave,
-    hasRubric: !!withRubric,
-    gradeStage: bankManagerActiveGrade.stage,
-    gradeLevel: Number(bankManagerActiveGrade.level),
-    gradeText: bankManagerActiveGrade.label
-  };
+    ClassroomData.saveCustomEvaluation(evalObj);
+    SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud Free]', e));
+  } else {
+    const opts = draft.options;
+    const activeCorrectKey = draft.correct;
+    const canon = draft.canon;
+    const expAns = draft.expectedAnswer || opts[activeCorrectKey] || canon || prompt;
 
-  ClassroomData.saveCustomEvaluation(evalObj);
-  SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud]', e));
+    const newQ = {
+      id: 'q_custom_' + Date.now(),
+      prompt: prompt,
+      options: opts,
+      correct: activeCorrectKey,
+      expectedAnswer: expAns,
+      rubric: rubricToSave,
+      hasRubric: !!withRubric,
+      gradeStage: bankManagerActiveGrade.stage,
+      gradeLevel: Number(bankManagerActiveGrade.level),
+      gradeText: bankManagerActiveGrade.label
+    };
+
+    const evalObj = {
+      title: withRubric ? 'Pregunta de alternativa con rúbrica IA' : 'Pregunta de alternativas (rápida)',
+      type: 'mc',
+      questionCount: 1,
+      prompt: prompt,
+      expectedAnswer: expAns,
+      options: opts,
+      correct: activeCorrectKey,
+      questions: [newQ],
+      rubric: rubricToSave,
+      hasRubric: !!withRubric,
+      gradeStage: bankManagerActiveGrade.stage,
+      gradeLevel: Number(bankManagerActiveGrade.level),
+      gradeText: bankManagerActiveGrade.label
+    };
+
+    ClassroomData.saveCustomEvaluation(evalObj);
+    SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud]', e));
+  }
 
   // Refrescar lista de preguntas en el gestor y banco
   renderBankManagerQuestions();
@@ -374,6 +511,16 @@ function editBMDraftQuestion() {
   }
   if (formFields) formFields.style.display = 'flex';
   if (consolidatedCard) consolidatedCard.style.display = 'none';
+
+  if (window.bmDraftQuestion) {
+    if (window.bmDraftQuestion.type === 'free') {
+      setBMResponseType('free');
+      const expInput = document.getElementById('bm-expected-answer');
+      if (expInput) expInput.value = window.bmDraftQuestion.expectedAnswer || '';
+    } else {
+      setBMResponseType('mc');
+    }
+  }
   bmCurrentRubric = null;
 }
 window.editBMDraftQuestion = editBMDraftQuestion;
@@ -396,21 +543,34 @@ window._viewCurrentBMDraftRubric = () => {
       btn.style.color = '#6d28d9';
     }
   } else {
-    const prompt = (document.getElementById('bm-prompt')?.value || '').trim();
-    const opts = {
-      A: (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10),
-      B: (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10),
-      C: (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10),
-      D: (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10)
-    };
-    const correct = document.querySelector('input[name="bm-correct"]:checked')?.value || 'A';
-    const draftQ = {
-      id: 'bm_draft_' + Date.now(),
-      prompt,
-      options: opts,
-      correct,
-      rubric: rubric
-    };
+    const draft = window.bmDraftQuestion || {};
+    const prompt = (document.getElementById('bm-prompt')?.value || '').trim() || draft.prompt || '';
+    let draftQ;
+    if (draft.type === 'free' || bmActiveResponseType === 'free') {
+      draftQ = {
+        id: 'bm_draft_' + Date.now(),
+        prompt,
+        options: null,
+        correct: null,
+        expectedAnswer: draft.expectedAnswer || (document.getElementById('bm-expected-answer')?.value || '').trim(),
+        rubric: rubric
+      };
+    } else {
+      const opts = draft.options || {
+        A: (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10),
+        B: (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10),
+        C: (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10),
+        D: (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10)
+      };
+      const correct = draft.correct || document.querySelector('input[name="bm-correct"]:checked')?.value || 'A';
+      draftQ = {
+        id: 'bm_draft_' + Date.now(),
+        prompt,
+        options: opts,
+        correct,
+        rubric: rubric
+      };
+    }
     if (typeof buildInlineRubricDrawerHtml === 'function') {
       drawer.innerHTML = buildInlineRubricDrawerHtml(draftQ);
     }
@@ -425,8 +585,7 @@ window._viewCurrentBMDraftRubric = () => {
 };
 
 /**
- * Guarda una pregunta rápida de alternativas directamente en el banco sin consultar a Gemini.
- * Apta para evaluación focalizada de contenido (Rama 2) y cartillas (Rama 3).
+ * Guarda una pregunta rápida de alternativas o respuesta libre directamente en el banco sin consultar a Gemini.
  */
 async function handleSaveQuickQuestionFromManager() {
   if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
@@ -447,55 +606,85 @@ async function handleSaveQuickQuestionFromManager() {
   const prompt = (promptInput?.value || '').trim();
   if (!prompt) {
     promptInput?.focus();
-    showToast('⚠️ Escribí el enunciado de la pregunta.');
+    showToast('⚠️ Escribe el enunciado de la pregunta.');
     return;
   }
-
-  const optA = (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10);
-  const optB = (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10);
-  const optC = (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10);
-  const optD = (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10);
-  if (!optA || !optB || !optC || !optD) {
-    showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
-    return;
-  }
-
-  const rad = document.querySelector('input[name="bm-correct"]:checked');
-  const correctKey = (rad ? rad.value : 'A').toUpperCase();
 
   const btnQuick = document.getElementById('btn-bm-save-quick');
   if (btnQuick) btnQuick.disabled = true;
 
   try {
-    const evalObj = {
-      title: 'Pregunta rápida de alternativa',
-      type: 'mc',
-      questionCount: 1,
-      prompt: prompt,
-      expectedAnswer: `Clave: ${correctKey}`,
-      options: { A: optA, B: optB, C: optC, D: optD },
-      correct: correctKey,
-      questions: [{
+    if (bmActiveResponseType === 'free') {
+      const expAns = (document.getElementById('bm-expected-answer')?.value || '').trim();
+      if (!expAns) {
+        document.getElementById('bm-expected-answer')?.focus();
+        showToast('⚠️ Escribe la respuesta esperada.');
+        return;
+      }
+
+      const evalObj = {
+        title: 'Pregunta de respuesta libre',
+        type: 'free',
+        questionCount: 1,
         prompt: prompt,
-        options: { A: optA, B: optB, C: optC, D: optD },
-        correct: correctKey,
+        expectedAnswer: expAns,
+        options: null,
+        correct: null,
+        questions: null,
+        rubric: null,
+        hasRubric: false,
         gradeStage: bankManagerActiveGrade.stage,
         gradeLevel: Number(bankManagerActiveGrade.level),
-        gradeText: bankManagerActiveGrade.label,
+        gradeText: bankManagerActiveGrade.label
+      };
+
+      ClassroomData.saveCustomEvaluation(evalObj);
+      SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud Quick Free]', e));
+
+      showToast('⚡ Pregunta de Respuesta Libre guardada con éxito en el banco');
+    } else {
+      const optA = (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10);
+      const optB = (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10);
+      const optC = (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10);
+      const optD = (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10);
+      if (!optA || !optB || !optC || !optD) {
+        showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
+        return;
+      }
+
+      const rad = document.querySelector('input[name="bm-correct"]:checked');
+      const correctKey = (rad ? rad.value : 'A').toUpperCase();
+
+      const evalObj = {
+        title: 'Pregunta rápida de alternativa',
+        type: 'mc',
+        questionCount: 1,
+        prompt: prompt,
+        expectedAnswer: `Clave: ${correctKey}`,
+        options: { A: optA, B: optB, C: optC, D: optD },
+        correct: correctKey,
+        questions: [{
+          prompt: prompt,
+          options: { A: optA, B: optB, C: optC, D: optD },
+          correct: correctKey,
+          gradeStage: bankManagerActiveGrade.stage,
+          gradeLevel: Number(bankManagerActiveGrade.level),
+          gradeText: bankManagerActiveGrade.label,
+          rubric: null,
+          hasRubric: false
+        }],
         rubric: null,
-        hasRubric: false
-      }],
-      rubric: null,
-      hasRubric: false,
-      gradeStage: bankManagerActiveGrade.stage,
-      gradeLevel: Number(bankManagerActiveGrade.level),
-      gradeText: bankManagerActiveGrade.label
-    };
+        hasRubric: false,
+        gradeStage: bankManagerActiveGrade.stage,
+        gradeLevel: Number(bankManagerActiveGrade.level),
+        gradeText: bankManagerActiveGrade.label
+      };
 
-    ClassroomData.saveCustomEvaluation(evalObj);
-    SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud Quick]', e));
+      ClassroomData.saveCustomEvaluation(evalObj);
+      SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud Quick]', e));
 
-    showToast('⚡ Pregunta guardada sin rúbrica con éxito en el banco');
+      showToast('⚡ Pregunta guardada sin rúbrica con éxito en el banco');
+    }
 
     // Limpiar campos y refrescar
     if (promptInput) promptInput.value = '';
@@ -503,6 +692,8 @@ async function handleSaveQuickQuestionFromManager() {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+    const expInput = document.getElementById('bm-expected-answer');
+    if (expInput) expInput.value = '';
     const defaultRad = document.getElementById('bm-rad-a');
     if (defaultRad) defaultRad.checked = true;
 

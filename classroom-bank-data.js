@@ -511,7 +511,12 @@
     const gLevel = evalData.gradeLevel || (previa ? previa.gradeLevel : null);
     const gText = evalData.gradeText || (previa ? previa.gradeText : null);
 
-    if (rubrica) newEval.rubric = rubrica;
+    if (rubrica) {
+      newEval.rubric = rubrica;
+      newEval.hasRubric = true;
+    } else {
+      newEval.hasRubric = false;
+    }
     if (gStage) newEval.gradeStage = gStage;
     if (gLevel) newEval.gradeLevel = gLevel;
     if (gText) newEval.gradeText = gText;
@@ -519,8 +524,8 @@
     // Propiedades de formato Opción Múltiple (OMR) y Ramas de Evaluación
     if (evalData.type) newEval.type = evalData.type;
     if (evalData.questionCount) newEval.questionCount = evalData.questionCount;
-    if (evalData.options) newEval.options = evalData.options;
-    if (evalData.correct) newEval.correct = evalData.correct;
+    newEval.options = (evalData.type === 'mc' && evalData.options) ? evalData.options : null;
+    newEval.correct = (evalData.type === 'mc' && evalData.correct) ? evalData.correct : null;
     if (evalData.questions) newEval.questions = evalData.questions;
     if (evalData.branch) newEval.branch = evalData.branch;
     if (evalData.withGrid !== undefined) newEval.withGrid = evalData.withGrid;
