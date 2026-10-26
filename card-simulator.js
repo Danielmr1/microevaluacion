@@ -523,6 +523,8 @@ function saveSimCustomQuestion() {
       gradeText: g?.texto,
       type: isFree ? 'free' : 'mc',
       questionCount: 1,
+      options: isFree ? null : newQ.options,
+      correct: isFree ? null : correctKey,
       questions: isFree ? null : [newQ]
     }).catch(e => console.warn('[Sim] Error al sincronizar pregunta en Supabase:', e && e.message));
   }

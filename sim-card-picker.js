@@ -117,6 +117,11 @@ function saveAndAssignSimGeneratedOptions(q) {
     ev.correct = updatedCorrect;
     ev.expectedAnswer = expectedAns;
 
+    ev.options = updatedOptions;
+    ev.correct = updatedCorrect;
+    ev.type = 'mc';
+    ev.expectedAnswer = expectedAns;
+
     if (Array.isArray(ev.questions) && ev.questions.length > 0) {
       ev.questions[0].options = updatedOptions;
       ev.questions[0].correct = updatedCorrect;

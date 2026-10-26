@@ -458,14 +458,11 @@
       }
     }
 
-    // 3. Purga preguntas corruptas del banco (sin enunciado o alternativas inválidas si es mc)
+    // 3. Purga preguntas corruptas del banco (únicamente sin enunciado)
+    // Cero pérdida: Jamás borrar preguntas legítimas del docente.
     Object.keys(EVALUATIONS).forEach(id => {
       const ev = EVALUATIONS[id];
-      if (!ev || !ev.prompt) {
-        delete EVALUATIONS[id];
-        return;
-      }
-      if (ev.type === 'mc' && (!ev.options || !ev.correct)) {
+      if (!ev || !ev.prompt || !String(ev.prompt).trim()) {
         delete EVALUATIONS[id];
         return;
       }
@@ -478,16 +475,14 @@
           const bank = JSON.parse(rawBank);
           if (Array.isArray(bank)) {
             const cleanBank = bank.filter(ev => {
-              if (!ev || !ev.prompt) return false;
-              if (ev.type === 'mc' && (!ev.options || !ev.correct)) return false;
-              return true;
+              return !!(ev && ev.prompt && String(ev.prompt).trim());
             });
             window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(cleanBank));
           } else if (typeof bank === 'object') {
             let mod = false;
             Object.keys(bank).forEach(k => {
               const bEv = bank[k];
-              if (!bEv || !bEv.prompt || (bEv.type === 'mc' && (!bEv.options || !bEv.correct))) {
+              if (!bEv || !bEv.prompt || !String(bEv.prompt).trim()) {
                 delete bank[k];
                 mod = true;
               }

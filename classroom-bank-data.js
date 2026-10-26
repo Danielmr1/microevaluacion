@@ -254,6 +254,9 @@
     } else if (evalObj.questions[0] && !evalObj.questions[0].options && evalObj.options) {
       evalObj.questions[0].options = evalObj.options;
       evalObj.questions[0].correct = evalObj.correct || 'A';
+    } else if (evalObj.questions[0] && evalObj.questions[0].options && !evalObj.options) {
+      evalObj.options = evalObj.questions[0].options;
+      evalObj.correct = evalObj.correct || evalObj.questions[0].correct || 'A';
     }
     return evalObj;
   }
@@ -346,7 +349,24 @@
           if (!prompt || seen.has(prompt)) return;
           if (/^Pregunta\s+\d+$/i.test(prompt)) return; // Ignorar casilleros OMR numéricos
           const hasOptions = q.options && (q.options.A || q.options.B || q.options.C || q.options.D);
-          if (!hasOptions) return;
+          if (!hasOptions) {
+            seen.add(prompt);
+            list.push({
+              id: ev.id + (ev.questions.length > 1 ? '_q' + idx : ''),
+              prompt: prompt,
+              options: null,
+              isFreeResponse: true,
+              correct: null,
+              gradeStage: ev.gradeStage || stage,
+              gradeLevel: ev.gradeLevel || level,
+              gradeText: ev.gradeText || formatGrade(stage, level),
+              title: (q.title && !q.title.includes('2 Preguntas') ? q.title : 'Pregunta de respuesta libre'),
+              rubric: q.rubric || ev.rubric || null,
+              hasRubric: !!(q.rubric || ev.rubric),
+              expectedAnswer: q.expectedAnswer || ev.expectedAnswer || ''
+            });
+            return;
+          }
           seen.add(prompt);
           const correctKey = (q.correct || 'A').toUpperCase();
           list.push({
@@ -565,8 +585,10 @@
     // Propiedades de formato Opción Múltiple (OMR) y Ramas de Evaluación
     if (evalData.type) newEval.type = evalData.type;
     if (evalData.questionCount) newEval.questionCount = evalData.questionCount;
-    newEval.options = (evalData.type === 'mc' && evalData.options) ? evalData.options : null;
-    newEval.correct = (evalData.type === 'mc' && evalData.correct) ? evalData.correct : null;
+    const resolvedOpts = evalData.options || (Array.isArray(evalData.questions) && evalData.questions[0] && evalData.questions[0].options) || null;
+    const resolvedCorr = evalData.correct || (Array.isArray(evalData.questions) && evalData.questions[0] && evalData.questions[0].correct) || null;
+    newEval.options = (evalData.type === 'mc' && resolvedOpts) ? resolvedOpts : null;
+    newEval.correct = (evalData.type === 'mc' && resolvedCorr) ? resolvedCorr : null;
     if (evalData.questions) newEval.questions = evalData.questions;
     if (evalData.branch) newEval.branch = evalData.branch;
     if (evalData.withGrid !== undefined) newEval.withGrid = evalData.withGrid;
@@ -736,6 +758,9 @@
         const id = idLocal || ev.id || `EVA_REC_${Date.now()}`;
         const previa = EVALUATIONS[id] || null;
 
+        const resolvedOpts = ev.options || (Array.isArray(ev.questions) && ev.questions[0] && ev.questions[0].options) || (previa && previa.options) || null;
+        const resolvedCorr = ev.correct || (Array.isArray(ev.questions) && ev.questions[0] && ev.questions[0].correct) || (previa && previa.correct) || null;
+
         EVALUATIONS[id] = enrichQuestionOptions({
           id: id,
           title: ev.title || (previa && previa.title) || 'Evaluación',
@@ -748,6 +773,8 @@
           gradeText: ev.grade_text || (previa ? previa.gradeText : null) || null,
           type: ev.type || (previa ? previa.type : null) || undefined,
           questionCount: ev.question_count || ev.questionCount || (previa ? previa.questionCount : null) || undefined,
+          options: resolvedOpts,
+          correct: resolvedCorr,
           questions: ev.questions || (previa ? previa.questions : null) || undefined
         });
       });
