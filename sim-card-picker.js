@@ -4,22 +4,328 @@
 // =============================================================================
 
 let simBankExpandedRubricQuestionId = null;
+let simBankGeneratingOptsQuestionId = null;
+let simBankGeneratingOptsState = null;
 
 function toggleSimBankQuestionRubric(qId) {
   if (simBankExpandedRubricQuestionId && String(simBankExpandedRubricQuestionId) === String(qId)) {
     simBankExpandedRubricQuestionId = null;
   } else {
     simBankExpandedRubricQuestionId = qId;
+    simBankGeneratingOptsQuestionId = null;
+    simBankGeneratingOptsState = null;
   }
   renderSimBankList();
 }
 window.toggleSimBankQuestionRubric = toggleSimBankQuestionRubric;
+
+function startSimGeneratingOptions(q) {
+  if (!q) return;
+  const expAns = String(q.expectedAnswer || '').trim().substring(0, 10);
+  simBankGeneratingOptsQuestionId = q.id;
+  simBankExpandedRubricQuestionId = null;
+  simBankGeneratingOptsState = {
+    questionId: q.id,
+    prompt: q.prompt,
+    expectedAnswer: expAns,
+    correct: 'A',
+    options: {
+      A: expAns,
+      B: '',
+      C: '',
+      D: ''
+    },
+    selectedSwapKey: null
+  };
+  renderSimBankList();
+}
+window.startSimGeneratingOptions = startSimGeneratingOptions;
+
+function cancelSimGeneratingOptions() {
+  simBankGeneratingOptsQuestionId = null;
+  simBankGeneratingOptsState = null;
+  renderSimBankList();
+}
+window.cancelSimGeneratingOptions = cancelSimGeneratingOptions;
+
+function syncSimOptsInputsToState() {
+  if (!simBankGeneratingOptsState) return;
+  const s = simBankGeneratingOptsState;
+  ['A', 'B', 'C', 'D'].forEach(letter => {
+    if (letter !== s.correct) {
+      const inp = document.querySelector(`.sim-gen-opt-input[data-letter="${letter}"]`);
+      if (inp) {
+        s.options[letter] = inp.value.trim().substring(0, 10);
+      }
+    }
+  });
+}
+
+function executeSimSwap(sourceLetter, targetLetter) {
+  if (!simBankGeneratingOptsState) return;
+  syncSimOptsInputsToState();
+  const s = simBankGeneratingOptsState;
+  const valSource = s.options[sourceLetter] || '';
+  const valTarget = s.options[targetLetter] || '';
+  s.options[sourceLetter] = valTarget;
+  s.options[targetLetter] = valSource;
+
+  if (s.correct === sourceLetter) {
+    s.correct = targetLetter;
+  } else if (s.correct === targetLetter) {
+    s.correct = sourceLetter;
+  }
+  renderSimBankList();
+}
+window.executeSimSwap = executeSimSwap;
+
+function saveAndAssignSimGeneratedOptions(q) {
+  if (!simBankGeneratingOptsState) return;
+  syncSimOptsInputsToState();
+  const s = simBankGeneratingOptsState;
+  const optA = (s.options?.A || '').trim().substring(0, 10);
+  const optB = (s.options?.B || '').trim().substring(0, 10);
+  const optC = (s.options?.C || '').trim().substring(0, 10);
+  const optD = (s.options?.D || '').trim().substring(0, 10);
+
+  if (!optA || !optB || !optC || !optD) {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
+    }
+    return;
+  }
+
+  // Actualizar en el banco de evaluaciones
+  const baseEvalId = String(q.id).replace(/_q\d+$/, '');
+  let ev = (typeof ClassroomData !== 'undefined' && ClassroomData.getEvaluation) ? ClassroomData.getEvaluation(baseEvalId) : null;
+  if (!ev && typeof ClassroomData !== 'undefined' && ClassroomData.EVALUATIONS) {
+    ev = ClassroomData.EVALUATIONS[baseEvalId] || ClassroomData.EVALUATIONS[q.id];
+    if (!ev) {
+      const all = Object.values(ClassroomData.EVALUATIONS);
+      ev = all.find(item => item && item.prompt === q.prompt);
+    }
+  }
+
+  const updatedOptions = { A: optA, B: optB, C: optC, D: optD };
+  const updatedCorrect = s.correct;
+  const expectedAns = updatedOptions[updatedCorrect];
+
+  if (ev) {
+    ev.type = 'mc';
+    ev.questionCount = 1;
+    ev.options = updatedOptions;
+    ev.correct = updatedCorrect;
+    ev.expectedAnswer = expectedAns;
+
+    if (Array.isArray(ev.questions) && ev.questions.length > 0) {
+      ev.questions[0].options = updatedOptions;
+      ev.questions[0].correct = updatedCorrect;
+      ev.questions[0].expectedAnswer = expectedAns;
+    } else {
+      ev.questions = [{
+        id: 'q_' + Date.now(),
+        prompt: ev.prompt,
+        options: updatedOptions,
+        correct: updatedCorrect,
+        expectedAnswer: expectedAns,
+        rubric: ev.rubric || null,
+        hasRubric: !!ev.rubric,
+        gradeStage: ev.gradeStage,
+        gradeLevel: ev.gradeLevel,
+        gradeText: ev.gradeText
+      }];
+    }
+
+    if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
+      ClassroomData.saveCustomEvaluation(ev);
+    }
+    if (typeof SupabaseClient !== 'undefined' && SupabaseClient.saveEvaluation) {
+      SupabaseClient.saveEvaluation(ev).catch(e => console.warn('[Sim Gen Options Cloud]', e));
+    }
+  }
+
+  const assignedQ = {
+    id: q.id,
+    prompt: q.prompt,
+    options: updatedOptions,
+    correct: updatedCorrect,
+    expectedAnswer: expectedAns,
+    rubric: q.rubric || null,
+    hasRubric: !!(q.hasRubric || q.rubric)
+  };
+
+  simBankGeneratingOptsQuestionId = null;
+  simBankGeneratingOptsState = null;
+
+  if (currentSimSlotScope === 'rama3') {
+    if (typeof r3State !== 'undefined') {
+      r3State.bankQuestions[currentSimSlot] = assignedQ;
+      r3State.keys[currentSimSlot] = updatedCorrect;
+    }
+    closeSimPicker();
+    if (typeof renderRama3Exam === 'function') renderRama3Exam();
+    if (typeof renderRama3CartillaPreview === 'function') renderRama3CartillaPreview();
+    if (typeof showToast === 'function') {
+      showToast(`✓ Pregunta ${currentSimSlot + 1} guardada con alternativas y asignada al examen.`);
+    }
+    return;
+  }
+
+  // Formativa con IA
+  simState.questions[currentSimSlot] = assignedQ;
+  closeSimPicker();
+  if (typeof renderSimulatedCard === 'function') renderSimulatedCard();
+  if (typeof showToast === 'function') {
+    showToast(`✓ Pregunta ${currentSimSlot + 1} guardada con alternativas y asignada a la ficha.`);
+  }
+}
+window.saveAndAssignSimGeneratedOptions = saveAndAssignSimGeneratedOptions;
+
+function buildSimInlineOptionsGenerator(q) {
+  const container = document.createElement('div');
+  container.className = 'sim-inline-opts-gen-container';
+  container.style.cssText = 'display:flex; flex-direction:column; gap:10px; margin-top:6px; padding:12px; background:#FAF8F5; border:1.5px dashed #0284C7; border-radius:10px;';
+
+  const state = simBankGeneratingOptsState;
+  if (!state) return container;
+
+  // 1. Instrucción
+  const hintNotice = document.createElement('div');
+  hintNotice.style.cssText = 'font-size:0.72rem; color:#0369A1; background:#E0F2FE; border:1px solid #BAE6FD; border-radius:7px; padding:6px 10px; display:flex; align-items:center; gap:6px;';
+  hintNotice.innerHTML = `
+    <span style="font-size:0.85rem;">💡</span>
+    <span><strong>Respuesta esperada fija en la clave:</strong> Escribe los 3 distractores (máx 10 caracteres). Haz clic en una alternativa y luego en otra para <strong>intercambiar su lugar</strong>.</span>
+  `;
+  container.appendChild(hintNotice);
+
+  // 2. Grilla 2x2
+  const gridEl = document.createElement('div');
+  gridEl.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:8px;';
+
+  ['A', 'B', 'C', 'D'].forEach(letter => {
+    const isCorrect = (letter === state.correct);
+    const isSelected = (state.selectedSwapKey === letter);
+    const val = state.options ? (state.options[letter] || '') : '';
+
+    const optCard = document.createElement('div');
+    optCard.className = 'sim-gen-opt-card';
+    optCard.dataset.letter = letter;
+    optCard.style.cssText = [
+      'display:flex',
+      'align-items:center',
+      'justify-content:space-between',
+      'padding:7px 10px',
+      'border-radius:8px',
+      'cursor:pointer',
+      'user-select:none',
+      'transition:all 0.15s ease',
+      'box-sizing:border-box',
+      isCorrect
+        ? 'background:#F0FDF4; border:1.8px solid #10B981; box-shadow:0 1px 4px rgba(16,185,129,0.18);'
+        : 'background:#FFFFFF; border:1.2px solid #CBD5E1;',
+      isSelected ? 'outline:2.5px dashed #0284C7; transform:scale(1.02);' : ''
+    ].join(';');
+
+    optCard.onclick = (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      syncSimOptsInputsToState();
+      if (!state.selectedSwapKey) {
+        state.selectedSwapKey = letter;
+        renderSimBankList();
+      } else if (state.selectedSwapKey === letter) {
+        state.selectedSwapKey = null;
+        renderSimBankList();
+      } else {
+        const src = state.selectedSwapKey;
+        state.selectedSwapKey = null;
+        executeSimSwap(src, letter);
+      }
+    };
+
+    const leftCol = document.createElement('div');
+    leftCol.style.cssText = 'display:flex; align-items:center; gap:6px; min-width:0; flex:1; margin-right:4px;';
+
+    const badgeLetter = document.createElement('span');
+    badgeLetter.style.cssText = `display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; min-width:22px; border-radius:50%; font-weight:900; font-size:0.75rem; background:${isCorrect ? '#10B981' : '#E2E8F0'}; color:${isCorrect ? '#FFFFFF' : '#334155'};`;
+    badgeLetter.textContent = letter;
+    leftCol.appendChild(badgeLetter);
+
+    if (isCorrect) {
+      const correctText = document.createElement('span');
+      correctText.style.cssText = 'font-size:0.84rem; font-weight:800; color:#065F46; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;';
+      correctText.textContent = val;
+      correctText.title = 'Respuesta Esperada (Valor inmutable)';
+      leftCol.appendChild(correctText);
+
+      const keyBadge = document.createElement('span');
+      keyBadge.style.cssText = 'font-size:0.65rem; font-weight:900; color:#15803D; background:#DCFCE7; border:1px solid #86EFAC; padding:2px 6px; border-radius:4px; flex-shrink:0; white-space:nowrap;';
+      keyBadge.textContent = '✓ Clave';
+      optCard.appendChild(leftCol);
+      optCard.appendChild(keyBadge);
+    } else {
+      const inputDistractor = document.createElement('input');
+      inputDistractor.type = 'text';
+      inputDistractor.className = 'sim-gen-opt-input form-control';
+      inputDistractor.dataset.letter = letter;
+      inputDistractor.maxLength = 10;
+      inputDistractor.value = val;
+      inputDistractor.placeholder = `Alternativa ${letter}`;
+      inputDistractor.style.cssText = 'font-size:0.80rem; padding:4px 6px; flex:1; min-width:0; background:#FFFFFF; border:1px solid #CBD5E1; border-radius:5px; color:#0f172a; font-weight:600;';
+      inputDistractor.oninput = (e) => {
+        state.options[letter] = e.target.value.substring(0, 10);
+      };
+      inputDistractor.onclick = (e) => e.stopPropagation();
+      leftCol.appendChild(inputDistractor);
+
+      const swapHintBtn = document.createElement('button');
+      swapHintBtn.type = 'button';
+      swapHintBtn.title = 'Toca para intercambiar lugar';
+      swapHintBtn.style.cssText = 'background:transparent; border:none; color:#94A3B8; font-size:0.85rem; cursor:pointer; padding:2px; flex-shrink:0; line-height:1;';
+      swapHintBtn.innerHTML = '⠿';
+      optCard.appendChild(leftCol);
+      optCard.appendChild(swapHintBtn);
+    }
+
+    gridEl.appendChild(optCard);
+  });
+
+  container.appendChild(gridEl);
+
+  // 3. Fila de Acciones
+  const actionsRow = document.createElement('div');
+  actionsRow.style.cssText = 'display:flex; justify-content:flex-end; gap:8px; margin-top:4px;';
+
+  const btnCancel = document.createElement('button');
+  btnCancel.type = 'button';
+  btnCancel.textContent = 'Cancelar';
+  btnCancel.style.cssText = 'background:#FFFFFF; border:1px solid #CBD5E1; color:#475569; border-radius:7px; padding:6px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s;';
+  btnCancel.onclick = (e) => {
+    e.stopPropagation();
+    cancelSimGeneratingOptions();
+  };
+  actionsRow.appendChild(btnCancel);
+
+  const btnSave = document.createElement('button');
+  btnSave.type = 'button';
+  btnSave.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span>💾 Guardar y Asignar a la Ficha</span>';
+  btnSave.style.cssText = 'background:#16A34A; color:#FFFFFF; border:none; border-radius:7px; padding:6px 14px; font-size:0.78rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(22,163,74,0.3); transition:all 0.15s;';
+  btnSave.onclick = (e) => {
+    e.stopPropagation();
+    saveAndAssignSimGeneratedOptions(q);
+  };
+  actionsRow.appendChild(btnSave);
+
+  container.appendChild(actionsRow);
+  return container;
+}
 
 // ── CONTROLADOR DEL MODAL DE SELECCIÓN / REDACCIÓN ──
 function openSimQuestionPicker(slotIdx) {
   currentSimSlotScope = 'sim';
   currentSimSlot = slotIdx;
   simBankExpandedRubricQuestionId = null;
+  simBankGeneratingOptsQuestionId = null;
+  simBankGeneratingOptsState = null;
   const modal = document.getElementById('modal-sim-picker');
   const title = document.getElementById('sim-picker-title');
   const gradeTag = document.getElementById('sim-picker-grade-tag');
@@ -127,6 +433,9 @@ function closeSimPicker() {
   const modal = document.getElementById('modal-sim-picker');
   if (modal) modal.style.display = 'none';
   closeMathPopovers();
+  simBankExpandedRubricQuestionId = null;
+  simBankGeneratingOptsQuestionId = null;
+  simBankGeneratingOptsState = null;
 }
 
 function updateSimPromptCounter() {
@@ -380,13 +689,16 @@ function renderSimBankList() {
   if (emptyEl) emptyEl.style.display = 'none';
 
   const isRama1 = (currentBranchMode === 'rama1' || (typeof simState !== 'undefined' && simState && simState.branch === 'rama1'));
-  const isFocusMode = !!simBankExpandedRubricQuestionId;
+  const isRama3Bank = (currentSimSlotScope === 'rama3' && typeof r3State !== 'undefined' && r3State.mode === 'bank');
+  const isOMRMode = (isRama1 && simState && simState.type === 'mc') || isRama3Bank;
+  const isFocusMode = !!simBankExpandedRubricQuestionId || !!simBankGeneratingOptsQuestionId;
 
   bankList.forEach((q, idx) => {
-    const isThisExpanded = (isFocusMode && String(simBankExpandedRubricQuestionId) === String(q.id));
+    const isThisExpandedRubric = (!simBankGeneratingOptsQuestionId && !!simBankExpandedRubricQuestionId && String(simBankExpandedRubricQuestionId) === String(q.id));
+    const isThisGeneratingOpts = (!!simBankGeneratingOptsQuestionId && String(simBankGeneratingOptsQuestionId) === String(q.id));
 
-    // Si estamos en modo foco y esta pregunta no es la expandida, se oculta (las demás preguntas desaparecen)
-    if (isFocusMode && !isThisExpanded) {
+    // Si estamos en modo foco y esta pregunta no es la expandida ni la que genera opciones, se oculta
+    if (isFocusMode && !isThisExpandedRubric && !isThisGeneratingOpts) {
       return;
     }
 
@@ -398,6 +710,8 @@ function renderSimBankList() {
     header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; gap:8px;';
 
     const hasRubric = !!(q.hasRubric || q.rubric);
+    const hasOptions = !!(q.options && (q.options.A || q.options.B || q.options.C || q.options.D));
+    const needsOptionsGen = isOMRMode && !hasOptions;
 
     const titleGroup = document.createElement('div');
     titleGroup.style.cssText = 'display:flex; align-items:center; gap:8px;';
@@ -407,7 +721,7 @@ function renderSimBankList() {
       btnRubric.type = 'button';
       btnRubric.className = 'sim-btn-toggle-rubric';
 
-      if (isThisExpanded) {
+      if (isThisExpandedRubric) {
         btnRubric.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="18 15 12 9 6 15"></polyline></svg><span>▲ Ocultar Rúbrica</span>';
         btnRubric.style.cssText = 'background:#0284C7; color:#FFFFFF; border:1px solid #0284C7; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; box-shadow:0 2px 6px rgba(2,132,199,0.3);';
         btnRubric.onclick = (e) => {
@@ -434,7 +748,18 @@ function renderSimBankList() {
     const btnAction = document.createElement('button');
     btnAction.type = 'button';
 
-    if (!hasRubric && isRama1) {
+    if (isThisGeneratingOpts) {
+      btnAction.style.display = 'none';
+    } else if (needsOptionsGen) {
+      btnAction.className = 'sim-btn-generate-opts';
+      btnAction.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Generar alternativas</span>';
+      btnAction.style.cssText = 'background:#0284C7; border:none; color:#FFFFFF; border-radius:8px; padding:6px 12px; font-size:0.76rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(2, 132, 199, 0.25); display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap;';
+      btnAction.title = 'Crear las 4 alternativas (A, B, C, D) para esta pregunta OMR';
+      btnAction.onclick = (e) => {
+        e.stopPropagation();
+        startSimGeneratingOptions(q);
+      };
+    } else if (!hasRubric && isRama1) {
       // En Formativa con IA sin rúbrica: Generar Rúbrica
       btnAction.textContent = '✨ Generar Rúbrica';
       btnAction.style.cssText = 'background:linear-gradient(135deg, #7c3aed, #4f46e5); border:none; color:#FFFFFF; border-radius:8px; padding:6px 12px; font-size:0.76rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(124, 58, 237, 0.25); display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap;';
@@ -456,7 +781,10 @@ function renderSimBankList() {
       : escaparHtml(q.prompt || '');
     item.appendChild(promptText);
 
-    if (q.options && (q.options.A || q.options.B || q.options.C || q.options.D)) {
+    if (isThisGeneratingOpts) {
+      const genDrawer = buildSimInlineOptionsGenerator(q);
+      item.appendChild(genDrawer);
+    } else if (hasOptions) {
       const optsGrid = document.createElement('div');
       optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem;';
       ['A', 'B', 'C', 'D'].forEach(letter => {
@@ -482,7 +810,7 @@ function renderSimBankList() {
     }
 
     // Si esta tarjeta está expandida, incorporar el cajón in-situ de la rúbrica hacia abajo
-    if (isThisExpanded) {
+    if (isThisExpandedRubric) {
       const rubricDrawer = document.createElement('div');
       rubricDrawer.className = 'sim-card-inline-rubric-drawer';
       rubricDrawer.style.cssText = 'margin-top:6px;';
@@ -567,6 +895,12 @@ async function handleUpgradeSimBankQuestion(q, btnEl, badgeContainer) {
 
 function selectSimBankQuestion(q) {
   if (currentSimSlotScope === 'rama3') {
+    const isBank = (typeof r3State !== 'undefined' && r3State.mode === 'bank');
+    const hasOptions = !!(q.options && (q.options.A || q.options.B || q.options.C || q.options.D));
+    if (isBank && !hasOptions) {
+      startSimGeneratingOptions(q);
+      return;
+    }
     r3State.bankQuestions[currentSimSlot] = {
       id: q.id,
       prompt: q.prompt,
@@ -594,6 +928,11 @@ function selectSimBankQuestion(q) {
   }
 
   const isFree = (simState.type === 'free');
+  const hasOpts = !!(q.options && (q.options.A || q.options.B || q.options.C || q.options.D));
+  if (!isFree && !hasOpts) {
+    startSimGeneratingOptions(q);
+    return;
+  }
   let expAns = q.expectedAnswer || '';
   if (!expAns && q.options && q.correct) {
     expAns = q.options[q.correct] || q.correct;

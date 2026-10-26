@@ -323,6 +323,9 @@ function determineRama3ExamLayout(count) {
 function openRama3QuestionPicker(slotIdx) {
   currentSimSlotScope = 'rama3';
   currentSimSlot = slotIdx;
+  if (typeof simBankExpandedRubricQuestionId !== 'undefined') simBankExpandedRubricQuestionId = null;
+  if (typeof simBankGeneratingOptsQuestionId !== 'undefined') simBankGeneratingOptsQuestionId = null;
+  if (typeof simBankGeneratingOptsState !== 'undefined') simBankGeneratingOptsState = null;
   const modal = document.getElementById('modal-sim-picker');
   const title = document.getElementById('sim-picker-title');
   const gradeTag = document.getElementById('sim-picker-grade-tag');
