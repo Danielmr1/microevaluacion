@@ -458,16 +458,16 @@
       }
     }
 
-    // 3. Purga preguntas del banco sin rúbrica o sin alternativas completas (Regla 6)
+    // 3. Purga preguntas corruptas del banco (sin enunciado o alternativas inválidas si es mc)
     Object.keys(EVALUATIONS).forEach(id => {
       const ev = EVALUATIONS[id];
-      if (!ev) return;
-      if (ev.type === 'mc' && (!ev.options || !ev.correct)) {
+      if (!ev || !ev.prompt) {
         delete EVALUATIONS[id];
         return;
       }
-      if (!ev.rubric && !ev.rubrica) {
+      if (ev.type === 'mc' && (!ev.options || !ev.correct)) {
         delete EVALUATIONS[id];
+        return;
       }
     });
 
@@ -478,10 +478,23 @@
           const bank = JSON.parse(rawBank);
           if (Array.isArray(bank)) {
             const cleanBank = bank.filter(ev => {
+              if (!ev || !ev.prompt) return false;
               if (ev.type === 'mc' && (!ev.options || !ev.correct)) return false;
-              return !!(ev.rubric || ev.rubrica);
+              return true;
             });
             window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(cleanBank));
+          } else if (typeof bank === 'object') {
+            let mod = false;
+            Object.keys(bank).forEach(k => {
+              const bEv = bank[k];
+              if (!bEv || !bEv.prompt || (bEv.type === 'mc' && (!bEv.options || !bEv.correct))) {
+                delete bank[k];
+                mod = true;
+              }
+            });
+            if (mod) {
+              window.localStorage.setItem(STORAGE_KEY_BANK, JSON.stringify(bank));
+            }
           }
         }
       } catch (e) {

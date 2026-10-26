@@ -18,7 +18,9 @@
 
   const STORAGE_KEY_BANK = 'microeval_teacher_bank_v2';
   const STORAGE_KEY_BANK_VIEJO = 'microeval_teacher_bank_v1';
-  const STORAGE_KEY_SYNC_QUEUE = 'microeval_pending_sync_v1';
+  const STORAGE_KEY_SYNC_QUEUE = 'microeval_sync_queue';
+  const STORAGE_KEY_SYNC_QUEUE_LEGACY = 'microeval_pending_sync_v1';
+  const STORAGE_KEY_DELETED_PROMPTS = 'microeval_deleted_prompts_v1';
   const MAX_BANK_QUESTIONS = 50;
 
   // Acceso referencial a utilidades y sesiones compartidas
@@ -30,6 +32,39 @@
   }
   function getSavedSessions() {
     return ClassroomData.getSavedSessions ? ClassroomData.getSavedSessions() : [];
+  }
+
+  function getDeletedPrompts() {
+    if (typeof window === 'undefined' || !window.localStorage) return new Set();
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY_DELETED_PROMPTS);
+      const arr = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  function markPromptAsDeleted(promptOrId) {
+    if (!promptOrId || typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const set = getDeletedPrompts();
+      set.add(String(promptOrId).trim());
+      const arr = Array.from(set).slice(-200);
+      window.localStorage.setItem(STORAGE_KEY_DELETED_PROMPTS, JSON.stringify(arr));
+    } catch (e) {}
+  }
+
+  function unmarkPromptAsDeleted(prompt) {
+    if (!prompt || typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const set = getDeletedPrompts();
+      const p = String(prompt).trim();
+      if (set.has(p)) {
+        set.delete(p);
+        window.localStorage.setItem(STORAGE_KEY_DELETED_PROMPTS, JSON.stringify(Array.from(set)));
+      }
+    } catch (e) {}
   }
 
   /**
@@ -68,7 +103,7 @@
   function queueForSync(item) {
     if (typeof window === 'undefined' || !window.localStorage) return;
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE);
+      const raw = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE) || window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE_LEGACY);
       const queue = raw ? JSON.parse(raw) : [];
       if (!queue.some(q => q.prompt === item.prompt)) {
         queue.push(item);
@@ -80,7 +115,7 @@
   function flushSyncQueue() {
     if (typeof window === 'undefined' || !window.SupabaseClient || typeof window.SupabaseClient.saveEvaluation !== 'function') return;
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE);
+      const raw = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE) || window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE_LEGACY);
       if (!raw) return;
       const queue = JSON.parse(raw);
       if (!Array.isArray(queue) || queue.length === 0) return;
@@ -88,6 +123,11 @@
       const remaining = [];
       const promises = queue.map(item => {
         return window.SupabaseClient.saveEvaluation(item)
+          .then(res => {
+            if (!res) {
+              remaining.push(item);
+            }
+          })
           .catch(err => {
             console.warn('[Guardrail Sync] Reintento fallido para:', item.prompt, err && err.message);
             remaining.push(item);
@@ -99,6 +139,7 @@
           window.localStorage.setItem(STORAGE_KEY_SYNC_QUEUE, JSON.stringify(remaining));
         } else {
           window.localStorage.removeItem(STORAGE_KEY_SYNC_QUEUE);
+          try { window.localStorage.removeItem(STORAGE_KEY_SYNC_QUEUE_LEGACY); } catch (e) {}
           console.log('[Guardrail Sync] Todas las preguntas pendientes se sincronizaron con Supabase.');
         }
       });
@@ -555,6 +596,7 @@
     }
 
     EVALUATIONS[id] = newEval;
+    unmarkPromptAsDeleted(promptLimpio);
 
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
@@ -585,6 +627,7 @@
   function deleteCustomEvaluation(evalIdOrPrompt) {
     if (!evalIdOrPrompt) return false;
     const target = String(evalIdOrPrompt).trim();
+    markPromptAsDeleted(target);
     let deletedCount = 0;
 
     // 1. Si es ID directo de una evaluación
@@ -608,6 +651,7 @@
       if (!ev) return;
 
       if (ev.id === target || ev.prompt === target) {
+        markPromptAsDeleted(ev.prompt);
         delete EVALUATIONS[k];
         deletedCount++;
         return;
@@ -615,6 +659,7 @@
 
       // Si el prompt raíz contiene el enunciado buscado (ej: "1. ¿Cuanto es 30 + 25? | 2. ...")
       if (ev.prompt && typeof ev.prompt === 'string' && ev.prompt.includes(target)) {
+        markPromptAsDeleted(ev.prompt);
         delete EVALUATIONS[k];
         deletedCount++;
         return;
@@ -626,7 +671,10 @@
         ev.questions = ev.questions.filter(q => {
           if (!q) return false;
           if (q.id === target) return false;
-          if (q.prompt && q.prompt.trim() === target) return false;
+          if (q.prompt && q.prompt.trim() === target) {
+            markPromptAsDeleted(q.prompt);
+            return false;
+          }
           return true;
         });
 
@@ -658,24 +706,30 @@
      *
      * Una evaluación se identifica por su ENUNCIADO, no por su id: el id local
      * (EVA_DOC_1234) y el de la base (un uuid) son distintos para la MISMA
-     * pregunta. Comparando por id, el banco mostraba la misma pregunta DOS veces
-     * —una con su rúbrica y otra recién traída de la base, que podía aparecer
-     * como "falta la rúbrica"—. Que la identidad sea el enunciado es además
-     * coherente con saveEvaluation(), que ya busca por enunciado para no duplicar.
+     * pregunta.
      *
-     * Nunca se pierde lo que la copia local tiene y la de la base no.
+     * Regla Fundamental: NUNCA se borran preguntas creadas localmente solo porque
+     * la nube no las devuelva en la lista reciente. La copia local es soberana.
      */
   function setRecentEvaluations(list) {
       if (!Array.isArray(list)) return;
 
-      const cloudPrompts = new Set();
-      (list || []).forEach(ev => {
+      const deletedPrompts = getDeletedPrompts();
+
+      list.forEach(ev => {
         if (!ev || !ev.prompt) return;
         const promptLimpio = String(ev.prompt || '').trim();
         if (ev.branch === 'rama3' || /^Pregunta\s+\d+$/i.test(promptLimpio) || promptLimpio.startsWith('Cartilla de respuestas')) {
           return;
         }
-        cloudPrompts.add(promptLimpio);
+
+        // Si la pregunta fue borrada explícitamente en este cliente, no revivirla (cero preguntas fantasma)
+        if (deletedPrompts.has(promptLimpio)) {
+          if (typeof SupabaseClient !== 'undefined' && typeof SupabaseClient.deleteEvaluation === 'function') {
+            SupabaseClient.deleteEvaluation(promptLimpio).catch(() => {});
+          }
+          return;
+        }
 
         const idLocal = Object.keys(EVALUATIONS)
           .find(k => EVALUATIONS[k] && EVALUATIONS[k].prompt === ev.prompt);
@@ -698,30 +752,17 @@
         });
       });
 
-      // Sincronizar eliminaciones de la nube:
-      // Si la lista de la nube no contiene una pregunta, y dicha pregunta no está pendiente en la cola de subida local,
-      // significa que fue eliminada desde otro dispositivo o desde Supabase. Se remueve para evitar preguntas fantasma.
-      let pendingPrompts = new Set();
-      try {
-        const rawQueue = window.localStorage.getItem(STORAGE_KEY_SYNC_QUEUE);
-        if (rawQueue) {
-          const qArr = JSON.parse(rawQueue);
-          if (Array.isArray(qArr)) qArr.forEach(item => { if (item.prompt) pendingPrompts.add(String(item.prompt).trim()); });
-        }
-      } catch (e) {}
-
-      // Solo depurar si la lista es válida
-      Object.keys(EVALUATIONS).forEach(k => {
-        const ev = EVALUATIONS[k];
-        if (!ev) return;
-        const p = String(ev.prompt || '').trim();
-        if (ev.branch === 'rama3' || /^Pregunta\s+\d+$/i.test(p) || p.startsWith('Cartilla de respuestas')) return;
-
-        // Si no está en Supabase y tampoco está pendiente en la cola local de subida:
-        if (!cloudPrompts.has(p) && !pendingPrompts.has(p)) {
-          delete EVALUATIONS[k];
-        }
-      });
+      // Purgar localmente solo preguntas que fueron explícitamente eliminadas (tombstones)
+      if (deletedPrompts.size > 0) {
+        Object.keys(EVALUATIONS).forEach(k => {
+          const ev = EVALUATIONS[k];
+          if (!ev) return;
+          const p = String(ev.prompt || '').trim();
+          if (deletedPrompts.has(p) || (ev.id && deletedPrompts.has(ev.id))) {
+            delete EVALUATIONS[k];
+          }
+        });
+      }
 
       if (typeof window !== 'undefined' && window.localStorage) {
         try {

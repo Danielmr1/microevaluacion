@@ -392,7 +392,7 @@
       .eq('prompt', prompt)
       .maybeSingle();
 
-    const campos = { expected_answer: expectedAnswer };
+    const campos = { expected_answer: expectedAnswer, last_used_at: new Date().toISOString() };
     if (d.rubric) campos.rubric = d.rubric;
     if (d.gradeStage) campos.grade_stage = d.gradeStage;
     if (d.gradeLevel) campos.grade_level = d.gradeLevel;
@@ -497,10 +497,13 @@
   async function loadRecentEvaluations() {
     const client = getClient();
     if (!client) return null;
+    const user = await getCurrentUser();
+    if (!user) return null;
 
     const { data, error } = await client
       .from('microeval_evaluations')
       .select('*')
+      .eq('teacher_id', user.id)
       .order('last_used_at', { ascending: false })
       .limit(50);
 
