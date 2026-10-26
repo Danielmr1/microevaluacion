@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.60</span>
+              Versión <span id="user-profile-version-tag">v3.10.61</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2464,8 +2464,8 @@
               <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(2, 132, 199, 0.12); color: #0284C7; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(2, 132, 199, 0.3);">
                 <span>📋</span> Rúbrica en foco
               </span>
-              <button type="button" onclick="closeInlineQuestionRubric()" style="background: #FAF8F5; border: 1px solid #DCD8CE; color: #57534E; font-size: 0.72rem; font-weight: 700; border-radius: 6px; padding: 3px 9px; cursor: pointer; transition: all 0.15s;" title="Restaurar vista completa de filtros y preguntas">
-                Mostrar filtros y preguntas ✕
+              <button type="button" onclick="closeInlineQuestionRubric()" style="background: #FAF8F5; border: 1px solid #DCD8CE; color: #57534E; font-size: 0.72rem; font-weight: 700; border-radius: 6px; padding: 3px 10px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px;" title="Volver a la lista de preguntas" onmouseenter="this.style.background='#F3EFE6'; this.style.color='#181512';" onmouseleave="this.style.background='#FAF8F5'; this.style.color='#57534E';">
+                <span>←</span><span>Regresar</span>
               </button>
             </div>
           </div>
@@ -2716,7 +2716,7 @@
           </div>
 
           <!-- Barra de Información Inferior -->
-          <div style="padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+          <div id="bank-manager-footer-bar" style="padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
             <span id="bank-manager-summary-text" style="font-size: 0.78rem; color: #64748b; font-weight: 600;"></span>
           </div>
 

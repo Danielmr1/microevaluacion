@@ -1638,6 +1638,16 @@
       display: none !important;
     }
 
+    #view-bank.is-rubric-focus #bank-manager-footer-bar,
+    #view-bank.is-rubric-focus #bank-manager-summary-text {
+      display: none !important;
+    }
+
+    /* Ocultar acciones de cabecera (enlaces a sesiones e icono eliminar) cuando la rúbrica está en foco */
+    .bank-question-card.is-active-rubric .bank-card-full-actions {
+      display: none !important;
+    }
+
     /* Tarjeta activa con rúbrica desplegada */
     .bank-question-card.is-active-rubric {
       border: 2px solid #0284C7 !important;
@@ -1647,30 +1657,8 @@
       z-index: 10;
     }
 
-    /* Preguntas vecinas comprimidas en tira de una línea */
+    /* Ocultar totalmente las preguntas vecinas cuando una rúbrica está en foco */
     .bank-question-card.is-compressed-neighbor {
-      padding: 10px 16px !important;
-      gap: 0 !important;
-      cursor: pointer !important;
-      background: #FAF8F5 !important;
-      border: 1.5px solid #DCD8CE !important;
-      opacity: 0.78 !important;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-      box-shadow: 0 1px 4px rgba(43, 33, 24, 0.04) !important;
-    }
-
-    .bank-question-card.is-compressed-neighbor:hover {
-      opacity: 1 !important;
-      background: #FFFFFF !important;
-      border-color: #F5B82E !important;
-      box-shadow: 0 4px 14px rgba(245, 184, 46, 0.22) !important;
-      transform: translateY(-1px) !important;
-    }
-
-    .bank-question-card.is-compressed-neighbor .bank-card-full-body,
-    .bank-question-card.is-compressed-neighbor .bank-card-opts-grid,
-    .bank-question-card.is-compressed-neighbor .bank-card-rubric-drawer,
-    .bank-question-card.is-compressed-neighbor .bank-card-full-actions {
       display: none !important;
     }
 
@@ -1684,10 +1672,6 @@
     @keyframes fadeInDrawer {
       from { opacity: 0; transform: translateY(-4px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    .bank-question-card.is-compressed-neighbor .bank-card-compressed-strip {
-      display: flex !important;
     }
 
     .bank-card-compressed-strip {
