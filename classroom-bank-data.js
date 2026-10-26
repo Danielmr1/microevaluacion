@@ -370,7 +370,7 @@
           seen.add(prompt);
           const correctKey = (q.correct || 'A').toUpperCase();
           list.push({
-            id: ev.id + '_q' + idx,
+            id: ev.id + (ev.questions.length > 1 ? '_q' + idx : ''),
             prompt: prompt,
             options: {
               A: q.options?.A || '',

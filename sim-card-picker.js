@@ -177,6 +177,20 @@ function saveAndAssignSimGeneratedOptions(q) {
   }
 
   // Formativa con IA
+  const isRama1 = (currentBranchMode === 'rama1' || (typeof simState !== 'undefined' && simState && simState.branch === 'rama1'));
+  const isOMRMode = isRama1 && simState && simState.type === 'mc';
+  const lacksRubric = !assignedQ.hasRubric && !assignedQ.rubric;
+
+  // REGLA: Si estamos en Formativa con IA + OMR y la pregunta aún NO tiene rúbrica (Paso 1 completado):
+  // No se asigna todavía a la ficha; se guarda en el banco y pasa al Paso 2 (Generar Rúbrica con IA).
+  if (isRama1 && isOMRMode && lacksRubric) {
+    if (typeof renderSimBankList === 'function') renderSimBankList();
+    if (typeof showToast === 'function') {
+      showToast('✓ Alternativas guardadas (Paso 1). Ahora genera la rúbrica IA con Gemini (Paso 2).');
+    }
+    return;
+  }
+
   simState.questions[currentSimSlot] = assignedQ;
   closeSimPicker();
   if (typeof renderSimulatedCard === 'function') renderSimulatedCard();
@@ -312,7 +326,16 @@ function buildSimInlineOptionsGenerator(q) {
 
   const btnSave = document.createElement('button');
   btnSave.type = 'button';
-  btnSave.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span>💾 Guardar y Asignar a la Ficha</span>';
+  btnSave.className = 'sim-btn-save-generated-opts';
+  const isRama1 = (currentBranchMode === 'rama1' || (typeof simState !== 'undefined' && simState && simState.branch === 'rama1'));
+  const isOMRMode = (isRama1 && simState && simState.type === 'mc') || (currentSimSlotScope === 'rama3' && typeof r3State !== 'undefined' && r3State.mode === 'bank');
+  const lacksRubric = isRama1 && !q.hasRubric && !q.rubric;
+
+  if (isRama1 && isOMRMode && lacksRubric) {
+    btnSave.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span>💾 Guardar alternativas (Paso 1 de 2)</span>';
+  } else {
+    btnSave.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span>💾 Guardar y Asignar a la Ficha</span>';
+  }
   btnSave.style.cssText = 'background:#16A34A; color:#FFFFFF; border:none; border-radius:7px; padding:6px 14px; font-size:0.78rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(22,163,74,0.3); transition:all 0.15s;';
   btnSave.onclick = (e) => {
     e.stopPropagation();
@@ -717,6 +740,7 @@ function renderSimBankList() {
     const hasRubric = !!(q.hasRubric || q.rubric);
     const hasOptions = !!(q.options && (q.options.A || q.options.B || q.options.C || q.options.D));
     const needsOptionsGen = isOMRMode && !hasOptions;
+    const isBothMissing = isRama1 && isOMRMode && !hasOptions && !hasRubric;
 
     const titleGroup = document.createElement('div');
     titleGroup.style.cssText = 'display:flex; align-items:center; gap:8px;';
@@ -757,16 +781,21 @@ function renderSimBankList() {
       btnAction.style.display = 'none';
     } else if (needsOptionsGen) {
       btnAction.className = 'sim-btn-generate-opts';
-      btnAction.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Generar alternativas</span>';
+      if (isBothMissing) {
+        btnAction.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>1. Generar alternativas</span>';
+        btnAction.title = 'Paso 1: Generar las 4 alternativas. Luego se generará la rúbrica IA con Gemini.';
+      } else {
+        btnAction.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Generar alternativas</span>';
+        btnAction.title = 'Crear las 4 alternativas (A, B, C, D) para esta pregunta OMR';
+      }
       btnAction.style.cssText = 'background:#0284C7; border:none; color:#FFFFFF; border-radius:8px; padding:6px 12px; font-size:0.76rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(2, 132, 199, 0.25); display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap;';
-      btnAction.title = 'Crear las 4 alternativas (A, B, C, D) para esta pregunta OMR';
       btnAction.onclick = (e) => {
         e.stopPropagation();
         startSimGeneratingOptions(q);
       };
     } else if (!hasRubric && isRama1) {
       // En Formativa con IA sin rúbrica: Generar Rúbrica
-      btnAction.textContent = '✨ Generar Rúbrica';
+      btnAction.textContent = (isOMRMode && hasOptions) ? '2. ✨ Generar Rúbrica' : '✨ Generar Rúbrica';
       btnAction.style.cssText = 'background:linear-gradient(135deg, #7c3aed, #4f46e5); border:none; color:#FFFFFF; border-radius:8px; padding:6px 12px; font-size:0.76rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(124, 58, 237, 0.25); display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap;';
       btnAction.title = 'Analizar este problema con Gemini para generar su solución y rúbrica';
       btnAction.onclick = () => handleUpgradeSimBankQuestion(q, btnAction, titleGroup);
@@ -810,7 +839,14 @@ function renderSimBankList() {
       ansBox.style.cssText = 'background:#F8F6F0; border:1px solid rgba(43,33,24,0.12); border-radius:7px; padding:6px 10px; font-size:0.80rem; color:#1e293b; display:flex; justify-content:space-between; align-items:center;';
       const ansSafe = escaparHtml(q.expectedAnswer || '—');
       const ansFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(ansSafe) : ansSafe;
-      ansBox.innerHTML = `<span><strong>Rpta esperada:</strong> ${ansFormatted}</span><span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>`;
+      let badgeHtml = '<span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>';
+      if (isBothMissing) {
+        badgeHtml = '<div style="display:inline-flex; align-items:center; gap:6px;">' +
+          '<span style="font-size:0.68rem; font-weight:800; color:#b45309; background:#fef3c7; border:1px solid #fde68a; padding:2px 6px; border-radius:4px;">Paso 1 de 2: Requiere alternativas y rúbrica</span>' +
+          '<span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>' +
+        '</div>';
+      }
+      ansBox.innerHTML = `<span><strong>Rpta esperada:</strong> ${ansFormatted}</span>${badgeHtml}`;
       item.appendChild(ansBox);
     }
 
