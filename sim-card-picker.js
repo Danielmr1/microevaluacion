@@ -718,7 +718,7 @@ function renderSimBankList() {
 
   const isRama1 = (currentBranchMode === 'rama1' || (typeof simState !== 'undefined' && simState && simState.branch === 'rama1'));
   const isRama3Bank = (currentSimSlotScope === 'rama3' && typeof r3State !== 'undefined' && r3State.mode === 'bank');
-  const isOMRMode = (isRama1 && simState && simState.type === 'mc') || isRama3Bank;
+  const isOMRMode = (simState && simState.type === 'mc') || isRama3Bank;
   const isFocusMode = !!simBankExpandedRubricQuestionId || !!simBankGeneratingOptsQuestionId;
 
   bankList.forEach((q, idx) => {
@@ -818,7 +818,7 @@ function renderSimBankList() {
     if (isThisGeneratingOpts) {
       const genDrawer = buildSimInlineOptionsGenerator(q);
       item.appendChild(genDrawer);
-    } else if (hasOptions) {
+    } else if (hasOptions && isOMRMode) {
       const optsGrid = document.createElement('div');
       optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem;';
       ['A', 'B', 'C', 'D'].forEach(letter => {
@@ -835,16 +835,29 @@ function renderSimBankList() {
       });
       item.appendChild(optsGrid);
     } else {
+      let expAnsVal = q.expectedAnswer || '';
+      if (hasOptions && q.correct && q.options) {
+        const correctVal = q.options[q.correct] || '';
+        if (correctVal) {
+          expAnsVal = correctVal;
+        }
+      } else if (expAnsVal.startsWith('Clave:') && hasOptions && q.correct && q.options) {
+        expAnsVal = q.options[q.correct] || expAnsVal;
+      }
+      if (!expAnsVal) expAnsVal = '—';
+
       const ansBox = document.createElement('div');
       ansBox.style.cssText = 'background:#F8F6F0; border:1px solid rgba(43,33,24,0.12); border-radius:7px; padding:6px 10px; font-size:0.80rem; color:#1e293b; display:flex; justify-content:space-between; align-items:center;';
-      const ansSafe = escaparHtml(q.expectedAnswer || '—');
+      const ansSafe = escaparHtml(expAnsVal);
       const ansFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(ansSafe) : ansSafe;
-      let badgeHtml = '<span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>';
+      let badgeHtml = '';
       if (isBothMissing) {
         badgeHtml = '<div style="display:inline-flex; align-items:center; gap:6px;">' +
           '<span style="font-size:0.68rem; font-weight:800; color:#b45309; background:#fef3c7; border:1px solid #fde68a; padding:2px 6px; border-radius:4px;">Paso 1 de 2: Requiere alternativas y rúbrica</span>' +
           '<span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>' +
         '</div>';
+      } else if (isOMRMode) {
+        badgeHtml = '<span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>';
       }
       ansBox.innerHTML = `<span><strong>Rpta esperada:</strong> ${ansFormatted}</span>${badgeHtml}`;
       item.appendChild(ansBox);
