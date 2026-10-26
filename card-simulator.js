@@ -456,7 +456,12 @@ function saveSimCustomQuestion() {
 
   let expectedAnswer = '';
   if (isFree) {
-    expectedAnswer = (document.getElementById('sim-new-free-ans')?.value || '').trim() || optA || prompt;
+    expectedAnswer = (document.getElementById('sim-new-free-ans')?.value || '').trim().substring(0, 15);
+    if (!expectedAnswer) {
+      document.getElementById('sim-new-free-ans')?.focus();
+      if (typeof showToast === 'function') showToast('⚠️ Escribe la respuesta esperada.');
+      return;
+    }
   } else {
     if (!optA || !optB || !optC || !optD) {
       if (typeof showToast === 'function') showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
@@ -479,8 +484,8 @@ function saveSimCustomQuestion() {
   const newQ = {
     id: 'q_custom_' + Date.now(),
     prompt: prompt,
-    options: { A: optA, B: optB, C: optC, D: optD },
-    correct: correctKey,
+    options: isFree ? null : { A: optA, B: optB, C: optC, D: optD },
+    correct: isFree ? null : correctKey,
     expectedAnswer: expectedAnswer,
     rubric: simCurrentRubric || null,
     hasRubric: !!simCurrentRubric,
@@ -492,15 +497,15 @@ function saveSimCustomQuestion() {
   // Guardar en el banco general para que perdure
   if (typeof ClassroomData !== 'undefined' && ClassroomData.saveCustomEvaluation) {
     ClassroomData.saveCustomEvaluation({
-      title: 'Pregunta de evaluación',
+      title: isFree ? 'Pregunta de respuesta libre' : 'Pregunta de alternativa',
       type: isFree ? 'free' : 'mc',
       questionCount: 1,
       prompt: prompt,
       expectedAnswer: expectedAnswer,
-      options: newQ.options,
-      correct: correctKey,
+      options: isFree ? null : newQ.options,
+      correct: isFree ? null : correctKey,
       rubric: simCurrentRubric || null,
-      questions: [newQ],
+      questions: isFree ? null : [newQ],
       gradeStage: g?.stage || null,
       gradeLevel: g?.level || null,
       gradeText: g?.texto || null
@@ -511,16 +516,20 @@ function saveSimCustomQuestion() {
     SupabaseClient.saveEvaluation({
       prompt: prompt,
       expectedAnswer: expectedAnswer,
-      title: 'Pregunta de evaluación',
+      title: isFree ? 'Pregunta de respuesta libre' : 'Pregunta de alternativa',
       rubric: simCurrentRubric || null,
       gradeStage: g?.stage,
       gradeLevel: g?.level,
       gradeText: g?.texto,
       type: isFree ? 'free' : 'mc',
       questionCount: 1,
-      questions: [newQ]
+      questions: isFree ? null : [newQ]
     }).catch(e => console.warn('[Sim] Error al sincronizar pregunta en Supabase:', e && e.message));
   }
+
+  if (typeof renderBankCards === 'function') renderBankCards();
+  if (typeof renderBankManagerQuestions === 'function') renderBankManagerQuestions();
+  if (typeof renderSimBankList === 'function') renderSimBankList();
 
   simState.questions[currentSimSlot] = newQ;
   closeSimPicker();

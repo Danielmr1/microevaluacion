@@ -77,18 +77,18 @@ function openSimQuestionPicker(slotIdx) {
         btnSave.disabled = false;
         btnSave.style.background = '#0284C7';
         btnSave.style.cursor = 'pointer';
-        btnSave.innerHTML = '✓ Asignar a la Ficha';
+        btnSave.innerHTML = '✓ Guardar pregunta y Asignar a la Ficha';
       } else {
         btnSave.disabled = true;
         btnSave.style.background = '#94a3b8';
         btnSave.style.cursor = 'not-allowed';
-        btnSave.innerHTML = '🔒 Asignar a la Ficha (Genera la rúbrica primero)';
+        btnSave.innerHTML = '🔒 Guardar pregunta y Asignar a la Ficha (Genera la rúbrica primero)';
       }
     } else {
       btnSave.disabled = false;
       btnSave.style.background = '#0284C7';
       btnSave.style.cursor = 'pointer';
-      btnSave.innerHTML = '💾 Asignar a la Ficha';
+      btnSave.innerHTML = '💾 Guardar pregunta y Asignar a la Ficha';
     }
   }
 
@@ -427,12 +427,14 @@ function renderSimBankList() {
       btnAction.onclick = () => selectSimBankQuestion(q);
     }
     header.appendChild(btnAction);
+    item.appendChild(header);
 
     const promptText = document.createElement('div');
     promptText.style.cssText = 'font-size:0.85rem; color:#2B2118; font-weight:700; line-height:1.45;';
     promptText.innerHTML = (typeof formatMathHtml === 'function')
       ? formatMathHtml(escaparHtml(q.prompt || ''))
       : escaparHtml(q.prompt || '');
+    item.appendChild(promptText);
 
     if (q.options && (q.options.A || q.options.B || q.options.C || q.options.D)) {
       const optsGrid = document.createElement('div');
@@ -580,12 +582,19 @@ function selectSimBankQuestion(q) {
     return;
   }
 
+  const isFree = (simState.type === 'free');
+  let expAns = q.expectedAnswer || '';
+  if (!expAns && q.options && q.correct) {
+    expAns = q.options[q.correct] || q.correct;
+  }
+  if (!expAns) expAns = q.correct || 'A';
+
   simState.questions[currentSimSlot] = {
     id: q.id,
     prompt: q.prompt,
-    options: q.options ? { ...q.options } : { A: '', B: '', C: '', D: '' },
-    correct: q.correct || 'A',
-    expectedAnswer: q.expectedAnswer || q.correct || 'A',
+    options: isFree ? null : (q.options ? { ...q.options } : { A: '', B: '', C: '', D: '' }),
+    correct: isFree ? null : (q.correct || 'A'),
+    expectedAnswer: expAns,
     rubric: q.rubric || null,
     hasRubric: !!(q.hasRubric || q.rubric)
   };
@@ -817,7 +826,7 @@ async function handleSimAnalyzeAI() {
         btnSave.disabled = false;
         btnSave.style.background = '#0284C7';
         btnSave.style.cursor = 'pointer';
-        btnSave.innerHTML = '💾 Guardar en el Banco y Asignar a la Ficha';
+        btnSave.innerHTML = '💾 Guardar pregunta y Asignar a la Ficha';
         setTimeout(() => {
           btnSave.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 80);
@@ -917,7 +926,7 @@ function editSimDraftQuestion() {
       btnSave.disabled = true;
       btnSave.style.background = '#94a3b8';
       btnSave.style.cursor = 'not-allowed';
-      btnSave.innerHTML = '🔒 Asignar a la Ficha (Genera la rúbrica primero)';
+      btnSave.innerHTML = '🔒 Guardar pregunta y Asignar a la Ficha (Genera la rúbrica primero)';
     }
     const aiStatus = document.getElementById('sim-ai-status');
     if (aiStatus) {
