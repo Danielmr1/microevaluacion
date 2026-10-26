@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.76</span>
+              Versión <span id="user-profile-version-tag">v3.10.77</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2473,6 +2473,13 @@
               </span>
               <button type="button" onclick="closeInlineQuestionRubric()" style="background: #FAF8F5; border: 1px solid #DCD8CE; color: #57534E; font-size: 0.72rem; font-weight: 700; border-radius: 6px; padding: 3px 10px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px;" title="Volver a la lista de preguntas" onmouseenter="this.style.background='#F3EFE6'; this.style.color='#181512';" onmouseleave="this.style.background='#FAF8F5'; this.style.color='#57534E';">
                 <span>←</span><span>Regresar</span>
+              </button>
+            </div>
+            <!-- Banner/Botón cuando está en Modo Edición -->
+            <div id="bm-edit-focus-banner" style="display: none; align-items: center; gap: 8px;">
+              <button type="button" onclick="toggleInlineQuestionEdit(bankManagerEditingQuestionId)" style="background: #FAF8F5; border: 1.5px solid #CBD5E1; color: #334155; font-size: 0.75rem; font-weight: 800; border-radius: 7px; padding: 4px 12px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);" title="Salir de la edición y volver a la lista" onmouseenter="this.style.background='#F1F5F9'; this.style.borderColor='#94A3B8';" onmouseleave="this.style.background='#FAF8F5'; this.style.borderColor='#CBD5E1';">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span>Salir de edición</span>
               </button>
             </div>
           </div>

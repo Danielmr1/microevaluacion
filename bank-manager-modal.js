@@ -19,6 +19,12 @@ function updateBankManagerFocusLayout() {
   } else {
     viewBank.classList.remove('is-rubric-focus');
   }
+
+  if (bankManagerEditingQuestionId) {
+    viewBank.classList.add('is-edit-focus');
+  } else {
+    viewBank.classList.remove('is-edit-focus');
+  }
 }
 
 function closeInlineQuestionRubric() {
@@ -55,9 +61,9 @@ function toggleInlineQuestionEdit(questionId) {
   } else {
     // Si la rúbrica está abierta, cerrarla
     bankManagerExpandedRubricQuestionId = null;
-    updateBankManagerFocusLayout();
     bankManagerEditingQuestionId = questionId;
   }
+  updateBankManagerFocusLayout();
   renderBankManagerQuestions();
 
   if (bankManagerEditingQuestionId) {
@@ -343,6 +349,11 @@ function renderBankManagerQuestions() {
     });
   }
 
+  // Si una pregunta está en modo edición in-situ, mostrar ÚNICAMENTE esa pregunta
+  if (bankManagerEditingQuestionId) {
+    filtered = filtered.filter(q => String(q.id) === String(bankManagerEditingQuestionId));
+  }
+
   // Actualizar indicador global de capacidad (máximo 50 preguntas en toda la cuenta)
   const totalBankCount = (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount)
     ? ClassroomData.getBankQuestionsCount()
@@ -481,12 +492,7 @@ function renderBankManagerQuestions() {
       btnEdit.type = 'button';
       btnEdit.className = 'btn-card-edit-trigger';
       if (isEditingThisCard) {
-        btnEdit.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span>Cerrar Edición</span>';
-        btnEdit.style.cssText = 'background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
-        btnEdit.onclick = (e) => {
-          e.stopPropagation();
-          toggleInlineQuestionEdit(q.id);
-        };
+        btnEdit.style.display = 'none';
       } else {
         btnEdit.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Editar</span>';
         btnEdit.style.cssText = 'background:#f0f9ff; border:1px solid #bae6fd; color:#0284c7; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
@@ -552,7 +558,9 @@ function renderBankManagerQuestions() {
     footer.className = 'bank-card-footer';
     footer.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:2px; flex-wrap:wrap; gap:8px;';
 
-    if (hasRubric) {
+    if (isEditingThisCard) {
+      footer.style.display = 'none';
+    } else if (hasRubric) {
       const btnRubric = document.createElement('button');
       btnRubric.type = 'button';
 
@@ -697,7 +705,6 @@ function buildInlineEditDrawerElement(q) {
       <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.14); color:#0284C7; font-size:0.75rem;">✏️</span>
       <span>Edición In-Situ</span>
     </div>
-    <span style="font-size:0.70rem; color:#64748B; font-weight:700;">Enunciado y respuesta correcta protegidos</span>
   `;
   container.appendChild(headerDiv);
 
@@ -895,20 +902,9 @@ function buildInlineEditDrawerElement(q) {
   };
   actionsRow.appendChild(btnDelete);
 
-  // Botones Cancelar y Guardar (derecha)
+  // Botón Guardar (derecha)
   const rightBtns = document.createElement('div');
   rightBtns.style.cssText = 'display:flex; align-items:center; gap:8px;';
-
-  const btnCancel = document.createElement('button');
-  btnCancel.type = 'button';
-  btnCancel.className = 'btn-bm-cancel-edit';
-  btnCancel.style.cssText = 'background:#FAF8F5; border:1.2px solid #DCD8CE; color:#57534E; border-radius:7px; padding:6px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s;';
-  btnCancel.textContent = '✕ Cancelar';
-  btnCancel.onclick = (e) => {
-    e.stopPropagation();
-    delete window._bmEditingState[q.id];
-    toggleInlineQuestionEdit(q.id);
-  };
 
   const btnSave = document.createElement('button');
   btnSave.type = 'button';
@@ -920,7 +916,7 @@ function buildInlineEditDrawerElement(q) {
     saveInlineQuestionEdit(q);
   };
 
-  rightBtns.appendChild(btnCancel);
+  rightBtns.appendChild(btnSave);
   rightBtns.appendChild(btnSave);
   actionsRow.appendChild(rightBtns);
 
@@ -991,6 +987,7 @@ function saveInlineQuestionEdit(q) {
 
   delete window._bmEditingState[q.id];
   bankManagerEditingQuestionId = null;
+  updateBankManagerFocusLayout();
   renderBankManagerQuestions();
   if (typeof renderBankCards === 'function') renderBankCards();
   if (typeof showToast === 'function') {

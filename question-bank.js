@@ -366,6 +366,12 @@ function handleDeleteQuestionFromBank(target, displayText, optionalId) {
               }
             }
             showToast('🗑️ Pregunta eliminada del banco');
+            if (typeof bankManagerEditingQuestionId !== 'undefined') {
+              bankManagerEditingQuestionId = null;
+            }
+            if (typeof updateBankManagerFocusLayout === 'function') {
+              updateBankManagerFocusLayout();
+            }
             renderBankCards();
             if (typeof renderBankManagerQuestions === 'function') {
               renderBankManagerQuestions();

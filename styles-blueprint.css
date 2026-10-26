@@ -1648,6 +1648,28 @@
       display: none !important;
     }
 
+    /* ==========================================================================
+       BANCO DE PREGUNTAS — MODO DE EDICIÓN IN-SITU (FOCO Y LIMPIEZA VISUAL)
+       ========================================================================== */
+    #view-bank.is-edit-focus #bank-manager-stage-row,
+    #view-bank.is-edit-focus #bank-manager-controls-row,
+    #view-bank.is-edit-focus #bm-global-capacity-badge,
+    #view-bank.is-edit-focus #bank-manager-footer-bar,
+    #view-bank.is-edit-focus #bank-manager-summary-text,
+    #view-bank.is-edit-focus #bank-manager-grade-tabs button:not(.is-active) {
+      display: none !important;
+    }
+
+    #view-bank.is-edit-focus #bank-manager-grade-row {
+      padding: 7px 18px !important;
+      min-height: 38px !important;
+      background: #FAF8F5 !important;
+    }
+
+    #view-bank.is-edit-focus #bm-edit-focus-banner {
+      display: inline-flex !important;
+    }
+
     /* Tarjeta activa con rúbrica desplegada */
     .bank-question-card.is-active-rubric {
       border: 2px solid #0284C7 !important;
