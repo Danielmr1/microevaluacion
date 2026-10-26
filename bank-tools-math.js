@@ -118,12 +118,8 @@ function updatePromptCounter() {
     if (len > maxChars || lines > maxLines) {
       hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
-    } else if (withFrac) {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 2 líneas (ajuste por fracciones)';
-      hint.style.color = '#0284c7';
     } else {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 3 (compatible A6, A5 y A4)';
-      hint.style.color = '#64748b';
+      hint.textContent = '';
     }
   }
 }
@@ -150,12 +146,8 @@ function updatePromptCounterFree() {
     if (len > maxChars || lines > maxLines) {
       hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
-    } else if (withFrac) {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 2 líneas (ajuste por fracciones)';
-      hint.style.color = '#0284c7';
     } else {
-      hint.textContent = '≈ ' + lines + (lines === 1 ? ' línea' : ' líneas') + ' · máx 3 (compatible A6, A5 y A4)';
-      hint.style.color = '#64748b';
+      hint.textContent = '';
     }
   }
 }

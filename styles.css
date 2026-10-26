@@ -8061,4 +8061,40 @@
       gap: 12px;
     }
 
+    /* Ergonomía Móvil para Modal Redactar Pregunta (#modal-bank-add) */
+    @media (max-width: 640px) {
+      #modal-bank-add {
+        padding: 12px 10px !important;
+      }
+      #bank-manager-add-form {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+      #bm-options-grid,
+      .bm-options-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .bm-actions-row {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+      }
+      .bm-actions-buttons {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px !important;
+      }
+      .bm-actions-buttons button,
+      .bm-btn-cancel {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 11px 16px !important;
+        font-size: 0.86rem !important;
+      }
+      #btn-bm-save {
+        order: -1 !important;
+      }
+    }
+
 

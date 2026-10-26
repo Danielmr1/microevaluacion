@@ -142,12 +142,8 @@ function updateSimPromptCounter() {
     if (len > maxChars || lines > maxLines) {
       hint.textContent = '⚠️ ' + lines + ' líneas: no entran en la ficha. Acorta el enunciado.';
       hint.style.color = '#ef4444';
-    } else if (withFrac) {
-      hint.textContent = '≈ ' + lines + ' línea(s) con fracciones (máx 2 en A6, 105 car.)';
-      hint.style.color = '#0284c7';
     } else {
-      hint.textContent = '≈ ' + lines + ' línea(s) · máx 3 (compatible A6, A5 y A4)';
-      hint.style.color = '#645547';
+      hint.textContent = '';
     }
   }
 
