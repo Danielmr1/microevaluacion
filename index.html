@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.65</span>
+              Versión <span id="user-profile-version-tag">v3.10.66</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2391,7 +2391,7 @@
                 <span style="font-size:0.75rem; font-weight:800; color:#15803D; display:flex; align-items:center; gap:5px;">
                   ✅ Análisis completado con éxito
                 </span>
-                <button type="button" onclick="window._viewCurrentDraftRubric()" style="background:#f5f3ff; border:1.5px solid #c4b5fd; color:#6d28d9; border-radius:8px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <button type="button" id="sim-btn-toggle-draft-rubric" onclick="window._viewCurrentDraftRubric()" style="background:#f5f3ff; border:1.5px solid #c4b5fd; color:#6d28d9; border-radius:8px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.15s ease;">
                   👁️ Ver rúbrica
                 </button>
               </div>
@@ -2405,8 +2405,11 @@
                 <div id="sim-consolidated-prompt" style="font-size:0.88rem; color:#0f172a; font-weight:600; line-height:1.45;"></div>
               </div>
 
-              <!-- Alternativas -->
-              <div id="sim-consolidated-options" style="display:flex; flex-direction:column; gap:6px;"></div>
+              <!-- Alternativas (2x2) -->
+              <div id="sim-consolidated-options" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+
+              <!-- Cajón In-situ de Rúbrica Pedagógica -->
+              <div id="sim-consolidated-rubric-drawer" style="display:none; margin-top:4px;"></div>
 
               <!-- Enlace discreto para modificar -->
               <div style="display:flex; justify-content:flex-end; margin-top:2px;">
@@ -2419,7 +2422,7 @@
 
           <button type="button" id="sim-btn-save-custom" onclick="saveSimCustomQuestion()"
             style="width:100%; background:#0284C7; border:none; color:#fff; border-radius:10px; padding:12px; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(2,132,199,0.35); transition:all 0.15s;">
-            💾 Asignar a la Ficha
+            💾 Guardar en el Banco y Asignar a la Ficha
           </button>
         </div>
       </div>
@@ -2709,7 +2712,7 @@
                       <span style="font-size:0.75rem; font-weight:800; color:#15803D; display:flex; align-items:center; gap:5px;">
                         ✅ Análisis completado con éxito (Guardada en el Banco)
                       </span>
-                      <button type="button" onclick="window._viewCurrentBMDraftRubric()" style="background:#f5f3ff; border:1.5px solid #c4b5fd; color:#6d28d9; border-radius:8px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                      <button type="button" id="bm-btn-toggle-draft-rubric" onclick="window._viewCurrentBMDraftRubric()" style="background:#f5f3ff; border:1.5px solid #c4b5fd; color:#6d28d9; border-radius:8px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.15s ease;">
                         👁️ Ver rúbrica
                       </button>
                     </div>
@@ -2723,8 +2726,11 @@
                       <div id="bm-consolidated-prompt" style="font-size:0.88rem; color:#0f172a; font-weight:600; line-height:1.45;"></div>
                     </div>
 
-                    <!-- Alternativas -->
-                    <div id="bm-consolidated-options" style="display:flex; flex-direction:column; gap:6px;"></div>
+                    <!-- Alternativas (2x2) -->
+                    <div id="bm-consolidated-options" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+
+                    <!-- Cajón In-situ de Rúbrica Pedagógica -->
+                    <div id="bm-consolidated-rubric-drawer" style="display:none; margin-top:4px;"></div>
 
                     <!-- Enlace discreto para modificar -->
                     <div style="display:flex; justify-content:flex-end; margin-top:2px;">

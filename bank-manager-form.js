@@ -267,6 +267,9 @@ async function handleSaveQuestionFromManager() {
   }
 
   if (optionsEl) {
+    optionsEl.style.display = 'grid';
+    optionsEl.style.gridTemplateColumns = '1fr 1fr';
+    optionsEl.style.gap = '8px';
     optionsEl.innerHTML = ['A', 'B', 'C', 'D'].map(k => {
       const isCorrect = (k === activeCorrectKey);
       const optVal = opts[k] || '';
@@ -274,12 +277,12 @@ async function handleSaveQuestionFromManager() {
         ? formatMathHtml(escaparHtml(optVal))
         : escaparHtml(optVal);
       return `
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; border:${isCorrect ? '1.5px solid #10b981' : '1px solid rgba(43,33,24,0.15)'}; background:${isCorrect ? '#f0fdf4' : '#ffffff'};">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; font-weight:800; font-size:0.75rem; background:${isCorrect ? '#10b981' : 'rgba(43,33,24,0.08)'}; color:${isCorrect ? '#ffffff' : '#2B2118'};">${k}</span>
-            <span style="font-size:0.84rem; color:#1e293b; font-weight:${isCorrect ? '700' : '500'};">${optFormatted}</span>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:8px; border:${isCorrect ? '1.5px solid #10b981' : '1px solid rgba(43,33,24,0.15)'}; background:${isCorrect ? '#f0fdf4' : '#ffffff'}; box-sizing:border-box;">
+          <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; min-width:22px; border-radius:50%; font-weight:800; font-size:0.75rem; background:${isCorrect ? '#10b981' : 'rgba(43,33,24,0.08)'}; color:${isCorrect ? '#ffffff' : '#2B2118'};">${k}</span>
+            <span style="font-size:0.84rem; color:#1e293b; font-weight:${isCorrect ? '700' : '500'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${optFormatted}</span>
           </div>
-          ${isCorrect ? '<span style="font-size:0.7rem; font-weight:800; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:6px;">✓ Clave Correcta</span>' : ''}
+          ${isCorrect ? '<span style="font-size:0.65rem; font-weight:800; color:#15803d; background:#dcfce7; padding:1px 6px; border-radius:4px; flex-shrink:0;">✓ Clave</span>' : ''}
         </div>
       `;
     }).join('');
@@ -293,6 +296,18 @@ async function handleSaveQuestionFromManager() {
 function editBMDraftQuestion() {
   const formFields = document.getElementById('bm-new-form-fields');
   const consolidatedCard = document.getElementById('bm-new-consolidated-card');
+  const drawer = document.getElementById('bm-consolidated-rubric-drawer');
+  const btnRubric = document.getElementById('bm-btn-toggle-draft-rubric');
+  if (drawer) {
+    drawer.style.display = 'none';
+    drawer.innerHTML = '';
+  }
+  if (btnRubric) {
+    btnRubric.innerHTML = '👁️ Ver rúbrica';
+    btnRubric.style.background = '#f5f3ff';
+    btnRubric.style.borderColor = '#c4b5fd';
+    btnRubric.style.color = '#6d28d9';
+  }
   if (formFields) formFields.style.display = 'flex';
   if (consolidatedCard) consolidatedCard.style.display = 'none';
   bmCurrentRubric = null;
@@ -300,17 +315,48 @@ function editBMDraftQuestion() {
 window.editBMDraftQuestion = editBMDraftQuestion;
 
 window._viewCurrentBMDraftRubric = () => {
-  if (!bmCurrentRubric) return;
-  const prompt = (document.getElementById('bm-prompt')?.value || '').trim();
-  const opts = {
-    A: (document.getElementById('bm-opt-a')?.value || '').trim(),
-    B: (document.getElementById('bm-opt-b')?.value || '').trim(),
-    C: (document.getElementById('bm-opt-c')?.value || '').trim(),
-    D: (document.getElementById('bm-opt-d')?.value || '').trim()
-  };
-  const correct = document.querySelector('input[name="bm-correct"]:checked')?.value || 'A';
-  if (typeof handleViewQuestionRubric === 'function') {
-    handleViewQuestionRubric({ prompt, options: opts, correct, rubric: bmCurrentRubric });
+  const rubric = bmCurrentRubric || window.bmCurrentRubric;
+  if (!rubric) return;
+  const drawer = document.getElementById('bm-consolidated-rubric-drawer');
+  const btn = document.getElementById('bm-btn-toggle-draft-rubric');
+  if (!drawer) return;
+
+  const isOpen = (drawer.style.display !== 'none');
+  if (isOpen) {
+    drawer.style.display = 'none';
+    drawer.innerHTML = '';
+    if (btn) {
+      btn.innerHTML = '👁️ Ver rúbrica';
+      btn.style.background = '#f5f3ff';
+      btn.style.borderColor = '#c4b5fd';
+      btn.style.color = '#6d28d9';
+    }
+  } else {
+    const prompt = (document.getElementById('bm-prompt')?.value || '').trim();
+    const opts = {
+      A: (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10),
+      B: (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10),
+      C: (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10),
+      D: (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10)
+    };
+    const correct = document.querySelector('input[name="bm-correct"]:checked')?.value || 'A';
+    const draftQ = {
+      id: 'bm_draft_' + Date.now(),
+      prompt,
+      options: opts,
+      correct,
+      rubric: rubric
+    };
+    if (typeof buildInlineRubricDrawerHtml === 'function') {
+      drawer.innerHTML = buildInlineRubricDrawerHtml(draftQ);
+    }
+    drawer.style.display = 'block';
+    if (btn) {
+      btn.innerHTML = '▲ Ocultar Rúbrica';
+      btn.style.background = '#0284c7';
+      btn.style.borderColor = '#0284c7';
+      btn.style.color = '#ffffff';
+    }
   }
 };
 
