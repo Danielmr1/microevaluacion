@@ -3,10 +3,23 @@
 // MÓDULO: MODAL SELECTOR DE PREGUNTAS DEL SIMULADOR Y POPOVERS KATEX
 // =============================================================================
 
+let simBankExpandedRubricQuestionId = null;
+
+function toggleSimBankQuestionRubric(qId) {
+  if (simBankExpandedRubricQuestionId && String(simBankExpandedRubricQuestionId) === String(qId)) {
+    simBankExpandedRubricQuestionId = null;
+  } else {
+    simBankExpandedRubricQuestionId = qId;
+  }
+  renderSimBankList();
+}
+window.toggleSimBankQuestionRubric = toggleSimBankQuestionRubric;
+
 // ── CONTROLADOR DEL MODAL DE SELECCIÓN / REDACCIÓN ──
 function openSimQuestionPicker(slotIdx) {
   currentSimSlotScope = 'sim';
   currentSimSlot = slotIdx;
+  simBankExpandedRubricQuestionId = null;
   const modal = document.getElementById('modal-sim-picker');
   const title = document.getElementById('sim-picker-title');
   const gradeTag = document.getElementById('sim-picker-grade-tag');
@@ -367,9 +380,18 @@ function renderSimBankList() {
   if (emptyEl) emptyEl.style.display = 'none';
 
   const isRama1 = (currentBranchMode === 'rama1' || (typeof simState !== 'undefined' && simState && simState.branch === 'rama1'));
+  const isFocusMode = !!simBankExpandedRubricQuestionId;
 
   bankList.forEach((q, idx) => {
+    const isThisExpanded = (isFocusMode && String(simBankExpandedRubricQuestionId) === String(q.id));
+
+    // Si estamos en modo foco y esta pregunta no es la expandida, se oculta (las demás preguntas desaparecen)
+    if (isFocusMode && !isThisExpanded) {
+      return;
+    }
+
     const item = document.createElement('div');
+    item.dataset.questionId = q.id;
     item.style.cssText = 'background:#FFFFFF; border:1.5px solid rgba(43, 33, 24, 0.14); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; box-shadow:0 2px 6px rgba(43, 33, 24, 0.04);';
 
     const header = document.createElement('div');
@@ -380,34 +402,32 @@ function renderSimBankList() {
     const titleGroup = document.createElement('div');
     titleGroup.style.cssText = 'display:flex; align-items:center; gap:8px;';
 
-    const badgeContainer = document.createElement('div');
-    badgeContainer.style.display = 'inline-flex';
-    badgeContainer.style.alignItems = 'center';
-
     if (hasRubric) {
-      const badgeBtn = document.createElement('button');
-      badgeBtn.type = 'button';
-      badgeBtn.className = 'sim-badge-rubric-clickable';
-      badgeBtn.style.cssText = 'background:#F3E8FF; color:#6B21A8; border:1px solid #C084FC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;';
-      badgeBtn.title = 'Clic para ver la rúbrica y análisis pedagógico de IA';
-      badgeBtn.innerHTML = '🤖 Con Rúbrica IA <span style="font-size:0.75rem;">👁️</span>';
-      badgeBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (typeof handleViewQuestionRubric === 'function') handleViewQuestionRubric(q);
-      };
-      badgeContainer.appendChild(badgeBtn);
-    } else {
-      const badgeSpan = document.createElement('span');
-      badgeSpan.style.cssText = 'background:#DCFCE7; color:#15803D; border:1px solid #86EFAC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px;';
-      badgeSpan.textContent = '⚡ Pregunta Rápida';
-      badgeContainer.appendChild(badgeSpan);
-    }
-    titleGroup.appendChild(badgeContainer);
+      const btnRubric = document.createElement('button');
+      btnRubric.type = 'button';
+      btnRubric.className = 'sim-btn-toggle-rubric';
 
-    const optLabel = document.createElement('span');
-    optLabel.style.cssText = 'font-size:0.82rem; font-weight:800; color:#2B2118;';
-    optLabel.textContent = `Opción ${idx + 1}`;
-    titleGroup.appendChild(optLabel);
+      if (isThisExpanded) {
+        btnRubric.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="18 15 12 9 6 15"></polyline></svg><span>▲ Ocultar Rúbrica</span>';
+        btnRubric.style.cssText = 'background:#0284C7; color:#FFFFFF; border:1px solid #0284C7; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; box-shadow:0 2px 6px rgba(2,132,199,0.3);';
+        btnRubric.onclick = (e) => {
+          e.stopPropagation();
+          toggleSimBankQuestionRubric(q.id);
+        };
+      } else {
+        btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Ver Rúbrica</span>';
+        btnRubric.style.cssText = 'background:#F3E8FF; color:#6B21A8; border:1px solid #C084FC; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s;';
+        btnRubric.onmouseenter = () => { btnRubric.style.background = '#EDE9FE'; };
+        btnRubric.onmouseleave = () => { btnRubric.style.background = '#F3E8FF'; };
+        btnRubric.onclick = (e) => {
+          e.stopPropagation();
+          toggleSimBankQuestionRubric(q.id);
+        };
+      }
+      titleGroup.appendChild(btnRubric);
+    }
+    // REGLA: Si la pregunta NO tiene rúbrica, no se agrega ningún badge de "⚡ Pregunta Rápida".
+    // REGLA: Borrado "Opción 1", "Opción 2", etc.
 
     header.appendChild(titleGroup);
 
@@ -419,7 +439,7 @@ function renderSimBankList() {
       btnAction.textContent = '✨ Generar Rúbrica';
       btnAction.style.cssText = 'background:linear-gradient(135deg, #7c3aed, #4f46e5); border:none; color:#FFFFFF; border-radius:8px; padding:6px 12px; font-size:0.76rem; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(124, 58, 237, 0.25); display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; white-space:nowrap;';
       btnAction.title = 'Analizar este problema con Gemini para generar su solución y rúbrica';
-      btnAction.onclick = () => handleUpgradeSimBankQuestion(q, btnAction, badgeContainer);
+      btnAction.onclick = () => handleUpgradeSimBankQuestion(q, btnAction, titleGroup);
     } else {
       // Tiene rúbrica O no es Rama 1: Seleccionar directamente
       btnAction.textContent = '✓ Seleccionar';
@@ -459,6 +479,17 @@ function renderSimBankList() {
       const ansFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(ansSafe) : ansSafe;
       ansBox.innerHTML = `<span><strong>Rpta esperada:</strong> ${ansFormatted}</span><span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>`;
       item.appendChild(ansBox);
+    }
+
+    // Si esta tarjeta está expandida, incorporar el cajón in-situ de la rúbrica hacia abajo
+    if (isThisExpanded) {
+      const rubricDrawer = document.createElement('div');
+      rubricDrawer.className = 'sim-card-inline-rubric-drawer';
+      rubricDrawer.style.cssText = 'margin-top:6px;';
+      if (typeof buildInlineRubricDrawerHtml === 'function') {
+        rubricDrawer.innerHTML = buildInlineRubricDrawerHtml(q);
+      }
+      item.appendChild(rubricDrawer);
     }
     listEl.appendChild(item);
   });
@@ -510,29 +541,9 @@ async function handleUpgradeSimBankQuestion(q, btnEl, badgeContainer) {
         SupabaseClient.saveEvaluation(evFull).catch(e => console.warn('[Sim Upgrade Question Cloud]', e));
       }
 
-      if (badgeContainer) {
-        badgeContainer.innerHTML = '';
-        const badgeBtn = document.createElement('button');
-        badgeBtn.type = 'button';
-        badgeBtn.className = 'sim-badge-rubric-clickable';
-        badgeBtn.style.cssText = 'background:#F3E8FF; color:#6B21A8; border:1px solid #C084FC; font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;';
-        badgeBtn.title = 'Clic para ver la rúbrica y análisis pedagógico de IA';
-        badgeBtn.innerHTML = '🤖 Con Rúbrica IA <span style="font-size:0.75rem;">👁️</span>';
-        badgeBtn.onclick = (e) => {
-          e.stopPropagation();
-          if (typeof handleViewQuestionRubric === 'function') handleViewQuestionRubric(q);
-        };
-        badgeContainer.appendChild(badgeBtn);
+      if (typeof renderSimBankList === 'function') {
+        renderSimBankList();
       }
-
-      btnEl.disabled = false;
-      btnEl.style.opacity = '1';
-      btnEl.style.cursor = 'pointer';
-      btnEl.style.background = '#0284C7';
-      btnEl.style.boxShadow = '0 2px 6px rgba(2, 132, 199, 0.25)';
-      btnEl.textContent = '✓ Seleccionar';
-      btnEl.title = 'Seleccionar esta pregunta';
-      btnEl.onclick = () => selectSimBankQuestion(q);
 
       if (typeof showToast === 'function') {
         showToast('✅ Rúbrica generada con éxito. Ya puedes seleccionar esta pregunta.');
