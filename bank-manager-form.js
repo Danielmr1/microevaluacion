@@ -53,7 +53,7 @@ function toggleBankManagerAddForm(show) {
         </div>
         <div style="display:flex; align-items:flex-start; gap:6px;">
           <span style="color:#0284C7; font-weight:bold; line-height:1.2;">•</span>
-          <span><strong>Generar Rúbrica y Guardar</strong> permite usar la pregunta en todas las modalidades.</span>
+          <span><strong>Generar Rúbrica</strong> analiza el problema pedagógicamente con IA y muestra la vista previa antes de guardar.</span>
         </div>
       `;
     }
@@ -68,6 +68,19 @@ function toggleBankManagerAddForm(show) {
     if (radA) radA.checked = true;
 
     bmCurrentRubric = null;
+    window.bmDraftQuestion = null;
+    const drawer = document.getElementById('bm-consolidated-rubric-drawer');
+    const btnRubric = document.getElementById('bm-btn-toggle-draft-rubric');
+    if (drawer) {
+      drawer.style.display = 'none';
+      drawer.innerHTML = '';
+    }
+    if (btnRubric) {
+      btnRubric.innerHTML = '👁️ Ver rúbrica';
+      btnRubric.style.background = '#f5f3ff';
+      btnRubric.style.borderColor = '#c4b5fd';
+      btnRubric.style.color = '#6d28d9';
+    }
     updateBMPromptCounter();
     closeMathPopovers('bm');
     modal.style.display = 'flex';
@@ -209,45 +222,18 @@ async function handleSaveQuestionFromManager() {
     if (typeof showToast === 'function') showToast('⚠️ La solución de la IA no coincide con las opciones.');
   }
 
-  // Guardar pregunta en ClassroomData y SupabaseClient
+  // Preparar borrador en memoria (Aún NO guardado en el Banco)
   const expAns = opts[activeCorrectKey] || canon || prompt;
-  const newQ = {
-    id: 'q_custom_' + Date.now(),
+  window.bmDraftQuestion = {
     prompt: prompt,
     options: opts,
     correct: activeCorrectKey,
     expectedAnswer: expAns,
     rubric: bmCurrentRubric,
-    hasRubric: true,
-    gradeStage: bankManagerActiveGrade.stage,
-    gradeLevel: Number(bankManagerActiveGrade.level),
-    gradeText: bankManagerActiveGrade.label
+    canon: canon
   };
 
-  const evalObj = {
-    title: 'Pregunta de alternativa con rúbrica IA',
-    type: 'mc',
-    questionCount: 1,
-    prompt: prompt,
-    expectedAnswer: expAns,
-    options: opts,
-    correct: activeCorrectKey,
-    questions: [newQ],
-    rubric: bmCurrentRubric,
-    hasRubric: true,
-    gradeStage: bankManagerActiveGrade.stage,
-    gradeLevel: Number(bankManagerActiveGrade.level),
-    gradeText: bankManagerActiveGrade.label
-  };
-
-  ClassroomData.saveCustomEvaluation(evalObj);
-  SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud]', e));
-
-  // Refrescar lista de preguntas en el gestor
-  renderBankManagerQuestions();
-  if (typeof renderBankCards === 'function') renderBankCards();
-
-  // Transición a la Vista Consolidada en el modal
+  // Transición a la Vista Consolidada en el modal (Estado 2: Vista Previa)
   const formFields = document.getElementById('bm-new-form-fields');
   const consolidatedCard = document.getElementById('bm-new-consolidated-card');
   const promptEl = document.getElementById('bm-consolidated-prompt');
@@ -290,7 +276,85 @@ async function handleSaveQuestionFromManager() {
 
   if (consolidatedCard) consolidatedCard.style.display = 'flex';
 
-  if (typeof showToast === 'function') showToast('✅ Pregunta guardada con éxito en el banco');
+  if (typeof showToast === 'function') showToast('✓ Rúbrica generada. Elige cómo guardar la pregunta.');
+}
+
+/**
+ * Guarda efectivamente la pregunta borrador en el Banco (ClassroomData + Supabase).
+ * Se invoca recién cuando el usuario pulsa "Guardar con Rúbrica" o "Guardar sin Rúbrica".
+ */
+async function saveBMDraftQuestion(withRubric = true) {
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount) {
+    if (ClassroomData.getBankQuestionsCount() >= 50) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Has alcanzado el límite máximo de 50 preguntas en tu banco. Elimina alguna pregunta que ya no utilices para poder agregar una nueva.');
+      }
+      return;
+    }
+  }
+
+  const draft = window.bmDraftQuestion;
+  if (!draft || !draft.prompt) {
+    if (typeof showToast === 'function') showToast('⚠️ No hay pregunta pendiente de guardar.');
+    return;
+  }
+
+  if (!bankManagerActiveGrade) {
+    if (typeof showToast === 'function') showToast('⚠️ Selecciona un grado primero.');
+    return;
+  }
+
+  const prompt = draft.prompt;
+  const opts = draft.options;
+  const activeCorrectKey = draft.correct;
+  const canon = draft.canon;
+  const rubricToSave = withRubric ? (draft.rubric || bmCurrentRubric) : null;
+  const expAns = draft.expectedAnswer || opts[activeCorrectKey] || canon || prompt;
+
+  const newQ = {
+    id: 'q_custom_' + Date.now(),
+    prompt: prompt,
+    options: opts,
+    correct: activeCorrectKey,
+    expectedAnswer: expAns,
+    rubric: rubricToSave,
+    hasRubric: !!withRubric,
+    gradeStage: bankManagerActiveGrade.stage,
+    gradeLevel: Number(bankManagerActiveGrade.level),
+    gradeText: bankManagerActiveGrade.label
+  };
+
+  const evalObj = {
+    title: withRubric ? 'Pregunta de alternativa con rúbrica IA' : 'Pregunta de alternativas (rápida)',
+    type: 'mc',
+    questionCount: 1,
+    prompt: prompt,
+    expectedAnswer: expAns,
+    options: opts,
+    correct: activeCorrectKey,
+    questions: [newQ],
+    rubric: rubricToSave,
+    hasRubric: !!withRubric,
+    gradeStage: bankManagerActiveGrade.stage,
+    gradeLevel: Number(bankManagerActiveGrade.level),
+    gradeText: bankManagerActiveGrade.label
+  };
+
+  ClassroomData.saveCustomEvaluation(evalObj);
+  SupabaseClient.saveEvaluation(evalObj).catch(e => console.warn('[Manager Save Cloud]', e));
+
+  // Refrescar lista de preguntas en el gestor y banco
+  renderBankManagerQuestions();
+  if (typeof renderBankCards === 'function') renderBankCards();
+
+  if (typeof showToast === 'function') {
+    showToast(withRubric ? '✅ Pregunta guardada con rúbrica en el banco' : '✅ Pregunta guardada sin rúbrica en el banco');
+  }
+
+  // Limpiar estado y cerrar modal
+  window.bmDraftQuestion = null;
+  bmCurrentRubric = null;
+  toggleBankManagerAddForm(false);
 }
 
 function editBMDraftQuestion() {
@@ -524,7 +588,9 @@ if (typeof window !== "undefined") {
   window.toggleBankManagerAddForm = toggleBankManagerAddForm;
   window.editBMDraftQuestion = editBMDraftQuestion;
   window._viewCurrentBMDraftRubric = _viewCurrentBMDraftRubric;
+  window.handleGenerateRubricFromManager = handleSaveQuestionFromManager;
   window.handleSaveQuestionFromManager = handleSaveQuestionFromManager;
+  window.saveBMDraftQuestion = saveBMDraftQuestion;
   window.handleSaveQuickQuestionFromManager = handleSaveQuickQuestionFromManager;
   window.handleUpgradeQuestionWithRubric = handleUpgradeQuestionWithRubric;
 }

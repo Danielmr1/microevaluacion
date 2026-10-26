@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.66</span>
+              Versión <span id="user-profile-version-tag">v3.10.67</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2676,29 +2676,24 @@
                       </div>
                       <div style="display:flex; align-items:flex-start; gap:6px;">
                         <span style="color:#0284C7; font-weight:bold; line-height:1.2;">•</span>
-                        <span><strong>Generar Rúbrica y Guardar</strong> permite usar la pregunta en todas las modalidades.</span>
+                        <span><strong>Generar Rúbrica</strong> analiza el problema pedagógicamente con IA y muestra la vista previa antes de guardar.</span>
                       </div>
                     </div>
-                    <div id="bm-actions-row" class="bm-actions-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                      <button type="button" class="bm-btn-cancel" onclick="toggleBankManagerAddForm(false)"
-                        style="background:#FAF8F5; border:1.5px solid #DCD8CE; color:#57534E; border-radius:8px; padding:8px 14px; font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center;"
-                        onmouseenter="this.style.background='#F3EFE6'; this.style.color='#181512';" onmouseleave="this.style.background='#FAF8F5'; this.style.color='#57534E';">
-                        Cancelar
-                      </button>
-                      <div class="bm-actions-buttons" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <div id="bm-actions-row" class="bm-actions-row" style="display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:10px;">
+                      <div class="bm-actions-buttons" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; width:100%; justify-content:flex-end;">
                         <button id="btn-bm-save-quick" type="button" onclick="handleSaveQuickQuestionFromManager()"
                           title="Guarda de inmediato las 4 alternativas y la clave sin consultar a la IA. Apta para Focalizada en la Respuesta y Cartilla OMR."
-                          style="background:#FFB703; border:1.5px solid #D97706; color:#181512; border-radius:8px; padding:8px 14px; font-size:0.82rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; box-shadow:0 2px 6px rgba(217,119,6,0.25);"
+                          style="background:#FFB703; border:1.5px solid #D97706; color:#181512; border-radius:8px; padding:9px 14px; font-size:0.84rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; box-shadow:0 2px 6px rgba(217,119,6,0.25);"
                           onmouseenter="this.style.background='#F59E0B'; this.style.boxShadow='0 3px 8px rgba(217,119,6,0.35)';" onmouseleave="this.style.background='#FFB703'; this.style.boxShadow='0 2px 6px rgba(217,119,6,0.25)';">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#181512" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                           <span>Guardar sin Rúbrica</span>
                         </button>
-                        <button id="btn-bm-save" type="button" onclick="handleSaveQuestionFromManager()"
-                          title="Genera la solución canónica, criterios pedagógicos y errores frecuentes con Gemini. Habilita la pregunta para todas las modalidades."
-                          style="background:#18202F; border:1.5px solid #29B6F6; color:#FAF7F0; border-radius:8px; padding:8px 16px; font-size:0.82rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; box-shadow:0 2px 8px rgba(41,182,246,0.3);"
+                        <button id="btn-bm-save" type="button" onclick="handleGenerateRubricFromManager()"
+                          title="Genera la solución canónica, criterios pedagógicos y errores frecuentes con Gemini antes de guardar."
+                          style="background:#18202F; border:1.5px solid #29B6F6; color:#FAF7F0; border-radius:8px; padding:9px 16px; font-size:0.84rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; box-shadow:0 2px 8px rgba(41,182,246,0.3);"
                           onmouseenter="this.style.background='#222B3D'; this.style.borderColor='#38BDF8'; this.style.boxShadow='0 3px 12px rgba(41,182,246,0.45)';" onmouseleave="this.style.background='#18202F'; this.style.borderColor='#29B6F6'; this.style.boxShadow='0 2px 8px rgba(41,182,246,0.3)';">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>
-                          <span>Generar Rúbrica y Guardar</span>
+                          <span>Generar Rúbrica</span>
                         </button>
                       </div>
                     </div>
@@ -2710,7 +2705,7 @@
                   <div style="background:#FFFFFF; border:1.5px solid #86EFAC; border-radius:14px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                       <span style="font-size:0.75rem; font-weight:800; color:#15803D; display:flex; align-items:center; gap:5px;">
-                        ✅ Análisis completado con éxito (Guardada en el Banco)
+                        ✅ Rúbrica generada con éxito (Vista previa)
                       </span>
                       <button type="button" id="bm-btn-toggle-draft-rubric" onclick="window._viewCurrentBMDraftRubric()" style="background:#f5f3ff; border:1.5px solid #c4b5fd; color:#6d28d9; border-radius:8px; padding:5px 12px; font-size:0.75rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.15s ease;">
                         👁️ Ver rúbrica
@@ -2740,10 +2735,21 @@
                     </div>
                   </div>
 
-                  <button type="button" onclick="toggleBankManagerAddForm(false)"
-                    style="width:100%; background:#0284C7; border:none; color:#fff; border-radius:10px; padding:12px; font-size:0.9rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(2,132,199,0.35); transition:all 0.15s;">
-                    ✓ Listo / Cerrar
-                  </button>
+                  <!-- Botones de Guardado Final en Estado 2 -->
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px;">
+                    <button id="btn-bm-consolidated-save-quick" type="button" onclick="saveBMDraftQuestion(false)"
+                      style="background:#FFB703; border:1.5px solid #D97706; color:#181512; border-radius:10px; padding:12px 10px; font-size:0.88rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(217,119,6,0.25); transition:all 0.15s;"
+                      onmouseenter="this.style.background='#F59E0B';" onmouseleave="this.style.background='#FFB703';">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#181512" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                      <span>Guardar sin Rúbrica</span>
+                    </button>
+                    <button id="btn-bm-consolidated-save-rubric" type="button" onclick="saveBMDraftQuestion(true)"
+                      style="background:#18202F; border:1.5px solid #29B6F6; color:#FAF7F0; border-radius:10px; padding:12px 10px; font-size:0.88rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 10px rgba(41,182,246,0.35); transition:all 0.15s;"
+                      onmouseenter="this.style.background='#222B3D'; this.style.borderColor='#38BDF8';" onmouseleave="this.style.background='#18202F'; this.style.borderColor='#29B6F6';">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>
+                      <span>Guardar con Rúbrica</span>
+                    </button>
+                  </div>
                 </div>
 
               </div>
