@@ -1692,10 +1692,6 @@
         width: 100% !important;
         margin: 0 auto !important;
       }
-      #bm-options-grid,
-      .bm-options-grid {
-        grid-template-columns: 1fr !important;
-      }
       .bm-actions-row {
         flex-direction: column-reverse !important;
         align-items: stretch !important;

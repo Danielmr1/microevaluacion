@@ -103,10 +103,10 @@ async function handleSaveQuestionFromManager() {
     return;
   }
 
-  const optA = (document.getElementById('bm-opt-a')?.value || '').trim();
-  const optB = (document.getElementById('bm-opt-b')?.value || '').trim();
-  const optC = (document.getElementById('bm-opt-c')?.value || '').trim();
-  const optD = (document.getElementById('bm-opt-d')?.value || '').trim();
+  const optA = (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10);
+  const optB = (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10);
+  const optC = (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10);
+  const optD = (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10);
   if (!optA || !optB || !optC || !optD) {
     showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
     return;
@@ -341,10 +341,10 @@ async function handleSaveQuickQuestionFromManager() {
     return;
   }
 
-  const optA = (document.getElementById('bm-opt-a')?.value || '').trim();
-  const optB = (document.getElementById('bm-opt-b')?.value || '').trim();
-  const optC = (document.getElementById('bm-opt-c')?.value || '').trim();
-  const optD = (document.getElementById('bm-opt-d')?.value || '').trim();
+  const optA = (document.getElementById('bm-opt-a')?.value || '').trim().substring(0, 10);
+  const optB = (document.getElementById('bm-opt-b')?.value || '').trim().substring(0, 10);
+  const optC = (document.getElementById('bm-opt-c')?.value || '').trim().substring(0, 10);
+  const optD = (document.getElementById('bm-opt-d')?.value || '').trim().substring(0, 10);
   if (!optA || !optB || !optC || !optD) {
     showToast('⚠️ Completa las 4 alternativas (A, B, C, D).');
     return;

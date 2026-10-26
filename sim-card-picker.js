@@ -608,10 +608,10 @@ async function handleSimAnalyzeAI() {
   }
 
   const isMC = (simState.type === 'mc');
-  const optA = (document.getElementById('sim-opt-a')?.value || '').trim();
-  const optB = (document.getElementById('sim-opt-b')?.value || '').trim();
-  const optC = (document.getElementById('sim-opt-c')?.value || '').trim();
-  const optD = (document.getElementById('sim-opt-d')?.value || '').trim();
+  const optA = (document.getElementById('sim-opt-a')?.value || '').trim().substring(0, 10);
+  const optB = (document.getElementById('sim-opt-b')?.value || '').trim().substring(0, 10);
+  const optC = (document.getElementById('sim-opt-c')?.value || '').trim().substring(0, 10);
+  const optD = (document.getElementById('sim-opt-d')?.value || '').trim().substring(0, 10);
 
   if (isMC && (!optA || !optB || !optC || !optD)) {
     if (typeof showToast === 'function') showToast('⚠️ Completa las 4 alternativas (A, B, C, D) antes de generar la rúbrica.');
@@ -843,10 +843,10 @@ window._viewCurrentDraftRubric = () => {
 
   const prompt = (document.getElementById('sim-new-prompt')?.value || '').trim();
   const opts = {
-    A: (document.getElementById('sim-opt-a')?.value || '').trim(),
-    B: (document.getElementById('sim-opt-b')?.value || '').trim(),
-    C: (document.getElementById('sim-opt-c')?.value || '').trim(),
-    D: (document.getElementById('sim-opt-d')?.value || '').trim()
+    A: (document.getElementById('sim-opt-a')?.value || '').trim().substring(0, 10),
+    B: (document.getElementById('sim-opt-b')?.value || '').trim().substring(0, 10),
+    C: (document.getElementById('sim-opt-c')?.value || '').trim().substring(0, 10),
+    D: (document.getElementById('sim-opt-d')?.value || '').trim().substring(0, 10)
   };
   const correct = document.querySelector('input[name="sim-new-correct"]:checked')?.value || 'A';
   if (typeof handleViewQuestionRubric === 'function') {

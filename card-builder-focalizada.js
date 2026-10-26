@@ -160,7 +160,7 @@ function onRama2PromptInput(qIdx, val) {
 
 function onRama2OptionInput(qIdx, optKey, val) {
   if (r2State.questions[qIdx] && r2State.questions[qIdx].options) {
-    r2State.questions[qIdx].options[optKey] = val;
+    r2State.questions[qIdx].options[optKey] = (val || '').substring(0, 10);
   }
 }
 
@@ -278,13 +278,13 @@ function renderRama2Questions() {
             💡 En la ficha escrita el estudiante verá el recuadro <strong>Rpta: _______</strong>. El texto de la alternativa correcta que marques será la respuesta esperada para calificarla.
           </div>
         ` : ''}
-        <div style="display:flex; flex-direction:column; gap:4px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
           ${['A', 'B', 'C', 'D'].map(opt => `
             <div style="display:flex; align-items:center; gap:8px;">
               <input type="radio" name="r2_rad_${i}" id="r2_rad_${i}_${opt}" value="${opt}" ${q.correct === opt ? 'checked' : ''}
                 onchange="onRama2CorrectChange(${i}, '${opt}')" style="accent-color:#10b981; width:16px; height:16px; cursor:pointer;">
               <label for="r2_rad_${i}_${opt}" style="font-weight:700; color:#f1f5f9; width:18px; cursor:pointer;">${opt})</label>
-              <input type="text" class="form-control" placeholder="Alternativa ${opt}" value="${escaparHtml(q.options?.[opt] || '')}"
+              <input type="text" class="form-control" maxlength="10" placeholder="Alternativa ${opt}" value="${escaparHtml(q.options?.[opt] || '')}"
                 oninput="onRama2OptionInput(${i}, '${opt}', this.value)" style="padding:4px 8px; font-size:0.78rem;">
             </div>
           `).join('')}
