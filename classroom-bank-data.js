@@ -175,6 +175,8 @@
 
   function enrichQuestionOptions(evalObj) {
     if (!evalObj) return evalObj;
+    // REGLA 2: Solo si evalObj.type === 'mc' se trata como opción múltiple. Cero alteración a Respuesta Libre.
+    if (evalObj.type !== 'mc') return evalObj;
     const promptStr = String(evalObj.prompt || '').toLowerCase();
     const hasOptions = (evalObj.options && (evalObj.options.A || evalObj.options.B)) ||
       (Array.isArray(evalObj.questions) && evalObj.questions[0] && evalObj.questions[0].options);
@@ -355,6 +357,26 @@
           hasRubric: !!ev.rubric,
           expectedAnswer: (ev.options ? ev.options[correct] : '') || ev.expectedAnswer || ''
         });
+      } else if (ev.prompt) {
+        // Pregunta de Respuesta Libre (sin alternativas, solo respuesta esperada)
+        const prompt = String(ev.prompt || '').trim();
+        if (!prompt || seen.has(prompt)) return;
+        if (/^Pregunta\s+\d+$/i.test(prompt) || prompt.startsWith('Cartilla de respuestas')) return;
+        seen.add(prompt);
+        list.push({
+          id: ev.id,
+          prompt: prompt,
+          options: null,
+          isFreeResponse: true,
+          correct: null,
+          gradeStage: ev.gradeStage || stage,
+          gradeLevel: ev.gradeLevel || level,
+          gradeText: ev.gradeText || formatGrade(stage, level),
+          title: (ev.title && !ev.title.includes('2 Preguntas') ? ev.title : 'Pregunta de respuesta libre'),
+          rubric: ev.rubric || null,
+          hasRubric: !!ev.rubric,
+          expectedAnswer: ev.expectedAnswer || ''
+        });
       }
     });
     return list;
@@ -497,6 +519,8 @@
     // Propiedades de formato Opción Múltiple (OMR) y Ramas de Evaluación
     if (evalData.type) newEval.type = evalData.type;
     if (evalData.questionCount) newEval.questionCount = evalData.questionCount;
+    if (evalData.options) newEval.options = evalData.options;
+    if (evalData.correct) newEval.correct = evalData.correct;
     if (evalData.questions) newEval.questions = evalData.questions;
     if (evalData.branch) newEval.branch = evalData.branch;
     if (evalData.withGrid !== undefined) newEval.withGrid = evalData.withGrid;

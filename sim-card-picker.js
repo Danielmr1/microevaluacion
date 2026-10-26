@@ -434,24 +434,30 @@ function renderSimBankList() {
       ? formatMathHtml(escaparHtml(q.prompt || ''))
       : escaparHtml(q.prompt || '');
 
-    const optsGrid = document.createElement('div');
-    optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem;';
-    ['A', 'B', 'C', 'D'].forEach(letter => {
-      const isCorrect = (q.correct || 'A').toUpperCase() === letter;
-      const optVal = q.options ? q.options[letter] : '';
-      const optSafe = escaparHtml(optVal || '—');
-      const optFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(optSafe) : optSafe;
-      const optDiv = document.createElement('div');
-      optDiv.style.cssText = isCorrect
-        ? 'color:#15803D; font-weight:800; background:#DCFCE7; padding:5px 9px; border-radius:7px; border:1.5px solid #86EFAC;'
-        : 'color:#4B3A2C; font-weight:600; padding:5px 9px; background:#F8F6F0; border-radius:7px; border:1px solid rgba(43, 33, 24, 0.12);';
-      optDiv.innerHTML = `${letter}) ${optFormatted}` + (isCorrect ? ' ✓' : '');
-      optsGrid.appendChild(optDiv);
-    });
-
-    item.appendChild(header);
-    item.appendChild(promptText);
-    item.appendChild(optsGrid);
+    if (q.options && (q.options.A || q.options.B || q.options.C || q.options.D)) {
+      const optsGrid = document.createElement('div');
+      optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.76rem;';
+      ['A', 'B', 'C', 'D'].forEach(letter => {
+        const isCorrect = (q.correct || 'A').toUpperCase() === letter;
+        const optVal = q.options ? q.options[letter] : '';
+        const optSafe = escaparHtml(optVal || '—');
+        const optFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(optSafe) : optSafe;
+        const optDiv = document.createElement('div');
+        optDiv.style.cssText = isCorrect
+          ? 'color:#15803D; font-weight:800; background:#DCFCE7; padding:5px 9px; border-radius:7px; border:1.5px solid #86EFAC;'
+          : 'color:#4B3A2C; font-weight:600; padding:5px 9px; background:#F8F6F0; border-radius:7px; border:1px solid rgba(43, 33, 24, 0.12);';
+        optDiv.innerHTML = `${letter}) ${optFormatted}` + (isCorrect ? ' ✓' : '');
+        optsGrid.appendChild(optDiv);
+      });
+      item.appendChild(optsGrid);
+    } else {
+      const ansBox = document.createElement('div');
+      ansBox.style.cssText = 'background:#F8F6F0; border:1px solid rgba(43,33,24,0.12); border-radius:7px; padding:6px 10px; font-size:0.80rem; color:#1e293b; display:flex; justify-content:space-between; align-items:center;';
+      const ansSafe = escaparHtml(q.expectedAnswer || '—');
+      const ansFormatted = (typeof formatMathHtml === 'function') ? formatMathHtml(ansSafe) : ansSafe;
+      ansBox.innerHTML = `<span><strong>Rpta esperada:</strong> ${ansFormatted}</span><span style="font-size:0.68rem; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.10); padding:2px 6px; border-radius:4px;">✍️ Libre</span>`;
+      item.appendChild(ansBox);
+    }
     listEl.appendChild(item);
   });
 }

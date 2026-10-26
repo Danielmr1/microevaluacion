@@ -50,9 +50,9 @@ function renderBankCards() {
         : '4 · Selecciona una pregunta de alternativas';
     }
 
-    const mcQuestions = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
+    const mcQuestions = ((typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
       ? ClassroomData.getIndividualMCQuestions(g.stage, g.level)
-      : [];
+      : []).filter(q => q.options && (q.options.A || q.options.B || q.options.C || q.options.D));
 
     if (mcQuestions.length === 0) {
       container.style.display = 'none';
