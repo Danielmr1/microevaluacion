@@ -7,6 +7,42 @@ var bankManagerActiveStage = 'primaria';
 var bankManagerActiveGrade = null; // { stage: 'primaria', level: 4, label: '4° Pri.', fullLabel: '4° Primaria', value: 'primaria:4' }
 var bankManagerFilterType = 'all'; // 'all' | 'rubric' | 'quick'
 var bankManagerSearchQuery = '';
+var bankManagerExpandedRubricQuestionId = null; // ID de la pregunta cuya rúbrica está expandida in-situ
+
+function updateBankManagerFocusLayout() {
+  const viewBank = document.getElementById('view-bank');
+  if (!viewBank) return;
+  if (bankManagerExpandedRubricQuestionId) {
+    viewBank.classList.add('is-rubric-focus');
+  } else {
+    viewBank.classList.remove('is-rubric-focus');
+  }
+}
+
+function closeInlineQuestionRubric() {
+  bankManagerExpandedRubricQuestionId = null;
+  updateBankManagerFocusLayout();
+  renderBankManagerQuestions();
+}
+
+function toggleInlineQuestionRubric(questionId) {
+  if (bankManagerExpandedRubricQuestionId === questionId) {
+    bankManagerExpandedRubricQuestionId = null;
+  } else {
+    bankManagerExpandedRubricQuestionId = questionId;
+  }
+  updateBankManagerFocusLayout();
+  renderBankManagerQuestions();
+
+  if (bankManagerExpandedRubricQuestionId) {
+    setTimeout(() => {
+      const card = document.querySelector(`.bank-question-card[data-question-id="${questionId}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 60);
+  }
+}
 
 function openBankManagerModal() {
   // Determinar grado inicial: el del salón seleccionado o el primer grado habilitado en el catálogo
@@ -93,6 +129,8 @@ function renderBankManagerStageTabs() {
     }
 
     btn.onclick = () => {
+      bankManagerExpandedRubricQuestionId = null;
+      updateBankManagerFocusLayout();
       bankManagerActiveStage = s.stage;
       const catalog = (typeof ClassroomData !== 'undefined' && ClassroomData.GRADE_CATALOG) || [];
       const entry = catalog.find(c => c.stage === s.stage);
@@ -144,6 +182,7 @@ function renderBankManagerGradeTabs() {
 
     const btn = document.createElement('button');
     btn.type = 'button';
+    if (isActive) btn.className = 'is-active';
     btn.textContent = `${shortLabel} (${count})`;
     btn.style.cssText = [
       'padding:6px 14px',
@@ -163,6 +202,8 @@ function renderBankManagerGradeTabs() {
     }
 
     btn.onclick = () => {
+      bankManagerExpandedRubricQuestionId = null;
+      updateBankManagerFocusLayout();
       bankManagerActiveGrade = { stage: entry.stage, level: lvl, label: shortLabel, fullLabel: fullLabel, value: `${entry.stage}:${lvl}` };
       renderBankManagerGradeTabs();
       renderBankManagerQuestions();
@@ -221,6 +262,8 @@ function renderBankManagerFilterPills() {
     }
 
     btn.onclick = () => {
+      bankManagerExpandedRubricQuestionId = null;
+      updateBankManagerFocusLayout();
       bankManagerFilterType = f.key;
       renderBankManagerFilterPills();
       renderBankManagerQuestions();
@@ -231,6 +274,8 @@ function renderBankManagerFilterPills() {
 }
 
 function onBankManagerSearchInput(val) {
+  bankManagerExpandedRubricQuestionId = null;
+  updateBankManagerFocusLayout();
   bankManagerSearchQuery = (val || '').trim().toLowerCase();
   renderBankManagerQuestions();
 }
@@ -323,13 +368,51 @@ function renderBankManagerQuestions() {
     return;
   }
 
-  // Renderizar preguntas de forma clara y unificada (sin textos redundantes sobre el enunciado)
+  // Renderizar preguntas con soporte de foco y rúbrica in-situ
   filtered.forEach(q => {
     const card = document.createElement('div');
     card.className = 'bank-question-card';
+    card.dataset.questionId = q.id;
+
+    const isExpanded = (bankManagerExpandedRubricQuestionId && String(bankManagerExpandedRubricQuestionId) === String(q.id));
+    const hasExpandedActiveCard = !!bankManagerExpandedRubricQuestionId;
+    const isNeighbor = hasExpandedActiveCard && !isExpanded;
+
+    if (isExpanded) {
+      card.classList.add('is-active-rubric');
+    } else if (isNeighbor) {
+      card.classList.add('is-compressed-neighbor');
+      card.onclick = () => {
+        toggleInlineQuestionRubric(q.id);
+      };
+    }
+
+    // ── 1. TIRA COMPRIMIDA PARA PREGUNTAS VECINAS (is-compressed-neighbor) ──
+    const compressedStrip = document.createElement('div');
+    compressedStrip.className = 'bank-card-compressed-strip';
+    const correctLetter = (q.correct || 'A').toUpperCase();
+    const promptShortSafe = escaparHtml(q.prompt || 'Sin enunciado');
+    compressedStrip.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+        <span style="font-size:0.70rem; font-weight:800; background:rgba(2,132,199,0.12); color:#0284C7; border:1px solid rgba(2,132,199,0.30); border-radius:5px; padding:2px 7px; white-space:nowrap; flex-shrink:0;">Rpta: ${correctLetter}</span>
+        <span style="font-size:0.80rem; font-weight:700; color:#44403C; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${promptShortSafe}">
+          ${(typeof formatMathHtml === 'function') ? formatMathHtml(promptShortSafe) : promptShortSafe}
+        </span>
+      </div>
+      <button type="button" class="btn-preview-rubric-trigger" style="flex-shrink:0; background:#FAF7F0; border:1px solid #DCD8CE; color:#0284C7; font-size:0.72rem; font-weight:700; border-radius:6px; padding:3px 9px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;" onmouseenter="this.style.background='#F3EFE6'; this.style.borderColor='#0284C7';" onmouseleave="this.style.background='#FAF7F0'; this.style.borderColor='#DCD8CE';">
+        <span>Ver Rúbrica</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+    `;
+    card.appendChild(compressedStrip);
+
+    // ── 2. CUERPO COMPLETO (bank-card-full-body) ──
+    const fullBody = document.createElement('div');
+    fullBody.className = 'bank-card-full-body';
 
     // Cabecera superior: exclusivamente acciones a la derecha
     const header = document.createElement('div');
+    header.className = 'bank-card-full-actions';
     header.style.cssText = 'display:flex; justify-content:flex-end; align-items:center; gap:6px;';
 
     const hasRubric = !!(q.hasRubric || q.rubric);
@@ -352,7 +435,8 @@ function renderBankManagerQuestions() {
         btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
         btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#e0f7fa'; btnLink.style.borderColor = '#00B4D8'; });
         btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#f0fbfd'; btnLink.style.borderColor = 'rgba(0,180,216,0.35)'; });
-        btnLink.onclick = () => {
+        btnLink.onclick = (e) => {
+          e.stopPropagation();
           if (typeof window.openSessionFromBank === 'function') {
             window.openSessionFromBank(s.sessionId);
           } else if (typeof loadAndActivateSavedSession === 'function') {
@@ -369,7 +453,8 @@ function renderBankManagerQuestions() {
       btnDel.style.cssText = 'background:#fef2f2; border:1px solid #fecaca; color:#dc2626; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
       btnDel.addEventListener('mouseenter', () => { btnDel.style.background = '#dc2626'; btnDel.style.color = '#ffffff'; });
       btnDel.addEventListener('mouseleave', () => { btnDel.style.background = '#fef2f2'; btnDel.style.color = '#dc2626'; });
-      btnDel.onclick = () => {
+      btnDel.onclick = (e) => {
+        e.stopPropagation();
         handleDeleteQuestionFromBank(q.prompt, q.prompt, q.id);
       };
       actionsBox.appendChild(btnDel);
@@ -379,6 +464,7 @@ function renderBankManagerQuestions() {
 
     // Enunciado
     const promptText = document.createElement('div');
+    promptText.className = 'bank-card-prompt-text';
     promptText.style.cssText = 'font-size:0.92rem; color:#181512; font-weight:700; line-height:1.45;';
     promptText.innerHTML = (typeof formatMathHtml === 'function')
       ? formatMathHtml(escaparHtml(q.prompt || ''))
@@ -386,6 +472,7 @@ function renderBankManagerQuestions() {
 
     // Alternativas en 2 columnas
     const optsGrid = document.createElement('div');
+    optsGrid.className = 'bank-card-opts-grid';
     optsGrid.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:0.75rem;';
     ['A', 'B', 'C', 'D'].forEach(letter => {
       const isCorrect = (q.correct || 'A').toUpperCase() === letter;
@@ -404,27 +491,40 @@ function renderBankManagerQuestions() {
 
     // Pie de la tarjeta: Ver rúbrica o Generar rúbrica con iconos SVG
     const footer = document.createElement('div');
+    footer.className = 'bank-card-footer';
     footer.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:2px; flex-wrap:wrap; gap:8px;';
 
     if (hasRubric) {
       const btnRubric = document.createElement('button');
       btnRubric.type = 'button';
-      btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Ver Rúbrica de IA</span>';
-      btnRubric.title = 'Ver la solución canónica, criterios y errores frecuentes generados por la IA';
-      btnRubric.style.cssText = 'background:#18202F; border:1.5px solid rgba(41, 182, 246, 0.45); color:#FAF7F0; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(24,32,47,0.18);';
-      btnRubric.addEventListener('mouseenter', () => {
-        btnRubric.style.background = '#222B3D';
-        btnRubric.style.borderColor = '#29B6F6';
-        btnRubric.style.boxShadow = '0 3px 10px rgba(41, 182, 246, 0.35)';
-      });
-      btnRubric.addEventListener('mouseleave', () => {
-        btnRubric.style.background = '#18202F';
-        btnRubric.style.borderColor = 'rgba(41, 182, 246, 0.45)';
-        btnRubric.style.boxShadow = '0 2px 6px rgba(24,32,47,0.18)';
-      });
-      btnRubric.onclick = () => {
-        handleViewQuestionRubric(q);
-      };
+
+      if (isExpanded) {
+        btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="18 15 12 9 6 15"></polyline></svg><span>▲ Ocultar Rúbrica</span>';
+        btnRubric.title = 'Comprimir la rúbrica pedagógica y restaurar la vista normal';
+        btnRubric.style.cssText = 'background:#0284C7; border:1.5px solid #0284C7; color:#FFFFFF; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(2,132,199,0.35);';
+        btnRubric.onclick = (e) => {
+          e.stopPropagation();
+          closeInlineQuestionRubric();
+        };
+      } else {
+        btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Ver Rúbrica de IA</span>';
+        btnRubric.title = 'Desplegar la solución canónica, criterios y errores frecuentes generados por la IA en este bloque';
+        btnRubric.style.cssText = 'background:#18202F; border:1.5px solid rgba(41, 182, 246, 0.45); color:#FAF7F0; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(24,32,47,0.18);';
+        btnRubric.addEventListener('mouseenter', () => {
+          btnRubric.style.background = '#222B3D';
+          btnRubric.style.borderColor = '#29B6F6';
+          btnRubric.style.boxShadow = '0 3px 10px rgba(41, 182, 246, 0.35)';
+        });
+        btnRubric.addEventListener('mouseleave', () => {
+          btnRubric.style.background = '#18202F';
+          btnRubric.style.borderColor = 'rgba(41, 182, 246, 0.45)';
+          btnRubric.style.boxShadow = '0 2px 6px rgba(24,32,47,0.18)';
+        });
+        btnRubric.onclick = (e) => {
+          e.stopPropagation();
+          toggleInlineQuestionRubric(q.id);
+        };
+      }
       footer.appendChild(btnRubric);
     } else {
       const labelNoRubric = document.createElement('span');
@@ -438,7 +538,8 @@ function renderBankManagerQuestions() {
       btnUpgrade.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
       btnUpgrade.addEventListener('mouseenter', () => { btnUpgrade.style.background = '#1d4ed8'; btnUpgrade.style.color = '#ffffff'; });
       btnUpgrade.addEventListener('mouseleave', () => { btnUpgrade.style.background = '#eff6ff'; btnUpgrade.style.color = '#1d4ed8'; });
-      btnUpgrade.onclick = () => {
+      btnUpgrade.onclick = (e) => {
+        e.stopPropagation();
         handleUpgradeQuestionWithRubric(q);
       };
 
@@ -446,19 +547,28 @@ function renderBankManagerQuestions() {
       footer.appendChild(btnUpgrade);
     }
 
-    card.appendChild(header);
-    card.appendChild(promptText);
-    card.appendChild(optsGrid);
-    card.appendChild(footer);
+    fullBody.appendChild(header);
+    fullBody.appendChild(promptText);
+    fullBody.appendChild(optsGrid);
+    fullBody.appendChild(footer);
+
+    // Si esta tarjeta está expandida, incorporar el cajón de rúbrica in-situ
+    if (isExpanded) {
+      const drawerContainer = document.createElement('div');
+      drawerContainer.innerHTML = buildInlineRubricDrawerHtml(q);
+      fullBody.appendChild(drawerContainer);
+    }
+
+    card.appendChild(fullBody);
     container.appendChild(card);
   });
 }
 
 /**
- * Muestra la rúbrica pedagógica completa y análisis de IA para una pregunta del banco.
+ * Obtiene los datos estructurados de la rúbrica de una pregunta (objeto parseado).
  */
-function handleViewQuestionRubric(questionOrId) {
-  if (!questionOrId) return;
+function getQuestionRubricData(questionOrId) {
+  if (!questionOrId) return null;
   let q = questionOrId;
   if (typeof questionOrId === 'string') {
     if (typeof ClassroomData !== 'undefined') {
@@ -472,9 +582,8 @@ function handleViewQuestionRubric(questionOrId) {
       }
     }
   }
-  if (!q) return;
+  if (!q) return null;
 
-  // Buscar la rúbrica asociada en la pregunta o en ClassroomData
   let r = q.rubric;
   if (!r && typeof ClassroomData !== 'undefined') {
     if (ClassroomData.getEvaluationRubric) {
@@ -485,66 +594,46 @@ function handleViewQuestionRubric(questionOrId) {
       if (ev) r = ev.rubric;
     }
   }
+  if (!r) return null;
 
-  if (!r) {
-    showAIDialog({
-      icon: `<div style="width:30px; height:30px; border-radius:50%; background:rgba(2, 132, 199, 0.12); border:1.5px solid rgba(2, 132, 199, 0.35); display:inline-flex; align-items:center; justify-content:center; color:#0284C7;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>`,
-      title: 'Sin Rúbrica Registrada',
-      bodyHtml: `
-        <div style="text-align:center; padding:18px 8px;">
-          <div style="font-size:2.2rem; margin-bottom:8px;">📝</div>
-          <div style="font-size:0.95rem; font-weight:800; color:#181512; margin-bottom:6px;">Esta pregunta no tiene rúbrica cargada aún</div>
-          <div style="font-size:0.78rem; color:#64748B; line-height:1.45; max-width:400px; margin:0 auto;">
-            Las preguntas creadas con el asistente incluyen automáticamente su análisis canónico, criterios de evaluación y errores previsibles de IA.
-          </div>
-        </div>
-      `,
-      buttons: []
-    });
-    return;
-  }
-
-  // Si la rúbrica viene serializada como string JSON
   if (typeof r === 'string') {
     try {
       r = JSON.parse(r);
     } catch (e) {
-      // Mantener como texto libre si no es JSON
+      // mantener como texto
     }
   }
+  return r;
+}
 
-  const promptSafe = escaparHtml(q.prompt || '');
-  const promptText = (typeof formatMathHtml === 'function') ? formatMathHtml(promptSafe) : promptSafe;
-  let optsHtml = '';
-  if (q.options) {
-    optsHtml = `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; font-size:0.78rem;">
-        ${['A', 'B', 'C', 'D'].map(l => {
-          const isCorrect = (q.correct || 'A').toUpperCase() === l;
-          const valSafe = escaparHtml(q.options[l] || '');
-          const val = (typeof formatMathHtml === 'function') ? formatMathHtml(valSafe) : valSafe;
-          return `
-            <div style="padding:7px 10px; border-radius:8px; ${isCorrect ? 'background:rgba(16, 185, 129, 0.12); color:#065F46; font-weight:800; border:1.5px solid rgba(16, 185, 129, 0.45); box-shadow:0 1px 3px rgba(16,185,129,0.12);' : 'background:rgba(255, 255, 255, 0.65); color:#44403C; border:1.2px solid rgba(220, 214, 202, 0.8);'}">
-              <span style="font-weight:800; ${isCorrect ? 'color:#047857;' : 'color:#78716C;'}">${l})</span> ${val} ${isCorrect ? '<span style="color:#047857; font-weight:800; margin-left:4px;">✓ (Clave Correcta)</span>' : ''}
-            </div>
-          `;
-        }).join('')}
+/**
+ * Construye el HTML del cajón in-situ de la rúbrica pedagógica de una pregunta.
+ */
+function buildInlineRubricDrawerHtml(questionOrId) {
+  let q = questionOrId;
+  if (typeof questionOrId === 'string') {
+    if (typeof ClassroomData !== 'undefined') {
+      if (typeof ClassroomData.getAllIndividualMCQuestions === 'function') {
+        const all = ClassroomData.getAllIndividualMCQuestions();
+        q = all ? all.find(item => String(item.id) === String(questionOrId)) : null;
+      }
+      if (!q && typeof ClassroomData.getIndividualMCQuestions === 'function') {
+        const all = ClassroomData.getIndividualMCQuestions(bankManagerActiveStage, bankManagerActiveGrade);
+        q = all ? all.find(item => String(item.id) === String(questionOrId)) : null;
+      }
+    }
+  }
+  if (!q) return '';
+
+  const r = getQuestionRubricData(q);
+  if (!r) {
+    return `
+      <div class="bank-card-rubric-drawer" style="margin-top:12px; padding:16px; background:#FAF7F0; border:1.5px dashed #CBD5E1; border-radius:12px; text-align:center; color:#64748B;">
+        <div style="font-size:0.88rem; font-weight:800; color:#181512; margin-bottom:4px;">Sin Rúbrica Registrada</div>
+        <div style="font-size:0.75rem; color:#64748B;">Esta pregunta aún no cuenta con análisis de procedimiento cargado.</div>
       </div>
     `;
   }
-
-  const questionBlock = `
-    <div style="background:rgba(255, 255, 255, 0.50); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1.5px solid rgba(220, 214, 202, 0.7); border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 6px rgba(43,33,24,0.03);">
-      <div style="font-size:0.70rem; font-weight:800; color:#0284C7; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-        <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
-        Enunciado del Problema
-      </div>
-      <div style="font-size:0.92rem; color:#181512; font-weight:700; line-height:1.5;">${promptText}</div>
-      ${optsHtml}
-    </div>
-  `;
-
-  let rubricContentHtml = '';
 
   if (typeof r === 'object' && r !== null) {
     const canonica = r.respuesta_canonica || r.solucion || r.canonical_answer || (q.options && q.correct ? q.options[q.correct] : '');
@@ -564,7 +653,7 @@ function handleViewQuestionRubric(questionOrId) {
           </div>
           <div style="display:flex; flex-direction:column; gap:8px;">
             ${r.criterios.map(c => `
-              <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:rgba(255, 255, 255, 0.70); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:8px; box-shadow:0 1px 3px rgba(43,33,24,0.03);">
+              <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:8px; box-shadow:0 1px 3px rgba(43,33,24,0.03);">
                 <span style="flex:0 0 auto; background:#0284C7; color:#FFFFFF; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:900; white-space:nowrap; box-shadow:0 2px 4px rgba(2,132,199,0.25);">
                   ${escaparHtml(String(c.peso || '1'))} pt
                 </span>
@@ -588,7 +677,7 @@ function handleViewQuestionRubric(questionOrId) {
             <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
             Procedimiento de Resolución
           </div>
-          <div style="display:flex; flex-direction:column; gap:6px; background:rgba(255, 255, 255, 0.60); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:12px 14px;">
+          <div style="display:flex; flex-direction:column; gap:6px; background:rgba(255, 255, 255, 0.80); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:12px 14px;">
             ${r.solucion_pasos.map((p, i) => `
               <div style="font-size:0.78rem; color:#2B2118; line-height:1.45; display:flex; gap:6px; align-items:baseline;">
                 <span style="color:#0284C7; font-weight:900; flex-shrink:0;">${i + 1}.</span>
@@ -605,7 +694,7 @@ function handleViewQuestionRubric(questionOrId) {
             <span style="width:6px; height:6px; border-radius:50%; background:#0284C7;"></span>
             Procedimiento Esperado
           </div>
-          <div style="font-size:0.78rem; color:#2B2118; background:rgba(255, 255, 255, 0.60); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:12px 14px; line-height:1.45;">
+          <div style="font-size:0.78rem; color:#2B2118; background:rgba(255, 255, 255, 0.80); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:12px 14px; line-height:1.45;">
             ${escaparHtml(r.procedimiento_esperado)}
           </div>
         </div>
@@ -623,7 +712,7 @@ function handleViewQuestionRubric(questionOrId) {
           </div>
           <div style="display:flex; flex-direction:column; gap:6px;">
             ${r.errores_previsibles.map(e => `
-              <div style="font-size:0.76rem; color:#2B2118; background:rgba(255, 255, 255, 0.70); border:1.2px solid rgba(254, 215, 170, 0.9); border-radius:8px; padding:8px 12px; line-height:1.4; display:flex; gap:8px; align-items:baseline;">
+              <div style="font-size:0.76rem; color:#2B2118; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(254, 215, 170, 0.9); border-radius:8px; padding:8px 12px; line-height:1.4; display:flex; gap:8px; align-items:baseline;">
                 <span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; border-radius:4px; padding:2px 7px; font-size:0.66rem; font-weight:800; flex-shrink:0;">${escaparHtml(e.tipo || 'Error')}</span>
                 <span>${escaparHtml(e.descripcion || '')}</span>
               </div>
@@ -633,7 +722,7 @@ function handleViewQuestionRubric(questionOrId) {
       `;
     }
 
-    // Confianza del modelo: normaliza 0.0-1.0 (decimal), 1-5 (escala Likert), 1-10 o 0-100 (%)
+    // Confianza del modelo
     let confVal = null;
     if (r.confianza != null && r.confianza !== '') {
       const n = Number(r.confianza);
@@ -653,14 +742,20 @@ function handleViewQuestionRubric(questionOrId) {
          </div>`
       : '';
 
-    rubricContentHtml = `
-      <div style="border:2px solid #0284C7; border-radius:14px; background:rgba(2, 132, 199, 0.05); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); padding:16px; box-shadow:0 4px 18px rgba(2, 132, 199, 0.10), 0 0 0 2px rgba(245, 184, 46, 0.25);">
-        <div style="font-size:0.74rem; font-weight:900; color:#0284C7; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-          <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.12); color:#0284C7; font-size:0.75rem;">📋</span>
-          <span>Rúbrica Pedagógica de Corrección</span>
+    return `
+      <div class="bank-card-rubric-drawer" style="margin-top:12px; border:1.8px solid #0284C7; border-radius:12px; background:linear-gradient(180deg, rgba(2, 132, 199, 0.04) 0%, rgba(250, 247, 240, 0.75) 100%); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); padding:16px; box-shadow:0 4px 18px rgba(2, 132, 199, 0.10), 0 0 0 2px rgba(245, 184, 46, 0.25); animation:fadeInDrawer 0.22s ease-out;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:10px; border-bottom:1.5px solid rgba(2, 132, 199, 0.15);">
+          <div style="font-size:0.76rem; font-weight:900; color:#0284C7; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:8px;">
+            <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.14); color:#0284C7; font-size:0.75rem;">📋</span>
+            <span>Rúbrica Pedagógica de Corrección (IA)</span>
+          </div>
+          <button type="button" onclick="closeInlineQuestionRubric()" style="background:#FAF7F0; border:1px solid #DCD8CE; border-radius:6px; padding:3px 9px; font-size:0.72rem; font-weight:700; color:#64748B; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;" onmouseenter="this.style.background='#F3EFE6'; this.style.color='#181512';" onmouseleave="this.style.background='#FAF7F0'; this.style.color='#64748B';">
+            <span>Ocultar</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255, 255, 255, 0.65); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
           <div>
             <span style="font-size:0.68rem; color:#64748B; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Respuesta Canónica</span>
             <div style="font-size:1.35rem; font-weight:900; color:#0F172A; line-height:1.2;">${escaparHtml(canonica || '—')}</div>
@@ -675,20 +770,24 @@ function handleViewQuestionRubric(questionOrId) {
       </div>
     `;
   } else {
-    rubricContentHtml = `
-      <div style="background:rgba(255, 255, 255, 0.60); border:1.2px solid rgba(220, 214, 202, 0.8); border-radius:10px; padding:14px; font-size:0.82rem; color:#2B2118; white-space:pre-wrap; line-height:1.5;">
+    return `
+      <div class="bank-card-rubric-drawer" style="margin-top:12px; background:rgba(255, 255, 255, 0.85); border:1.2px solid rgba(220, 214, 202, 0.85); border-radius:10px; padding:14px; font-size:0.82rem; color:#2B2118; white-space:pre-wrap; line-height:1.5;">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+          <button type="button" onclick="closeInlineQuestionRubric()" style="background:#FAF7F0; border:1px solid #DCD8CE; border-radius:6px; padding:2px 8px; font-size:0.70rem; cursor:pointer;">Ocultar ✕</button>
+        </div>
         ${escaparHtml(String(r))}
       </div>
     `;
   }
+}
 
-  showAIDialog({
-    icon: `<div style="width:30px; height:30px; border-radius:50%; background:rgba(2, 132, 199, 0.12); border:1.5px solid rgba(2, 132, 199, 0.35); display:inline-flex; align-items:center; justify-content:center; color:#0284C7;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 12l2 2 4-4"/></svg></div>`,
-    title: 'Rúbrica y Análisis Pedagógico (IA)',
-    bodyHtml: questionBlock + rubricContentHtml,
-    maxWidth: '680px',
-    buttons: []
-  });
+/**
+ * Delega la visualización de la rúbrica al foco y cajón in-situ dentro de la tarjeta.
+ */
+function handleViewQuestionRubric(questionOrId) {
+  if (!questionOrId) return;
+  const qId = (typeof questionOrId === 'object' && questionOrId !== null) ? questionOrId.id : questionOrId;
+  toggleInlineQuestionRubric(qId);
 }
 
 // ── EXPOSICIÓN GLOBAL DEL GESTOR DEL BANCO ──
@@ -706,4 +805,8 @@ if (typeof window !== "undefined") {
   window.renderBankManagerQuestions = renderBankManagerQuestions;
   window.onBankManagerSearchInput = onBankManagerSearchInput;
   window.handleViewQuestionRubric = handleViewQuestionRubric;
+  window.toggleInlineQuestionRubric = toggleInlineQuestionRubric;
+  window.closeInlineQuestionRubric = closeInlineQuestionRubric;
+  window.buildInlineRubricDrawerHtml = buildInlineRubricDrawerHtml;
+  window.getQuestionRubricData = getQuestionRubricData;
 }

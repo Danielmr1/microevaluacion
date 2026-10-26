@@ -624,7 +624,7 @@
             </div>
             <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
             <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
-              Versión <span id="user-profile-version-tag">v3.10.58</span>
+              Versión <span id="user-profile-version-tag">v3.10.59</span>
             </div>
 
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
@@ -2443,7 +2443,7 @@
       <div style="background: #ffffff; border: 2px solid #2B2118; border-radius: 18px; box-shadow: 0 0 0 3px #FFB703, 0 8px 30px rgba(43, 33, 24, 0.08); overflow: hidden; display: flex; flex-direction: column;">
         
         <!-- Header del Banco: Nivel (Primaria / Secundaria) -->
-        <div style="padding: 16px 22px; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: flex-start; background: #F9F8F3;">
+        <div id="bank-manager-stage-row" style="padding: 16px 22px; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: flex-start; background: #F9F8F3; transition: all 0.2s ease;">
           <!-- Selector de Nivel (Primaria / Secundaria) -->
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 0.8rem; font-weight: 700; color: #5c4a3b; text-transform: uppercase; letter-spacing: 0.5px;">Nivel:</span>
@@ -2454,9 +2454,20 @@
         </div>
 
         <!-- Fila de Grados (Dinámicos según el nivel activo) -->
-        <div style="padding: 12px 22px; background: #ffffff; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-          <div id="bank-manager-grade-tabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <!-- Tabs dinámicos (4° Pri., 5° Pri., etc.) -->
+        <div id="bank-manager-grade-row" style="padding: 12px 22px; background: #ffffff; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; transition: all 0.2s ease;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <div id="bank-manager-grade-tabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <!-- Tabs dinámicos (4° Pri., 5° Pri., etc.) -->
+            </div>
+            <!-- Banner/Botón de restauración cuando está en Modo Rúbrica -->
+            <div id="bm-rubric-focus-banner" style="display: none; align-items: center; gap: 8px;">
+              <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(2, 132, 199, 0.12); color: #0284C7; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(2, 132, 199, 0.3);">
+                <span>📋</span> Rúbrica en foco
+              </span>
+              <button type="button" onclick="closeInlineQuestionRubric()" style="background: #FAF8F5; border: 1px solid #DCD8CE; color: #57534E; font-size: 0.72rem; font-weight: 700; border-radius: 6px; padding: 3px 9px; cursor: pointer; transition: all 0.15s;" title="Restaurar vista completa de filtros y preguntas">
+                Mostrar filtros y preguntas ✕
+              </button>
+            </div>
           </div>
           <div id="bm-global-capacity-badge" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 800; border-radius: 20px; padding: 4px 12px; background: #FAF5E8; color: #92400E; border: 1.5px solid #F5B82E;">
             <span style="font-size: 0.85rem; line-height: 1;">📦</span>
@@ -2465,7 +2476,7 @@
         </div>
 
         <!-- Fila de Filtros, Búsqueda y Botón Nueva Pregunta (debajo de los grados) -->
-        <div style="padding: 10px 22px; background: #F9F8F3; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div id="bank-manager-controls-row" style="padding: 10px 22px; background: #F9F8F3; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; transition: all 0.2s ease;">
           <!-- Filtro de tipo: Todas / Con Rúbrica / Sin Rúbrica -->
           <div id="bank-manager-filter-pills" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
             <!-- Píldoras generadas por JS con iconos SVG -->

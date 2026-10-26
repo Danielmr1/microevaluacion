@@ -1597,4 +1597,94 @@
       color: #181512 !important;
     }
 
+    /* ==========================================================================
+       BANCO DE PREGUNTAS — MODO DE ENFOQUE Y RÚBRICA IN-SITU (PALETA MARIPOSA)
+       ========================================================================== */
+    #view-bank.is-rubric-focus #bank-manager-stage-row {
+      display: none !important;
+    }
+
+    #view-bank.is-rubric-focus #bank-manager-controls-row {
+      display: none !important;
+    }
+
+    #view-bank.is-rubric-focus #bank-manager-grade-row {
+      padding: 7px 18px !important;
+      min-height: 38px !important;
+      background: #FAF8F5 !important;
+    }
+
+    #view-bank.is-rubric-focus #bm-rubric-focus-banner {
+      display: inline-flex !important;
+    }
+
+    #view-bank.is-rubric-focus #bank-manager-grade-tabs button:not(.is-active) {
+      display: none !important;
+    }
+
+    #view-bank.is-rubric-focus #bm-global-capacity-badge {
+      display: none !important;
+    }
+
+    /* Tarjeta activa con rúbrica desplegada */
+    .bank-question-card.is-active-rubric {
+      border: 2px solid #0284C7 !important;
+      box-shadow: 0 12px 36px rgba(2, 132, 199, 0.16), 0 0 0 2px rgba(245, 184, 46, 0.35) !important;
+      background: #FFFFFF !important;
+      transform: none !important;
+      z-index: 10;
+    }
+
+    /* Preguntas vecinas comprimidas en tira de una línea */
+    .bank-question-card.is-compressed-neighbor {
+      padding: 10px 16px !important;
+      gap: 0 !important;
+      cursor: pointer !important;
+      background: #FAF8F5 !important;
+      border: 1.5px solid #DCD8CE !important;
+      opacity: 0.78 !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 1px 4px rgba(43, 33, 24, 0.04) !important;
+    }
+
+    .bank-question-card.is-compressed-neighbor:hover {
+      opacity: 1 !important;
+      background: #FFFFFF !important;
+      border-color: #F5B82E !important;
+      box-shadow: 0 4px 14px rgba(245, 184, 46, 0.22) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    .bank-question-card.is-compressed-neighbor .bank-card-full-body,
+    .bank-question-card.is-compressed-neighbor .bank-card-opts-grid,
+    .bank-question-card.is-compressed-neighbor .bank-card-rubric-drawer,
+    .bank-question-card.is-compressed-neighbor .bank-card-full-actions {
+      display: none !important;
+    }
+
+    .bank-card-full-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    @keyframes fadeInDrawer {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bank-question-card.is-compressed-neighbor .bank-card-compressed-strip {
+      display: flex !important;
+    }
+
+    .bank-card-compressed-strip {
+      display: none;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+
 
