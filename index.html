@@ -79,14 +79,14 @@
   <script src="three.min.js"></script>
   <script src="evaluation-hologram.js?v=3.8.8"></script>
 
-  <!-- Estilos Modulares de Microevaluación -->
-  <link rel="stylesheet" href="styles-core.css">
-  <link rel="stylesheet" href="styles-print.css">
-  <link rel="stylesheet" href="styles-scanner.css">
-  <link rel="stylesheet" href="styles-hub.css">
-  <link rel="stylesheet" href="styles-simulator.css">
-  <link rel="stylesheet" href="styles-blueprint.css">
-  <link rel="stylesheet" href="styles-copilot.css">
+  <!-- Estilos Modulares de Microevaluación con Versionado Anti-Caché PWA -->
+  <link rel="stylesheet" href="styles-core.css?v=3.10.79">
+  <link rel="stylesheet" href="styles-print.css?v=3.10.79">
+  <link rel="stylesheet" href="styles-scanner.css?v=3.10.79">
+  <link rel="stylesheet" href="styles-hub.css?v=3.10.79">
+  <link rel="stylesheet" href="styles-simulator.css?v=3.10.79">
+  <link rel="stylesheet" href="styles-blueprint.css?v=3.10.79">
+  <link rel="stylesheet" href="styles-copilot.css?v=3.10.79">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -553,6 +553,41 @@
       .island-nav-item.active {
         padding: 5px 10px !important;
         font-size: 0.75rem !important;
+      }
+    }
+
+    /* Regla Crítica Inmediata Anti-Caché: Control de Sesión Visible en Celular */
+    @media screen and (max-width: 900px) {
+      .session-fluid-stage {
+        display: none !important;
+      }
+      body.has-active-split,
+      #view-create:has(.active-split),
+      #view-create.has-active-split,
+      body.has-active-split #view-create {
+        background-color: var(--bg-paper, #F9F8F3) !important;
+      }
+      .summary-split-layout.active-split {
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+        z-index: 5 !important;
+        width: 100% !important;
+      }
+      .summary-sticky-sidebar {
+        position: relative !important;
+        z-index: 10 !important;
+        width: 100% !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        display: flex !important;
+      }
+      .summary-sidebar-panel {
+        position: relative !important;
+        z-index: 10 !important;
+        width: 100% !important;
+        display: flex !important;
+        box-sizing: border-box !important;
       }
     }
   </style>
