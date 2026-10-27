@@ -5980,6 +5980,16 @@
       color: #0f172a;
       overflow: hidden;
     }
+    .card-a6-v .a6-v-problem {
+      margin: 1mm 0 1mm 0 !important;
+      height: 12mm !important;
+      min-height: 12mm !important;
+      max-height: 12mm !important;
+      font-size: 8.8pt !important;
+      line-height: 1.25 !important;
+      padding: 0 1.5mm !important;
+      overflow: hidden !important;
+    }
 
     .a6-grid-wrapper {
       width: 104mm;
@@ -6009,13 +6019,17 @@
     .notebook-grid-a6 > i:nth-child(13n) { border-right: none; }
     .notebook-grid-a6 > i:nth-child(n+53) { border-bottom: none; }
 
-    .a6-v-grid-wrapper {
-      width: 72mm;
-      height: 72mm;
-      flex: 0 0 72mm;
-      margin: 1.5mm auto;
-      align-self: center;
-      position: relative;
+    .card-a6-v .a6-v-grid-wrapper {
+      width: 70mm !important;
+      height: 70mm !important;
+      flex: 0 0 70mm !important;
+      margin: 1mm auto !important;
+      align-self: center !important;
+      position: relative !important;
+    }
+    .card-a6-v .a6-v-grid-wrapper .notebook-grid-a6-v {
+      width: 70mm !important;
+      height: 70mm !important;
     }
 
     .notebook-grid-a6-v {
@@ -6087,14 +6101,20 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 4.5mm;
-      padding: 0 12mm;
+      margin-top: 1.5mm !important;
+      padding: 0 3mm !important;
       box-sizing: border-box;
       width: 100%;
     }
     .card-a6-v .a6-omr-row .v-omr-option {
-      width: auto;
-      gap: 1.5mm;
+      width: auto !important;
+      overflow: visible !important;
+      gap: 1.2mm !important;
+    }
+    .card-a6-v .a6-omr-row .v-omr-text {
+      font-size: 8.8pt !important;
+      white-space: nowrap !important;
+      overflow: visible !important;
     }
 
     .a6-free-answer-strip {
