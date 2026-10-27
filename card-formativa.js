@@ -366,7 +366,7 @@ function createFormativaA6Card(student, classroom, evaluation) {
   };
 
   if (isA6Vertical) {
-    const GRID_CELLS_A6_V = new Array(9 * 8).fill('<i></i>').join('');
+    const GRID_CELLS_A6_V = new Array(9 * 7).fill('<i></i>').join('');
     return `
       <div class="card-a6-v">
         ${fiducialsHTML}

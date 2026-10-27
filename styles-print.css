@@ -744,42 +744,62 @@
     }
 
     .card-a6-r3 .a6-problem {
-      margin: 1mm 0 1mm 0 !important;
-      height: 10mm !important;
-      min-height: 10mm !important;
-      max-height: 10mm !important;
-      font-size: 8.8pt !important;
+      margin: 1mm 0 0.5mm 0 !important;
+      height: auto !important;
+      min-height: 9mm !important;
+      max-height: 16.5mm !important;
+      font-size: 9.2pt !important;
       line-height: 1.25 !important;
-      padding: 0 4mm !important;
+      font-weight: 600 !important;
+      padding: 0 3mm !important;
       overflow: hidden !important;
+    }
+    .card-a6-r3 .a6-grid-wrapper,
+    .card-a6-r3 .focalizada-grid-slot-1p {
+      width: 104mm !important;
+      height: 23mm !important;
+      max-height: 23mm !important;
+      flex: 0 0 23mm !important;
+      margin: 0.5mm auto 0 auto !important;
+      position: relative !important;
+    }
+    .card-a6-r3 .notebook-grid-a6 {
+      height: 23mm !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
+    .card-a6-r3 .a6-omr-row {
+      margin-top: 1mm !important;
+      padding: 0 10mm !important;
     }
 
     .card-a6-v .a6-v-problem {
-      margin: 1.5mm 0 1mm 0 !important;
+      margin: 1mm 0 0.5mm 0 !important;
       height: auto !important;
-      min-height: 11mm !important;
-      max-height: 16mm !important;
-      font-size: 8.5pt !important;
-      line-height: 1.22 !important;
+      min-height: 10mm !important;
+      max-height: 22mm !important;
+      font-size: 9.5pt !important;
+      line-height: 1.25 !important;
+      font-weight: 600 !important;
       padding: 0 1.5mm !important;
       overflow: hidden !important;
     }
 
     .card-a6-v .a6-v-grid-wrapper {
       width: 70mm !important;
-      height: 60mm !important;
-      flex: 0 0 60mm !important;
-      margin: 1mm auto !important;
+      height: 52mm !important;
+      max-height: 54mm !important;
+      flex: 0 0 52mm !important;
+      margin: 0.5mm auto !important;
       align-self: center !important;
       position: relative !important;
     }
     .card-a6-v .a6-v-grid-wrapper .notebook-grid-a6-v {
       width: 70mm !important;
-      height: 60mm !important;
-      grid-template-rows: repeat(8, 1fr) !important;
+      height: 52mm !important;
+      grid-template-rows: repeat(7, 1fr) !important;
     }
     .card-a6-v .a6-omr-row {
-      margin-top: 1.5mm !important;
+      margin-top: 1mm !important;
     }
 
     .notebook-grid-a6-v {

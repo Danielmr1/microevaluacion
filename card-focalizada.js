@@ -350,11 +350,11 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
       </div>
 
       ${withGrid ? `
-        <div class="grid-wrapper a6-grid-wrapper focalizada-grid-area" style="position:relative; margin:1mm auto 0 auto; height:34mm; flex:0 0 34mm;">
-          <div class="notebook-grid notebook-grid-a6" style="height:34mm; grid-template-rows:repeat(4, 1fr);">${new Array(13 * 4).fill('<i></i>').join('')}</div>
+        <div class="grid-wrapper a6-grid-wrapper focalizada-grid-area" style="position:relative; margin:0.5mm auto 0 auto; height:23mm; flex:0 0 23mm;">
+          <div class="notebook-grid notebook-grid-a6" style="height:23mm; grid-template-rows:repeat(4, 1fr);">${new Array(13 * 4).fill('<i></i>').join('')}</div>
         </div>
       ` : `
-        <div class="focalizada-grid-slot-1p" style="position:relative; width:104mm; margin:1mm auto 0 auto; height:34mm; flex:0 0 34mm;"></div>
+        <div class="focalizada-grid-slot-1p" style="position:relative; width:104mm; margin:0.5mm auto 0 auto; height:23mm; flex:0 0 23mm;"></div>
       `}
 
       ${isOMR ? `
