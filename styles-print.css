@@ -698,12 +698,13 @@
     .card-a6-v .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
 
     .a6-v-card-header {
-      height: 18.5mm;
-      padding: 2mm 12mm 1.5mm 12mm;
+      height: 20mm;
+      flex: 0 0 20mm;
+      padding: 1mm 15mm 1mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
       overflow: hidden;
@@ -877,11 +878,12 @@
 
     .a6-card-header {
       height: 20mm;
-      padding: 2mm 16.5mm 2mm 16mm;
+      flex: 0 0 20mm;
+      padding: 1mm 15mm 1mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
       overflow: hidden;
@@ -914,8 +916,8 @@
     .a6-student-block {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 0.8mm;
+      justify-content: flex-start;
+      gap: 1mm;
       line-height: 1;
       margin: 0;
       padding: 0;
@@ -940,15 +942,15 @@
     }
 
     .a6-student-label {
-      font-size: 6.8pt;
-      font-weight: 700;
+      font-size: 9.5pt;
+      font-weight: 600;
       color: #475569;
       text-transform: uppercase;
       flex-shrink: 0;
     }
 
     .a6-student-name {
-      font-size: 8.5pt;
+      font-size: 11.5pt;
       font-weight: 800;
       color: #000000;
       white-space: nowrap;
@@ -959,9 +961,9 @@
     }
 
     .a6-student-grade {
-      font-size: 7.2pt;
+      font-size: 8.5pt;
       font-weight: 600;
-      color: #475569;
+      color: #64748b;
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -1265,8 +1267,12 @@
     /* ── CARTILLA A5 VERTICAL (132 x 182 mm) PARA RAMA 3 ─────────── */
     .card-a5-v-r3 {
       width: 132mm;
+      min-width: 132mm;
+      max-width: 132mm;
       height: 182mm;
-      flex: 0 0 132mm;
+      min-height: 182mm;
+      max-height: 182mm;
+      flex: 0 0 auto;
       border: 1mm solid #000000;
       padding: 2.5mm;
       box-sizing: border-box;
@@ -1293,11 +1299,12 @@
 
     .v-card-header {
       height: 20mm;
-      padding: 2mm 16.5mm 2mm 16mm;
+      flex: 0 0 20mm;
+      padding: 1mm 16mm 1mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
       overflow: hidden;
@@ -1330,7 +1337,7 @@
     .v-student-block {
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 1mm;
       line-height: 1;
       margin: 0;
@@ -1356,15 +1363,15 @@
     }
 
     .v-student-label {
-      font-size: 6.8pt;
-      font-weight: 700;
+      font-size: 10pt;
+      font-weight: 600;
       color: #475569;
       text-transform: uppercase;
       flex-shrink: 0;
     }
 
     .v-student-name {
-      font-size: 8.5pt;
+      font-size: 11.8pt;
       font-weight: 800;
       color: #000000;
       white-space: nowrap;
@@ -1375,9 +1382,9 @@
     }
 
     .v-student-grade {
-      font-size: 7.2pt;
+      font-size: 8.5pt;
       font-weight: 600;
-      color: #475569;
+      color: #64748b;
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -1492,8 +1499,12 @@
     /* ── FICHA A5 VERTICAL (132 x 182 mm) DE RESPUESTA LIBRE ───────── */
     .card-a5-v-free {
       width: 132mm;
+      min-width: 132mm;
+      max-width: 132mm;
       height: 182mm;
-      flex: 0 0 132mm;
+      min-height: 182mm;
+      max-height: 182mm;
+      flex: 0 0 auto;
       border: 1mm solid #000000;
       padding: 2.5mm;
       box-sizing: border-box;
@@ -2270,9 +2281,9 @@
       flex: 0 0 20mm;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 3mm;
-      padding: 0 16mm 1mm 16mm;
+      padding: 1mm 16mm 1mm 13.5mm;
       border-bottom: 2px solid #0f172a;
       box-sizing: border-box;
       overflow: hidden;
@@ -2281,8 +2292,8 @@
     .student-block {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 1.2mm;
+      justify-content: flex-start;
+      gap: 1mm;
       min-width: 0;
       overflow: hidden;
       flex: 1 1 auto;
@@ -2297,14 +2308,14 @@
     }
 
     .student-label {
-      font-size: 11pt;
+      font-size: 10pt;
       color: #475569;
       font-weight: 600;
       flex: 0 0 auto;
     }
 
     .student-name {
-      font-size: 13.5pt;
+      font-size: 12pt;
       color: #0f172a;
       font-weight: 800;
       letter-spacing: 0.2px;

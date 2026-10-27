@@ -167,12 +167,13 @@
     .card-a6-v .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
 
     .a6-v-card-header {
-      height: 18.5mm;
-      padding: 2mm 12mm 1.5mm 12mm;
+      height: 20mm;
+      flex: 0 0 20mm;
+      padding: 1mm 15mm 1mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       border-bottom: 1px solid #000000;
       box-sizing: border-box;
       overflow: hidden;
