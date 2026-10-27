@@ -169,7 +169,7 @@
     .a6-v-card-header {
       height: 20mm;
       flex: 0 0 20mm;
-      padding: 1mm 15mm 1mm 13.5mm;
+      padding: 1.0mm 15mm 0.5mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;

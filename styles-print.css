@@ -700,7 +700,7 @@
     .a6-v-card-header {
       height: 20mm;
       flex: 0 0 20mm;
-      padding: 1mm 15mm 1mm 13.5mm;
+      padding: 1.0mm 15mm 0.5mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -879,7 +879,7 @@
     .a6-card-header {
       height: 20mm;
       flex: 0 0 20mm;
-      padding: 1mm 15mm 1mm 13.5mm;
+      padding: 1.0mm 15mm 0.5mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -917,9 +917,9 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 1mm;
+      gap: 0.8mm;
       line-height: 1;
-      margin: 0;
+      margin: 7.5mm 0 0 0;
       padding: 0;
       min-width: 0;
       overflow: hidden;
@@ -973,7 +973,7 @@
       align-items: center;
       gap: 2.5mm;
       flex: 0 0 auto;
-      height: 16mm;
+      height: 15mm;
     }
 
     .a6-qr-code-text {
@@ -986,9 +986,9 @@
     }
 
     .a6-qr-box {
-      width: 16mm;
-      height: 16mm;
-      flex: 0 0 16mm;
+      width: 15mm;
+      height: 15mm;
+      flex: 0 0 15mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1300,7 +1300,7 @@
     .v-card-header {
       height: 20mm;
       flex: 0 0 20mm;
-      padding: 1mm 16mm 1mm 13.5mm;
+      padding: 1.0mm 16mm 0.5mm 13.5mm;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -1338,9 +1338,9 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 1mm;
+      gap: 0.8mm;
       line-height: 1;
-      margin: 0;
+      margin: 7.5mm 0 0 0;
       padding: 0;
       min-width: 0;
       overflow: hidden;
@@ -1394,7 +1394,7 @@
       align-items: center;
       gap: 3mm;
       flex: 0 0 auto;
-      height: 16mm;
+      height: 15mm;
     }
 
     .v-qr-code-text {
@@ -1407,9 +1407,9 @@
     }
 
     .v-qr-box {
-      width: 16mm;
-      height: 16mm;
-      flex: 0 0 16mm;
+      width: 15mm;
+      height: 15mm;
+      flex: 0 0 15mm;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2283,7 +2283,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 3mm;
-      padding: 1mm 16mm 1mm 13.5mm;
+      padding: 2.0mm 16mm 0.5mm 16mm;
       border-bottom: 2px solid #0f172a;
       box-sizing: border-box;
       overflow: hidden;
@@ -2293,7 +2293,8 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 1mm;
+      gap: 0.8mm;
+      margin: 7.5mm 0 0 0;
       min-width: 0;
       overflow: hidden;
       flex: 1 1 auto;
@@ -2357,12 +2358,12 @@
       letter-spacing: 0.5px;
     }
 
-    /* QR de 16mm: en el warp nuevo son ~170px para 23 módulos
-       (~7.4 px/módulo), por encima del mínimo legible de jsQR. */
+    /* QR de 15mm: en el warp nuevo son ~160px para 23 módulos
+       (~7 px/módulo), perfectamente legible para jsQR. */
     .qr-box {
-      width: 16mm;
-      height: 16mm;
-      flex: 0 0 16mm;
+      width: 15mm;
+      height: 15mm;
+      flex: 0 0 15mm;
       display: flex;
       align-items: center;
       justify-content: center;
