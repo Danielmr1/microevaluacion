@@ -271,12 +271,27 @@ if (typeof window !== 'undefined') {
           loadAndActivateSavedSession(sessions[0].id);
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
-          // Sincronización en segundo plano con Supabase para incorporar sesiones creadas en otros dispositivos (ej. celular)
+          // Sincronización en segundo plano con Supabase para incorporar sesiones creadas o eliminadas en otros dispositivos (ej. PC)
           if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.syncSessionsWithCloud === 'function') {
             ClassroomData.syncSessionsWithCloud().then(syncedList => {
-              if (syncedList && syncedList.length !== sessions.length) {
-                if (typeof renderSummarySessionsStrip === 'function') {
-                  renderSummarySessionsStrip(sessions[0].id);
+              if (Array.isArray(syncedList)) {
+                const activeSess = (typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession) ? ClassroomData.getActiveSession() : null;
+                const activeStillExists = activeSess && syncedList.some(s => s.id === activeSess.id);
+
+                if (!activeStillExists && syncedList.length > 0) {
+                  // La sesión que estaba abierta fue eliminada en otro dispositivo: cargar la primera sesión válida
+                  loadAndActivateSavedSession(syncedList[0].id);
+                } else if (syncedList.length === 0) {
+                  // No quedan sesiones en la cuenta
+                  window.isViewingSavedSessionsMode = false;
+                  showView('saved-sessions');
+                  if (typeof openSavedSessionsModal === 'function') {
+                    openSavedSessionsModal();
+                  }
+                } else {
+                  if (typeof renderSummarySessionsStrip === 'function') {
+                    renderSummarySessionsStrip(activeSess ? activeSess.id : syncedList[0].id);
+                  }
                 }
                 if (typeof updateHubSavedSessionsBadge === 'function') {
                   updateHubSavedSessionsBadge();

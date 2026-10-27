@@ -15,8 +15,45 @@
 
   const STORAGE_KEY_SESSION = 'microeval_active_session_v1';
   const STORAGE_KEY_SAVED_SESSIONS = 'microeval_saved_sessions_v1';
+  const STORAGE_KEY_DELETED_SESSIONS = 'microeval_deleted_sessions_v1';
   const MAX_SAVED_SESSIONS = 8;
   const STORAGE_KEY_BANK = 'microeval_teacher_bank_v2';
+
+  /**
+   * Registro anti-fantasmas de sesiones eliminadas para evitar que se resuciten entre dispositivos
+   */
+  function getDeletedSessions() {
+    if (typeof window === 'undefined' || !window.localStorage) return new Set();
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY_DELETED_SESSIONS);
+      const arr = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  function markSessionAsDeleted(sessionId) {
+    if (!sessionId || typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const set = getDeletedSessions();
+      set.add(String(sessionId).trim());
+      const arr = Array.from(set).slice(-100);
+      window.localStorage.setItem(STORAGE_KEY_DELETED_SESSIONS, JSON.stringify(arr));
+    } catch (e) {}
+  }
+
+  function unmarkSessionAsDeleted(sessionId) {
+    if (!sessionId || typeof window === 'undefined' || !window.localStorage) return;
+    try {
+      const set = getDeletedSessions();
+      const s = String(sessionId).trim();
+      if (set.has(s)) {
+        set.delete(s);
+        window.localStorage.setItem(STORAGE_KEY_DELETED_SESSIONS, JSON.stringify(Array.from(set)));
+      }
+    } catch (e) {}
+  }
 
   // Acceso referencial seguro a salones y banco compartidos
   function getClassroom(id) {
@@ -83,9 +120,9 @@
 
   /**
    * Sincroniza las sesiones guardadas entre la memoria local y Supabase.
-   * - Conserva las sesiones locales prioritarias si aún no están en la nube.
-   * - Si hay sesiones en la nube, combina inteligentemente respetando el tope de 8.
-   * - Actualiza el localStorage como respaldo offline.
+   * - Regla 17 Anti-Fantasmas: La nube es la autoridad soberana. Si una sesión fue
+   *   eliminada en otro dispositivo (ej. PC), se purga de inmediato del localStorage del celular.
+   * - No revive sesiones eliminadas ni las re-sube a la nube.
    * @returns {Promise<Array>} Lista sincronizada de sesiones
    */
   async function syncSessionsWithCloud() {
@@ -98,24 +135,43 @@
 
       const cloudSessions = (await window.SupabaseClient.loadSavedSessions()) || [];
       const localSessions = getSavedSessions();
+      const deletedSet = getDeletedSessions();
 
-      const combined = [...cloudSessions];
-
-      // Verificar si hay sesiones locales que no existen en la nube para subirlas
-      for (const loc of localSessions) {
-        const existsInCloud = combined.some(c => c.id === loc.id || (c.sessionRef && loc.sessionRef && c.sessionRef === loc.sessionRef));
-        if (!existsInCloud && combined.length < MAX_SAVED_SESSIONS) {
-          combined.push(loc);
-          // Guardar en la nube en segundo plano
-          window.SupabaseClient.saveSessionToCloud(loc).catch(e => console.warn('[Cloud Upload Sync]', e));
+      // 1. Si en Supabase viene alguna sesión que este cliente marcó explícitamente como eliminada,
+      // forzar borrado en Supabase y excluirla
+      const validCloudSessions = [];
+      for (const cs of cloudSessions) {
+        if (deletedSet.has(cs.id)) {
+          window.SupabaseClient.deleteSessionFromCloud(cs.id).catch(() => {});
+        } else {
+          validCloudSessions.push(cs);
         }
       }
 
-      // Guardar en localStorage para respaldo offline
-      if (typeof window.localStorage !== 'undefined') {
-        window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(combined.slice(0, MAX_SAVED_SESSIONS)));
+      // 2. Resolver sesiones locales pendientes: solo subir si son borradores legítimos creados offline
+      const combined = [...validCloudSessions];
+      for (const loc of localSessions) {
+        if (!loc || !loc.id || deletedSet.has(loc.id)) continue;
+        const existsInCloud = combined.some(c => c.id === loc.id || (c.sessionRef && loc.sessionRef && c.sessionRef === loc.sessionRef));
+        if (!existsInCloud) {
+          // Si tiene bandera de borrador offline pendiente de subir, se sube
+          if (loc.pendingCloudSync === true && combined.length < MAX_SAVED_SESSIONS) {
+            combined.push(loc);
+            window.SupabaseClient.saveSessionToCloud(loc).then(() => {
+              delete loc.pendingCloudSync;
+            }).catch(e => console.warn('[Cloud Upload Sync]', e));
+          }
+          // Si NO tiene pendingCloudSync y no está en la nube, fue eliminada en otro dispositivo (PC) -> NO se re-sube, se descarta
+        }
       }
-      return combined.slice(0, MAX_SAVED_SESSIONS);
+
+      // 3. La lista combinada es la única fuente de verdad autorizada: guardar en localStorage
+      // Esto elimina de raíz cualquier sesión fantasma en el celular
+      const finalSessions = combined.slice(0, MAX_SAVED_SESSIONS);
+      if (typeof window.localStorage !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(finalSessions));
+      }
+      return finalSessions;
     } catch (e) {
       console.warn('[syncSessionsWithCloud Error]', e);
       return getSavedSessions();
@@ -161,6 +217,11 @@
       list.unshift(targetSession);
     }
 
+    // Al guardar activamente, desmarcar de eliminadas
+    if (targetSession.id) {
+      unmarkSessionAsDeleted(targetSession.id);
+    }
+
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(list.slice(0, MAX_SAVED_SESSIONS)));
@@ -173,6 +234,11 @@
     if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveSessionToCloud === 'function') {
       window.SupabaseClient.saveSessionToCloud(targetSession).catch(err => {
         console.warn('[Cloud Save Session]', err && err.message);
+        // Si falló la red, marcar como borrador offline para que la sincronización posterior la suba
+        targetSession.pendingCloudSync = true;
+        if (typeof window.localStorage !== 'undefined') {
+          window.localStorage.setItem(STORAGE_KEY_SAVED_SESSIONS, JSON.stringify(list.slice(0, MAX_SAVED_SESSIONS)));
+        }
       });
     }
 
@@ -191,6 +257,7 @@
    */
   function deleteSavedSession(sessionId) {
     if (!sessionId) return { success: false };
+    markSessionAsDeleted(sessionId);
     const list = getSavedSessions().filter(s => s.id !== sessionId);
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
