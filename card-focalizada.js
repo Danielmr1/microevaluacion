@@ -260,7 +260,7 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
         ];
 
     const withGrid = !!evaluation.withGrid;
-    const GRID_CELLS_2Q = new Array(9 * 3).fill('<i></i>').join('');
+    const GRID_CELLS_2Q = new Array(9 * 5).fill('<i></i>').join('');
 
     return `
       <div class="card-a6-v">
@@ -281,21 +281,21 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
         </div>
         <div class="aruco-tr-number">${orderNumber}</div>
 
-        <div class="a6-nogrid-body">
+        <div class="a6-nogrid-body ${withGrid ? 'a6-v-with-grid-body' : ''}">
           ${activeQuestions.map((q, idx) => `
-            <div class="a6-nogrid-q">
+            <div class="a6-nogrid-q ${withGrid ? 'a6-v-with-grid-q' : ''}">
               <div class="a6-nogrid-q-prompt">
                 <strong>${idx + 1}.</strong> ${escape(q.prompt)}
               </div>
               ${withGrid ? `
-                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:22mm; flex:0 0 22mm; margin:1mm auto; width:72mm; position:relative;">
-                  <div class="notebook-grid notebook-grid-a6-v" style="height:22mm; grid-template-rows:repeat(3, 1fr);">
+                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:34mm; flex:0 0 34mm; margin:0.5mm auto; width:70mm; position:relative;">
+                  <div class="notebook-grid notebook-grid-a6-v" style="height:34mm; width:70mm; grid-template-rows:repeat(5, 1fr);">
                     ${GRID_CELLS_2Q}
                   </div>
                 </div>
               ` : ''}
               ${isOMR ? `
-                <div class="a6-nogrid-omr">
+                <div class="a6-nogrid-omr ${withGrid ? 'a6-v-with-grid-omr' : ''}">
                   <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q.options?.A || '')}</span></div>
                   <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q.options?.B || '')}</span></div>
                   <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q.options?.C || '')}</span></div>

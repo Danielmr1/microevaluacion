@@ -665,6 +665,91 @@
       font-size: 7pt;
     }
 
+    /* ── FORMATO A6 VERTICAL (89 x 132 mm) ────────────────────────── */
+    .card-a6-v {
+      width: 89mm;
+      min-width: 89mm;
+      max-width: 89mm;
+      height: 132mm;
+      min-height: 132mm;
+      max-height: 132mm;
+      flex: 0 0 89mm;
+      border: 1mm solid #000000;
+      padding: 2.5mm;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      color: #000000;
+    }
+    .card-a6-v .fiducial {
+      position: absolute;
+      width: 8mm;
+      height: 8mm;
+      z-index: 10;
+    }
+    .card-a6-v .fiducial svg { width: 100%; height: 100%; display: block; }
+    .card-a6-v .fiducial-tl { top: 3.5mm; left: 3.5mm; }
+    .card-a6-v .fiducial-tr { top: 3.5mm; right: 3.5mm; }
+    .card-a6-v .fiducial-bl { bottom: 3.5mm; left: 3.5mm; }
+    .card-a6-v .fiducial-br { bottom: 3.5mm; right: 3.5mm; }
+
+    .a6-v-card-header {
+      height: 18.5mm;
+      padding: 2mm 12mm 1.5mm 12mm;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #000000;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .a6-v-grid-wrapper {
+      width: 72mm;
+      height: 72mm;
+      flex: 0 0 72mm;
+      margin: 1.5mm auto;
+      align-self: center;
+      position: relative;
+    }
+
+    .notebook-grid-a6-v {
+      width: 72mm;
+      height: 72mm;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(9, 1fr);
+      border: 1.2px solid #64748b;
+      border-radius: 2px;
+      background: #ffffff;
+    }
+    .notebook-grid-a6-v > i {
+      border-right: 0.75pt solid #e4e4e7;
+      border-bottom: 0.75pt solid #e4e4e7;
+      box-sizing: border-box;
+    }
+    .notebook-grid-a6-v > i:nth-child(9n) { border-right: none; }
+    .notebook-grid-a6-v > i:nth-child(n+73) { border-bottom: none; }
+
+    /* Estilos específicos para A6 Vertical 2P con Cuadrícula */
+    .card-a6-v .a6-v-with-grid-body {
+      padding: 1.5mm 3mm 2mm 3mm !important;
+      gap: 1.5mm !important;
+    }
+    .card-a6-v .a6-v-with-grid-q {
+      gap: 0.5mm !important;
+    }
+    .card-a6-v .a6-v-with-grid-omr {
+      margin-top: 0.5mm !important;
+      padding: 0 11mm !important;
+    }
+
     /* ── CARTILLA A6 (132 x 89 mm) ────────────────────────────────── */
     .card-a6-r3 {
       width: 132mm;

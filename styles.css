@@ -6037,6 +6037,19 @@
     .notebook-grid-a6-v > i:nth-child(9n) { border-right: none; }
     .notebook-grid-a6-v > i:nth-child(n+73) { border-bottom: none; }
 
+    /* Estilos específicos para A6 Vertical 2P con Cuadrícula */
+    .card-a6-v .a6-v-with-grid-body {
+      padding: 1.5mm 3mm 2mm 3mm !important;
+      gap: 1.5mm !important;
+    }
+    .card-a6-v .a6-v-with-grid-q {
+      gap: 0.5mm !important;
+    }
+    .card-a6-v .a6-v-with-grid-omr {
+      margin-top: 0.5mm !important;
+      padding: 0 11mm !important;
+    }
+
     .a6-omr-row {
       display: flex;
       justify-content: space-evenly;
