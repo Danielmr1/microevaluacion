@@ -2073,12 +2073,11 @@
       box-sizing: border-box;
     }
     .v-omr-text {
-      font-size: 7.5pt;
+      font-size: 9.2pt;
       font-weight: 600;
       color: #1e293b;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      overflow: visible;
     }
 
     /* ── CUADRÍCULA AMPLIADA (AJUSTABLE POR EL DOCENTE EN 1 PREGUNTA) ── */
@@ -5973,12 +5972,22 @@
 
     .a6-problem, .a6-v-problem {
       margin: 1.5mm 0 1mm 0;
-      padding: 0 1mm;
-      font-size: 7.8pt;
+      padding: 0 4mm;
+      font-size: 8.8pt;
       line-height: 1.25;
       font-weight: 600;
       color: #0f172a;
       overflow: hidden;
+    }
+    .card-a6-r3 .a6-problem {
+      margin: 1mm 0 1mm 0 !important;
+      height: 10mm !important;
+      min-height: 10mm !important;
+      max-height: 10mm !important;
+      font-size: 8.8pt !important;
+      line-height: 1.25 !important;
+      padding: 0 4mm !important;
+      overflow: hidden !important;
     }
     .card-a6-v .a6-v-problem {
       margin: 1mm 0 1mm 0 !important;
@@ -6095,6 +6104,28 @@
       margin-top: 1mm;
       padding: 0 18mm;
       box-sizing: border-box;
+    }
+
+    .card-a6-r3 .a6-omr-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2.2mm !important;
+      padding: 0 12mm !important;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .card-a6-r3 .a6-omr-row .v-omr-option {
+      width: auto !important;
+      overflow: visible !important;
+      gap: 1.5mm !important;
+    }
+    .card-a6-r3 .a6-omr-row .v-omr-text {
+      font-size: 9.5pt !important;
+      font-weight: 600 !important;
+      color: #1e293b !important;
+      white-space: nowrap !important;
+      overflow: visible !important;
     }
 
     .card-a6-v .a6-omr-row {

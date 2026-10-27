@@ -349,8 +349,16 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
         <div class="problem-text">${escape(q1.prompt)}</div>
       </div>
 
+      ${withGrid ? `
+        <div class="grid-wrapper a6-grid-wrapper focalizada-grid-area" style="position:relative; margin:1mm auto 0 auto; height:34mm; flex:0 0 34mm;">
+          <div class="notebook-grid notebook-grid-a6" style="height:34mm; grid-template-rows:repeat(4, 1fr);">${new Array(13 * 4).fill('<i></i>').join('')}</div>
+        </div>
+      ` : `
+        <div class="focalizada-grid-slot-1p" style="position:relative; width:104mm; margin:1mm auto 0 auto; height:34mm; flex:0 0 34mm;"></div>
+      `}
+
       ${isOMR ? `
-        <div class="a6-omr-row" style="margin-top:1.5mm;">
+        <div class="a6-omr-row" style="margin-top:2.2mm; padding:0 12mm;">
           <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
@@ -361,14 +369,6 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
           <span class="v-nogrid-free-tag">Rpta:</span>
           <div class="a6-nogrid-free-box"></div>
         </div>
-      `}
-
-      ${withGrid ? `
-        <div class="grid-wrapper a6-grid-wrapper focalizada-grid-area" style="position:relative; margin:2mm auto 0 auto; height:38mm; flex:0 0 38mm;">
-          <div class="notebook-grid notebook-grid-a6" style="height:38mm;">${GRID_CELLS_A6}</div>
-        </div>
-      ` : `
-        <div class="focalizada-grid-slot-1p" style="position:relative; width:104mm; margin:2mm auto 0 auto; height:38mm; flex:0 0 38mm;"></div>
       `}
     </div>
   `;
