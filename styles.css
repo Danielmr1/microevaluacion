@@ -2038,9 +2038,8 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       box-sizing: border-box;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 1.5mm;
+      background: transparent;
+      border: none;
       align-items: center;
       padding: 0 8mm;
     }
@@ -2885,9 +2884,8 @@
       display: grid;
       grid-template-columns: repeat(4, 39mm);
       box-sizing: border-box;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 1.5mm;
+      background: transparent;
+      border: none;
       align-items: center;
       padding: 0 1mm;
     }
