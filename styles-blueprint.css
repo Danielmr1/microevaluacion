@@ -848,8 +848,20 @@
       }
     }
 
-    /* Vista de Celular / Tablet: Diseño apilado con desplazamiento horizontal nativo */
+    /* Vista de Celular / Tablet: Diseño apilado con desplazamiento horizontal nativo y fondo fijo */
     @media screen and (max-width: 900px) {
+      /* Fondo fijo y plano en celulares (cero sobrecarga de GPU y cero oclusión) */
+      .session-fluid-stage {
+        display: none !important;
+      }
+
+      body.has-active-split,
+      #view-create:has(.active-split),
+      #view-create.has-active-split,
+      body.has-active-split #view-create {
+        background-color: var(--bg-paper, #F9F8F3) !important;
+      }
+
       .teacher-panel,
       .teacher-panel.has-active-split {
         overflow: visible !important;
@@ -860,6 +872,7 @@
         z-index: 95 !important;
         margin: 4px auto 8px auto !important;
         padding: 2px 8px !important;
+        position: sticky !important;
       }
       .session-num-btn {
         width: 32px !important;
@@ -871,13 +884,24 @@
       .summary-split-layout.active-split {
         display: flex !important;
         flex-direction: column !important;
+        position: relative !important;
+        z-index: 5 !important;
+        width: 100% !important;
       }
 
       .summary-sticky-sidebar {
-        position: static !important;
+        position: relative !important;
+        z-index: 10 !important;
         width: 100% !important;
         max-height: none !important;
         overflow-y: visible !important;
+      }
+
+      .summary-sidebar-panel {
+        position: relative !important;
+        z-index: 10 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
 
       .summary-actions-stack {
