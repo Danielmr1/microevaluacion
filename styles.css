@@ -1114,13 +1114,13 @@
       border: none;
     }
 
-    /* ── HOJA A4 CON 4 FICHAS A6 VERTICALES (PORTRAIT: 188 x 275 mm) ── */
+    /* ── HOJA A4 CON 4 FICHAS A6 VERTICALES (PORTRAIT: 190 x 275 mm) ── */
     .sheet-a4-quad-v {
       background: #ffffff;
-      width: 188mm;
+      width: 190mm;
       height: 275mm;
       margin: 6mm auto;
-      padding: 3mm 2mm;
+      padding: 3mm 3mm;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
@@ -1140,13 +1140,14 @@
       flex-direction: row;
       justify-content: space-between;
       height: 132mm;
-      width: 100%;
+      width: 184mm;
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .sheet-a4-quad-v .quad-vcut {
       width: 6mm;
+      flex: 0 0 6mm;
       height: 132mm;
       display: flex;
       flex-direction: column;
@@ -4452,10 +4453,20 @@
         break-inside: avoid !important;
       }
       .sheet-a4-quad-v {
-        padding: 12mm 2mm 0 2mm !important;
+        width: 190mm !important;
+        padding: 3mm 3mm 0 3mm !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
+      }
+      .sheet-a4-quad-v .quad-row {
+        width: 184mm !important;
+        justify-content: space-between !important;
+        overflow: visible !important;
+      }
+      .sheet-a4-quad-v .quad-vcut {
+        width: 6mm !important;
+        flex: 0 0 6mm !important;
       }
       .sheet-a4-v-single {
         padding: 0 !important;
@@ -6002,6 +6013,39 @@
       overflow: hidden;
     }
 
+    /* Solo para Fichas A6 Vertical: NOMBRE y nombre del alumno en 2 filas */
+    .card-a6-v .a6-student-block {
+      margin-top: 3.5mm !important;
+      gap: 0.5mm !important;
+      justify-content: flex-start !important;
+    }
+    .card-a6-v .a6-student-name-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.5mm !important;
+      width: 100% !important;
+      overflow: hidden !important;
+    }
+    .card-a6-v .a6-student-label {
+      font-size: 7.8pt !important;
+      font-weight: 700 !important;
+      color: #475569 !important;
+      line-height: 1 !important;
+    }
+    .card-a6-v .a6-student-name {
+      font-size: 11pt !important;
+      font-weight: 800 !important;
+      line-height: 1.1 !important;
+      width: 100% !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    .card-a6-v .a6-student-grade {
+      font-size: 7.8pt !important;
+      line-height: 1 !important;
+    }
+
     .a6-problem, .a6-v-problem {
       margin: 1.5mm 0 1mm 0;
       padding: 0 4mm;
@@ -6110,16 +6154,16 @@
     }
     .card-a6-v .a6-v-with-grid-body {
       padding: 1.5mm 3mm 2mm 3mm !important;
-      gap: 2.5mm !important;
+      gap: 4.2mm !important;
     }
     .card-a6-v .a6-v-with-grid-q {
       gap: 0.5mm !important;
     }
     .card-a6-v .a6-v-with-grid-q .a6-nogrid-q-prompt {
-      height: 8.5mm !important;
+      height: auto !important;
       min-height: 8.5mm !important;
-      max-height: 8.5mm !important;
-      font-size: 8.8pt !important;
+      max-height: 12.5mm !important;
+      font-size: 8.5pt !important;
       line-height: 1.22 !important;
       overflow: hidden !important;
     }

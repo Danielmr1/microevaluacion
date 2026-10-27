@@ -288,8 +288,8 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
                 <strong>${idx + 1}.</strong> ${escape(q.prompt)}
               </div>
               ${withGrid ? `
-                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:27mm; flex:0 0 27mm; margin:0.5mm auto; width:70mm; position:relative;">
-                  <div class="notebook-grid notebook-grid-a6-v" style="height:27mm; width:70mm; grid-template-rows:repeat(4, 1fr);">
+                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:22mm; flex:0 0 22mm; margin:0.5mm auto; width:70mm; position:relative;">
+                  <div class="notebook-grid notebook-grid-a6-v" style="height:22mm; width:70mm; grid-template-rows:repeat(4, 1fr);">
                     ${GRID_CELLS_2Q}
                   </div>
                 </div>
