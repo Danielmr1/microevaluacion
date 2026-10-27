@@ -349,28 +349,26 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
         <div class="problem-text">${escape(q1.prompt)}</div>
       </div>
 
-      ${withGrid ? `
-        <div class="grid-wrapper a6-grid-wrapper focalizada-grid-area" style="position:relative; margin:1mm auto 0 auto;">
-          <div class="notebook-grid notebook-grid-a6">${GRID_CELLS_A6}</div>
-        </div>
-      ` : ''}
-
       ${isOMR ? `
-        <div class="a6-omr-row" style="${withGrid ? '' : 'margin-top:3mm;'}">
+        <div class="a6-omr-row" style="margin-top:1.5mm;">
           <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q1.options?.D || '')}</span></div>
         </div>
       ` : `
-        <div class="a6-free-answer-strip" style="${withGrid ? '' : 'margin-top:3.5mm;'}">
+        <div class="a6-free-answer-strip" style="margin-top:2mm;">
           <span class="v-nogrid-free-tag">Rpta:</span>
           <div class="a6-nogrid-free-box"></div>
         </div>
       `}
 
-      ${withGrid ? '' : `
-        <div class="focalizada-grid-slot-1p" style="position:relative; width:104mm; margin:2mm auto 0 auto; height:24px;"></div>
+      ${withGrid ? `
+        <div class="grid-wrapper a6-grid-wrapper focalizada-grid-area" style="position:relative; margin:2mm auto 0 auto; height:38mm; flex:0 0 38mm;">
+          <div class="notebook-grid notebook-grid-a6" style="height:38mm;">${GRID_CELLS_A6}</div>
+        </div>
+      ` : `
+        <div class="focalizada-grid-slot-1p" style="position:relative; width:104mm; margin:2mm auto 0 auto; height:38mm; flex:0 0 38mm;"></div>
       `}
     </div>
   `;

@@ -2402,18 +2402,19 @@
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
-      padding: 1mm 16mm;
+      justify-content: flex-start;
+      padding: 1.5mm 16mm 1mm 16mm;
       box-sizing: border-box;
       overflow: hidden;
+      gap: 5.5mm;
     }
     .a6-h-2q-item {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      flex: 1 1 auto;
-      gap: 1mm;
-      padding: 1mm 0;
+      justify-content: flex-start;
+      flex: 0 0 auto;
+      gap: 2.7mm;
+      padding: 0 0 3mm 0;
       border-bottom: 1px dashed #cbd5e1;
     }
     .a6-h-2q-item:last-child {

@@ -436,23 +436,23 @@ function createFormativaA6Card(student, classroom, evaluation) {
         <div class="problem-text">${escape(q1.prompt)}</div>
       </div>
 
-      <div class="grid-wrapper a6-grid-wrapper">
-        <div class="notebook-grid notebook-grid-a6">${GRID_CELLS_A6}</div>
-      </div>
-
       ${isOMR ? `
-        <div class="a6-omr-row">
+        <div class="a6-omr-row" style="margin-top:1.5mm;">
           <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">D</span> <span class="v-omr-text">${escape(q1.options?.D || '')}</span></div>
         </div>
       ` : `
-        <div class="a6-free-answer-strip">
+        <div class="a6-free-answer-strip" style="margin-top:2mm;">
           <span class="v-nogrid-free-tag">Rpta:</span>
           <div class="a6-nogrid-free-box"></div>
         </div>
       `}
+
+      <div class="grid-wrapper a6-grid-wrapper" style="position:relative; margin:2mm auto 0 auto; height:38mm; flex:0 0 38mm;">
+        <div class="notebook-grid notebook-grid-a6" style="height:38mm;">${GRID_CELLS_A6}</div>
+      </div>
     </div>
   `;
 }

@@ -191,6 +191,18 @@
     }
   };
 
+  // Coordenadas Fijas de ROIs para OMR en Ficha A6 Horizontal (2000 x 1441 px normalizado).
+  const ROI_OMR_CONFIG_A6 = {
+    MC1: {
+      Q1_GRID: mmToPx(20.0, 61.5, 146.0, 58.0),
+      Q1_BUBBLES: mmToPx(22.0, 46.0, 126.0, 14.0)
+    },
+    MC2: {
+      Q1_BUBBLES: mmToPx(22.0, 46.0, 126.0, 14.0),
+      Q2_BUBBLES: mmToPx(22.0, 78.5, 126.0, 14.0)
+    }
+  };
+
   /**
    * Ajustes de contraste pensados para el modelo de visión (pendiente de uso
    * en la Edge Function de corrección). Son más suaves que los del realce que
@@ -926,18 +938,18 @@
       if (isA6) {
         // En A6 (132 x 89 mm), mapeado a lienzo normalizado (2000 x 1441 px / 186 x 134 mm)
         const a6BubblesNorm = [
-          { key: 'A', xMm: 10.6 },
-          { key: 'B', xMm: 55.7 },
-          { key: 'C', xMm: 100.8 },
-          { key: 'D', xMm: 145.8 }
+          { key: 'A', xMm: 34.2 },
+          { key: 'B', xMm: 67.0 },
+          { key: 'C', xMm: 99.7 },
+          { key: 'D', xMm: 132.4 }
         ];
         if (questionCount === 1) {
-          const q1Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 78.3);
+          const q1Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 53.1);
           return [Object.assign({ qIndex: 1 }, q1Result)];
         } else {
           // 2 Preguntas
-          const q1Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 63.2);
-          const q2Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 111.4);
+          const q1Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 53.1);
+          const q2Result = evaluateCompactRow(sheetCanvas, a6BubblesNorm, 85.8);
           return [
             Object.assign({ qIndex: 1 }, q1Result),
             Object.assign({ qIndex: 2 }, q2Result)
@@ -1111,6 +1123,36 @@
         return list;
       }
 
+      // A6 Horizontal con cuadrícula (1 o 2 preguntas)
+      if (isA6) {
+        const a6Cfg = is2Q ? ROI_OMR_CONFIG_A6.MC2 : ROI_OMR_CONFIG_A6.MC1;
+        const b1 = extractROI(sheetCanvas, a6Cfg.Q1_BUBBLES);
+        const g1 = a6Cfg.Q1_GRID ? extractROI(sheetCanvas, a6Cfg.Q1_GRID) : { success: false, canvas: null };
+        let strokeInfo1 = null;
+        if (b1.success && b1.canvas) enhanceHandwritingContrast(b1.canvas);
+        if (g1.success && g1.canvas) {
+          strokeInfo1 = preprocessCalculationGridStrokes(g1.canvas, { cols: 13, rows: 5 });
+        }
+        list.push({
+          qIndex: 1,
+          bubblesCanvas: b1.success ? b1.canvas : null,
+          gridCanvas: g1.success ? g1.canvas : null,
+          strokeInfo: strokeInfo1
+        });
+
+        if (is2Q) {
+          const b2 = extractROI(sheetCanvas, a6Cfg.Q2_BUBBLES);
+          if (b2.success && b2.canvas) enhanceHandwritingContrast(b2.canvas);
+          list.push({
+            qIndex: 2,
+            bubblesCanvas: b2.success ? b2.canvas : null,
+            gridCanvas: null,
+            strokeInfo: null
+          });
+        }
+        return list;
+      }
+
       // A5 Horizontal con cuadrícula (Comportamiento probado estándar)
       const is2Q = questionCount === 2;
       const cfg = is2Q ? ROI_OMR_CONFIG.MC2 : ROI_OMR_CONFIG.MC1;
@@ -1167,8 +1209,8 @@
         const yCenter = 24.0 + (i + 0.5) * stepY;
         bubbleRoi = mmToPxVertical(11, yCenter - 7, 112, 14);
       } else if (isA6) {
-        const yCenter = questionCount === 1 ? 78.3 : (i === 0 ? 63.2 : 111.4);
-        bubbleRoi = mmToPx(8, yCenter - 8, 170, 16);
+        const yCenter = (i === 0) ? 53.1 : 85.8;
+        bubbleRoi = mmToPx(20.0, yCenter - 7.0, 130.0, 14.0);
       } else {
         let yCenter = 124.0;
         if (questionCount === 5) yCenter = 28.0 + (i + 0.5) * 20.0;
@@ -1180,11 +1222,23 @@
 
       const b = extractROI(sheetCanvas, bubbleRoi);
       if (b.success && b.canvas) enhanceHandwritingContrast(b.canvas);
+
+      // En A6 sin cuadrícula de 1 pregunta, extraer la zona de cálculo vacía donde el alumno escribió sus pasos
+      let calcCanvas = null;
+      let strokeInfo = null;
+      if (isA6 && questionCount === 1 && i === 0) {
+        const gExt = extractROI(sheetCanvas, ROI_OMR_CONFIG_A6.MC1.Q1_GRID);
+        if (gExt.success && gExt.canvas) {
+          calcCanvas = gExt.canvas;
+          strokeInfo = preprocessCalculationGridStrokes(calcCanvas, { cols: 13, rows: 5 });
+        }
+      }
+
       list.push({
         qIndex: i + 1,
         bubblesCanvas: b.success ? b.canvas : null,
-        gridCanvas: null,
-        strokeInfo: null
+        gridCanvas: calcCanvas,
+        strokeInfo: strokeInfo
       });
     }
 
