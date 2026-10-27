@@ -242,27 +242,31 @@
     }
 
     .card-a6-v .a6-v-problem {
-      margin: 1mm 0 1mm 0 !important;
-      height: 12mm !important;
-      min-height: 12mm !important;
-      max-height: 12mm !important;
-      font-size: 8.8pt !important;
-      line-height: 1.25 !important;
+      margin: 1.5mm 0 1mm 0 !important;
+      height: auto !important;
+      min-height: 11mm !important;
+      max-height: 16mm !important;
+      font-size: 8.5pt !important;
+      line-height: 1.22 !important;
       padding: 0 1.5mm !important;
       overflow: hidden !important;
     }
 
     .card-a6-v .a6-v-grid-wrapper {
       width: 70mm !important;
-      height: 70mm !important;
-      flex: 0 0 70mm !important;
+      height: 60mm !important;
+      flex: 0 0 60mm !important;
       margin: 1mm auto !important;
       align-self: center !important;
       position: relative !important;
     }
     .card-a6-v .a6-v-grid-wrapper .notebook-grid-a6-v {
       width: 70mm !important;
-      height: 70mm !important;
+      height: 60mm !important;
+      grid-template-rows: repeat(8, 1fr) !important;
+    }
+    .card-a6-v .a6-omr-row {
+      margin-top: 1.5mm !important;
     }
 
     .notebook-grid-a6-v {
@@ -673,4 +677,26 @@
       width: 15mm !important;
       height: 15mm !important;
       flex: 0 0 15mm !important;
+    }
+
+    /* ── AJUSTE A5 HORIZONTAL 1Q OMR CON CUADRÍCULA ── */
+    .card-a5.mc-1q .mc-problem {
+      margin: 1.5mm auto 0 auto !important;
+      height: 18mm !important;
+      flex: 0 0 18mm !important;
+    }
+    .card-a5.mc-1q .mc-grid-1q {
+      width: 156mm !important;
+      height: 52mm !important;
+      flex: 0 0 52mm !important;
+      margin: 1.5mm auto 0 auto !important;
+    }
+    .card-a5.mc-1q .mc-grid-1q .notebook-grid {
+      height: 52mm !important;
+      grid-template-rows: repeat(5, 1fr) !important;
+    }
+    .card-a5.mc-1q .omr-row.omr-row-1 {
+      height: 10mm !important;
+      flex: 0 0 10mm !important;
+      margin: 2mm auto 0 auto !important;
     }
