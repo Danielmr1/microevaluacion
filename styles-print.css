@@ -765,9 +765,24 @@
     .notebook-grid-a6-v > i:nth-child(n+73) { border-bottom: none; }
 
     /* Estilos específicos para A6 Vertical 2P con Cuadrícula */
+    .card-a6-v .a6-v-with-grid-q .a6-v-grid-wrapper {
+      width: 70mm !important;
+      height: 22mm !important;
+      min-height: 22mm !important;
+      max-height: 22mm !important;
+      flex: 0 0 22mm !important;
+      margin: 0.5mm auto !important;
+    }
+    .card-a6-v .a6-v-with-grid-q .a6-v-grid-wrapper .notebook-grid-a6-v {
+      width: 70mm !important;
+      height: 22mm !important;
+      min-height: 22mm !important;
+      max-height: 22mm !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
     .card-a6-v .a6-v-with-grid-body {
       padding: 1.5mm 3mm 2mm 3mm !important;
-      gap: 2mm !important;
+      gap: 2.5mm !important;
     }
     .card-a6-v .a6-v-with-grid-q {
       gap: 0.5mm !important;
@@ -2585,36 +2600,38 @@
 
     /* ── 2 PREGUNTAS EN A6 HORIZONTAL (FOCALIZADA) ── */
     .a6-h-2q-body {
-      flex: 1 1 auto;
+      height: 53mm;
+      max-height: 53mm;
+      flex: 0 0 53mm;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      padding: 1.5mm 16mm 1mm 16mm;
+      justify-content: space-between;
+      padding: 1.5mm 5mm 1mm 4.5mm;
       box-sizing: border-box;
       overflow: hidden;
-      gap: 5.5mm;
     }
     .a6-h-2q-item {
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      flex: 0 0 auto;
-      gap: 2.7mm;
-      padding: 0 0 3mm 0;
+      justify-content: space-around;
+      flex: 1 1 50%;
+      padding: 1.5mm 0;
       border-bottom: 1px dashed #cbd5e1;
+      box-sizing: border-box;
     }
     .a6-h-2q-item:last-child {
       border-bottom: none;
     }
     .a6-h-2q-header {
       display: flex;
-      gap: 1.5mm;
-      font-size: 8pt;
+      gap: 2mm;
+      font-size: 9.8pt;
       color: #0f172a;
       line-height: 1.25;
     }
     .a6-h-2q-num {
       font-weight: 800;
+      font-size: 10pt;
       flex: 0 0 auto;
     }
     .a6-h-2q-prompt {
@@ -2624,10 +2641,34 @@
     .a6-h-2q-omr {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      gap: 3mm;
+      justify-content: space-between;
       width: 100%;
-      margin-top: 1mm;
+      padding: 0 2mm;
+      box-sizing: border-box;
+      margin-top: 1.5mm;
+    }
+    .a6-h-2q-omr .v-omr-option {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      font-size: 9.5pt;
+    }
+    .a6-h-2q-omr .v-omr-bubble {
+      width: 5.5mm;
+      height: 5.5mm;
+      font-size: 8pt;
+      font-weight: 800;
+    }
+    .a6-h-2q-omr .v-omr-text {
+      font-size: 9.5pt;
+      font-weight: 600;
+    }
+    .a6-h-2q-free {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      width: 100%;
+      margin-top: 1.5mm;
     }
     .a6-h-2q-free {
       display: flex;

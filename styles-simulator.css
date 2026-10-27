@@ -272,9 +272,24 @@
     .notebook-grid-a6-v > i:nth-child(n+73) { border-bottom: none; }
 
     /* Estilos específicos para A6 Vertical 2P con Cuadrícula */
+    .card-a6-v .a6-v-with-grid-q .a6-v-grid-wrapper {
+      width: 70mm !important;
+      height: 22mm !important;
+      min-height: 22mm !important;
+      max-height: 22mm !important;
+      flex: 0 0 22mm !important;
+      margin: 0.5mm auto !important;
+    }
+    .card-a6-v .a6-v-with-grid-q .a6-v-grid-wrapper .notebook-grid-a6-v {
+      width: 70mm !important;
+      height: 22mm !important;
+      min-height: 22mm !important;
+      max-height: 22mm !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
     .card-a6-v .a6-v-with-grid-body {
       padding: 1.5mm 3mm 2mm 3mm !important;
-      gap: 2mm !important;
+      gap: 2.5mm !important;
     }
     .card-a6-v .a6-v-with-grid-q {
       gap: 0.5mm !important;
