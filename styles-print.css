@@ -3180,8 +3180,54 @@
       min-height: 20mm;
       max-height: 20mm;
       flex: 0 0 20mm;
-      padding: 0 16mm 1mm 16mm;
+      padding: 2.0mm 20mm 0.5mm 18mm;
       box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-a4-h .student-block,
+    .card-a4-v .student-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      margin-top: 2.8mm;
+      gap: 0.8mm;
+    }
+
+    .card-a4-h .student-main-row,
+    .card-a4-v .student-main-row {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5mm;
+      line-height: 1.15;
+    }
+
+    .card-a4-h .student-name,
+    .card-a4-v .student-name {
+      font-size: 11.5pt;
+      font-weight: 800;
+    }
+
+    .card-a4-h .student-label,
+    .card-a4-v .student-label {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .card-a4-h .student-grade,
+    .card-a4-v .student-grade {
+      font-size: 8.5pt;
+      color: #64748b;
+    }
+
+    .card-a4-h .qr-box,
+    .card-a4-v .qr-box {
+      width: 15mm;
+      height: 15mm;
+      flex: 0 0 15mm;
     }
 
     .a4-h-body,

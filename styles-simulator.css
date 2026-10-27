@@ -616,3 +616,61 @@
       color: #ffffff !important;
       box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35) !important;
     }
+
+    /* ── ENCABEZADO A4 HORIZONTAL Y VERTICAL ── */
+    .card-a4-h .card-header,
+    .card-a4-v .card-header {
+      width: 100% !important;
+      height: 20mm !important;
+      min-height: 20mm !important;
+      max-height: 20mm !important;
+      flex: 0 0 20mm !important;
+      padding: 2.0mm 20mm 0.5mm 18mm !important;
+      box-sizing: border-box !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: flex-start !important;
+    }
+
+    .card-a4-h .student-block,
+    .card-a4-v .student-block {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      margin-top: 2.8mm !important;
+      gap: 0.8mm !important;
+    }
+
+    .card-a4-h .student-main-row,
+    .card-a4-v .student-main-row {
+      display: flex !important;
+      align-items: baseline !important;
+      gap: 1.5mm !important;
+      line-height: 1.15 !important;
+    }
+
+    .card-a4-h .student-name,
+    .card-a4-v .student-name {
+      font-size: 11.5pt !important;
+      font-weight: 800 !important;
+    }
+
+    .card-a4-h .student-label,
+    .card-a4-v .student-label {
+      font-size: 9pt !important;
+      font-weight: 700 !important;
+      color: #475569 !important;
+    }
+
+    .card-a4-h .student-grade,
+    .card-a4-v .student-grade {
+      font-size: 8.5pt !important;
+      color: #64748b !important;
+    }
+
+    .card-a4-h .qr-box,
+    .card-a4-v .qr-box {
+      width: 15mm !important;
+      height: 15mm !important;
+      flex: 0 0 15mm !important;
+    }
