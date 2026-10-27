@@ -69,8 +69,10 @@ if (typeof window !== 'undefined') {
             }
           }
         }
-        const sessionValid = !!(session && session.expectedAnswer && session.expectedAnswer.trim() !== ''
-                             && session.prompt && session.prompt.trim() !== '');
+        const sessionValid = !!(session && (
+          (session.expectedAnswer && session.expectedAnswer.trim() !== '' && session.prompt && session.prompt.trim() !== '') ||
+          (session.type === 'mc' || session.branch === 'rama2' || session.branch === 'rama3' || (session.questions && session.questions.length > 0))
+        ));
 
         const g7Banner = document.getElementById('g7-no-session-banner');
         if (g7Banner) g7Banner.style.display = sessionValid ? 'none' : 'flex';

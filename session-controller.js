@@ -584,6 +584,7 @@
 
 
     function goToScannerWithSession() {
+      let session = null;
       try {
         const currentActive = (typeof ClassroomData !== 'undefined' && ClassroomData.getActiveSession) ? ClassroomData.getActiveSession() : null;
         const branch = (currentActive && currentActive.branch) || window.selectedBranch || (wizardEval && wizardEval.branch) || 'rama1';
@@ -602,8 +603,16 @@
         if (stripEl) stripEl.style.display = 'none';
 
         // 1. Asegurar que la sesión esté generada y activada
-        const session = generateAndActivateSession();
+        session = currentActive || generateAndActivateSession();
         if (!session) return;
+
+        // Sincronizar en el escáner inmediatamente
+        if (typeof Scanner !== 'undefined' && Scanner.setSession && session.classroomId && session.evalId) {
+          Scanner.setSession(session.classroomId, session.evalId);
+        }
+        if (typeof updateScannerSessionBar === 'function') {
+          updateScannerSessionBar(session);
+        }
 
         // Actualizar barra superior a la modalidad de la evaluación (no 'saved-sessions')
         if (typeof updateTopbarModeTitle === 'function') {
@@ -616,7 +625,7 @@
           const cls = ClassroomData.getClassroom(classId);
           const grade = ClassroomData.getClassroomGrade(classId);
           const branch = session.branch || (wizardEval && wizardEval.branch) || 'rama1';
-          let branchTitle = 'Formativa con IA';
+          let branchTitle = session.branchTitle || 'Formativa con IA';
           if (branch === 'rama3') {
             const isBank = (wizardEval && wizardEval.mode === 'bank') || (typeof r3State !== 'undefined' && r3State && r3State.mode === 'bank');
             branchTitle = isBank ? 'Cartilla OMR (Evaluación y Cartillas)' : 'Cartilla OMR (Solo Cartilla)';
@@ -625,14 +634,14 @@
           }
 
           const sessionPayload = {
-            id: session.sessionRef ? 'sess_' + session.sessionRef.replace(/[^a-zA-Z0-9_-]/g, '_') : ('sess_' + Date.now()),
+            id: session.id || (session.sessionRef ? 'sess_' + session.sessionRef.replace(/[^a-zA-Z0-9_-]/g, '_') : ('sess_' + Date.now())),
             evalId: session.evalId || (wizardEval && wizardEval.id) || '',
             sessionRef: session.sessionRef || '',
-            savedAt: new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }),
-            timestamp: Date.now(),
+            savedAt: session.savedAt || new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }),
+            timestamp: session.timestamp || Date.now(),
             classroomId: classId,
             classroomName: cls ? cls.name : classId,
-            gradeText: (grade && (typeof grade === 'string' ? grade : grade.texto)) || (wizardEval && wizardEval.gradeText) || '',
+            gradeText: (grade && (typeof grade === 'string' ? grade : grade.texto)) || (wizardEval && wizardEval.gradeText) || session.gradeText || '',
             branch: branch,
             branchTitle: branchTitle,
             type: session.type || 'free',
@@ -647,36 +656,33 @@
             gridSize: session.gridSize || 'normal',
             correctionMode: session.correctionMode || 'quick',
             mode: (wizardEval && wizardEval.mode) || session.mode || ((typeof r3State !== 'undefined') ? r3State.mode : undefined),
-            r3State: (typeof r3State !== 'undefined' && r3State) ? JSON.parse(JSON.stringify(r3State)) : null,
+            r3State: (typeof r3State !== 'undefined' && r3State) ? JSON.parse(JSON.stringify(r3State)) : (session.r3State ? JSON.parse(JSON.stringify(session.r3State)) : null),
             wizardEval: wizardEval ? JSON.parse(JSON.stringify(wizardEval)) : JSON.parse(JSON.stringify(session))
           };
 
           const clsCheck = ClassroomData.getClassroom(sessionPayload.classroomId);
-        if (!clsCheck || !clsCheck.students || clsCheck.students.length === 0) {
-          showToast('⚠️ No se puede guardar una sesión de un salón sin alumnos.');
-          return;
-        }
-
-        const res = ClassroomData.saveSession(sessionPayload);
-          if (res && res.success) {
-            const btnSave = document.getElementById('btn-save-session');
-            if (btnSave) {
-              btnSave.style.background = '#EFECE3';
-              btnSave.style.color = '#0369A1';
-              btnSave.style.borderColor = 'rgba(41, 182, 246, 0.35)';
-              btnSave.style.boxShadow = 'none';
-              btnSave.classList.add('is-saved');
-              const maxSess = res.max || (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
-              btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada (${res.count}/${maxSess})`;
-            }
-            if (typeof updateDiscardOrDeleteButtonState === 'function') {
-              updateDiscardOrDeleteButtonState(true, sessionPayload.id);
-            }
-            if (typeof renderSummarySessionsStrip === 'function') {
-              renderSummarySessionsStrip(sessionPayload.id);
-            }
-            if (typeof updateHubSavedSessionsBadge === 'function') {
-              updateHubSavedSessionsBadge();
+          if (clsCheck && clsCheck.students && clsCheck.students.length > 0) {
+            const res = ClassroomData.saveSession(sessionPayload);
+            if (res && res.success) {
+              const btnSave = document.getElementById('btn-save-session');
+              if (btnSave) {
+                btnSave.style.background = '#EFECE3';
+                btnSave.style.color = '#0369A1';
+                btnSave.style.borderColor = 'rgba(41, 182, 246, 0.35)';
+                btnSave.style.boxShadow = 'none';
+                btnSave.classList.add('is-saved');
+                const maxSess = res.max || (typeof ClassroomData !== 'undefined' && ClassroomData.MAX_SAVED_SESSIONS) || 8;
+                btnSave.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Guardada (${res.count}/${maxSess})`;
+              }
+              if (typeof updateDiscardOrDeleteButtonState === 'function') {
+                updateDiscardOrDeleteButtonState(true, sessionPayload.id);
+              }
+              if (typeof renderSummarySessionsStrip === 'function') {
+                renderSummarySessionsStrip(sessionPayload.id);
+              }
+              if (typeof updateHubSavedSessionsBadge === 'function') {
+                updateHubSavedSessionsBadge();
+              }
             }
           }
         }
@@ -685,9 +691,11 @@
       }
 
       // Registrar sesión formativa si aplica
-      const isFormativaSess = (session.branch === 'rama1') || (session.branchTitle && session.branchTitle.toLowerCase().includes('formativa')) || (session.correctionMode === 'ai' || (!session.branch && session.rubric && session.type !== 'mc'));
-      if (isFormativaSess && typeof DailyQuota !== 'undefined') {
-        DailyQuota.consume('formativeSessions', session.id || session.sessionId || session.sessionRef || 'formativa_active');
+      if (session) {
+        const isFormativaSess = (session.branch === 'rama1') || (session.branchTitle && session.branchTitle.toLowerCase().includes('formativa')) || (session.correctionMode === 'ai' || (!session.branch && session.rubric && session.type !== 'mc'));
+        if (isFormativaSess && typeof DailyQuota !== 'undefined') {
+          DailyQuota.consume('formativeSessions', session.id || session.sessionId || session.sessionRef || 'formativa_active');
+        }
       }
 
       // 3. Cambiar a la pestaña de escáner
