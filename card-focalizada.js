@@ -260,7 +260,7 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
         ];
 
     const withGrid = !!evaluation.withGrid;
-    const GRID_CELLS_2Q = new Array(9 * 5).fill('<i></i>').join('');
+    const GRID_CELLS_2Q = new Array(9 * 4).fill('<i></i>').join('');
 
     return `
       <div class="card-a6-v">
@@ -288,8 +288,8 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
                 <strong>${idx + 1}.</strong> ${escape(q.prompt)}
               </div>
               ${withGrid ? `
-                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:34mm; flex:0 0 34mm; margin:0.5mm auto; width:70mm; position:relative;">
-                  <div class="notebook-grid notebook-grid-a6-v" style="height:34mm; width:70mm; grid-template-rows:repeat(5, 1fr);">
+                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:27mm; flex:0 0 27mm; margin:0.5mm auto; width:70mm; position:relative;">
+                  <div class="notebook-grid notebook-grid-a6-v" style="height:27mm; width:70mm; grid-template-rows:repeat(4, 1fr);">
                     ${GRID_CELLS_2Q}
                   </div>
                 </div>
