@@ -8299,10 +8299,132 @@
     }
 
     /* ==========================================================================
+       BANCO DE PREGUNTAS — CABECERA RESPONSIVE (1 FILA EN PC, 2 FILAS EN CELULAR)
+       ========================================================================== */
+    .bm-unified-header {
+      padding: 11px 20px;
+      background: #F9F8F3;
+      border-bottom: 1px solid #dcd8ce;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .bm-header-group-1 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      max-width: 560px;
+    }
+
+    .bm-header-group-2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .bm-grade-select-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      min-width: 155px;
+      flex-shrink: 0;
+    }
+
+    /* Conmutador de 2 Iconos de Presentación (Compacta vs Completa) */
+    .bm-view-toggle-group {
+      display: inline-flex;
+      background: #EAE6DB;
+      border: 1px solid #CFC8B8;
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .bm-view-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 30px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #64748B;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .bm-view-btn:hover {
+      color: #18202F;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .bm-view-btn.is-active {
+      background: #18202F;
+      color: #F5B82E;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Celular: Fila 1 (Selector + Buscador) y Fila 2 (Nueva Pregunta + 2 Iconos) */
+    @media (max-width: 640px) {
+      .bm-unified-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 10px 14px !important;
+        gap: 8px !important;
+      }
+
+      .bm-header-group-1 {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+      }
+
+      .bm-grade-select-wrapper {
+        min-width: 135px !important;
+        max-width: 48% !important;
+        flex: 1 !important;
+      }
+
+      .bm-search-wrapper {
+        flex: 1 !important;
+        min-width: 120px !important;
+      }
+
+      .bm-header-group-2 {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+      }
+
+      #btn-toggle-add-question {
+        flex: 1 !important;
+        justify-content: center !important;
+        padding: 7px 10px !important;
+        font-size: 0.78rem !important;
+      }
+
+      .bm-view-toggle-group {
+        flex-shrink: 0 !important;
+      }
+    }
+
+    /* ==========================================================================
        BANCO DE PREGUNTAS — MODO DE ENFOQUE Y RÚBRICA IN-SITU (PALETA MARIPOSA)
        ========================================================================== */
-    #view-bank.is-rubric-focus #bank-manager-actions-col,
-    #view-bank.is-rubric-focus #bank-manager-grade-select {
+    #view-bank.is-rubric-focus .bm-search-wrapper,
+    #view-bank.is-rubric-focus .bm-grade-select-wrapper,
+    #view-bank.is-rubric-focus .bm-header-group-2 {
       display: none !important;
     }
 
@@ -8329,8 +8451,9 @@
     /* ==========================================================================
        BANCO DE PREGUNTAS — MODO DE EDICIÓN IN-SITU (FOCO Y LIMPIEZA VISUAL)
        ========================================================================== */
-    #view-bank.is-edit-focus #bank-manager-actions-col,
-    #view-bank.is-edit-focus #bank-manager-grade-select,
+    #view-bank.is-edit-focus .bm-search-wrapper,
+    #view-bank.is-edit-focus .bm-grade-select-wrapper,
+    #view-bank.is-edit-focus .bm-header-group-2,
     #view-bank.is-edit-focus #bank-manager-footer-bar,
     #view-bank.is-edit-focus #bank-manager-summary-text {
       display: none !important;

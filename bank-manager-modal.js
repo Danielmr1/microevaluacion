@@ -10,6 +10,33 @@ var bankManagerSearchQuery = '';
 var bankManagerExpandedRubricQuestionId = null; // ID de la pregunta cuya rúbrica está expandida in-situ
 var bankManagerEditingQuestionId = null; // ID de la pregunta en modo edición in-situ
 var bankManagerEditingState = {}; // Estado temporal de edición por ID de pregunta
+var bankManagerViewMode = 'compact'; // 'compact' (reducida) | 'full' (completa) — por defecto compacta en cualquier dispositivo
+
+function setBankManagerViewMode(mode) {
+  bankManagerViewMode = (mode === 'full') ? 'full' : 'compact';
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('microeval_bank_view_mode', bankManagerViewMode);
+    }
+  } catch (e) {}
+  syncViewModeButtons();
+  renderBankManagerQuestions();
+}
+window.setBankManagerViewMode = setBankManagerViewMode;
+
+function syncViewModeButtons() {
+  const btnCompact = document.getElementById('btn-view-mode-compact');
+  const btnFull = document.getElementById('btn-view-mode-full');
+  if (btnCompact) {
+    if (bankManagerViewMode === 'compact') btnCompact.classList.add('is-active');
+    else btnCompact.classList.remove('is-active');
+  }
+  if (btnFull) {
+    if (bankManagerViewMode === 'full') btnFull.classList.add('is-active');
+    else btnFull.classList.remove('is-active');
+  }
+}
+window.syncViewModeButtons = syncViewModeButtons;
 
 function updateBankManagerFocusLayout() {
   const viewBank = document.getElementById('view-bank');
@@ -125,6 +152,14 @@ function openBankManagerModal() {
   bankManagerSearchQuery = '';
   const searchInput = document.getElementById('bm-search-input');
   if (searchInput) searchInput.value = '';
+
+  try {
+    const savedMode = (typeof window !== 'undefined' && window.localStorage) ? window.localStorage.getItem('microeval_bank_view_mode') : null;
+    bankManagerViewMode = (savedMode === 'full') ? 'full' : 'compact';
+  } catch (e) {
+    bankManagerViewMode = 'compact';
+  }
+  syncViewModeButtons();
 
   syncGradeSelectValue();
   toggleBankManagerAddForm(false);
@@ -489,7 +524,88 @@ function renderBankManagerQuestions() {
       // para evitar duplicar el enunciado y las alternativas sobre el editor
       const editDrawer = buildInlineEditDrawerElement(q);
       fullBody.appendChild(editDrawer);
+      card.appendChild(fullBody);
+    } else if (bankManagerViewMode === 'compact') {
+      // ── 1° FORMA DE PRESENTACIÓN: REDUCIDA (COMPACTA) ──
+      const compactRow = document.createElement('div');
+      compactRow.className = 'bank-card-compact-row';
+      compactRow.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; background:#ffffff; border-radius:12px; transition:all 0.15s;';
+
+      const leftCol = document.createElement('div');
+      leftCol.style.cssText = 'display:flex; flex-direction:column; gap:5px; min-width:0; flex:1;';
+
+      // Enunciado
+      const pText = document.createElement('div');
+      pText.className = 'bank-card-prompt-text';
+      pText.style.cssText = 'font-size:0.88rem; color:#181512; font-weight:700; line-height:1.42;';
+      pText.innerHTML = (typeof formatMathHtml === 'function')
+        ? formatMathHtml(escaparHtml(q.prompt || ''))
+        : escaparHtml(q.prompt || '');
+      leftCol.appendChild(pText);
+
+      // Respuesta
+      const ansDiv = document.createElement('div');
+      ansDiv.style.cssText = 'display:flex; align-items:center; gap:8px; flex-wrap:wrap;';
+
+      let ansHtml = '';
+      if (hasOptions) {
+        const correctLetter = (q.correct || 'A').toUpperCase();
+        const optVal = q.options ? q.options[correctLetter] : '';
+        const optFormatted = optVal ? ((typeof formatMathHtml === 'function') ? formatMathHtml(escaparHtml(optVal)) : escaparHtml(optVal)) : '';
+        ansHtml = `<span style="font-size:0.75rem; font-weight:800; color:#0284C7; background:rgba(2,132,199,0.10); border:1px solid rgba(2,132,199,0.25); border-radius:6px; padding:3px 9px; display:inline-flex; align-items:center; gap:5px;">
+          <span>Rpta:</span> <strong style="color:#0369A1;">${correctLetter}) ${optFormatted}</strong>
+        </span>`;
+      } else {
+        const expAns = q.expectedAnswer ? ((typeof formatMathHtml === 'function') ? formatMathHtml(escaparHtml(q.expectedAnswer)) : escaparHtml(q.expectedAnswer)) : 'Libre';
+        ansHtml = `<span style="font-size:0.75rem; font-weight:800; color:#0284C7; background:rgba(2,132,199,0.10); border:1px solid rgba(2,132,199,0.25); border-radius:6px; padding:3px 9px; display:inline-flex; align-items:center; gap:5px;">
+          <span>Rpta:</span> <strong style="color:#0369A1;">${expAns}</strong>
+        </span>`;
+      }
+      ansDiv.innerHTML = ansHtml;
+      leftCol.appendChild(ansDiv);
+
+      compactRow.appendChild(leftCol);
+
+      // Botón Editar al lado derecho
+      const rightCol = document.createElement('div');
+      rightCol.style.cssText = 'flex-shrink:0; display:flex; align-items:center; gap:6px;';
+
+      if (inSavedSessions && inSavedSessions.length > 0) {
+        inSavedSessions.forEach(s => {
+          const btnLink = document.createElement('button');
+          btnLink.type = 'button';
+          btnLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>Sesión ${s.sessionNumber}</span>`;
+          btnLink.title = `Abrir la sesión "${s.title}"`;
+          btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:5px 9px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;';
+          btnLink.onclick = (e) => {
+            e.stopPropagation();
+            if (typeof window.openSessionFromBank === 'function') {
+              window.openSessionFromBank(s.sessionId);
+            } else if (typeof loadAndActivateSavedSession === 'function') {
+              loadAndActivateSavedSession(s.sessionId, { asDirectModalityView: true });
+            }
+          };
+          rightCol.appendChild(btnLink);
+        });
+      } else {
+        const btnEdit = document.createElement('button');
+        btnEdit.type = 'button';
+        btnEdit.className = 'btn-card-edit-trigger';
+        btnEdit.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Editar</span>';
+        btnEdit.style.cssText = 'background:#f0f9ff; border:1px solid #bae6fd; color:#0284c7; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
+        btnEdit.addEventListener('mouseenter', () => { btnEdit.style.background = '#0284c7'; btnEdit.style.color = '#ffffff'; });
+        btnEdit.addEventListener('mouseleave', () => { btnEdit.style.background = '#f0f9ff'; btnEdit.style.color = '#0284c7'; });
+        btnEdit.onclick = (e) => {
+          e.stopPropagation();
+          toggleInlineQuestionEdit(q.id);
+        };
+        rightCol.appendChild(btnEdit);
+      }
+
+      compactRow.appendChild(rightCol);
+      card.appendChild(compactRow);
     } else {
+      // ── 2° FORMA DE PRESENTACIÓN: ACTUAL (COMPLETA) ──
       fullBody.appendChild(header);
       fullBody.appendChild(promptText);
       fullBody.appendChild(optsOrAnswerElement);
@@ -501,9 +617,8 @@ function renderBankManagerQuestions() {
         drawerContainer.innerHTML = buildInlineRubricDrawerHtml(q);
         fullBody.appendChild(drawerContainer);
       }
+      card.appendChild(fullBody);
     }
-
-    card.appendChild(fullBody);
     container.appendChild(card);
   });
 }

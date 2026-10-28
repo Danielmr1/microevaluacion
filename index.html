@@ -2484,14 +2484,15 @@
       <!-- Contenedor Maestro: Banco de Preguntas -->
       <div style="background: #ffffff; border: 2px solid #2B2118; border-radius: 18px; box-shadow: 0 0 0 3px #FFB703, 0 8px 30px rgba(43, 33, 24, 0.08); overflow: hidden; display: flex; flex-direction: column;">
         
-        <!-- Header Unificado del Banco: Selector de Grado, Buscador y Botón Nueva Pregunta -->
-        <div id="bank-manager-header-row" style="padding: 12px 22px; background: #F9F8F3; border-bottom: 1px solid #dcd8ce; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; transition: all 0.2s ease;">
+        <!-- Header Unificado del Banco: Selector de Grado, Buscador, Botón Nueva Pregunta y Conmutador de Vistas -->
+        <div id="bank-manager-header-row" class="bm-unified-header">
           
-          <!-- Lado Izquierdo: Selector de Grado y Banners de Foco -->
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <div style="position: relative; display: inline-flex; align-items: center;">
+          <!-- Grupo 1 (Fila 1 en celular): Selector de Grado + Buscador -->
+          <div class="bm-header-group-1">
+            <!-- Selector de Grado -->
+            <div class="bm-grade-select-wrapper">
               <select id="bank-manager-grade-select" onchange="onBankManagerGradeSelectChange(this.value)"
-                style="appearance: none; -webkit-appearance: none; background: #ffffff; border: 1.5px solid #2B2118; border-radius: 9px; padding: 7px 34px 7px 14px; font-size: 0.84rem; font-weight: 700; color: #18202F; cursor: pointer; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: border-color 0.15s;">
+                style="appearance: none; -webkit-appearance: none; background: #ffffff; border: 1.5px solid #2B2118; border-radius: 9px; padding: 7px 30px 7px 12px; font-size: 0.82rem; font-weight: 700; color: #18202F; cursor: pointer; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: border-color 0.15s; width: 100%;">
                 <option value="primaria:4">4to de primaria</option>
                 <option value="primaria:5">5to de primaria</option>
                 <option value="primaria:6">6to de primaria</option>
@@ -2501,7 +2502,7 @@
                 <option value="secundaria:4">4to de secundaria</option>
                 <option value="secundaria:5">5to de secundaria</option>
               </select>
-              <span style="position: absolute; right: 10px; pointer-events: none; color: #57534E; display: flex; align-items: center;">
+              <span class="bm-select-chevron" style="position: absolute; right: 9px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #57534E; display: flex; align-items: center;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
               </span>
             </div>
@@ -2524,25 +2525,44 @@
                 <span>←</span><span>Regresar</span>
               </button>
             </div>
-          </div>
 
-          <!-- Lado derecho: Buscador + Botón Nueva Pregunta para este Grado -->
-          <div id="bank-manager-actions-col" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1; justify-content: flex-end;">
             <!-- Buscador por texto con icono SVG profesional -->
-            <div style="position: relative; min-width: 200px; flex: 1; max-width: 280px;">
+            <div class="bm-search-wrapper" style="position: relative; flex: 1; min-width: 140px;">
               <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none; color: #94a3b8;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               </span>
               <input type="text" id="bm-search-input" placeholder="Buscar preguntas..." oninput="onBankManagerSearchInput(this.value)"
                 style="width: 100%; box-sizing: border-box; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 6px 12px 6px 32px; font-size: 0.8rem; color: #0f172a; outline: none; transition: border-color 0.15s;">
             </div>
+          </div>
 
+          <!-- Grupo 2 (Fila 2 en celular): Botón Nueva Pregunta + Conmutador de 2 Iconos -->
+          <div class="bm-header-group-2">
             <!-- Botón de acción: Nueva Pregunta para este Grado -->
             <button id="btn-toggle-add-question" type="button" onclick="toggleBankManagerAddForm()"
-              style="display: inline-flex; align-items: center; gap: 7px; background: #FFB703; border: none; color: #181512; border-radius: 9px; padding: 8px 16px; font-size: 0.82rem; font-weight: 800; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(255,183,3,0.4); white-space: nowrap;">
+              style="display: inline-flex; align-items: center; gap: 7px; background: #FFB703; border: none; color: #181512; border-radius: 9px; padding: 7px 14px; font-size: 0.80rem; font-weight: 800; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(255,183,3,0.4); white-space: nowrap;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               <span>Nueva Pregunta para este Grado</span>
             </button>
+
+            <!-- Conmutador de 2 Iconos (Presentación Compacta vs Completa) -->
+            <div id="bm-view-mode-toggle" class="bm-view-toggle-group">
+              <button type="button" id="btn-view-mode-compact" class="bm-view-btn is-active" onclick="setBankManagerViewMode('compact')" title="Presentación Reducida (Enunciado y Respuesta)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="6" x2="20" y2="6"></line>
+                  <line x1="4" y1="12" x2="20" y2="12"></line>
+                  <line x1="4" y1="18" x2="20" y2="18"></line>
+                </svg>
+              </button>
+              <button type="button" id="btn-view-mode-full" class="bm-view-btn" onclick="setBankManagerViewMode('full')" title="Presentación Actual (Completa con Alternativas)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
