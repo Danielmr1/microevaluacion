@@ -78,24 +78,43 @@ function toggleInlineQuestionEdit(questionId) {
 window.toggleInlineQuestionEdit = toggleInlineQuestionEdit;
 
 function openBankManagerModal() {
-  // Determinar grado inicial: el del salón seleccionado o el primer grado habilitado en el catálogo
   let initialGrade = null;
-  if (wizardClassroomId) {
+
+  // 1. Prioridad: El grado de la última pregunta editada o creada
+  if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.getLatestActiveQuestion === 'function') {
+    const latestQ = ClassroomData.getLatestActiveQuestion();
+    if (latestQ && latestQ.gradeStage && latestQ.gradeLevel) {
+      const isSec = latestQ.gradeStage === 'secundaria';
+      const lvl = Number(latestQ.gradeLevel);
+      initialGrade = {
+        stage: latestQ.gradeStage,
+        level: lvl,
+        label: isSec ? `${lvl}° Sec.` : `${lvl}° Pri.`,
+        fullLabel: (typeof ClassroomData.formatGrade === 'function' ? ClassroomData.formatGrade(latestQ.gradeStage, lvl) : null) || `${lvl}° ${isSec ? 'Secundaria' : 'Primaria'}`,
+        value: `${latestQ.gradeStage}:${lvl}`
+      };
+      bankManagerActiveStage = latestQ.gradeStage;
+    }
+  }
+
+  // 2. Fallback: El grado del salón seleccionado en el wizard si no hubo preguntas
+  if (!initialGrade && typeof wizardClassroomId !== 'undefined' && wizardClassroomId && typeof ClassroomData !== 'undefined') {
     const clsGrade = ClassroomData.getClassroomGrade(wizardClassroomId);
     if (clsGrade && clsGrade.stage && clsGrade.level) {
       const isSec = clsGrade.stage === 'secundaria';
-      const shortLabel = isSec ? `${clsGrade.level}° Sec.` : `${clsGrade.level}° Pri.`;
+      const lvl = Number(clsGrade.level);
       initialGrade = {
         stage: clsGrade.stage,
-        level: Number(clsGrade.level),
-        label: shortLabel,
-        fullLabel: ClassroomData.formatGrade(clsGrade.stage, clsGrade.level) || `${clsGrade.level}° Primaria`,
-        value: `${clsGrade.stage}:${clsGrade.level}`
+        level: lvl,
+        label: isSec ? `${lvl}° Sec.` : `${lvl}° Pri.`,
+        fullLabel: (typeof ClassroomData.formatGrade === 'function' ? ClassroomData.formatGrade(clsGrade.stage, lvl) : null) || `${lvl}° ${isSec ? 'Secundaria' : 'Primaria'}`,
+        value: `${clsGrade.stage}:${lvl}`
       };
       bankManagerActiveStage = clsGrade.stage;
     }
   }
 
+  // 3. Fallback final: 4to de primaria
   if (!initialGrade) {
     initialGrade = { stage: 'primaria', level: 4, label: '4° Pri.', fullLabel: '4° Primaria', value: 'primaria:4' };
     bankManagerActiveStage = 'primaria';
@@ -107,10 +126,8 @@ function openBankManagerModal() {
   const searchInput = document.getElementById('bm-search-input');
   if (searchInput) searchInput.value = '';
 
+  syncGradeSelectValue();
   toggleBankManagerAddForm(false);
-  renderBankManagerStageTabs();
-  renderBankManagerGradeTabs();
-  renderBankManagerFilterPills();
   renderBankManagerQuestions();
 
   // Sincronización en segundo plano con Supabase para reflejar cambios entre dispositivos
@@ -129,181 +146,52 @@ function closeBankManagerModal() {
   if (typeof renderBankCards === 'function') renderBankCards();
 }
 
+function syncGradeSelectValue() {
+  const select = document.getElementById('bank-manager-grade-select');
+  if (select && bankManagerActiveGrade && bankManagerActiveGrade.value) {
+    select.value = bankManagerActiveGrade.value;
+  }
+}
+
+function onBankManagerGradeSelectChange(val) {
+  if (!val) return;
+  bankManagerExpandedRubricQuestionId = null;
+  bankManagerEditingQuestionId = null;
+  updateBankManagerFocusLayout();
+
+  const parts = val.split(':');
+  const stage = parts[0];
+  const level = Number(parts[1]);
+  const isSec = stage === 'secundaria';
+  const shortLabel = isSec ? `${level}° Sec.` : `${level}° Pri.`;
+  const fullLabel = (typeof ClassroomData !== 'undefined' && typeof ClassroomData.formatGrade === 'function')
+    ? ClassroomData.formatGrade(stage, level)
+    : `${level}° ${isSec ? 'Secundaria' : 'Primaria'}`;
+
+  bankManagerActiveStage = stage;
+  bankManagerActiveGrade = {
+    stage: stage,
+    level: level,
+    label: shortLabel,
+    fullLabel: fullLabel,
+    value: val
+  };
+
+  renderBankManagerQuestions();
+  toggleBankManagerAddForm(false);
+}
+window.onBankManagerGradeSelectChange = onBankManagerGradeSelectChange;
+
 function renderBankManagerStageTabs() {
-  const container = document.getElementById('bank-manager-stage-tabs');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const stages = [
-    { stage: 'primaria', label: 'Primaria' },
-    { stage: 'secundaria', label: 'Secundaria' }
-  ];
-
-  stages.forEach(s => {
-    const isActive = bankManagerActiveStage === s.stage;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = s.label;
-    btn.style.cssText = [
-      'padding:5px 16px',
-      'border-radius:7px',
-      'font-size:0.8rem',
-      'font-weight:700',
-      'cursor:pointer',
-      'transition:all 0.15s',
-      isActive
-        ? 'background:#18202F; color:#FAF7F0; font-weight:800; border:1.5px solid #F5B82E; box-shadow:0 2px 6px rgba(24,32,47,0.25);'
-        : 'background:transparent; color:#57534E; border:1.5px solid transparent;'
-    ].join(';');
-
-    if (!isActive) {
-      btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(43,33,24,0.06)'; btn.style.color = '#18202F'; });
-      btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; btn.style.color = '#57534E'; });
-    }
-
-    btn.onclick = () => {
-      bankManagerExpandedRubricQuestionId = null;
-      updateBankManagerFocusLayout();
-      bankManagerActiveStage = s.stage;
-      const catalog = (typeof ClassroomData !== 'undefined' && ClassroomData.GRADE_CATALOG) || [];
-      const entry = catalog.find(c => c.stage === s.stage);
-      const grades = (entry && entry.grades) ? entry.grades : (s.stage === 'secundaria' ? [1,2,3,4,5] : [4,5,6]);
-      const firstLevel = grades[0] || (s.stage === 'secundaria' ? 1 : 4);
-      const isSec = s.stage === 'secundaria';
-      const shortLabel = isSec ? `${firstLevel}° Sec.` : `${firstLevel}° Pri.`;
-
-      bankManagerActiveGrade = {
-        stage: s.stage,
-        level: firstLevel,
-        label: shortLabel,
-        fullLabel: `${firstLevel}° ${s.label}`,
-        value: `${s.stage}:${firstLevel}`
-      };
-
-      renderBankManagerStageTabs();
-      renderBankManagerGradeTabs();
-      renderBankManagerQuestions();
-      toggleBankManagerAddForm(false);
-    };
-
-    container.appendChild(btn);
-  });
+  syncGradeSelectValue();
 }
 
 function renderBankManagerGradeTabs() {
-  const container = document.getElementById('bank-manager-grade-tabs');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const catalog = (typeof ClassroomData !== 'undefined' && ClassroomData.GRADE_CATALOG) || [];
-  const entry = catalog.find(c => c.stage === bankManagerActiveStage) || {
-    stage: bankManagerActiveStage,
-    label: bankManagerActiveStage === 'secundaria' ? 'Secundaria' : 'Primaria',
-    grades: bankManagerActiveStage === 'secundaria' ? [1, 2, 3, 4, 5] : [4, 5, 6]
-  };
-
-  entry.grades.forEach(lvl => {
-    const isActive = bankManagerActiveGrade && bankManagerActiveGrade.stage === entry.stage && Number(bankManagerActiveGrade.level) === Number(lvl);
-    const shortLabel = entry.stage === 'secundaria' ? `${lvl}° Sec.` : `${lvl}° Pri.`;
-    const fullLabel = `${lvl}° ${entry.label}`;
-
-    // Obtener conteo de preguntas para este grado
-    const qList = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
-      ? ClassroomData.getIndividualMCQuestions(entry.stage, lvl)
-      : [];
-    const count = qList.length;
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    if (isActive) btn.className = 'is-active';
-    btn.textContent = `${shortLabel} (${count})`;
-    btn.style.cssText = [
-      'padding:6px 14px',
-      'border-radius:20px',
-      'font-size:0.78rem',
-      'font-weight:700',
-      'cursor:pointer',
-      'transition:all 0.15s',
-      isActive
-        ? 'background:#0284C7; color:#ffffff; font-weight:800; border:1.5px solid #0284C7; box-shadow:0 2px 8px rgba(2,132,199,0.35);'
-        : 'background:#F3EFE6; color:#57534E; border:1.5px solid #DED8C8;'
-    ].join(';');
-
-    if (!isActive) {
-      btn.addEventListener('mouseenter', () => { btn.style.background = '#EFE9DC'; btn.style.borderColor = '#CFC7B4'; btn.style.color = '#18202F'; });
-      btn.addEventListener('mouseleave', () => { btn.style.background = '#F3EFE6'; btn.style.borderColor = '#DED8C8'; btn.style.color = '#57534E'; });
-    }
-
-    btn.onclick = () => {
-      bankManagerExpandedRubricQuestionId = null;
-      updateBankManagerFocusLayout();
-      bankManagerActiveGrade = { stage: entry.stage, level: lvl, label: shortLabel, fullLabel: fullLabel, value: `${entry.stage}:${lvl}` };
-      renderBankManagerGradeTabs();
-      renderBankManagerQuestions();
-      toggleBankManagerAddForm(false);
-    };
-    container.appendChild(btn);
-  });
+  syncGradeSelectValue();
 }
 
 function renderBankManagerFilterPills() {
-  const container = document.getElementById('bank-manager-filter-pills');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const filters = [
-    {
-      key: 'all',
-      label: 'Todas',
-      iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>'
-    },
-    {
-      key: 'rubric',
-      label: 'Con Rúbrica',
-      iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>'
-    },
-    {
-      key: 'quick',
-      label: 'Sin Rúbrica',
-      iconSvg: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
-    }
-  ];
-
-  filters.forEach(f => {
-    const isActive = bankManagerFilterType === f.key;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.innerHTML = `${f.iconSvg}<span>${f.label}</span>`;
-    btn.style.cssText = [
-      'display:inline-flex',
-      'align-items:center',
-      'gap:5px',
-      'padding:5px 12px',
-      'border-radius:16px',
-      'font-size:0.75rem',
-      'font-weight:700',
-      'cursor:pointer',
-      'transition:all 0.15s',
-      isActive
-        ? 'background:rgba(245, 184, 46, 0.18); color:#92400E; font-weight:800; border:1.5px solid #D99B16; box-shadow:0 1px 4px rgba(217,155,22,0.2);'
-        : 'background:#FAF8F5; color:#64748b; border:1.5px solid #DCD6CA;'
-    ].join(';');
-
-    if (!isActive) {
-      btn.addEventListener('mouseenter', () => { btn.style.background = '#F3EFE8'; btn.style.borderColor = '#CFC7B4'; btn.style.color = '#18202F'; });
-      btn.addEventListener('mouseleave', () => { btn.style.background = '#FAF8F5'; btn.style.borderColor = '#DCD6CA'; btn.style.color = '#64748b'; });
-    }
-
-    btn.onclick = () => {
-      bankManagerExpandedRubricQuestionId = null;
-      updateBankManagerFocusLayout();
-      bankManagerFilterType = f.key;
-      renderBankManagerFilterPills();
-      renderBankManagerQuestions();
-    };
-
-    container.appendChild(btn);
-  });
+  /* Filtros removidos a favor de visualización directa */
 }
 
 function onBankManagerSearchInput(val) {
@@ -323,24 +211,15 @@ function renderBankManagerQuestions() {
   const stage = bankManagerActiveGrade.stage;
   const level = Number(bankManagerActiveGrade.level);
 
-  // Todas las preguntas del banco para este grado
+  // Todas las preguntas del banco para este grado (ordenadas por updatedAt más reciente primero)
   const allGradeQuestions = (typeof ClassroomData !== 'undefined' && ClassroomData.getIndividualMCQuestions)
     ? ClassroomData.getIndividualMCQuestions(stage, level)
     : [];
 
   const totalInGrade = allGradeQuestions.length;
-  const countWithRubric = allGradeQuestions.filter(q => !!(q.hasRubric || q.rubric)).length;
-  const countQuick = totalInGrade - countWithRubric;
 
-  // Filtrado por tipo (todas / rúbrica / rápida)
+  // Filtrado únicamente por buscador
   let filtered = allGradeQuestions;
-  if (bankManagerFilterType === 'rubric') {
-    filtered = filtered.filter(q => !!(q.hasRubric || q.rubric));
-  } else if (bankManagerFilterType === 'quick') {
-    filtered = filtered.filter(q => !(q.hasRubric || q.rubric));
-  }
-
-  // Filtrado por buscador
   if (bankManagerSearchQuery) {
     filtered = filtered.filter(q => {
       const p = (q.prompt || '').toLowerCase();
@@ -354,22 +233,11 @@ function renderBankManagerQuestions() {
     filtered = filtered.filter(q => String(q.id) === String(bankManagerEditingQuestionId));
   }
 
-  // Actualizar indicador global de capacidad (máximo 50 preguntas en toda la cuenta)
+  // Actualizar capacidad para habilitar/deshabilitar botón de añadir
   const totalBankCount = (typeof ClassroomData !== 'undefined' && ClassroomData.getBankQuestionsCount)
     ? ClassroomData.getBankQuestionsCount()
     : allGradeQuestions.length;
   const isFull = totalBankCount >= 50;
-
-  const capBadge = document.getElementById('bm-global-capacity-badge');
-  const capText = document.getElementById('bm-global-capacity-text');
-  if (capBadge && capText) {
-    capBadge.style.background = isFull ? '#F9EFEA' : '#FAF5E8';
-    capBadge.style.color = isFull ? '#9A3412' : '#92400E';
-    capBadge.style.border = isFull ? '1.5px solid #E7C6B9' : '1.5px solid #F5B82E';
-    capText.innerHTML = isFull
-      ? `<strong style="color:#9A3412; font-weight:800;">50 / 50 en tu banco (Lleno)</strong>`
-      : `<strong style="color:#18202F; font-weight:800;">${totalBankCount}</strong> / 50 en tu banco`;
-  }
 
   const btnAdd = document.getElementById('btn-toggle-add-question');
   if (btnAdd) {
@@ -383,11 +251,11 @@ function renderBankManagerQuestions() {
   }
 
   if (summaryText) {
-    summaryText.textContent = `${totalInGrade} pregunta${totalInGrade === 1 ? '' : 's'} en ${bankManagerActiveGrade.label} (${countWithRubric} con Rúbrica · ${countQuick} sin Rúbrica)` + (filtered.length !== totalInGrade ? ` — Mostrando ${filtered.length}` : '');
+    summaryText.textContent = `${totalInGrade} pregunta${totalInGrade === 1 ? '' : 's'} en ${bankManagerActiveGrade.label}` + (filtered.length !== totalInGrade ? ` — Mostrando ${filtered.length}` : '');
   }
 
   if (filtered.length === 0) {
-    const isSearching = !!bankManagerSearchQuery || bankManagerFilterType !== 'all';
+    const isSearching = !!bankManagerSearchQuery;
     container.innerHTML = `
       <div style="text-align:center; padding:36px 20px; background:#ffffff; border:1.5px dashed #cbd5e1; border-radius:12px; color:#64748b;">
         <span style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:#f1f5f9; color:#64748b; margin-bottom:10px;">
@@ -396,10 +264,10 @@ function renderBankManagerQuestions() {
             : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>'}
         </span>
         <div style="font-size:0.92rem; font-weight:700; color:#1e293b; margin-bottom:4px;">
-          ${isSearching ? 'No se encontraron preguntas con los filtros aplicados' : `No hay preguntas para ${bankManagerActiveGrade.label}`}
+          ${isSearching ? 'No se encontraron preguntas con ese término de búsqueda' : `Aún no hay preguntas registradas en ${bankManagerActiveGrade.label}`}
         </div>
         <div style="font-size:0.75rem; color:#64748b;">
-          ${isSearching ? 'Prueba cambiando el término de búsqueda o seleccionando "Todas".' : 'Haz clic en "Nueva Pregunta para este Grado" para agregar preguntas al banco.'}
+          ${isSearching ? 'Prueba con otros términos de búsqueda.' : 'Puedes agregar la primera pregunta usando el botón "+ Nueva Pregunta para este Grado" de la barra superior.'}
         </div>
       </div>
     `;

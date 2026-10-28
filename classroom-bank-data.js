@@ -363,7 +363,9 @@
               title: (q.title && !q.title.includes('2 Preguntas') ? q.title : 'Pregunta de respuesta libre'),
               rubric: q.rubric || ev.rubric || null,
               hasRubric: !!(q.rubric || ev.rubric),
-              expectedAnswer: q.expectedAnswer || ev.expectedAnswer || ''
+              expectedAnswer: q.expectedAnswer || ev.expectedAnswer || '',
+              createdAt: ev.createdAt || ev.created_at || null,
+              updatedAt: ev.updatedAt || ev.last_used_at || ev.createdAt || ev.created_at || null
             });
             return;
           }
@@ -385,7 +387,9 @@
             title: (q.title && !q.title.includes('2 Preguntas') ? q.title : 'Pregunta de evaluación'),
             rubric: q.rubric || ev.rubric || null,
             hasRubric: !!(q.rubric || ev.rubric),
-            expectedAnswer: (q.options ? q.options[correctKey] : '') || ev.expectedAnswer || ''
+            expectedAnswer: (q.options ? q.options[correctKey] : '') || ev.expectedAnswer || '',
+            createdAt: ev.createdAt || ev.created_at || null,
+            updatedAt: ev.updatedAt || ev.last_used_at || ev.createdAt || ev.created_at || null
           });
         });
       } else if (ev.options && (ev.options.A || ev.options.B || ev.options.C || ev.options.D)) {
@@ -416,7 +420,9 @@
           title: (ev.title && !ev.title.includes('2 Preguntas') ? ev.title : 'Pregunta de evaluación'),
           rubric: ev.rubric || null,
           hasRubric: !!ev.rubric,
-          expectedAnswer: (ev.options ? ev.options[correct] : '') || ev.expectedAnswer || ''
+          expectedAnswer: (ev.options ? ev.options[correct] : '') || ev.expectedAnswer || '',
+          createdAt: ev.createdAt || ev.created_at || null,
+          updatedAt: ev.updatedAt || ev.last_used_at || ev.createdAt || ev.created_at || null
         });
       } else if (ev.prompt) {
         // Pregunta de Respuesta Libre (sin alternativas, solo respuesta esperada)
@@ -436,11 +442,29 @@
           title: (ev.title && !ev.title.includes('2 Preguntas') ? ev.title : 'Pregunta de respuesta libre'),
           rubric: ev.rubric || null,
           hasRubric: !!ev.rubric,
-          expectedAnswer: ev.expectedAnswer || ''
+          expectedAnswer: ev.expectedAnswer || '',
+          createdAt: ev.createdAt || ev.created_at || null,
+          updatedAt: ev.updatedAt || ev.last_used_at || ev.createdAt || ev.created_at || null
         });
       }
     });
+
+    list.sort((a, b) => {
+      const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      return timeB - timeA;
+    });
+
     return list;
+  }
+
+  /**
+   * Obtiene la pregunta más recientemente creada o editada en todo el banco.
+   * @returns {object|null}
+   */
+  function getLatestActiveQuestion() {
+    const all = getIndividualMCQuestions(null, null);
+    return (Array.isArray(all) && all.length > 0) ? all[0] : null;
   }
 
   /**
@@ -555,12 +579,15 @@
 
     const previa = EVALUATIONS[id] || null;
 
+    const nowIso = new Date().toISOString();
     const newEval = {
       id: id,
       title: evalData.title || (previa && previa.title) || 'Evaluación del Día',
       prompt: promptLimpio,
       expectedAnswer: String(evalData.expectedAnswer || '').trim(),
-      unitHint: evalData.unitHint ? evalData.unitHint.trim() : ''
+      unitHint: evalData.unitHint ? evalData.unitHint.trim() : '',
+      createdAt: evalData.createdAt || (previa && previa.createdAt) || nowIso,
+      updatedAt: nowIso
     };
 
     // La rúbrica y el grado viajan CON la evaluación: se generan una sola vez y
@@ -761,6 +788,9 @@
         const resolvedOpts = ev.options || (Array.isArray(ev.questions) && ev.questions[0] && ev.questions[0].options) || (previa && previa.options) || null;
         const resolvedCorr = ev.correct || (Array.isArray(ev.questions) && ev.questions[0] && ev.questions[0].correct) || (previa && previa.correct) || null;
 
+        const updatedTime = ev.last_used_at || ev.updated_at || ev.created_at || (previa && (previa.updatedAt || previa.createdAt)) || new Date().toISOString();
+        const createdTime = ev.created_at || (previa && previa.createdAt) || updatedTime;
+
         EVALUATIONS[id] = enrichQuestionOptions({
           id: id,
           title: ev.title || (previa && previa.title) || 'Evaluación',
@@ -775,7 +805,9 @@
           questionCount: ev.question_count || ev.questionCount || (previa ? previa.questionCount : null) || undefined,
           options: resolvedOpts,
           correct: resolvedCorr,
-          questions: ev.questions || (previa ? previa.questions : null) || undefined
+          questions: ev.questions || (previa ? previa.questions : null) || undefined,
+          createdAt: createdTime,
+          updatedAt: updatedTime
         });
       });
 
@@ -804,6 +836,7 @@
     SESSION_EVALUATIONS,
     MAX_BANK_QUESTIONS,
     getBankQuestionsCount: countTotalBankQuestions,
+    getLatestActiveQuestion,
     flushSyncQueue,
     getEvaluationList,
     getIndividualMCQuestions,
