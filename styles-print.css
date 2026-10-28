@@ -789,7 +789,7 @@
       height: 52mm !important;
       max-height: 54mm !important;
       flex: 0 0 52mm !important;
-      margin: 0.5mm auto !important;
+      margin: 5mm auto 0 auto !important;
       align-self: center !important;
       position: relative !important;
     }
@@ -799,7 +799,7 @@
       grid-template-rows: repeat(7, 1fr) !important;
     }
     .card-a6-v .a6-omr-row {
-      margin-top: 1mm !important;
+      margin-top: 2.5mm !important;
     }
 
     .notebook-grid-a6-v {
@@ -1720,9 +1720,10 @@
     }
 
     .v-free-divider {
+      display: none !important;
       height: 0;
-      border-top: 1px dashed #64748b;
-      margin: 1mm 0;
+      border-top: none !important;
+      margin: 0 !important;
     }
 
     /* ── FILA OMR EN FICHA A5 VERTICAL ── */
@@ -2595,7 +2596,7 @@
       width: 156mm !important;
       height: 52mm !important;
       flex: 0 0 52mm !important;
-      margin: 1.5mm auto 0 auto !important;
+      margin: 5.5mm auto 0 auto !important;
     }
     .card-a5.mc-1q .mc-grid-1q .notebook-grid {
       height: 52mm !important;
@@ -2605,7 +2606,7 @@
     .card-a5.mc-1q .omr-row.omr-row-1 {
       height: 10mm !important;
       flex: 0 0 10mm !important;
-      margin: 2mm auto 0 auto !important;
+      margin: 3.5mm auto 0 auto !important;
     }
     .omr-option {
       display: flex;
@@ -3166,10 +3167,11 @@
       background: #ffffff;
     }
     .b2-divider {
+      display: none !important;
       width: 100%;
-      height: 1px;
-      background: #cbd5e1;
-      margin: 1mm 0;
+      height: 0;
+      background: transparent !important;
+      margin: 0 !important;
     }
 
     /* ── HOJAS/FICHAS INDIVIDUALES A4 (1 ALUMNO POR HOJA ENTERA) ── */

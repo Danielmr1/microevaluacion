@@ -89,7 +89,7 @@ function createFocalizadaA5Card(student, classroom, evaluation) {
               <div class="focalizada-grid-slot-3p" style="position:relative; width:100%; height:24px; margin-top:2mm;"></div>
             ` : ''}
           </div>
-          ${idx < activeQuestions.length - 1 ? '<div class="b2-divider"></div>' : ''}
+
         `).join('')}
       </div>
     </div>

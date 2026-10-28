@@ -262,7 +262,7 @@ function createFormativaA5VerticalCard(student, classroom, evaluation) {
           `}
         </div>
 
-        <div class="v-free-divider"></div>
+        ${(!isOMR && evaluation.branch !== 'rama2') ? '<div class="v-free-divider"></div>' : ''}
 
         <!-- Pregunta 2 -->
         <div class="v-free-2q-block">
