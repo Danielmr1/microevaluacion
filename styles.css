@@ -1989,7 +1989,7 @@
     .v-free-problem-2q {
       height: 16mm;
       padding: 1mm 2mm;
-      border-bottom: 1px solid #000000;
+      border-bottom: none !important;
       box-sizing: border-box;
       overflow: hidden;
       font-size: 8pt;
@@ -2982,8 +2982,21 @@
       align-self: center;
     }
     .mc-problem-2q .problem-text {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 1.5mm !important;
       font-size: 8.5pt !important;
       line-height: 1.25 !important;
+    }
+    .mc-problem-2q .problem-text strong,
+    .mc-problem-2q .mc-q-num {
+      font-weight: 800 !important;
+      flex: 0 0 auto !important;
+    }
+    .mc-problem-2q .problem-text span,
+    .mc-problem-2q .mc-q-prompt {
+      font-weight: 600 !important;
+      flex: 1 1 auto !important;
     }
 
     /* ── 2 PREGUNTAS EN A6 HORIZONTAL (FOCALIZADA) ── */

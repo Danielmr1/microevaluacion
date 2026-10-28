@@ -96,7 +96,7 @@ function createFormativaA5Card(student, classroom, evaluation) {
         <!-- Pregunta 1 -->
         <div class="mc-q-block">
           <div class="problem-wide mc-problem-2q">
-            <div class="problem-text"><strong>1.</strong> ${escape(q1.prompt)}</div>
+            <div class="problem-text"><strong class="mc-q-num">1.</strong><span class="mc-q-prompt">${escape(q1.prompt)}</span></div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
             <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
@@ -114,7 +114,7 @@ function createFormativaA5Card(student, classroom, evaluation) {
         <!-- Pregunta 2 -->
         <div class="mc-q-block">
           <div class="problem-wide mc-problem-2q">
-            <div class="problem-text"><strong>2.</strong> ${escape(q2.prompt)}</div>
+            <div class="problem-text"><strong class="mc-q-num">2.</strong><span class="mc-q-prompt">${escape(q2.prompt)}</span></div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
             <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
@@ -143,7 +143,7 @@ function createFormativaA5Card(student, classroom, evaluation) {
         <!-- Pregunta 1 -->
         <div class="mc-q-block">
           <div class="problem-wide mc-problem-2q">
-            <div class="problem-text"><strong>1.</strong> ${escape(q1.prompt)}</div>
+            <div class="problem-text"><strong class="mc-q-num">1.</strong><span class="mc-q-prompt">${escape(q1.prompt)}</span></div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
             <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
@@ -159,7 +159,7 @@ function createFormativaA5Card(student, classroom, evaluation) {
         <!-- Pregunta 2 -->
         <div class="mc-q-block">
           <div class="problem-wide mc-problem-2q">
-            <div class="problem-text"><strong>2.</strong> ${escape(q2.prompt)}</div>
+            <div class="problem-text"><strong class="mc-q-num">2.</strong><span class="mc-q-prompt">${escape(q2.prompt)}</span></div>
           </div>
           <div class="grid-wrapper mc-grid-2q">
             <div class="notebook-grid notebook-grid-2q">${GRID_CELLS_2Q}</div>
