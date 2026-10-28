@@ -394,12 +394,14 @@ function renderRama3ExamQuestionHTML(idx) {
   const promptText = escaparHtml(q.prompt);
   const opts = q.options || { A: '—', B: '—', C: '—', D: '—' };
   const correctKey = (r3State.keys[idx] || q.correct || 'A').toUpperCase();
+  const isPromptLong = String(q.prompt || '').length > 105;
+  const promptClass = isPromptLong ? 'r3-exam-prompt-text r3-exam-prompt-compact' : 'r3-exam-prompt-text';
 
   return `
     <div class="r3-exam-q-item" onclick="openRama3QuestionPicker(${idx})" title="Clic para editar o cambiar pregunta">
       <div class="r3-exam-q-prompt">
         <span class="r3-exam-q-num">${qNum}.</span>
-        <span class="r3-exam-prompt-text">${promptText}</span>
+        <span class="${promptClass}">${promptText}</span>
         <button type="button" onclick="event.stopPropagation(); openRama3QuestionPicker(${idx})"
           style="background:transparent; border:none; cursor:pointer; font-size:0.75rem; padding:0 2px; color:#64748b;" title="Editar">✏️</button>
       </div>

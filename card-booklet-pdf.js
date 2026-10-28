@@ -11,8 +11,9 @@
 function estimateBookletQuestionHeight(q, colWidthMm, isCompact) {
   const prompt = String(q.prompt || '');
   const charsPerLine = Math.max(20, Math.floor(colWidthMm * (isCompact ? 0.95 : 0.85)));
-  const promptLines = Math.max(1, Math.ceil(prompt.length / charsPerLine));
-  const promptH = promptLines * (isCompact ? 3.0 : 3.6);
+  let promptLines = Math.max(1, Math.ceil(prompt.length / charsPerLine));
+  if (promptLines > 3) promptLines = 3; // Auto-shrink a máximo 3 líneas
+  const promptH = promptLines * (isCompact ? 3.0 : 3.4);
 
   const opts = q.options || {};
   const maxOptLen = Math.max(
@@ -23,8 +24,8 @@ function estimateBookletQuestionHeight(q, colWidthMm, isCompact) {
   );
   const isGrid2x2 = maxOptLen <= (colWidthMm > 90 ? 28 : 16);
   const optLines = isGrid2x2 ? 2 : 4;
-  const optH = optLines * (isCompact ? 3.0 : 3.6);
-  const gap = isCompact ? 1.5 : 2.5;
+  const optH = optLines * (isCompact ? 2.8 : 3.2);
+  const gap = isCompact ? 1.5 : 2.0;
 
   return promptH + optH + gap;
 }
@@ -277,11 +278,13 @@ function renderBookletQuestionHTML(q, idx, isCompact = false) {
     String(opts.D || '').length
   );
   const gridClass = maxOptLen > 28 ? 'booklet-options-list' : 'booklet-options-grid';
+  const isPromptLong = String(q.prompt || '').length > 105;
+  const promptClass = isPromptLong ? 'booklet-q-prompt booklet-q-prompt-compact' : 'booklet-q-prompt';
   const compactClass = isCompact ? ' booklet-q-compact' : '';
 
   return `
     <div class="booklet-q-item${compactClass}">
-      <div class="booklet-q-prompt">
+      <div class="${promptClass}">
         <span class="booklet-q-num">${num}.</span> ${prompt}
       </div>
       <div class="${gridClass}">
@@ -484,12 +487,22 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     const promptText = `${num}. ${q.prompt || ''}`;
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(isCompact ? 8.5 : 10);
-    doc.setTextColor(0, 0, 0);
 
-    const lines = doc.splitTextToSize(promptText, colWidth);
+    // Auto-shrink dinámico: si con el tamaño estándar se forman más de 3 filas,
+    // reducir progresivamente el tamaño de letra hasta que el enunciado tenga como máximo 3 filas.
+    let promptFontSize = isCompact ? 8.5 : 9.5;
+    doc.setFontSize(promptFontSize);
+    let lines = doc.splitTextToSize(promptText, colWidth);
+    while (lines.length > 3 && promptFontSize > 6.5) {
+      promptFontSize -= 0.5;
+      doc.setFontSize(promptFontSize);
+      lines = doc.splitTextToSize(promptText, colWidth);
+    }
+
+    doc.setTextColor(0, 0, 0);
     doc.text(lines, startX, curY);
-    curY += lines.length * (isCompact ? 3.6 : 4.4);
+    const promptLineH = promptFontSize * 0.38;
+    curY += lines.length * promptLineH + 0.8;
 
     const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
     const maxOptLen = Math.max(
@@ -500,8 +513,10 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     );
     const isGrid2x2 = maxOptLen <= (colWidth > 70 ? 24 : 14);
 
+    const optFontSize = isCompact ? 7.8 : (colWidth <= 90 ? 8.5 : 9.2);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(isCompact ? 8 : 9.5);
+    doc.setFontSize(optFontSize);
+    const optLineH = optFontSize * 0.38;
 
     if (isGrid2x2) {
       const halfW = colWidth / 2;
@@ -515,7 +530,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       doc.text('B)', startX + halfW, curY);
       doc.setFont('helvetica', 'normal');
       doc.text(String(opts.B || '—'), startX + halfW + 5, curY);
-      curY += (isCompact ? 3.6 : 4.4);
+      curY += optLineH;
 
       // Fila 2: C y D
       doc.setFont('helvetica', 'bold');
@@ -527,7 +542,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       doc.text('D)', startX + halfW, curY);
       doc.setFont('helvetica', 'normal');
       doc.text(String(opts.D || '—'), startX + halfW + 5, curY);
-      curY += (isCompact ? 3.6 : 4.4);
+      curY += optLineH;
     } else {
       ['A', 'B', 'C', 'D'].forEach(optKey => {
         doc.setFont('helvetica', 'bold');
@@ -535,11 +550,11 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
         doc.setFont('helvetica', 'normal');
         const optLines = doc.splitTextToSize(String(opts[optKey] || '—'), colWidth - 6);
         doc.text(optLines, startX + 5, curY);
-        curY += optLines.length * (isCompact ? 3.2 : 4.0);
+        curY += optLines.length * (isCompact ? 3.0 : 3.6);
       });
     }
 
-    curY += (isCompact ? 2.5 : 3.5);
+    curY += (isCompact ? 1.8 : 2.4);
     return curY - startY;
   }
 
@@ -667,32 +682,40 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       col2StartY = headerEndY;
 
       // Distribución vertical proporcional dinámica para cada columna
-      const pageBottomLimit = 278; // Límite inferior seguro para no pisar el pie de página
+      const pageBottomLimit = 282; // Límite inferior seguro para no pisar el pie de página
       const availableH = pageBottomLimit - col1StartY;
+
+      function calcQHeight(q, globalIdx) {
+        let fSize = 9.5;
+        doc.setFontSize(fSize);
+        let pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW);
+        while (pLines.length > 3 && fSize > 6.5) {
+          fSize -= 0.5;
+          doc.setFontSize(fSize);
+          pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW);
+        }
+        const pLineH = fSize * 0.38;
+        const optLineH = 8.5 * 0.38;
+        return (pLines.length * pLineH) + (2 * optLineH) + 2.4;
+      }
 
       // Calcular altura natural de Columna 1
       let natH1 = 0;
       p.col1.forEach((q, idx) => {
-        const globalIdx = accumulatedQCount + idx;
-        const pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW).length;
-        const optL = 2; // cuadrícula 2x2
-        natH1 += (pLines * 4.4) + (optL * 4.4) + 2;
+        natH1 += calcQHeight(q, accumulatedQCount + idx);
       });
       const gapCol1 = p.col1.length > 1
-        ? Math.max(2.5, Math.min(18, (availableH - natH1) / (p.col1.length - 1)))
-        : 6;
+        ? Math.max(2.0, Math.min(10, (availableH - natH1) / (p.col1.length - 1)))
+        : 4;
 
       // Calcular altura natural de Columna 2
       let natH2 = 0;
       p.col2.forEach((q, idx) => {
-        const globalIdx = accumulatedQCount + p.col1.length + idx;
-        const pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW).length;
-        const optL = 2;
-        natH2 += (pLines * 4.4) + (optL * 4.4) + 2;
+        natH2 += calcQHeight(q, accumulatedQCount + p.col1.length + idx);
       });
       const gapCol2 = p.col2.length > 1
-        ? Math.max(2.5, Math.min(18, (availableH - natH2) / (p.col2.length - 1)))
-        : 6;
+        ? Math.max(2.0, Math.min(10, (availableH - natH2) / (p.col2.length - 1)))
+        : 4;
 
       // Si ambas columnas tienen la misma cantidad de preguntas, usar un gap uniforme simétrico
       const finalGap1 = (p.col1.length === p.col2.length && p.col1.length > 0) ? Math.min(gapCol1, gapCol2) : gapCol1;
