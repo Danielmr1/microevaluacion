@@ -22,8 +22,8 @@ function estimateBookletQuestionHeight(q, colWidthMm, isCompact) {
     String(opts.C || '').length,
     String(opts.D || '').length
   );
-  const isGrid2x2 = maxOptLen <= (colWidthMm > 90 ? 28 : 16);
-  const optLines = isGrid2x2 ? 2 : 4;
+  const isGrid2x2 = true;
+  const optLines = 2;
   const optH = optLines * (isCompact ? 2.8 : 3.2);
   const gap = isCompact ? 1.5 : 2.0;
 
@@ -271,13 +271,7 @@ function renderBookletQuestionHTML(q, idx, isCompact = false) {
   const prompt = escape(q.prompt || `Pregunta ${num}`);
   const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
 
-  const maxOptLen = Math.max(
-    String(opts.A || '').length,
-    String(opts.B || '').length,
-    String(opts.C || '').length,
-    String(opts.D || '').length
-  );
-  const gridClass = maxOptLen > 28 ? 'booklet-options-list' : 'booklet-options-grid';
+  const gridClass = 'booklet-options-grid';
   const isPromptLong = String(q.prompt || '').length > 105;
   const promptClass = isPromptLong ? 'booklet-q-prompt booklet-q-prompt-compact' : 'booklet-q-prompt';
   const compactClass = isCompact ? ' booklet-q-compact' : '';
@@ -505,13 +499,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     curY += lines.length * promptLineH + 0.8;
 
     const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
-    const maxOptLen = Math.max(
-      String(opts.A || '').length,
-      String(opts.B || '').length,
-      String(opts.C || '').length,
-      String(opts.D || '').length
-    );
-    const isGrid2x2 = maxOptLen <= (colWidth > 70 ? 24 : 14);
+    const isGrid2x2 = true; // Siempre 2 columnas para alternativas en Cartilla OMR
 
     const optFontSize = isCompact ? 7.8 : (colWidth <= 90 ? 8.5 : 9.2);
     doc.setFont('helvetica', 'normal');
