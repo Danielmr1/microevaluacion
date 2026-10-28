@@ -25,15 +25,30 @@ function setBankManagerViewMode(mode) {
 window.setBankManagerViewMode = setBankManagerViewMode;
 
 function syncViewModeButtons() {
+  const mode = (typeof bankManagerViewMode !== 'undefined') ? bankManagerViewMode : 'compact';
   const btnCompact = document.getElementById('btn-view-mode-compact');
   const btnFull = document.getElementById('btn-view-mode-full');
   if (btnCompact) {
-    if (bankManagerViewMode === 'compact') btnCompact.classList.add('is-active');
-    else btnCompact.classList.remove('is-active');
+    if (mode === 'compact') {
+      btnCompact.classList.add('is-active');
+      btnCompact.style.background = '#18202F';
+      btnCompact.style.color = '#F5B82E';
+    } else {
+      btnCompact.classList.remove('is-active');
+      btnCompact.style.background = 'transparent';
+      btnCompact.style.color = '#64748B';
+    }
   }
   if (btnFull) {
-    if (bankManagerViewMode === 'full') btnFull.classList.add('is-active');
-    else btnFull.classList.remove('is-active');
+    if (mode === 'full') {
+      btnFull.classList.add('is-active');
+      btnFull.style.background = '#18202F';
+      btnFull.style.color = '#F5B82E';
+    } else {
+      btnFull.classList.remove('is-active');
+      btnFull.style.background = 'transparent';
+      btnFull.style.color = '#64748B';
+    }
   }
 }
 window.syncViewModeButtons = syncViewModeButtons;
@@ -321,6 +336,9 @@ function renderBankManagerQuestions() {
     const hasExpandedActiveCard = !!bankManagerExpandedRubricQuestionId;
     const isNeighbor = hasExpandedActiveCard && !isExpanded;
 
+    const hasOptions = !!(q.options && (q.options.A || q.options.B || q.options.C || q.options.D));
+    const correctLetter = hasOptions ? (q.correct || 'A').toUpperCase() : 'Libre';
+
     if (isEditingThisCard) {
       card.classList.add('is-active-edit');
     } else if (isExpanded) {
@@ -330,29 +348,29 @@ function renderBankManagerQuestions() {
       card.onclick = () => {
         toggleInlineQuestionRubric(q.id);
       };
+      // ── TIRA COMPRIMIDA EXCLUSIVA PARA PREGUNTAS VECINAS ──
+      const compressedStrip = document.createElement('div');
+      compressedStrip.className = 'bank-card-compressed-strip';
+      compressedStrip.style.cssText = 'display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px;';
+      const promptShortSafe = escaparHtml(q.prompt || 'Sin enunciado');
+      compressedStrip.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+          <span style="font-size:0.70rem; font-weight:800; background:rgba(2,132,199,0.12); color:#0284C7; border:1px solid rgba(2,132,199,0.30); border-radius:5px; padding:2px 7px; white-space:nowrap; flex-shrink:0;">${hasOptions ? `Rpta: ${correctLetter}` : '✍️ Libre'}</span>
+          <span style="font-size:0.80rem; font-weight:700; color:#44403C; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${promptShortSafe}">
+            ${(typeof formatMathHtml === 'function') ? formatMathHtml(promptShortSafe) : promptShortSafe}
+          </span>
+        </div>
+        <button type="button" class="btn-preview-rubric-trigger" style="flex-shrink:0; background:#FAF7F0; border:1px solid #DCD8CE; color:#0284C7; font-size:0.72rem; font-weight:700; border-radius:6px; padding:3px 9px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;" onmouseenter="this.style.background='#F3EFE6'; this.style.borderColor='#0284C7';" onmouseleave="this.style.background='#FAF7F0'; this.style.borderColor='#DCD8CE';">
+          <span>Ver Rúbrica</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+      `;
+      card.appendChild(compressedStrip);
+      container.appendChild(card);
+      return;
     }
 
-    // ── 1. TIRA COMPRIMIDA PARA PREGUNTAS VECINAS (is-compressed-neighbor) ──
-    const compressedStrip = document.createElement('div');
-    compressedStrip.className = 'bank-card-compressed-strip';
-    const hasOptions = !!(q.options && (q.options.A || q.options.B || q.options.C || q.options.D));
-    const correctLetter = hasOptions ? (q.correct || 'A').toUpperCase() : 'Libre';
-    const promptShortSafe = escaparHtml(q.prompt || 'Sin enunciado');
-    compressedStrip.innerHTML = `
-      <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
-        <span style="font-size:0.70rem; font-weight:800; background:rgba(2,132,199,0.12); color:#0284C7; border:1px solid rgba(2,132,199,0.30); border-radius:5px; padding:2px 7px; white-space:nowrap; flex-shrink:0;">${hasOptions ? `Rpta: ${correctLetter}` : '✍️ Libre'}</span>
-        <span style="font-size:0.80rem; font-weight:700; color:#44403C; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${promptShortSafe}">
-          ${(typeof formatMathHtml === 'function') ? formatMathHtml(promptShortSafe) : promptShortSafe}
-        </span>
-      </div>
-      <button type="button" class="btn-preview-rubric-trigger" style="flex-shrink:0; background:#FAF7F0; border:1px solid #DCD8CE; color:#0284C7; font-size:0.72rem; font-weight:700; border-radius:6px; padding:3px 9px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.15s;" onmouseenter="this.style.background='#F3EFE6'; this.style.borderColor='#0284C7';" onmouseleave="this.style.background='#FAF7F0'; this.style.borderColor='#DCD8CE';">
-        <span>Ver Rúbrica</span>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </button>
-    `;
-    card.appendChild(compressedStrip);
-
-    // ── 2. CUERPO COMPLETO (bank-card-full-body) ──
+    // ── 2. CUERPO COMPLETO O COMPACTO ──
     const fullBody = document.createElement('div');
     fullBody.className = 'bank-card-full-body';
 

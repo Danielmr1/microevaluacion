@@ -36,7 +36,7 @@
   </script>
 
   <script src="classroom-data.js"></script>
-  <script src="classroom-bank-data.js"></script>
+  <script src="classroom-bank-data.js?v=3.10.86"></script>
   <script src="classroom-session-data.js"></script>
   <script src="daily-quota.js?v=3.5.6"></script>
   <script src="supabase-client.js"></script>
@@ -54,9 +54,9 @@
   <script src="classroom-manager.js"></script>
   <script src="bank-tools-math.js"></script>
   <script src="bank-ai-rubric.js"></script>
-  <script src="bank-manager-modal.js"></script>
+  <script src="bank-manager-modal.js?v=3.10.86"></script>
   <script src="bank-manager-form.js"></script>
-  <script src="question-bank.js"></script>
+  <script src="question-bank.js?v=3.10.86"></script>
   <script src="sim-card-layout.js"></script>
   <script src="sim-card-picker.js"></script>
   <script src="card-simulator.js"></script>
@@ -80,13 +80,13 @@
   <script src="evaluation-hologram.js?v=3.8.8"></script>
 
   <!-- Estilos Modulares de Microevaluación con Versionado Anti-Caché PWA -->
-  <link rel="stylesheet" href="styles-core.css?v=3.10.83">
-  <link rel="stylesheet" href="styles-print.css?v=3.10.83">
-  <link rel="stylesheet" href="styles-scanner.css?v=3.10.83">
-  <link rel="stylesheet" href="styles-hub.css?v=3.10.83">
-  <link rel="stylesheet" href="styles-simulator.css?v=3.10.83">
-  <link rel="stylesheet" href="styles-blueprint.css?v=3.10.83">
-  <link rel="stylesheet" href="styles-copilot.css?v=3.10.83">
+  <link rel="stylesheet" href="styles-core.css?v=3.10.86">
+  <link rel="stylesheet" href="styles-print.css?v=3.10.86">
+  <link rel="stylesheet" href="styles-scanner.css?v=3.10.86">
+  <link rel="stylesheet" href="styles-hub.css?v=3.10.86">
+  <link rel="stylesheet" href="styles-simulator.css?v=3.10.86">
+  <link rel="stylesheet" href="styles-blueprint.css?v=3.10.86">
+  <link rel="stylesheet" href="styles-copilot.css?v=3.10.86">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -206,6 +206,187 @@
       border-radius: 16px !important;
       box-shadow: 0 4px 20px -2px rgba(43, 33, 24, 0.06), 0 1px 3px rgba(43, 33, 24, 0.04) !important;
       color: #2B2118 !important;
+    }
+
+    /* CABECERA BANCO DE PREGUNTAS — ANTI-CACHÉ Y RESPONSIVE (1 FILA EN PC, 2 EN MÓVIL) */
+    .bm-unified-header {
+      padding: 10px 18px !important;
+      background: #F9F8F3 !important;
+      border-bottom: 1px solid #dcd8ce !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    .bm-header-group-1 {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 10px !important;
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+    .bm-header-group-2 {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 10px !important;
+      flex-shrink: 0 !important;
+      justify-content: flex-end !important;
+    }
+    .bm-grade-select-wrapper {
+      position: relative !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      width: 165px !important;
+      flex-shrink: 0 !important;
+    }
+    #bank-manager-grade-select {
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      background: #ffffff !important;
+      border: 1.5px solid #2B2118 !important;
+      border-radius: 9px !important;
+      padding: 7px 30px 7px 12px !important;
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+      color: #18202F !important;
+      cursor: pointer !important;
+      outline: none !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    .bm-select-chevron {
+      position: absolute !important;
+      right: 9px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      pointer-events: none !important;
+      color: #57534E !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    .bm-search-wrapper {
+      position: relative !important;
+      flex: 1 !important;
+      min-width: 140px !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    .bm-search-icon {
+      position: absolute !important;
+      left: 10px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      display: flex !important;
+      align-items: center !important;
+      pointer-events: none !important;
+      color: #94a3b8 !important;
+    }
+    #bm-search-input {
+      width: 100% !important;
+      box-sizing: border-box !important;
+      background: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      border-radius: 8px !important;
+      padding: 6px 12px 6px 32px !important;
+      font-size: 0.80rem !important;
+      color: #0f172a !important;
+      outline: none !important;
+    }
+    #btn-toggle-add-question {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 7px !important;
+      background: #FFB703 !important;
+      border: none !important;
+      color: #181512 !important;
+      border-radius: 9px !important;
+      padding: 7px 14px !important;
+      font-size: 0.80rem !important;
+      font-weight: 800 !important;
+      cursor: pointer !important;
+      box-shadow: 0 2px 8px rgba(255,183,3,0.4) !important;
+      white-space: nowrap !important;
+    }
+    .bm-view-toggle-group {
+      display: inline-flex !important;
+      background: #EAE6DB !important;
+      border: 1.5px solid #CFC8B8 !important;
+      border-radius: 8px !important;
+      padding: 2px !important;
+      gap: 2px !important;
+      flex-shrink: 0 !important;
+    }
+    .bm-view-btn {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 32px !important;
+      height: 30px !important;
+      border: none !important;
+      border-radius: 6px !important;
+      background: transparent !important;
+      color: #64748B !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      padding: 0 !important;
+    }
+    .bm-view-btn:hover {
+      color: #18202F !important;
+      background: rgba(0, 0, 0, 0.05) !important;
+    }
+    .bm-view-btn.is-active {
+      background: #18202F !important;
+      color: #F5B82E !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    }
+    @media (max-width: 640px) {
+      .bm-unified-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 9px 12px !important;
+        gap: 8px !important;
+      }
+      .bm-header-group-1 {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+      }
+      .bm-grade-select-wrapper {
+        width: 48% !important;
+        max-width: 48% !important;
+        flex-shrink: 0 !important;
+      }
+      .bm-search-wrapper {
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+      .bm-header-group-2 {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+      }
+      #btn-toggle-add-question {
+        flex: 1 !important;
+        justify-content: center !important;
+        padding: 7px 10px !important;
+        font-size: 0.76rem !important;
+      }
+      .bm-view-toggle-group {
+        flex-shrink: 0 !important;
+      }
     }
 
     #view-create #step-classroom,
@@ -2485,12 +2666,12 @@
       <div style="background: #ffffff; border: 2px solid #2B2118; border-radius: 18px; box-shadow: 0 0 0 3px #FFB703, 0 8px 30px rgba(43, 33, 24, 0.08); overflow: hidden; display: flex; flex-direction: column;">
         
         <!-- Header Unificado del Banco: Selector de Grado, Buscador, Botón Nueva Pregunta y Conmutador de Vistas -->
-        <div id="bank-manager-header-row" class="bm-unified-header">
+        <div id="bank-manager-header-row" class="bm-unified-header" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:12px; width:100%; box-sizing:border-box; padding:10px 18px; background:#F9F8F3; border-bottom:1px solid #dcd8ce;">
           
           <!-- Grupo 1 (Fila 1 en celular): Selector de Grado + Buscador -->
-          <div class="bm-header-group-1">
+          <div class="bm-header-group-1" style="display:flex; flex-direction:row; align-items:center; gap:10px; flex:1; min-width:0;">
             <!-- Selector de Grado -->
-            <div class="bm-grade-select-wrapper">
+            <div class="bm-grade-select-wrapper" style="position:relative; display:inline-flex; align-items:center; width:165px; flex-shrink:0;">
               <select id="bank-manager-grade-select" onchange="onBankManagerGradeSelectChange(this.value)"
                 style="appearance: none; -webkit-appearance: none; background: #ffffff; border: 1.5px solid #2B2118; border-radius: 9px; padding: 7px 30px 7px 12px; font-size: 0.82rem; font-weight: 700; color: #18202F; cursor: pointer; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: border-color 0.15s; width: 100%;">
                 <option value="primaria:4">4to de primaria</option>
@@ -2537,24 +2718,24 @@
           </div>
 
           <!-- Grupo 2 (Fila 2 en celular): Botón Nueva Pregunta + Conmutador de 2 Iconos -->
-          <div class="bm-header-group-2">
+          <div class="bm-header-group-2" style="display:flex; flex-direction:row; align-items:center; gap:10px; flex-shrink:0; justify-content:flex-end;">
             <!-- Botón de acción: Nueva Pregunta para este Grado -->
             <button id="btn-toggle-add-question" type="button" onclick="toggleBankManagerAddForm()"
-              style="display: inline-flex; align-items: center; gap: 7px; background: #FFB703; border: none; color: #181512; border-radius: 9px; padding: 7px 14px; font-size: 0.80rem; font-weight: 800; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(255,183,3,0.4); white-space: nowrap;">
+              style="display: inline-flex; align-items: center; gap: 7px; background: #FFB703; border: none; color: #181512; border-radius: 9px; padding: 7px 14px; font-size: 0.80rem; font-weight: 800; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(255,183,3,0.4); white-space: nowrap; flex-shrink:0;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               <span>Nueva Pregunta para este Grado</span>
             </button>
 
             <!-- Conmutador de 2 Iconos (Presentación Compacta vs Completa) -->
-            <div id="bm-view-mode-toggle" class="bm-view-toggle-group">
-              <button type="button" id="btn-view-mode-compact" class="bm-view-btn is-active" onclick="setBankManagerViewMode('compact')" title="Presentación Reducida (Enunciado y Respuesta)">
+            <div id="bm-view-mode-toggle" class="bm-view-toggle-group" style="display:inline-flex; align-items:center; background:#EAE6DB; border:1.5px solid #CFC8B8; border-radius:8px; padding:2px; gap:2px; flex-shrink:0;">
+              <button type="button" id="btn-view-mode-compact" class="bm-view-btn is-active" onclick="setBankManagerViewMode('compact')" title="Presentación Reducida (Enunciado y Respuesta)" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:30px; border:none; border-radius:6px; background:#18202F; color:#F5B82E; cursor:pointer; transition:all 0.15s ease; padding:0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="4" y1="6" x2="20" y2="6"></line>
                   <line x1="4" y1="12" x2="20" y2="12"></line>
                   <line x1="4" y1="18" x2="20" y2="18"></line>
                 </svg>
               </button>
-              <button type="button" id="btn-view-mode-full" class="bm-view-btn" onclick="setBankManagerViewMode('full')" title="Presentación Actual (Completa con Alternativas)">
+              <button type="button" id="btn-view-mode-full" class="bm-view-btn" onclick="setBankManagerViewMode('full')" title="Presentación Actual (Completa con Alternativas)" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:30px; border:none; border-radius:6px; background:transparent; color:#64748B; cursor:pointer; transition:all 0.15s ease; padding:0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="7" height="7"></rect>
                   <rect x="14" y="3" width="7" height="7"></rect>
