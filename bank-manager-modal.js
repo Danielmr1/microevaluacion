@@ -374,30 +374,27 @@ function renderBankManagerQuestions() {
     const fullBody = document.createElement('div');
     fullBody.className = 'bank-card-full-body';
 
-    // Cabecera superior: exclusivamente acciones a la derecha
-    const header = document.createElement('div');
-    header.className = 'bank-card-full-actions';
-    header.style.cssText = 'display:flex; justify-content:flex-end; align-items:center; gap:6px;';
-
     const hasRubric = !!(q.hasRubric || q.rubric);
-
-    // Acciones de la derecha: Editar vs Enlaces a sesión con iconos SVG profesionales
-    const actionsBox = document.createElement('div');
-    actionsBox.style.cssText = 'display:flex; align-items:center; gap:6px; flex-wrap:wrap;';
 
     const inSavedSessions = (typeof ClassroomData !== 'undefined' && typeof ClassroomData.getQuestionSavedSessions === 'function')
       ? ClassroomData.getQuestionSavedSessions(q.id, q.prompt)
       : [];
 
+    // Columna derecha de acciones (alineada al tope del enunciado)
+    const fullRightCol = document.createElement('div');
+    fullRightCol.className = 'bm-full-right-col';
+    fullRightCol.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:stretch; gap:5px; margin-left:12px;';
 
     if (inSavedSessions && inSavedSessions.length > 0) {
-      // Bloqueada por estar en sesiones: solo botones directos a la sesión (sin etiqueta "En uso")
+      // Pregunta en sesión: botones apilados, sin editar/borrar
       inSavedSessions.forEach(s => {
         const btnLink = document.createElement('button');
         btnLink.type = 'button';
-        btnLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>Ir a Sesión ${s.sessionNumber}</span>`;
-        btnLink.title = `Abrir la vista de evaluación de la sesión "${s.title}" (edición bloqueada)`;
-        btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
+        btnLink.title = `Abrir la sesión "${s.title}"`;
+        // Desktop: ícono + texto; Móvil: solo "S1"
+        btnLink.innerHTML =
+          `<svg class="bm-full-btn-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="bm-full-btn-label">Ir a Sesión ${s.sessionNumber}</span><span class="bm-full-btn-mobile">S${s.sessionNumber}</span>`;
+        btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:5px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:5px; white-space:nowrap;';
         btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#e0f7fa'; btnLink.style.borderColor = '#00B4D8'; });
         btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#f0fbfd'; btnLink.style.borderColor = 'rgba(0,180,216,0.35)'; });
         btnLink.onclick = (e) => {
@@ -408,29 +405,31 @@ function renderBankManagerQuestions() {
             loadAndActivateSavedSession(s.sessionId, { asDirectModalityView: true });
           }
         };
-        actionsBox.appendChild(btnLink);
+        fullRightCol.appendChild(btnLink);
       });
-    } else {
-      // Disponible para editar (y dentro de la edición se incluye borrar)
+    } else if (!isEditingThisCard) {
+      // Disponible: Editar + Eliminar apilados
       const btnEdit = document.createElement('button');
       btnEdit.type = 'button';
       btnEdit.className = 'btn-card-edit-trigger';
-      if (isEditingThisCard) {
-        btnEdit.style.display = 'none';
-      } else {
-        btnEdit.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span>Editar</span>';
-        btnEdit.style.cssText = 'background:#f0f9ff; border:1px solid #bae6fd; color:#0284c7; border-radius:7px; padding:4px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px;';
-        btnEdit.addEventListener('mouseenter', () => { btnEdit.style.background = '#0284c7'; btnEdit.style.color = '#ffffff'; });
-        btnEdit.addEventListener('mouseleave', () => { btnEdit.style.background = '#f0f9ff'; btnEdit.style.color = '#0284c7'; });
-        btnEdit.onclick = (e) => {
-          e.stopPropagation();
-          toggleInlineQuestionEdit(q.id);
-        };
-      }
-      actionsBox.appendChild(btnEdit);
-    }
+      btnEdit.title = 'Editar pregunta';
+      btnEdit.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span class="bm-full-btn-label">Editar</span>';
+      btnEdit.style.cssText = 'background:#f0f9ff; border:1px solid #bae6fd; color:#0284c7; border-radius:7px; padding:5px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:5px;';
+      btnEdit.addEventListener('mouseenter', () => { btnEdit.style.background = '#0284c7'; btnEdit.style.color = '#ffffff'; });
+      btnEdit.addEventListener('mouseleave', () => { btnEdit.style.background = '#f0f9ff'; btnEdit.style.color = '#0284c7'; });
+      btnEdit.onclick = (e) => { e.stopPropagation(); toggleInlineQuestionEdit(q.id); };
+      fullRightCol.appendChild(btnEdit);
 
-    header.appendChild(actionsBox);
+      const btnDelete = document.createElement('button');
+      btnDelete.type = 'button';
+      btnDelete.title = 'Eliminar pregunta';
+      btnDelete.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span class="bm-full-btn-label">Eliminar</span>';
+      btnDelete.style.cssText = 'background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:7px; padding:5px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:5px;';
+      btnDelete.addEventListener('mouseenter', () => { btnDelete.style.background = '#DC2626'; btnDelete.style.color = '#ffffff'; });
+      btnDelete.addEventListener('mouseleave', () => { btnDelete.style.background = '#FEF2F2'; btnDelete.style.color = '#DC2626'; });
+      btnDelete.onclick = (e) => { e.stopPropagation(); handleDeleteQuestionFromBank(q.prompt, q.prompt, q.id); };
+      fullRightCol.appendChild(btnDelete);
+    }
 
     // Enunciado
     const promptText = document.createElement('div');
@@ -456,7 +455,7 @@ function renderBankManagerQuestions() {
           ? 'color:#181512; font-weight:800; background:#fff8e1; padding:6px 10px; border-radius:6px; border:1.5px solid #FFB703; box-shadow:0 0 0 1.5px rgba(0,180,216,0.3);'
           : 'color:#181512; padding:6px 10px; background:#F8F6F0; border-radius:6px; border:1px solid #dcd8ce;';
         optDiv.innerHTML = isCorrect
-          ? `<span>${letter}) ${optFormatted}</span> <span style="color:#00B4D8; font-weight:900;">✓ (Clave)</span>`
+          ? `<span>${letter}) ${optFormatted}</span> <span style="color:#00B4D8; font-weight:900;">✓</span>`
           : `${letter}) ${optFormatted}`;
         optsGrid.appendChild(optDiv);
       });
@@ -477,10 +476,10 @@ function renderBankManagerQuestions() {
       optsOrAnswerElement = ansBox;
     }
 
-    // Pie de la tarjeta: Ver rúbrica o Generar rúbrica con iconos SVG
+    // Pie de la tarjeta: Rúbrica / Generar rúbrica
     const footer = document.createElement('div');
     footer.className = 'bank-card-footer';
-    footer.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-top:2px; flex-wrap:wrap; gap:8px;';
+    footer.style.cssText = 'display:flex; justify-content:flex-start; align-items:center; margin-top:6px; flex-wrap:wrap; gap:8px;';
 
     if (isEditingThisCard) {
       footer.style.display = 'none';
@@ -497,8 +496,8 @@ function renderBankManagerQuestions() {
           closeInlineQuestionRubric();
         };
       } else {
-        btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Ver Rúbrica de IA</span>';
-        btnRubric.title = 'Desplegar la solución canónica, criterios y errores frecuentes generados por la IA en este bloque';
+        btnRubric.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Rúbrica</span>';
+        btnRubric.title = 'Desplegar la solución canónica, criterios y errores frecuentes generados por la IA';
         btnRubric.style.cssText = 'background:#18202F; border:1.5px solid rgba(41, 182, 246, 0.45); color:#FAF7F0; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(24,32,47,0.18);';
         btnRubric.addEventListener('mouseenter', () => {
           btnRubric.style.background = '#222B3D';
@@ -517,23 +516,17 @@ function renderBankManagerQuestions() {
       }
       footer.appendChild(btnRubric);
     } else {
-      const labelNoRubric = document.createElement('span');
-      labelNoRubric.style.cssText = 'font-size:0.72rem; color:#64748b; display:inline-flex; align-items:center; gap:5px;';
-      labelNoRubric.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Sin análisis de procedimiento</span>';
-
       const btnUpgrade = document.createElement('button');
       btnUpgrade.type = 'button';
-      btnUpgrade.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg><span>Generar Rúbrica IA</span>';
-      btnUpgrade.title = 'Analizar este problema con Gemini para habilitarlo en la Rama 1 (evaluación de procedimiento)';
-      btnUpgrade.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px;';
-      btnUpgrade.addEventListener('mouseenter', () => { btnUpgrade.style.background = '#1d4ed8'; btnUpgrade.style.color = '#ffffff'; });
-      btnUpgrade.addEventListener('mouseleave', () => { btnUpgrade.style.background = '#eff6ff'; btnUpgrade.style.color = '#1d4ed8'; });
+      btnUpgrade.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#29B6F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Generar rúbrica</span>';
+      btnUpgrade.title = 'Analizar este problema con Gemini para habilitar corrección por procedimiento';
+      btnUpgrade.style.cssText = 'background:#18202F; border:1.5px solid rgba(41, 182, 246, 0.45); color:#FAF7F0; border-radius:7px; padding:5px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(24,32,47,0.18);';
+      btnUpgrade.addEventListener('mouseenter', () => { btnUpgrade.style.background = '#222B3D'; btnUpgrade.style.borderColor = '#29B6F6'; });
+      btnUpgrade.addEventListener('mouseleave', () => { btnUpgrade.style.background = '#18202F'; btnUpgrade.style.borderColor = 'rgba(41, 182, 246, 0.45)'; });
       btnUpgrade.onclick = (e) => {
         e.stopPropagation();
         handleUpgradeQuestionWithRubric(q);
       };
-
-      footer.appendChild(labelNoRubric);
       footer.appendChild(btnUpgrade);
     }
 
@@ -635,10 +628,20 @@ function renderBankManagerQuestions() {
       compactRow.appendChild(rightCol);
       card.appendChild(compactRow);
     } else {
-      // ── 2° FORMA DE PRESENTACIÓN: ACTUAL (COMPLETA) ──
-      fullBody.appendChild(header);
-      fullBody.appendChild(promptText);
-      fullBody.appendChild(optsOrAnswerElement);
+      // ── 2° FORMA DE PRESENTACIÓN: COMPLETA ──
+      // Fila horizontal: columna izquierda (enunciado + alternativas) | columna derecha (acciones)
+      const contentRow = document.createElement('div');
+      contentRow.style.cssText = 'display:flex; flex-direction:row; align-items:flex-start; gap:0;';
+
+      const leftCol = document.createElement('div');
+      leftCol.style.cssText = 'flex:1; min-width:0; display:flex; flex-direction:column; gap:8px;';
+      leftCol.appendChild(promptText);
+      leftCol.appendChild(optsOrAnswerElement);
+
+      contentRow.appendChild(leftCol);
+      contentRow.appendChild(fullRightCol);
+
+      fullBody.appendChild(contentRow);
       fullBody.appendChild(footer);
 
       // Si esta tarjeta está expandida, incorporar el cajón de rúbrica in-situ
