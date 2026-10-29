@@ -380,10 +380,10 @@ function renderBankManagerQuestions() {
       ? ClassroomData.getQuestionSavedSessions(q.id, q.prompt)
       : [];
 
-    // Columna derecha de acciones (alineada al tope del enunciado)
+    // Columna derecha de acciones (alineada al inicio de las alternativas o respuesta esperada)
     const fullRightCol = document.createElement('div');
     fullRightCol.className = 'bm-full-right-col';
-    fullRightCol.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:stretch; gap:5px; margin-left:12px;';
+    fullRightCol.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:stretch; gap:5px;';
 
     if (inSavedSessions && inSavedSessions.length > 0) {
       // Pregunta en sesión: botones apilados, sin editar/borrar
@@ -629,19 +629,21 @@ function renderBankManagerQuestions() {
       card.appendChild(compactRow);
     } else {
       // ── 2° FORMA DE PRESENTACIÓN: COMPLETA ──
-      // Fila horizontal: columna izquierda (enunciado + alternativas) | columna derecha (acciones)
-      const contentRow = document.createElement('div');
-      contentRow.style.cssText = 'display:flex; flex-direction:row; align-items:flex-start; gap:0;';
+      // 1. Enunciado ocupando toda la primera fila
+      fullBody.appendChild(promptText);
 
-      const leftCol = document.createElement('div');
-      leftCol.style.cssText = 'flex:1; min-width:0; display:flex; flex-direction:column; gap:8px;';
-      leftCol.appendChild(promptText);
-      leftCol.appendChild(optsOrAnswerElement);
+      // 2. Fila con alternativas/respuesta esperada (izquierda) y acciones (derecha) alineadas con la primera fila
+      const middleRow = document.createElement('div');
+      middleRow.style.cssText = 'display:flex; flex-direction:row; align-items:flex-start; gap:12px; margin-top:8px;';
 
-      contentRow.appendChild(leftCol);
-      contentRow.appendChild(fullRightCol);
+      if (optsOrAnswerElement) {
+        optsOrAnswerElement.style.flex = '1';
+        optsOrAnswerElement.style.minWidth = '0';
+        middleRow.appendChild(optsOrAnswerElement);
+      }
+      middleRow.appendChild(fullRightCol);
 
-      fullBody.appendChild(contentRow);
+      fullBody.appendChild(middleRow);
       fullBody.appendChild(footer);
 
       // Si esta tarjeta está expandida, incorporar el cajón de rúbrica in-situ
