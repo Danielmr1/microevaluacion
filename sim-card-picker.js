@@ -429,7 +429,7 @@ function openSimQuestionPicker(slotIdx) {
         btnSave.disabled = true;
         btnSave.style.background = '#94a3b8';
         btnSave.style.cursor = 'not-allowed';
-        btnSave.innerHTML = '🔒 Guardar pregunta y Asignar a la Ficha (Genera la rúbrica primero)';
+        btnSave.innerHTML = '🔒 Guardar pregunta y Asignar a la Ficha';
       }
     } else {
       btnSave.disabled = false;
@@ -1330,7 +1330,7 @@ function editSimDraftQuestion() {
       btnSave.disabled = true;
       btnSave.style.background = '#94a3b8';
       btnSave.style.cursor = 'not-allowed';
-      btnSave.innerHTML = '🔒 Guardar pregunta y Asignar a la Ficha (Genera la rúbrica primero)';
+      btnSave.innerHTML = '🔒 Guardar pregunta y Asignar a la Ficha';
     }
     const aiStatus = document.getElementById('sim-ai-status');
     if (aiStatus) {

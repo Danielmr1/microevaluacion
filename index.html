@@ -58,7 +58,7 @@
   <script src="bank-manager-form.js"></script>
   <script src="question-bank.js?v=3.10.86"></script>
   <script src="sim-card-layout.js"></script>
-  <script src="sim-card-picker.js"></script>
+  <script src="sim-card-picker.js?v=3.10.90"></script>
   <script src="card-simulator.js"></script>
   <script src="card-builder-focalizada.js"></script>
   <script src="card-exam-builder.js"></script>
@@ -392,6 +392,11 @@
       .bm-full-btn-mobile { display: inline !important; }
       /* En sesión: ocultar ícono SVG, mostrar solo "S1" */
       .bm-full-btn-icon { display: none !important; }
+      /* Modal de Redactar Pregunta en Ficha Dinámica (OMR): 1 columna de 4 filas en móvil */
+      #sim-options-grid,
+      #sim-consolidated-options {
+        grid-template-columns: 1fr !important;
+      }
     }
     @media (min-width: 641px) {
       .bm-full-btn-mobile { display: none !important; }
@@ -2595,11 +2600,11 @@
             <!-- Sección IA (Obligatoria para Formativa con IA) -->
             <div id="sim-new-ai-section" style="background:#FEF3C7; border:1.5px solid #D97706; border-radius:12px; padding:12px 14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="font-size:0.76rem; font-weight:800; color:#92400E;">✨ Análisis Pedagógico con IA (Gemini)</span>
+                <span style="font-size:0.76rem; font-weight:800; color:#92400E;">✨ Análisis Pedagógico con IA</span>
                 <span id="sim-ai-status" style="font-size:0.72rem; font-weight:800; color:#B45309;"></span>
               </div>
               <p style="font-size:0.72rem; color:#78350F; margin:0 0 10px; line-height:1.4;">
-                Obligatorio para Formativa con IA: Gemini deduce la solución canónica, criterios de corrección y errores comunes.
+                Rúbrica obligatoria para la modalidad Formativa con IA: La IA deduce la solución canónica, criterios de corrección y errores comunes.
               </p>
               <button type="button" id="sim-btn-analyze-ai" onclick="handleSimAnalyzeAI()"
                 style="width:100%; background:linear-gradient(135deg, #0284C7, #0369A1); border:none; color:#FFFFFF; border-radius:8px; padding:10px; font-size:0.84rem; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(2,132,199,0.3);">
