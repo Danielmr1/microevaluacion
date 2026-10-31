@@ -235,9 +235,9 @@
       height: auto !important;
       min-height: 9mm !important;
       max-height: 16.5mm !important;
-      font-size: 9.2pt !important;
+      font-size: 9.5pt !important;
       line-height: 1.25 !important;
-      font-weight: 600 !important;
+      font-weight: 700 !important;
       padding: 0 3mm !important;
       overflow: hidden !important;
     }
@@ -266,7 +266,7 @@
       max-height: 22mm !important;
       font-size: 9.5pt !important;
       line-height: 1.25 !important;
-      font-weight: 600 !important;
+      font-weight: 700 !important;
       padding: 0 1.5mm !important;
       overflow: hidden !important;
     }
@@ -367,8 +367,9 @@
       height: auto !important;
       min-height: 8.5mm !important;
       max-height: 12.5mm !important;
-      font-size: 8.5pt !important;
+      font-size: 9.5pt !important;
       line-height: 1.22 !important;
+      font-weight: 700 !important;
       overflow: hidden !important;
     }
     .card-a6-v .a6-v-with-grid-omr {
@@ -717,6 +718,7 @@
       width: 100% !important;
       text-align: left !important;
       justify-content: flex-start !important;
+      font-weight: 700 !important;
     }
     .card-a5.mc-1q .mc-grid-1q {
       width: 156mm !important;
@@ -757,20 +759,67 @@
       width: auto !important;
       gap: 1.2mm !important;
     }
+    .v-free-problem {
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
+    }
+    .v-free-problem-2q {
+      font-size: 9.5pt !important;
+    }
     .v-free-problem-2q .problem-text {
       display: flex !important;
       align-items: flex-start !important;
       gap: 1.5mm !important;
       width: 100% !important;
+      font-size: 9.5pt !important;
     }
     .v-free-problem-2q .v-q-num {
       font-weight: 800 !important;
+      font-size: 9.5pt !important;
       flex: 0 0 auto !important;
     }
     .v-free-problem-2q .v-q-prompt {
-      font-weight: 600 !important;
+      font-weight: 700 !important;
+      font-size: 9.5pt !important;
       flex: 1 1 auto !important;
     }
     .v-free-grid-2q {
       margin: 3.5mm auto 0.5mm auto !important;
+    }
+
+    /* Tipografía universal en enunciados de Formativa y Focalizada (Mínimo 9.5pt y font-weight: 700) */
+    .problem-text {
+      font-weight: 700 !important;
+    }
+    .mc-problem-2q {
+      height: 12mm !important;
+      min-height: 12mm !important;
+      max-height: 12mm !important;
+    }
+    .mc-problem-2q .problem-text {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 1.5mm !important;
+      font-size: 9.5pt !important;
+      line-height: 1.25 !important;
+    }
+    .mc-problem-2q .problem-text strong,
+    .mc-problem-2q .mc-q-num {
+      font-weight: 800 !important;
+      font-size: 9.5pt !important;
+      flex: 0 0 auto !important;
+    }
+    .mc-problem-2q .problem-text span,
+    .mc-problem-2q .mc-q-prompt {
+      font-weight: 700 !important;
+      font-size: 9.5pt !important;
+      flex: 1 1 auto !important;
+    }
+    .a6-h-2q-prompt,
+    .v-nogrid-q-prompt,
+    .a6-nogrid-q-prompt,
+    .b2-q-prompt,
+    .a4-q-prompt {
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
     }

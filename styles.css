@@ -1925,7 +1925,8 @@
       display: flex;
       align-items: center;
       overflow: hidden;
-      font-size: 8.5pt;
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
       line-height: 1.35;
     }
 
@@ -1992,7 +1993,7 @@
       border-bottom: none !important;
       box-sizing: border-box;
       overflow: hidden;
-      font-size: 8pt;
+      font-size: 9.5pt !important;
       line-height: 1.3;
     }
     .v-free-problem-2q .problem-text {
@@ -2000,13 +2001,16 @@
       align-items: flex-start !important;
       gap: 1.5mm !important;
       width: 100% !important;
+      font-size: 9.5pt !important;
     }
     .v-free-problem-2q .v-q-num {
       font-weight: 800 !important;
       flex: 0 0 auto !important;
+      font-size: 9.5pt !important;
     }
     .v-free-problem-2q .v-q-prompt {
-      font-weight: 600 !important;
+      font-weight: 700 !important;
+      font-size: 9.5pt !important;
       flex: 1 1 auto !important;
     }
 
@@ -2173,7 +2177,8 @@
       flex: 0 0 auto;
     }
     .v-nogrid-q-prompt {
-      font-weight: 600;
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
       flex: 1;
     }
     .v-nogrid-free-row {
@@ -2212,8 +2217,8 @@
       gap: 1mm;
     }
     .a6-nogrid-q-prompt {
-      font-size: 7.5pt;
-      font-weight: 600;
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
       line-height: 1.2;
       color: #0f172a;
     }
@@ -2813,6 +2818,7 @@
       font-size: 11pt;
       line-height: 1.35;
       color: #1e293b;
+      font-weight: 700;
     }
 
     .problem-text strong {
@@ -2943,6 +2949,7 @@
       width: 100% !important;
       text-align: left !important;
       justify-content: flex-start !important;
+      font-weight: 700 !important;
     }
     .card-a5.mc-1q .mc-grid-1q {
       width: 156mm !important;
@@ -3013,9 +3020,9 @@
     }
     .mc-problem-2q {
       width: 156mm !important;
-      height: 11mm !important;
-      min-height: 11mm !important;
-      max-height: 11mm !important;
+      height: 12mm !important;
+      min-height: 12mm !important;
+      max-height: 12mm !important;
       margin: 1.2mm auto 0 auto !important;
       padding: 1mm 0 !important;
       background: transparent !important;
@@ -3028,17 +3035,19 @@
       display: flex !important;
       align-items: flex-start !important;
       gap: 1.5mm !important;
-      font-size: 8.5pt !important;
+      font-size: 9.5pt !important;
       line-height: 1.25 !important;
     }
     .mc-problem-2q .problem-text strong,
     .mc-problem-2q .mc-q-num {
       font-weight: 800 !important;
       flex: 0 0 auto !important;
+      font-size: 9.5pt !important;
     }
     .mc-problem-2q .problem-text span,
     .mc-problem-2q .mc-q-prompt {
-      font-weight: 600 !important;
+      font-weight: 700 !important;
+      font-size: 9.5pt !important;
       flex: 1 1 auto !important;
     }
 
@@ -3079,7 +3088,8 @@
       flex: 0 0 auto;
     }
     .a6-h-2q-prompt {
-      font-weight: 600;
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
       flex: 1;
     }
     .a6-h-2q-omr {
@@ -3493,7 +3503,8 @@
       flex: 0 0 auto;
     }
     .b2-q-prompt {
-      font-weight: 600;
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
       flex: 1;
     }
     .b2-omr-row {
@@ -3671,7 +3682,8 @@
       flex: 0 0 auto;
     }
     .a4-q-prompt {
-      font-weight: 600;
+      font-size: 9.5pt !important;
+      font-weight: 700 !important;
       flex: 1;
     }
 
@@ -6180,9 +6192,9 @@
       height: auto !important;
       min-height: 9mm !important;
       max-height: 16.5mm !important;
-      font-size: 9.2pt !important;
+      font-size: 9.5pt !important;
       line-height: 1.25 !important;
-      font-weight: 600 !important;
+      font-weight: 700 !important;
       padding: 0 3mm !important;
       overflow: hidden !important;
     }
@@ -6193,7 +6205,7 @@
       max-height: 22mm !important;
       font-size: 9.5pt !important;
       line-height: 1.25 !important;
-      font-weight: 600 !important;
+      font-weight: 700 !important;
       padding: 0 1.5mm !important;
       overflow: hidden !important;
     }
@@ -6308,8 +6320,9 @@
       height: auto !important;
       min-height: 8.5mm !important;
       max-height: 12.5mm !important;
-      font-size: 8.5pt !important;
+      font-size: 9.5pt !important;
       line-height: 1.22 !important;
+      font-weight: 700 !important;
       overflow: hidden !important;
     }
     .card-a6-v .a6-v-with-grid-omr {
