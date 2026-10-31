@@ -75,6 +75,12 @@
    * @returns {{marginX: number, marginY: number}}
    */
   function getExpansionMargins(cardType = 'a5') {
+    if (cardType === 'a6_vertical') {
+      // Ficha A6 Vertical: 89 x 132 mm, inset 3.5 mm, marcador 8 mm -> offset = 7.5 mm
+      const quadW = 89 - 15;  // 74 mm
+      const quadH = 132 - 15; // 117 mm
+      return { marginX: 7.5 / quadW, marginY: 7.5 / quadH };
+    }
     if (cardType === 'a6') {
       // Ficha A6: 132 x 89 mm, inset 3.5 mm, marcador 8 mm -> offset = 7.5 mm
       const quadW = 132 - 15; // 117 mm

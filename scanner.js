@@ -56,7 +56,7 @@
 
   let arucoDetector = null;
   let stableFrameCount = 0;
-  const REQUIRED_STABLE_FRAMES = 3;   // ~150-200ms de quietud absoluta
+  const REQUIRED_STABLE_FRAMES = 6;   // ~300ms de quietud absoluta (evita disparos apresurados en movimiento)
   const COVERAGE_THRESHOLD = 45;       // Cobertura mínima de pantalla
   const SHARPNESS_THRESHOLD = 20;      // Umbral calibrado de nitidez (20%)
   const CAPTURE_COOLDOWN_MS = 2500;    // Guardrail anti-duplicados (2.5 seg)
@@ -570,7 +570,7 @@
   }
   window.updateFullscreenIcon = updateFullscreenIcon;
 
-  // --- ORIENTACIÓN DE LA EVALUACIÓN Y AVISO AL DOCENTE ---
+  // --- ORIENTACIÓN DE LA EVALUACIÓN Y GUARDARRAÍL ACTIVO DE ORIENTACIÓN ---
   function isSessionVertical(sess) {
     if (!sess) return false;
     if (sess.cardOrientation === 'vertical' || sess.isPortrait === true || sess.orientation === 'vertical') {
@@ -592,6 +592,88 @@
     return false;
   }
   global.isSessionVertical = isSessionVertical;
+
+  function getDeviceOrientation() {
+    if (window.screen && window.screen.orientation && window.screen.orientation.type) {
+      return window.screen.orientation.type.startsWith('portrait') ? 'portrait' : 'landscape';
+    }
+    if (typeof window.orientation === 'number') {
+      return (Math.abs(window.orientation) === 90) ? 'landscape' : 'portrait';
+    }
+    if (window.matchMedia) {
+      if (window.matchMedia('(orientation: portrait)').matches) return 'portrait';
+      if (window.matchMedia('(orientation: landscape)').matches) return 'landscape';
+    }
+    return window.innerHeight >= window.innerWidth ? 'portrait' : 'landscape';
+  }
+  global.getDeviceOrientation = getDeviceOrientation;
+
+  function checkOrientationMatch() {
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    // En pantallas de escritorio no táctiles con monitor fijo, no bloqueamos
+    if (!isTouch && window.innerWidth > 1024) {
+      return { matches: true, sessionNeedsVertical: false, deviceIsPortrait: false, isTouch: false };
+    }
+
+    const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+    const sessionNeedsVertical = isSessionVertical(sess);
+    const deviceIsPortrait = (getDeviceOrientation() === 'portrait');
+    const matches = (sessionNeedsVertical === deviceIsPortrait);
+
+    return {
+      matches,
+      sessionNeedsVertical,
+      deviceIsPortrait,
+      isTouch
+    };
+  }
+  global.checkOrientationMatch = checkOrientationMatch;
+
+  function updateOrientationBlockerUI(blocked, matchInfo) {
+    const blocker = document.getElementById('scanner-orientation-blocker');
+    if (!blocker) return;
+
+    if (!blocked) {
+      if (blocker.style.display !== 'none') {
+        blocker.style.display = 'none';
+      }
+      return;
+    }
+
+    const title = document.getElementById('scanner-orientation-blocker-title');
+    const desc = document.getElementById('scanner-orientation-blocker-desc');
+    const icon = document.getElementById('scanner-orientation-blocker-icon');
+
+    if (matchInfo && matchInfo.sessionNeedsVertical) {
+      if (icon) icon.textContent = '📱';
+      if (title) title.textContent = 'Gira tu dispositivo a VERTICAL';
+      if (desc) desc.textContent = 'Esta evaluación utiliza fichas en formato vertical. Coloca tu teléfono en vertical para escanear.';
+    } else {
+      if (icon) icon.textContent = '🔄';
+      if (title) title.textContent = 'Gira tu dispositivo a HORIZONTAL';
+      if (desc) desc.textContent = 'Esta evaluación utiliza fichas apaisadas (horizontal). Coloca tu teléfono en horizontal para que el encuadre calce con la hoja.';
+    }
+
+    if (blocker.style.display !== 'flex') {
+      blocker.style.display = 'flex';
+    }
+  }
+  global.updateOrientationBlockerUI = updateOrientationBlockerUI;
+
+  function updateScannerDimensions() {
+    if (!video || !video.videoWidth || !video.videoHeight) return;
+    if (overlay) {
+      if (overlay.width !== video.videoWidth) overlay.width = video.videoWidth;
+      if (overlay.height !== video.videoHeight) overlay.height = video.videoHeight;
+    }
+    const targetW = 640;
+    const targetH = Math.max(1, Math.round((targetW * video.videoHeight) / video.videoWidth));
+    if (procCanvas && (procCanvas.width !== targetW || procCanvas.height !== targetH)) {
+      procCanvas.width = targetW;
+      procCanvas.height = targetH;
+    }
+  }
+  global.updateScannerDimensions = updateScannerDimensions;
 
   function showScannerOrientationHint() {
     const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
@@ -703,6 +785,7 @@
   function stopCamera() {
     isScanning = false;
     document.body.classList.remove('camera-active');
+    updateOrientationBlockerUI(false);
     activeTarget = null;
     lostFramesCount = 0;
     if (videoStream) {
@@ -899,20 +982,27 @@
         return (sess.cardFormat === 'a6') || (sess.branch === 'rama3' && qC <= 10) || (sess.branch === 'rama2' && sess.withGrid === false && qC <= 2 && sess.cardFormat !== 'a5');
       })();
 
-      const cardType = (sess && (sess.cardOrientation === 'vertical' || sess.orientation === 'vertical' || sess.isPortrait === true))
-        ? 'a5_vertical'
-        : (isCardA6 ? 'a6' : (isPortrait ? 'a5_vertical' : 'a5'));
+      let cardType = 'a5';
+      if (isCardA6) {
+        cardType = isPortrait ? 'a6_vertical' : 'a6';
+      } else if (isPortrait) {
+        cardType = 'a5_vertical';
+      }
+
       if (typeof ROIProcessor !== 'undefined' && ROIProcessor.getExpansionMargins) {
         const gm = ROIProcessor.getExpansionMargins(cardType);
         marginX = gm.marginX;
         marginY = gm.marginY;
       } else {
-        if (isPortrait) {
-          marginX = 0.0877;
-          marginY = 0.0602;
-        } else if (isCardA6) {
+        if (cardType === 'a6_vertical') {
+          marginX = 7.5 / 74;
+          marginY = 7.5 / 117;
+        } else if (cardType === 'a6') {
           marginX = 0.0641;
           marginY = 0.1014;
+        } else if (cardType === 'a5_vertical') {
+          marginX = 0.0877;
+          marginY = 0.0602;
         } else {
           marginX = 0.06024;
           marginY = 0.08772;
@@ -1029,6 +1119,27 @@
 
   async function processFrame() {
     if (!isScanning) return;
+
+    // Sincronizar dimensiones dinámicamente si el dispositivo rotó
+    updateScannerDimensions();
+
+    // Guardarraíl activo: si la orientación del celular no calza con la ficha, pausar escaneo
+    const oriMatch = checkOrientationMatch();
+    if (!oriMatch.matches) {
+      updateOrientationBlockerUI(true, oriMatch);
+      if (ctx && overlay) {
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+      }
+      activeTarget = null;
+      targetLockStartTime = null;
+      stableFrameCount = 0;
+      lostFramesCount = 0;
+      requestAnimationFrame(processFrame);
+      return;
+    }
+
+    // Orientación correcta: ocultar bloqueador si estaba visible
+    updateOrientationBlockerUI(false, oriMatch);
 
     if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
       isProcessing = true;
@@ -2094,6 +2205,19 @@
     updateSessionCounter();
   });
 
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+      if (isScanning) {
+        updateScannerDimensions();
+      }
+    });
+    window.addEventListener('orientationchange', () => {
+      if (isScanning) {
+        setTimeout(updateScannerDimensions, 100);
+      }
+    });
+  }
+
   // Exportar funciones para interacción con la interfaz HTML
   global.Scanner = {
     toggleCamera,
@@ -2127,7 +2251,10 @@
     handleFile,
     diagnostico,
     showScannerOrientationHint,
-    isSessionVertical
+    isSessionVertical,
+    checkOrientationMatch,
+    updateScannerDimensions,
+    updateOrientationBlockerUI
   };
 
   // Bindings directos para eventos onclick / onchange en HTML
@@ -2145,5 +2272,8 @@
   global.assignManualStudent = assignManualStudent;
   global.showScannerOrientationHint = showScannerOrientationHint;
   global.isSessionVertical = isSessionVertical;
+  global.checkOrientationMatch = checkOrientationMatch;
+  global.updateScannerDimensions = updateScannerDimensions;
+  global.updateOrientationBlockerUI = updateOrientationBlockerUI;
 
 })(typeof window !== 'undefined' ? window : this);
