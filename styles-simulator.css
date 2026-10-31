@@ -701,9 +701,21 @@
 
     /* ── AJUSTE A5 HORIZONTAL 1Q OMR CON CUADRÍCULA ── */
     .card-a5.mc-1q .mc-problem {
+      width: 156mm !important;
       margin: 1.5mm auto 0 auto !important;
       height: 18mm !important;
       flex: 0 0 18mm !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      text-align: left !important;
+      box-sizing: border-box !important;
+      padding: 0 1mm !important;
+    }
+    .card-a5.mc-1q .mc-problem .problem-text {
+      width: 100% !important;
+      text-align: left !important;
+      justify-content: flex-start !important;
     }
     .card-a5.mc-1q .mc-grid-1q {
       width: 156mm !important;
@@ -718,5 +730,5 @@
     .card-a5.mc-1q .omr-row.omr-row-1 {
       height: 10mm !important;
       flex: 0 0 10mm !important;
-      margin: 3.5mm auto 0 auto !important;
+      margin: 7.5mm auto 0 auto !important;
     }
