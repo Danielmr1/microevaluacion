@@ -419,7 +419,7 @@ async function loadAndRenderResultsTable() {
   });
 
   container.innerHTML = `
-    <table style="width:100%; border-collapse:collapse; text-align:left;">
+    <table style="width:100%; min-width:680px; border-collapse:collapse; text-align:left;">
       <thead>
         <tr style="border-bottom:2px solid #3D352E; background:#1A1613; color:#A8A29E; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em;">
           <th style="padding:8px 12px; font-weight:800;">#</th>
