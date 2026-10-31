@@ -730,5 +730,29 @@
     .card-a5.mc-1q .omr-row.omr-row-1 {
       height: 10mm !important;
       flex: 0 0 10mm !important;
-      margin: 7.5mm auto 0 auto !important;
+      margin-top: auto !important;
+      margin-bottom: 2mm !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      width: 146mm !important;
+      padding: 0 2mm !important;
+    }
+    .card-a5-v-free .v-omr-row {
+      width: 94mm !important;
+      height: 10mm !important;
+      min-height: 10mm !important;
+      max-height: 10mm !important;
+      flex: 0 0 10mm !important;
+      margin: auto auto 0.5mm auto !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      box-sizing: border-box !important;
+      background: transparent !important;
+      border: none !important;
+      align-items: center !important;
+      padding: 0 !important;
+    }
+    .card-a5-v-free .v-omr-row .v-omr-option {
+      width: auto !important;
+      gap: 1.2mm !important;
     }

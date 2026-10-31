@@ -1728,18 +1728,23 @@
 
     /* ── FILA OMR EN FICHA A5 VERTICAL ── */
     .v-omr-row {
-      width: 114mm;
-      height: 14mm;
-      min-height: 14mm;
-      max-height: 14mm;
-      margin: 1mm auto 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      width: 94mm;
+      height: 10mm;
+      min-height: 10mm;
+      max-height: 10mm;
+      flex: 0 0 10mm;
+      margin: auto auto 0.5mm auto;
+      display: flex;
+      justify-content: space-between;
       box-sizing: border-box;
       background: transparent;
       border: none;
       align-items: center;
-      padding: 0 8mm;
+      padding: 0;
+    }
+    .v-omr-row .v-omr-option {
+      width: auto !important;
+      gap: 1.2mm !important;
     }
     .v-omr-row-2q {
       height: 11mm;
@@ -2625,7 +2630,12 @@
     .card-a5.mc-1q .omr-row.omr-row-1 {
       height: 10mm !important;
       flex: 0 0 10mm !important;
-      margin: 7.5mm auto 0 auto !important;
+      margin-top: auto !important;
+      margin-bottom: 2mm !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      width: 146mm !important;
+      padding: 0 2mm !important;
     }
     .omr-option {
       display: flex;
