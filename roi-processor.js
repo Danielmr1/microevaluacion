@@ -191,15 +191,29 @@
     }
   };
 
+  /**
+   * Escala para ficha A6 horizontal (132 mm ancho x 89 mm alto en lienzo rectificado de 2000 x 1441 px).
+   */
+  function mmToPxA6(xMm, yMm, wMm, hMm) {
+    const scaleX = 2000 / 132; // 15.1515 px/mm
+    const scaleY = 1441 / 89;  // 16.1910 px/mm
+    return {
+      x: Math.round(xMm * scaleX),
+      y: Math.round(yMm * scaleY),
+      width: Math.round(wMm * scaleX),
+      height: Math.round(hMm * scaleY)
+    };
+  }
+
   // Coordenadas Fijas de ROIs para OMR en Ficha A6 Horizontal (2000 x 1441 px normalizado).
   const ROI_OMR_CONFIG_A6 = {
     MC1: {
-      Q1_GRID: mmToPx(20.0, 61.5, 146.0, 58.0),
-      Q1_BUBBLES: mmToPx(22.0, 46.0, 126.0, 14.0)
+      Q1_GRID: mmToPxA6(14.0, 36.0, 104.0, 29.0),
+      Q1_BUBBLES: mmToPxA6(12.0, 68.0, 108.0, 14.0)
     },
     MC2: {
-      Q1_BUBBLES: mmToPx(22.0, 46.0, 126.0, 14.0),
-      Q2_BUBBLES: mmToPx(22.0, 78.5, 126.0, 14.0)
+      Q1_BUBBLES: mmToPxA6(12.0, 46.0, 108.0, 14.0),
+      Q2_BUBBLES: mmToPxA6(12.0, 78.5, 108.0, 14.0)
     }
   };
 
@@ -1106,17 +1120,25 @@
 
     // ── GUARDRAIL DINÁMICO: Recortes OMR basados en omrLayout de la sesión ──
     if (options.omrLayout && Array.isArray(options.omrLayout.rows) && options.omrLayout.rows.length >= questionCount && (!withGrid || branch === 'rama2')) {
-      const format = options.omrLayout.format || (isPortrait ? 'a5_vertical' : 'a5');
-      const isA6Sheet = format === 'a6';
+      const format = options.omrLayout.format || (isPortrait ? 'a5_vertical' : (isA6 ? 'a6' : 'a5'));
+      const isA6Sheet = format === 'a6' || isA6;
       const sheetWidthMm = options.omrLayout.sheetWidthMm || (isPortrait ? (isA6Sheet ? 89 : 134) : (isA6Sheet ? 132 : 186));
+      const sheetHeightMm = options.omrLayout.sheetHeightMm || (isPortrait ? (isA6Sheet ? 132 : 186) : (isA6Sheet ? 89 : 134));
+      const scaleX = sheetCanvas.width / sheetWidthMm;
+      const scaleY = sheetCanvas.height / sheetHeightMm;
 
       for (let i = 0; i < questionCount; i++) {
         const rowData = options.omrLayout.rows[i];
         if (!rowData) continue;
         const yCenterMm = rowData.yCenterMm;
-        const bubbleRoi = isPortrait
-          ? mmToPxVertical(8.0, yCenterMm - 6.0, sheetWidthMm - 16.0, 12.0)
-          : mmToPx(10.0, yCenterMm - 6.0, sheetWidthMm - 20.0, 12.0);
+        const marginX = isA6Sheet ? 12.0 : 10.0;
+        const roiW = sheetWidthMm - 2 * marginX;
+        const bubbleRoi = {
+          x: Math.round(marginX * scaleX),
+          y: Math.round((yCenterMm - 7.0) * scaleY),
+          width: Math.round(roiW * scaleX),
+          height: Math.round(14.0 * scaleY)
+        };
         const b = extractROI(sheetCanvas, bubbleRoi);
         if (b.success && b.canvas) enhanceHandwritingContrast(b.canvas);
         list.push({

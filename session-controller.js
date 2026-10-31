@@ -485,7 +485,7 @@
       const isBranchR2orR3 = wizardEval && (wizardEval.branch === 'rama2' || wizardEval.branch === 'rama3');
       const qCount = (wizardEval && wizardEval.questionCount) || undefined;
       const cardFormat = (wizardEval && wizardEval.cardFormat) || (wizardEval && wizardEval.branch === 'rama3' && (qCount || 10) <= 10 ? 'a6' : (wizardEval && wizardEval.cardOrientation === 'vertical' ? 'a5_vertical' : 'a5'));
-      const cardOrientation = (wizardEval && wizardEval.cardOrientation) || (wizardEval && wizardEval.branch === 'rama3' && qCount > 10 ? 'vertical' : 'horizontal');
+      const cardOrientation = (wizardEval && wizardEval.cardOrientation) || (wizardEval && wizardEval.orientation) || (wizardEval && wizardEval.isPortrait !== undefined ? (wizardEval.isPortrait ? 'vertical' : 'horizontal') : null) || (wizardEval && wizardEval.branch === 'rama3' && qCount > 10 ? 'vertical' : 'horizontal');
 
       const savedEval = ClassroomData.saveCustomEvaluation({
         id: (wizardEval && wizardEval.id) || undefined,
@@ -500,6 +500,8 @@
         questions: (wizardEval && wizardEval.questions) || undefined,
         cardFormat: cardFormat,
         cardOrientation: cardOrientation,
+        isPortrait: cardOrientation === 'vertical',
+        orientation: cardOrientation,
         gradeStage: (wizardEval && wizardEval.gradeStage) || (g && g.stage) || undefined,
         gradeLevel: (wizardEval && wizardEval.gradeLevel) || (g && g.level) || undefined,
         gradeText: (wizardEval && wizardEval.gradeText) || (g && g.texto) || undefined
@@ -554,6 +556,8 @@
         questions: savedEval.questions || [],
         cardFormat: cardFormat,
         cardOrientation: cardOrientation,
+        isPortrait: cardOrientation === 'vertical',
+        orientation: cardOrientation,
         correctionMode: correctionMode,
         omrLayout: omrLayout,
         mode: (wizardEval && wizardEval.mode) || ((typeof r3State !== 'undefined') ? r3State.mode : undefined),

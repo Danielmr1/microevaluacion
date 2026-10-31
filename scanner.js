@@ -579,11 +579,14 @@
     if (sess.cardFormat === 'a5_vertical' || sess.cardFormat === 'a4_vertical') {
       return true;
     }
+    if (sess.cardOrientation === 'horizontal' || sess.isPortrait === false || sess.orientation === 'horizontal') {
+      return false;
+    }
     const qCount = parseInt(sess.questionCount || (sess.questions ? sess.questions.length : 1), 10);
     if (sess.branch === 'rama3' && qCount > 10) {
       return true;
     }
-    if (sess.cardFormat === 'a6' && (sess.orientation === 'vertical' || sess.isPortrait === true)) {
+    if (sess.cardFormat === 'a6' && (sess.orientation === 'vertical' || sess.isPortrait === true || sess.cardOrientation === 'vertical')) {
       return true;
     }
     return false;
@@ -883,16 +886,20 @@
     if (marginX === undefined || marginY === undefined) {
       const topW = Math.hypot(quad.pTR.x - quad.pTL.x, quad.pTR.y - quad.pTL.y);
       const leftH = Math.hypot(quad.pBL.x - quad.pTL.x, quad.pBL.y - quad.pTL.y);
-      const isPortrait = leftH > topW * 1.15;
 
       const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      const sessionHasExplicitOri = sess && (sess.cardOrientation || sess.orientation || sess.isPortrait !== undefined);
+      const isPortrait = (sessionHasExplicitOri && typeof isSessionVertical === 'function')
+        ? isSessionVertical(sess)
+        : (leftH > topW * 1.15);
+
       const isCardA6 = (() => {
         if (!sess) return false;
         const qC = sess.questionCount || (sess.questions ? sess.questions.length : 1);
         return (sess.cardFormat === 'a6') || (sess.branch === 'rama3' && qC <= 10) || (sess.branch === 'rama2' && sess.withGrid === false && qC <= 2 && sess.cardFormat !== 'a5');
       })();
 
-      const cardType = (sess && sess.cardOrientation === 'vertical')
+      const cardType = (sess && (sess.cardOrientation === 'vertical' || sess.orientation === 'vertical' || sess.isPortrait === true))
         ? 'a5_vertical'
         : (isCardA6 ? 'a6' : (isPortrait ? 'a5_vertical' : 'a5'));
       if (typeof ROIProcessor !== 'undefined' && ROIProcessor.getExpansionMargins) {
@@ -1353,15 +1360,22 @@
     const isOMR = (activeEval && activeEval.type === 'mc') || (activeSession && activeSession.type === 'mc');
 
     try {
+      const sessForOri = activeSession || activeEval;
+      const sessionHasExplicitOri = sessForOri && (
+        sessForOri.cardOrientation || sessForOri.orientation || sessForOri.isPortrait !== undefined
+      );
+
       let isCardPortrait = false;
-      if (sheetQuad) {
-        // Perspective Warp al tamaño estándar del lienzo, tomado de
-        // ROIProcessor para que el warp y las ROIs no puedan desincronizarse.
-        // Si la ficha es vertical (A5 portrait: leftH > topW * 1.15), rectificar en 1441 x 2000.
+      if (sessionHasExplicitOri && typeof isSessionVertical === 'function') {
+        isCardPortrait = isSessionVertical(sessForOri);
+      } else if (sheetQuad) {
+        // Fallback geométrico solo si la sesión no especifica orientación
         const topW = Math.hypot(sheetQuad.pTR.x - sheetQuad.pTL.x, sheetQuad.pTR.y - sheetQuad.pTL.y);
         const leftH = Math.hypot(sheetQuad.pBL.x - sheetQuad.pTL.x, sheetQuad.pBL.y - sheetQuad.pTL.y);
         isCardPortrait = leftH > topW * 1.15;
+      }
 
+      if (sheetQuad) {
         const baseW = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_WIDTH) || 2000;
         const baseH = (typeof ROIProcessor !== 'undefined' && ROIProcessor.SHEET_HEIGHT) || 1441;
         const warpW = isCardPortrait ? baseH : baseW;
