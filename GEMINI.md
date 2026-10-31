@@ -174,3 +174,35 @@ Todo asistente de inteligencia artificial o desarrollador que opere en este repo
   * Si una pregunta se elimina en un dispositivo, el borrado debe replicarse en Supabase y eliminarse del `localStorage` de todos los dispositivos del docente, quedando estrictamente prohibido revivir preguntas eliminadas como "preguntas fantasma".
   * Ante fallos de conexión o expiración de tokens, las preguntas guardadas deben encolarse en la cola offline (`microeval_sync_queue`) y sincronizarse automáticamente al restablecerse la red.
 
+---
+
+## 18. Guardarraíl de Sincronización Multi-Dispositivo y Cero Sesiones Fantasma (Tope de 8 Sesiones)
+* **Autoridad Soberana de la Nube (Supabase):**
+  * La base de datos en Supabase es la única fuente de verdad para las sesiones guardadas de la cuenta del docente.
+  * Si una sesión guardada se elimina en un dispositivo (ej. PC), la eliminación debe reflejarse en la nube y **purgarse automáticamente del `localStorage` de todos los demás dispositivos del docente (celular/tablet)** al abrir la aplicación o consultar las sesiones.
+* **Prohibición Terminante de Re-subir Sesiones Huérfanas (Anti-Fantasmas):**
+  * **ESTÁ TERMINANTEMENTE PROHIBIDO** que un dispositivo móvil o secundario vuelva a subir a Supabase una sesión simplemente porque la tiene guardada en su caché local y ya no existe en la nube.
+  * Solo se permite subir sesiones locales si cuentan con una marca explícita y verificada de borrador creado sin conexión en ese mismo dispositivo (`pendingCloudSync: true`).
+* **Registro Permanente de Exclusión (`microeval_deleted_sessions_v1`):**
+  * Toda sesión eliminada debe registrarse en la lista local de lápidas (tombstones) para vetar su reaparición ante cualquier sincronización en segundo plano.
+* **Refresco Inmediato de la Interfaz:**
+  * Al detectar la eliminación remota de una sesión, el sistema debe decrementar el contador en vivo, reajustar los botones numéricos `[ 1 ] ... [ 8 ]` y, si el docente estaba viendo la sesión eliminada, cambiar automáticamente a la siguiente sesión activa sin dejar la pantalla en blanco ni requerir recargar la página.
+
+---
+
+## 19. Guardarraíl de Resiliencia Offline Total y Sincronización Automática Online (Auto-Sync)
+* **Continuidad de Aula Absoluta y Distinción Estricta de Escaneo:**
+  * Ante la ausencia o pérdida de conexión a internet, el sistema opera en modo local: el docente puede configurar sesiones, seleccionar evaluaciones del banco local y generar/imprimir fichas nominales (A4, A5, A6) con ArUco y QR.
+  * **Prohibición de Escaneo en Formativa con IA sin Red:** En sesiones de **Formativa con IA (Rama 1)**, la corrección del procedimiento manuscrito depende obligatoriamente del modelo de Gemini en la nube. **Sin internet, NO se puede escanear ni calificar fichas de Formativa con IA**; el sistema debe advertir al docente que esta modalidad requiere conectividad para el análisis por IA.
+  * **Escaneo Offline 100% Permitido en OMR:** En las modalidades de **Focalizada en la respuesta OMR (Rama 2)** y **Cartilla OMR (Rama 3)**, el escaneo es 100% determinista y local (visión artificial en JavaScript sin llamadas a la nube), por lo que se puede escanear con total normalidad sin internet.
+  * Sin internet, las llamadas a IA (Gemini, generación de rúbricas analíticas y chat de Copilot) quedan estrictamente suspendidas y silenciadas; el sistema jamás muestra spinners infinitos ni bloquea la interfaz.
+* **Persistencia Local Soberana y Cola Offline (`microeval_sync_queue`):**
+  * Toda nueva evaluación, modificación o sesión creada sin conexión debe guardarse de inmediato en el almacenamiento local (`localStorage`) y encolarse en `microeval_sync_queue`.
+* **Sincronización Automática al Restablecerse la Conexión (Auto-Flush):**
+  * En el momento en que se detecte conexión a internet (evento `online`, inicio de sesión / montaje de usuario o apertura del Banco de Preguntas), el sistema DEBE ejecutar automáticamente `syncAllLocalToCloud()` y `flushSyncQueue()`.
+  * Toda pregunta o sesión pendiente se sube a Supabase de forma transparente en segundo plano, vaciando la cola local al completarse con éxito.
+* **Inmunidad contra Saturación del Límite de 50 Preguntas en la Nube:**
+  * Al verificar el límite de 50 preguntas en Supabase (`microeval_evaluations`), la consulta DEBE excluir estrictamente casilleros de cartilla OMR (`Pregunta %` y `Cartilla %`) y plantillas temporales.
+  * Queda estrictamente prohibido que filas de cartilla o duplicados impidan la sincronización de preguntas legítimas entre la PC y el celular del docente.
+
+

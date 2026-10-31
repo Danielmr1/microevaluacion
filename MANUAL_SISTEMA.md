@@ -333,6 +333,44 @@ Para evitar bloques densos de texto corrido al consultar nóminas de alumnos, sa
   3. Separa el texto final de cierre tras la última celda `|`.
 * Esta tolerancia garantiza que la tabla siempre se dibuje estructurada, cebrada y con scroll, con cero texto plano residual.
 
+---
+
+## 16. Resiliencia Offline Total y Sincronización Automática Online (Auto-Sync)
+
+La arquitectura de Microevaluación está diseñada bajo el principio de **Continuidad de Aula Absoluta**: el trabajo docente en el colegio jamás se detiene ante caídas de red, cortes de fluido eléctrico o zonas sin cobertura móvil.
+
+### 16.1. Operación en Modo Desconectado (Offline Total)
+Cuando el dispositivo (PC, laptop o celular) no cuenta con conexión a internet:
+1. **Aislamiento Total de la Inteligencia Artificial y Restricción Estricta en Rama 1:**
+   - Quedan estrictamente suspendidas todas las peticiones a la nube (Gemini 2.5 Flash, Supabase Edge Functions y el chat de Copilot).
+   - **Regla Fundamental de Escaneo en Formativa con IA (Rama 1):**
+     * En una sesión de **Formativa con IA**, la corrección del procedimiento matemático manuscrito depende obligatoriamente del modelo multimodal de Gemini en la nube.
+     * **Sin internet, ESTÁ TERMINANTEMENTE PROHIBIDO o no es posible calificar/escanear fichas en sesiones de Formativa con IA**, ya que la IA no puede evaluar el procedimiento del estudiante. El sistema advertirá al docente que se requiere conexión a internet para escanear en esta modalidad.
+2. **Capacidades 100% Funcionales sin Conexión (Modo Offline Local):**
+   - **Gestión de Sesiones y Alumnos:** Configurar salones, seleccionar grados y elegir evaluaciones ya almacenadas en el banco local.
+   - **Generador de Fichas e Impresión:** Renderizar y enviar a imprimir fichas nominales en formatos A4, A5 y A6 con marcadores ArUco y códigos QR individuales.
+   - **Escaneo y Corrección Local Exclusiva para OMR (Ramas 2 y 3):** Escaneo continuo por cámara de fichas de opción múltiple (**Focalizada en la respuesta OMR** y **Cartilla OMR de 6 a 20 preguntas**) mediante el algoritmo determinista local de visión artificial en JavaScript (cero consumo de internet).
+3. **Persistencia Soberana Local y Cola Offline (`microeval_sync_queue`):**
+   - Toda nueva pregunta redactada por el docente o sesión creada sin conexión se almacena de inmediato en `localStorage` (`microeval_teacher_bank_v2` y `microeval_saved_sessions_v1`).
+   - Simultáneamente, el objeto se matricula en la cola de sincronización offline (`microeval_sync_queue`), blindando los datos contra reinicios o cierres accidentales del navegador.
+
+### 16.2. Sincronización Reactiva al Reconectar (Online Auto-Sync)
+En el instante exacto en que el dispositivo recupera acceso a internet:
+1. **Disparadores Automáticos (Cero Clics Requeridos):**
+   - El evento nativo del navegador `window.addEventListener('online', ...)`.
+   - El ciclo de inicio de sesión o montaje de usuario (`onAuthStateChange` en `app-navigation.js`).
+   - La apertura del Banco de Preguntas o del selector interactivo de fichas (`bank-manager-modal.js`).
+2. **Vaciado de Cola y Sincronización (`flushSyncQueue` y `syncAllLocalToCloud`):**
+   - El motor procesa todos los registros encolados en `microeval_sync_queue` y los inserta en Supabase (`microeval_evaluations`).
+   - Verifica exhaustivamente el inventario en memoria (`EVALUATIONS`) y asegura que cualquier pregunta creada offline sea respaldada en la nube.
+   - Al confirmarse la recepción en Supabase, la cola local se limpia limpiamente (`localStorage.removeItem`).
+3. **Reactivación Plena de Inteligencia Artificial:**
+   - Se restablece el motor de análisis pedagógico para crear nuevas rúbricas analíticas con Gemini.
+   - Se reanuda el asistente conversacional EVA (Copilot) con análisis de métricas en vivo.
+4. **Protección Permanente contra Saturación de Cupos (Reglas 17 y 18):**
+   - El cálculo del tope de 50 preguntas en la nube filtra y excluye estrictamente casilleros de cartilla OMR (`Pregunta %` y `Cartilla %`) y duplicados redundantes, garantizando que el canal de sincronización bidireccional entre PC y celular nunca vuelva a taponarse.
+
+
 
 
 
