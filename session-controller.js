@@ -513,6 +513,31 @@
             ? (mcRadio ? mcRadio.value : 'quick')
             : 'rubric');
 
+      // Medición exacta de coordenadas OMR para Focalizada en la respuesta (Fase 1)
+      let omrLayout = null;
+      if (savedEval.type === 'mc' && typeof measureCardOMRLayout === 'function') {
+        try {
+          const dummyStudent = { id: '01', name: 'MUESTRA' };
+          const dummyClassroom = { name: 'MUESTRA', gradeStage: 'primaria', gradeLevel: 4 };
+          const isPort = (cardFormat === 'a6')
+            ? (savedEval.isPortrait === true || cardOrientation === 'vertical' || savedEval.orientation === 'vertical')
+            : (cardFormat === 'a5_vertical' || cardOrientation === 'vertical');
+          let dummyHtml = '';
+          if (cardFormat === 'a6' && typeof createFocalizadaA6Card === 'function') {
+            dummyHtml = createFocalizadaA6Card(dummyStudent, dummyClassroom, Object.assign({}, savedEval, { isPortrait: isPort }));
+          } else if (isPort && typeof createFocalizadaA5VerticalCard === 'function') {
+            dummyHtml = createFocalizadaA5VerticalCard(dummyStudent, dummyClassroom, savedEval);
+          } else if (typeof createFocalizadaA5Card === 'function') {
+            dummyHtml = createFocalizadaA5Card(dummyStudent, dummyClassroom, savedEval);
+          }
+          if (dummyHtml) {
+            omrLayout = measureCardOMRLayout(dummyHtml, cardFormat, isPort);
+          }
+        } catch (e) {
+          console.warn('[SessionController] No se pudo medir omrLayout:', e);
+        }
+      }
+
       // 2. Sesión activa
       const session = {
         sessionRef: classId + '::' + savedEval.id,
@@ -530,6 +555,7 @@
         cardFormat: cardFormat,
         cardOrientation: cardOrientation,
         correctionMode: correctionMode,
+        omrLayout: omrLayout,
         mode: (wizardEval && wizardEval.mode) || ((typeof r3State !== 'undefined') ? r3State.mode : undefined),
         gridStage: (wizardEval && wizardEval.gridStage !== undefined) ? wizardEval.gridStage : ((typeof simState !== 'undefined') ? simState.gridStage : 0),
         r3State: (typeof r3State !== 'undefined' && r3State) ? JSON.parse(JSON.stringify(r3State)) : null,

@@ -772,6 +772,29 @@
     const isVertical = sheetCanvas.height > sheetCanvas.width;
     const cardFormat = options.cardFormat || (isVertical ? 'a5_vertical' : ((branch === 'rama3' && questionCount <= 10) ? 'a6' : 'a5'));
 
+    // ── GUARDRAIL DINÁMICO: Alturas exactas guardadas en la sesión (omrLayout) ──
+    if (options.omrLayout && Array.isArray(options.omrLayout.rows) && options.omrLayout.rows.length >= questionCount) {
+      const results = [];
+      const format = options.omrLayout.format || (isVertical ? 'a5_vertical' : 'a5');
+      for (let i = 0; i < questionCount; i++) {
+        const rowData = options.omrLayout.rows[i];
+        if (!rowData) continue;
+        const yCenterMm = rowData.yCenterMm;
+        let bubblesCoords = rowData.bubbles;
+        if (!bubblesCoords || bubblesCoords.length < 4) {
+          bubblesCoords = isVertical ? [
+            { key: 'A', xMm: 17.5 },
+            { key: 'B', xMm: 46.0 },
+            { key: 'C', xMm: 74.5 },
+            { key: 'D', xMm: 103.0 }
+          ] : OMR_BUBBLES_X_MM;
+        }
+        const res = evaluateCompactRow(sheetCanvas, bubblesCoords, yCenterMm, format);
+        results.push(Object.assign({ qIndex: i + 1 }, res));
+      }
+      return results;
+    }
+
     // ── RAMA 3: CARTILLA DE RESPUESTAS OMR (HASTA 20 PREGUNTAS) ──
     if (branch === 'rama3' || questionCount > 3) {
       const totalQ = questionCount;
@@ -1080,6 +1103,31 @@
     }
 
     const list = [];
+
+    // ── GUARDRAIL DINÁMICO: Recortes OMR basados en omrLayout de la sesión ──
+    if (options.omrLayout && Array.isArray(options.omrLayout.rows) && options.omrLayout.rows.length >= questionCount && (!withGrid || branch === 'rama2')) {
+      const format = options.omrLayout.format || (isPortrait ? 'a5_vertical' : 'a5');
+      const isA6Sheet = format === 'a6';
+      const sheetWidthMm = options.omrLayout.sheetWidthMm || (isPortrait ? (isA6Sheet ? 89 : 134) : (isA6Sheet ? 132 : 186));
+
+      for (let i = 0; i < questionCount; i++) {
+        const rowData = options.omrLayout.rows[i];
+        if (!rowData) continue;
+        const yCenterMm = rowData.yCenterMm;
+        const bubbleRoi = isPortrait
+          ? mmToPxVertical(8.0, yCenterMm - 6.0, sheetWidthMm - 16.0, 12.0)
+          : mmToPx(10.0, yCenterMm - 6.0, sheetWidthMm - 20.0, 12.0);
+        const b = extractROI(sheetCanvas, bubbleRoi);
+        if (b.success && b.canvas) enhanceHandwritingContrast(b.canvas);
+        list.push({
+          qIndex: i + 1,
+          bubblesCanvas: b.success ? b.canvas : null,
+          gridCanvas: null,
+          strokeInfo: null
+        });
+      }
+      return list;
+    }
 
     // ── MODO CON CUADRÍCULA (FORMATIVA / FOCALIZADA CON BORRADOR, 1 o 2 PREGUNTAS) ──
     if (withGrid) {

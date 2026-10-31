@@ -558,11 +558,91 @@ function createFocalizadaA4VerticalCard(student, classroom, evaluation) {
   `;
 }
 
+/**
+ * Mide en tiempo real las alturas (Y) y posiciones de burbujas OMR (A, B, C, D)
+ * renderizando una muestra en el DOM para alimentar la sesión con coordenadas exactas.
+ */
+function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
+  if (typeof document === 'undefined' || !cardHtml) return null;
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed; left:-9999px; top:-9999px; width:450px; opacity:0; pointer-events:none; z-index:-1000;';
+  wrap.innerHTML = cardHtml;
+  document.body.appendChild(wrap);
+
+  const cardEl = wrap.firstElementChild;
+  if (!cardEl) {
+    try { document.body.removeChild(wrap); } catch (e) {}
+    return null;
+  }
+
+  let sheetWidthMm = 186;
+  let sheetHeightMm = 134;
+  if (cardFormat === 'a6') {
+    sheetWidthMm = isPortrait ? 89 : 132;
+    sheetHeightMm = isPortrait ? 132 : 89;
+  } else if (isPortrait) {
+    sheetWidthMm = 134;
+    sheetHeightMm = 186;
+  }
+
+  const cardRect = cardEl.getBoundingClientRect();
+  if (!cardRect || cardRect.height === 0 || cardRect.width === 0) {
+    try { document.body.removeChild(wrap); } catch (e) {}
+    return null;
+  }
+
+  const rowSelectors = '.b2-omr-row, .v-omr-row, .a6-nogrid-omr, .a6-v-with-grid-omr, .a6-h-2q-omr, .a6-omr-row';
+  const rowEls = cardEl.querySelectorAll(rowSelectors);
+  const rows = [];
+
+  rowEls.forEach((rowEl, qIdx) => {
+    const rowRect = rowEl.getBoundingClientRect();
+    const yCenterPx = rowRect.top + (rowRect.height / 2) - cardRect.top;
+    const yCenterNorm = yCenterPx / cardRect.height;
+    const yCenterMm = yCenterNorm * sheetHeightMm;
+
+    const bubbleEls = rowEl.querySelectorAll('.omr-bubble, .v-omr-bubble');
+    const bubbles = [];
+    const keys = ['A', 'B', 'C', 'D'];
+    bubbleEls.forEach((bEl, bIdx) => {
+      const bRect = bEl.getBoundingClientRect();
+      const xCenterPx = bRect.left + (bRect.width / 2) - cardRect.left;
+      const xCenterNorm = xCenterPx / cardRect.width;
+      const xCenterMm = xCenterNorm * sheetWidthMm;
+      bubbles.push({
+        key: keys[bIdx] || 'A',
+        xMm: Math.round(xCenterMm * 10) / 10,
+        xNorm: Math.round(xCenterNorm * 1000) / 1000
+      });
+    });
+
+    rows.push({
+      qIndex: qIdx + 1,
+      yCenterMm: Math.round(yCenterMm * 10) / 10,
+      yCenterNorm: Math.round(yCenterNorm * 1000) / 1000,
+      bubbles: bubbles.length === 4 ? bubbles : null
+    });
+  });
+
+  try { document.body.removeChild(wrap); } catch (e) {}
+
+  if (rows.length === 0) return null;
+
+  return {
+    format: cardFormat,
+    isPortrait: !!isPortrait,
+    sheetWidthMm: sheetWidthMm,
+    sheetHeightMm: sheetHeightMm,
+    rows: rows
+  };
+}
+
 if (typeof window !== 'undefined') {
   window.createFocalizadaA5Card = createFocalizadaA5Card;
   window.createFocalizadaA5VerticalCard = createFocalizadaA5VerticalCard;
   window.createFocalizadaA6Card = createFocalizadaA6Card;
   window.createFocalizadaA4Card = createFocalizadaA4Card;
   window.createFocalizadaA4VerticalCard = createFocalizadaA4VerticalCard;
+  window.measureCardOMRLayout = measureCardOMRLayout;
 }
 

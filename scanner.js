@@ -1419,7 +1419,8 @@
         cardFormat: isA6Card ? 'a6' : (isCardPortrait ? 'a5_vertical' : 'a5'),
         cardOrientation,
         isPortrait: isCardPortrait,
-        questionCount: qCount
+        questionCount: qCount,
+        omrLayout: (activeSession && activeSession.omrLayout) || (activeEval && activeEval.omrLayout) || null
       };
 
       // GUARDRAIL 4: LECTURA DEL QR CON TOLERANCIA A FALLOS
