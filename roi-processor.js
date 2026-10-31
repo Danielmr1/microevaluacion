@@ -170,15 +170,59 @@
     })
   };
 
-  // Definición de Coordenadas Fijas de ROIs para Ficha A6 (132 x 89 mm en lienzo 2000 x 1441 px).
+  /**
+   * Escala para ficha A6 horizontal (132 mm ancho x 89 mm alto en lienzo rectificado de 2000 x 1441 px).
+   */
+  function mmToPxA6(xMm, yMm, wMm, hMm) {
+    const scaleX = 2000 / 132; // 15.1515 px/mm
+    const scaleY = 1441 / 89;  // 16.1910 px/mm
+    return {
+      x: Math.round(xMm * scaleX),
+      y: Math.round(yMm * scaleY),
+      width: Math.round(wMm * scaleX),
+      height: Math.round(hMm * scaleY)
+    };
+  }
+
+  /**
+   * Escala para ficha A6 vertical (89 mm ancho x 132 mm alto en lienzo rectificado de 1441 x 2000 px).
+   */
+  function mmToPxA6Vertical(xMm, yMm, wMm, hMm) {
+    const scaleX = 1441 / 89;  // 16.1910 px/mm
+    const scaleY = 2000 / 132; // 15.1515 px/mm
+    return {
+      x: Math.round(xMm * scaleX),
+      y: Math.round(yMm * scaleY),
+      width: Math.round(wMm * scaleX),
+      height: Math.round(hMm * scaleY)
+    };
+  }
+
+  // Definición de Coordenadas Fijas de ROIs para Ficha A6 Horizontal (132 x 89 mm en lienzo 2000 x 1441 px).
   const ROI_CONFIG_A6 = {
-    // Código QR (esquina superior derecha de la cabecera A6)
-    QR: Object.assign(mmToPx(134, 2.0, 32, 28), {
-      label: 'Código QR (A6)'
+    // Código QR (esquina superior derecha de la cabecera A6 Horizontal: 132 x 89 mm)
+    // Cabecera 20 mm, padding derecho 15 mm -> QR en X=102..117 mm, Y=1..16 mm
+    // Margen de seguridad con 4 mm de holgura: X=98..120 mm, Y=0.5..19.5 mm
+    QR: Object.assign(mmToPxA6(98.0, 0.5, 22.0, 19.0), {
+      label: 'Código QR (A6 Horizontal)'
     }),
     // Caja de respuesta manuscrita en A6
-    ANSWER_BOX: Object.assign(mmToPx(40, 70, 60, 20), {
-      label: 'Caja de Respuesta (A6)'
+    ANSWER_BOX: Object.assign(mmToPxA6(36.0, 68.0, 60.0, 18.0), {
+      label: 'Caja de Respuesta (A6 Horizontal)'
+    })
+  };
+
+  // Definición de Coordenadas Fijas de ROIs para Ficha A6 Vertical (89 x 132 mm en lienzo 1441 x 2000 px).
+  const ROI_CONFIG_A6_VERTICAL = {
+    // Código QR (esquina superior derecha de la cabecera A6 Vertical: 89 x 132 mm)
+    // Cabecera 20 mm, padding derecho 15 mm -> QR en X=59..74 mm, Y=1..16 mm
+    // Margen de seguridad con 4 mm de holgura: X=55..77 mm, Y=0.5..19.5 mm
+    QR: Object.assign(mmToPxA6Vertical(55.0, 0.5, 22.0, 19.0), {
+      label: 'Código QR (A6 Vertical)'
+    }),
+    // Caja de respuesta manuscrita en A6 Vertical
+    ANSWER_BOX: Object.assign(mmToPxA6Vertical(14.0, 110.0, 60.0, 18.0), {
+      label: 'Caja de Respuesta (A6 Vertical)'
     })
   };
 
@@ -196,20 +240,6 @@
       Q1_BUBBLES: mmToPxVertical(11.0, 162.0, 112.0, 18.0)
     }
   };
-
-  /**
-   * Escala para ficha A6 horizontal (132 mm ancho x 89 mm alto en lienzo rectificado de 2000 x 1441 px).
-   */
-  function mmToPxA6(xMm, yMm, wMm, hMm) {
-    const scaleX = 2000 / 132; // 15.1515 px/mm
-    const scaleY = 1441 / 89;  // 16.1910 px/mm
-    return {
-      x: Math.round(xMm * scaleX),
-      y: Math.round(yMm * scaleY),
-      width: Math.round(wMm * scaleX),
-      height: Math.round(hMm * scaleY)
-    };
-  }
 
   // Coordenadas Fijas de ROIs para OMR en Ficha A6 Horizontal (2000 x 1441 px normalizado).
   const ROI_OMR_CONFIG_A6 = {
@@ -500,7 +530,9 @@
 
     const isPortrait = sheetCanvas.height > sheetCanvas.width;
     const isA6 = options.isA6 || options.cardFormat === 'a6';
-    const cfg = isPortrait ? ROI_CONFIG_VERTICAL : (isA6 ? ROI_CONFIG_A6 : ROI_CONFIG);
+    const cfg = isPortrait
+      ? (isA6 ? ROI_CONFIG_A6_VERTICAL : ROI_CONFIG_VERTICAL)
+      : (isA6 ? ROI_CONFIG_A6 : ROI_CONFIG);
 
     // 1. Extraer ROI de la Cuadrícula de cálculo (los pasos del alumno)
     let resolutionCanvas = null;
@@ -1334,6 +1366,7 @@
     CONFIG: ROI_CONFIG,
     CONFIG_VERTICAL: ROI_CONFIG_VERTICAL,
     CONFIG_A6: ROI_CONFIG_A6,
+    CONFIG_A6_VERTICAL: ROI_CONFIG_A6_VERTICAL,
     OMR_CONFIG: ROI_OMR_CONFIG,
     OMR_CONFIG_VERTICAL: ROI_OMR_CONFIG_VERTICAL,
     isValidCanvas,

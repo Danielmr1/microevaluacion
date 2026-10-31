@@ -1568,11 +1568,16 @@
           } catch (e) {}
         }
 
-        // Intento 3 (Respaldo): Extraer ROI de QR específica y aplicar contraste si no se leyó
+        // Intento 3 (Respaldo Infalible): Extraer ROI de QR específica calibrada y aplicar contraste si no se leyó
         if (!qrText && typeof ROIProcessor !== 'undefined') {
-          const qrRoiConfig = (isCardPortrait && ROIProcessor.CONFIG_VERTICAL)
-            ? ROIProcessor.CONFIG_VERTICAL.QR
-            : (isA6Card && ROIProcessor.CONFIG_A6 ? ROIProcessor.CONFIG_A6.QR : ROIProcessor.CONFIG.QR);
+          let qrRoiConfig = ROIProcessor.CONFIG.QR; // A5 Horizontal (Respuesta Libre - CERO REGRESIÓN)
+          if (isA6Card) {
+            qrRoiConfig = (isCardPortrait && ROIProcessor.CONFIG_A6_VERTICAL)
+              ? ROIProcessor.CONFIG_A6_VERTICAL.QR
+              : ROIProcessor.CONFIG_A6.QR;
+          } else if (isCardPortrait && ROIProcessor.CONFIG_VERTICAL) {
+            qrRoiConfig = ROIProcessor.CONFIG_VERTICAL.QR;
+          }
           const qrRoi = ROIProcessor.extractROI(fullWarpCanvas, qrRoiConfig);
           if (qrRoi && qrRoi.success) {
             // Intento 3A: Detector nativo directo sobre el recorte de la cabecera
