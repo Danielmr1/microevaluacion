@@ -427,7 +427,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 1.5mm !important;
+      margin-top: auto !important;
+      margin-bottom: 12mm !important;
       padding: 0 3mm !important;
       box-sizing: border-box;
       width: 100%;
@@ -719,13 +720,13 @@
     }
     .card-a5.mc-1q .mc-grid-1q {
       width: 156mm !important;
-      height: 52mm !important;
-      flex: 0 0 52mm !important;
-      margin: 5.5mm auto 0 auto !important;
+      height: 68.25mm !important;
+      flex: 0 0 68.25mm !important;
+      margin: 3mm auto 0 auto !important;
     }
     .card-a5.mc-1q .mc-grid-1q .notebook-grid {
-      height: 52mm !important;
-      grid-template-rows: repeat(5, 1fr) !important;
+      height: 68.25mm !important;
+      grid-template-rows: repeat(7, 1fr) !important;
     }
     .card-a5.mc-1q .omr-row.omr-row-1 {
       height: 10mm !important;

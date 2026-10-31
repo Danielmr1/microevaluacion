@@ -70,7 +70,7 @@ function createFormativaA5Card(student, classroom, evaluation) {
         </div>
 
         <div class="grid-wrapper mc-grid-1q ${evaluation.gridSize === 'expanded' ? 'grid-wrapper-expanded' : ''}">
-          <div class="notebook-grid">${new Array(16 * 5).fill('<i></i>').join('')}</div>
+          <div class="notebook-grid">${new Array(16 * 7).fill('<i></i>').join('')}</div>
         </div>
 
         <div class="omr-row omr-row-1">
