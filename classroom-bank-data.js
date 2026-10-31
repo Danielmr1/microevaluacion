@@ -146,9 +146,26 @@
     } catch (e) {}
   }
 
+  function syncAllLocalToCloud() {
+    if (typeof window === 'undefined' || !window.SupabaseClient || typeof window.SupabaseClient.saveEvaluation !== 'function') return;
+    flushSyncQueue();
+    const deleted = getDeletedPrompts();
+    Object.values(EVALUATIONS).forEach(ev => {
+      if (!ev || !ev.prompt) return;
+      const p = String(ev.prompt).trim();
+      if (deleted.has(p) || (ev.id && deleted.has(ev.id))) return;
+      if (ev.branch === 'rama3' || (ev.id && String(ev.id).startsWith('eval_r3_')) ||
+          /^Pregunta\s+\d+$/i.test(p) || p.startsWith('Cartilla de respuestas')) {
+        return;
+      }
+      syncToCloudGuardrail(ev);
+    });
+  }
+
   if (typeof window !== 'undefined') {
     window.addEventListener('online', () => {
       flushSyncQueue();
+      syncAllLocalToCloud();
     });
   }
 
@@ -844,7 +861,8 @@
     getEvaluation,
     saveCustomEvaluation,
     deleteCustomEvaluation,
-    setRecentEvaluations
+    setRecentEvaluations,
+    syncAllLocalToCloud
   });
 
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

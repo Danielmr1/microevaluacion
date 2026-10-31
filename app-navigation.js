@@ -839,6 +839,9 @@ if (typeof window !== 'undefined') {
           if (typeof ClassroomData !== 'undefined' && ClassroomData.flushSyncQueue) {
             ClassroomData.flushSyncQueue();
           }
+          if (typeof ClassroomData !== 'undefined' && ClassroomData.syncAllLocalToCloud) {
+            ClassroomData.syncAllLocalToCloud();
+          }
 
           // ── RESTAURAR LA SESIÓN ACTIVA ──────────────────────────────
           // Antes acá se hacía setActiveSession(null) en CADA carga de página.

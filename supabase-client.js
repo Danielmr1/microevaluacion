@@ -442,12 +442,14 @@
     }
 
     /* Alta de una evaluación nueva. */
-    // Guardarraíl: Máximo 50 preguntas en la nube por usuario
+    // Guardarraíl: Máximo 50 preguntas en la nube por usuario (excluyendo cartillas y placeholders)
     try {
       const { count, error: countErr } = await client
         .from('microeval_evaluations')
         .select('*', { count: 'exact', head: true })
-        .eq('teacher_id', user.id);
+        .eq('teacher_id', user.id)
+        .not('prompt', 'ilike', 'Pregunta %')
+        .not('prompt', 'ilike', 'Cartilla %');
       if (!countErr && typeof count === 'number' && count >= 50) {
         console.warn('[SupabaseClient] Límite de 50 preguntas alcanzado en la nube.');
         return null;
@@ -504,6 +506,8 @@
       .from('microeval_evaluations')
       .select('*')
       .eq('teacher_id', user.id)
+      .not('prompt', 'ilike', 'Pregunta %')
+      .not('prompt', 'ilike', 'Cartilla %')
       .order('last_used_at', { ascending: false })
       .limit(50);
 

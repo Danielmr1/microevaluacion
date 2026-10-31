@@ -180,6 +180,10 @@ function openBankManagerModal() {
   toggleBankManagerAddForm(false);
   renderBankManagerQuestions();
 
+  if (typeof ClassroomData !== 'undefined' && ClassroomData.syncAllLocalToCloud) {
+    ClassroomData.syncAllLocalToCloud();
+  }
+
   // Sincronización en segundo plano con Supabase para reflejar cambios entre dispositivos
   if (typeof SupabaseClient !== 'undefined' && SupabaseClient.loadRecentEvaluations) {
     SupabaseClient.loadRecentEvaluations().then(recent => {
