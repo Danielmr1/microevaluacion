@@ -172,6 +172,7 @@ Todo asistente de inteligencia artificial o desarrollador que opere en este repo
 * **Sincronización Bidireccional y Cero Preguntas Fantasma:**
   * Al abrir el Banco de Preguntas o el selector de fichas, el sistema debe sincronizar automáticamente con Supabase en segundo plano para reflejar cambios hechos en otros dispositivos sin requerir recargar la página (F5).
   * Si una pregunta se elimina en un dispositivo, el borrado debe replicarse en Supabase y eliminarse del `localStorage` de todos los dispositivos del docente, quedando estrictamente prohibido revivir preguntas eliminadas como "preguntas fantasma".
+  * **Prohibición Terminante de Borrados en Lectura:** La función receptora `setRecentEvaluations` TIENE TERMINANTEMENTE PROHIBIDO ejecutar `deleteEvaluation` contra Supabase. Si la nube devuelve una pregunta activa y legítima, cualquier lápida local previa (`deletedPrompts`) queda revocada de inmediato en ese dispositivo. Los borrados a la nube solo proceden de la acción explícita del docente en `deleteCustomEvaluation`.
   * Ante fallos de conexión o expiración de tokens, las preguntas guardadas deben encolarse en la cola offline (`microeval_sync_queue`) y sincronizarse automáticamente al restablecerse la red.
 
 ---

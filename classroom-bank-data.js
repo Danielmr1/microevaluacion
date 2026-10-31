@@ -793,13 +793,10 @@
           return;
         }
 
-        // Si la pregunta fue borrada explícitamente en este cliente, no revivirla (cero preguntas fantasma)
-        if (deletedPrompts.has(promptLimpio)) {
-          if (typeof SupabaseClient !== 'undefined' && typeof SupabaseClient.deleteEvaluation === 'function') {
-            SupabaseClient.deleteEvaluation(promptLimpio).catch(() => {});
-          }
-          return;
-        }
+        // Si la nube nos devuelve una pregunta activa y legítima, cualquier lápida local vieja queda sin efecto.
+        // REGLA: setRecentEvaluations NUNCA debe borrar filas en Supabase.
+        unmarkPromptAsDeleted(promptLimpio);
+        if (ev.id) unmarkPromptAsDeleted(ev.id);
 
         const idLocal = Object.keys(EVALUATIONS)
           .find(k => EVALUATIONS[k] && EVALUATIONS[k].prompt === ev.prompt);
@@ -832,13 +829,14 @@
         });
       });
 
-      // Purgar localmente solo preguntas que fueron explícitamente eliminadas (tombstones)
-      if (deletedPrompts.size > 0) {
+      // Purgar localmente solo preguntas que permanecen explícitamente eliminadas
+      const activeDeleted = getDeletedPrompts();
+      if (activeDeleted.size > 0) {
         Object.keys(EVALUATIONS).forEach(k => {
           const ev = EVALUATIONS[k];
           if (!ev) return;
           const p = String(ev.prompt || '').trim();
-          if (deletedPrompts.has(p) || (ev.id && deletedPrompts.has(ev.id))) {
+          if (activeDeleted.has(p) || (ev.id && activeDeleted.has(ev.id))) {
             delete EVALUATIONS[k];
           }
         });
