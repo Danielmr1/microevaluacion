@@ -845,13 +845,40 @@
       gap: 0.5mm !important;
     }
     .card-a6-v .a6-v-with-grid-q .a6-nogrid-q-prompt {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 1.5mm !important;
       height: auto !important;
       min-height: 8.5mm !important;
-      max-height: 12.5mm !important;
+      max-height: 16.5mm !important;
       font-size: 9.5pt !important;
       font-weight: 700 !important;
       line-height: 1.22 !important;
       overflow: hidden !important;
+    }
+    .card-a6-v .a6-v-with-grid-q .a6-nogrid-q-prompt strong,
+    .card-a6-v .a6-v-with-grid-q .a6-nogrid-q-prompt .a6-q-num {
+      flex: 0 0 auto !important;
+      font-weight: 800 !important;
+      font-size: 9.5pt !important;
+    }
+    .card-a6-v .a6-v-with-grid-q .a6-nogrid-q-prompt span,
+    .card-a6-v .a6-v-with-grid-q .a6-nogrid-q-prompt .a6-q-text {
+      flex: 1 1 auto !important;
+      font-weight: 700 !important;
+      font-size: 9.5pt !important;
+    }
+    .card-a6-v .a6-v-with-grid-q.a6-v-compact-grid .a6-v-grid-wrapper {
+      height: 16.5mm !important;
+      min-height: 16.5mm !important;
+      max-height: 16.5mm !important;
+      flex: 0 0 16.5mm !important;
+    }
+    .card-a6-v .a6-v-with-grid-q.a6-v-compact-grid .notebook-grid-a6-v {
+      height: 16.5mm !important;
+      min-height: 16.5mm !important;
+      max-height: 16.5mm !important;
+      grid-template-rows: repeat(3, 1fr) !important;
     }
     .card-a6-v .a6-v-with-grid-omr {
       margin-top: 0.5mm !important;
@@ -1905,10 +1932,25 @@
       gap: 1mm;
     }
     .a6-nogrid-q-prompt {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 1.5mm !important;
       font-size: 9.5pt !important;
       font-weight: 700 !important;
       line-height: 1.2;
       color: #0f172a;
+    }
+    .a6-nogrid-q-prompt strong,
+    .a6-nogrid-q-prompt .a6-q-num {
+      flex: 0 0 auto !important;
+      font-weight: 800 !important;
+      font-size: 9.5pt !important;
+    }
+    .a6-nogrid-q-prompt span,
+    .a6-nogrid-q-prompt .a6-q-text {
+      flex: 1 1 auto !important;
+      font-weight: 700 !important;
+      font-size: 9.5pt !important;
     }
     .a6-nogrid-omr {
       display: flex;

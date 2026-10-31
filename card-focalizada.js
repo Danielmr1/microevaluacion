@@ -260,7 +260,10 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
         ];
 
     const withGrid = !!evaluation.withGrid;
-    const GRID_CELLS_2Q = new Array(9 * 4).fill('<i></i>').join('');
+    const isLongPrompt = activeQuestions.some(q => (q.prompt || '').length > 95);
+    const gridRows = isLongPrompt ? 3 : 4;
+    const gridHeight = isLongPrompt ? '16.5mm' : '22mm';
+    const GRID_CELLS_2Q = new Array(9 * gridRows).fill('<i></i>').join('');
 
     return `
       <div class="card-a6-v">
@@ -283,13 +286,14 @@ function createFocalizadaA6Card(student, classroom, evaluation) {
 
         <div class="a6-nogrid-body ${withGrid ? 'a6-v-with-grid-body' : ''}">
           ${activeQuestions.map((q, idx) => `
-            <div class="a6-nogrid-q ${withGrid ? 'a6-v-with-grid-q' : ''}">
+            <div class="a6-nogrid-q ${withGrid ? 'a6-v-with-grid-q' : ''} ${isLongPrompt ? 'a6-v-compact-grid' : ''}">
               <div class="a6-nogrid-q-prompt">
-                <strong>${idx + 1}.</strong> ${escape(q.prompt)}
+                <strong class="a6-q-num">${idx + 1}.</strong>
+                <span class="a6-q-text">${escape(q.prompt)}</span>
               </div>
               ${withGrid ? `
-                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:22mm; flex:0 0 22mm; margin:0.5mm auto; width:70mm; position:relative;">
-                  <div class="notebook-grid notebook-grid-a6-v" style="height:22mm; width:70mm; grid-template-rows:repeat(4, 1fr);">
+                <div class="a6-v-grid-wrapper focalizada-grid-2q-${idx}" style="height:${gridHeight}; flex:0 0 ${gridHeight}; margin:0.5mm auto; width:70mm; position:relative;">
+                  <div class="notebook-grid notebook-grid-a6-v" style="height:${gridHeight}; width:70mm; grid-template-rows:repeat(${gridRows}, 1fr);">
                     ${GRID_CELLS_2Q}
                   </div>
                 </div>
