@@ -559,7 +559,16 @@
       btn.classList.toggle('active', isFs);
       btn.title = isFs ? 'Salir de pantalla completa' : 'Pantalla completa';
     }
+    const btnMenu = document.getElementById('btn-fullscreen-menu');
+    if (btnMenu) {
+      const icon = btnMenu.querySelector('.fs-icon');
+      const text = btnMenu.querySelector('.fs-text');
+      if (icon) icon.textContent = isFs ? '🗗' : '⛶';
+      if (text) text.textContent = isFs ? 'Salir de pantalla completa' : 'Pantalla completa';
+      btnMenu.title = isFs ? 'Salir de pantalla completa' : 'Pantalla completa';
+    }
   }
+  window.updateFullscreenIcon = updateFullscreenIcon;
 
   // --- ORIENTACIÓN DE LA EVALUACIÓN Y AVISO AL DOCENTE ---
   function isSessionVertical(sess) {

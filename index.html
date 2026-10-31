@@ -45,7 +45,7 @@
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
   <script src="roi-processor.js?v=3.2.50"></script>
-  <script src="scanner.js?v=3.3.8"></script>
+  <script src="scanner.js?v=3.3.9"></script>
   <script src="scanner-result-modal.js"></script>
   <script src="results-manager.js?v=3.1.90"></script>
   <script src="classroom-importer.js"></script>
@@ -72,7 +72,7 @@
   <script src="session-summary-view.js"></script>
   <script src="session-controller.js"></script>
   <script src="app-scroll-effects.js"></script>
-  <script src="app-navigation.js"></script>
+  <script src="app-navigation.js?v=3.10.91"></script>
   <script src="copilot-analytics.js"></script>
   <script src="copilot-ai.js"></script>
   <script src="copilot-command.js"></script>
@@ -833,7 +833,7 @@
 
       <!-- Acciones de Cabecera Derecha: Pantalla Completa + Linterna + Avatar -->
       <div class="island-actions">
-        <button class="island-icon-btn" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+        <button class="island-icon-btn" id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa" style="display:none;">⛶</button>
         <button class="island-icon-btn" id="btn-torch" onclick="toggleTorch()" title="Encender linterna" style="display:none;">🔦</button>
 
         <!-- Menú de Usuario (Avatar circular) -->
@@ -842,20 +842,50 @@
             <img id="user-avatar" src="" alt="Docente" class="island-avatar-img">
           </button>
 
-          <!-- Dropdown Flotante -->
-          <div id="user-menu-dropdown" class="island-dropdown" style="display:none;">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #334155;">
-              <img id="user-menu-avatar-large" src="" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1.5px solid #475569; background:#0f172a;">
+          <!-- Dropdown Flotante Mejorado -->
+          <div id="user-menu-dropdown" class="island-dropdown" style="display:none; min-width:240px; padding:14px; background:#FFFFFF; border:1.5px solid #2B2118; border-radius:16px; box-shadow:0 12px 30px rgba(43,33,24,0.18);">
+            <!-- Perfil del Docente -->
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid #E2E8F0;">
+              <img id="user-menu-avatar-large" src="" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #0284C7; background:#F8FAFC; flex-shrink:0;">
               <div style="min-width:0; flex:1;">
-                <div id="user-name" style="font-size:0.82rem; font-weight:700; color:#f8fafc; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Docente</div>
-                <div id="user-email" style="font-size:0.7rem; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+                <div id="user-name" style="font-size:0.86rem; font-weight:800; color:#181512; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.25;">Docente</div>
+                <div id="user-email" style="font-size:0.72rem; color:#64748B; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px;"></div>
               </div>
             </div>
-            <!-- Versión de la Aplicación (Ubicada dentro del perfil de usuario) -->
-            <div id="user-menu-version" style="font-size:0.75rem; color:#94a3b8; font-weight:600; text-align:center; padding:6px 0 8px; border-top:1px solid #334155; margin-top:4px;">
+
+            <!-- Apartado Informativo: Métricas de la Cuenta -->
+            <div style="background:#FAF8F5; border:1px solid #DCD8CE; border-radius:10px; padding:9px 10px; margin-bottom:10px;">
+              <div style="font-size:0.65rem; font-weight:800; color:#64748B; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; display:flex; align-items:center; gap:4px;">
+                <span>📊</span><span>Estado de la cuenta</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; text-align:center;">
+                <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:6px 2px;">
+                  <div id="user-stat-sessions" style="font-size:0.86rem; font-weight:900; color:#0284C7; line-height:1.1;">0 / 8</div>
+                  <div style="font-size:0.60rem; font-weight:700; color:#64748B; margin-top:2px;">Sesiones</div>
+                </div>
+                <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:6px 2px;">
+                  <div id="user-stat-questions" style="font-size:0.86rem; font-weight:900; color:#D97706; line-height:1.1;">0 / 50</div>
+                  <div style="font-size:0.60rem; font-weight:700; color:#64748B; margin-top:2px;">Banco</div>
+                </div>
+                <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:6px 2px;">
+                  <div id="user-stat-classrooms" style="font-size:0.86rem; font-weight:900; color:#15803D; line-height:1.1;">0</div>
+                  <div style="font-size:0.60rem; font-weight:700; color:#64748B; margin-top:2px;">Salones</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón Pantalla Completa Dentro del Menú -->
+            <button type="button" id="btn-fullscreen-menu" onclick="toggleFullscreen()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background:#F1F5F9; border:1px solid #CBD5E1; color:#1E293B; border-radius:8px; padding:8px 12px; font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.15s; margin-bottom:8px;">
+              <span class="fs-icon" style="font-size:1rem; line-height:1;">⛶</span>
+              <span class="fs-text">Pantalla completa</span>
+            </button>
+
+            <!-- Versión de la Aplicación -->
+            <div id="user-menu-version" style="font-size:0.72rem; color:#94A3B8; font-weight:600; text-align:center; padding:4px 0 8px;">
               Versión <span id="user-profile-version-tag">v3.10.99</span>
             </div>
 
+            <!-- Botón Salir -->
             <button type="button" onclick="closeUserMenu(); handleSignOut();" class="island-btn-logout">
               ↪ Salir
             </button>

@@ -480,6 +480,30 @@ if (typeof window !== 'undefined') {
     }
 
 
+    function refreshUserMenuStats() {
+      const sessEl = document.getElementById('user-stat-sessions');
+      const qEl = document.getElementById('user-stat-questions');
+      const clsEl = document.getElementById('user-stat-classrooms');
+
+      let sessCount = 0;
+      if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.getSavedSessions === 'function') {
+        try { sessCount = ClassroomData.getSavedSessions().length; } catch (e) {}
+      }
+      let qCount = 0;
+      if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.getBankQuestionsCount === 'function') {
+        try { qCount = ClassroomData.getBankQuestionsCount(); } catch (e) {}
+      }
+      let clsCount = 0;
+      if (typeof ClassroomData !== 'undefined' && typeof ClassroomData.getClassroomList === 'function') {
+        try { clsCount = ClassroomData.getClassroomList().length; } catch (e) {}
+      }
+
+      if (sessEl) sessEl.textContent = `${sessCount} / 8`;
+      if (qEl) qEl.textContent = `${qCount} / 50`;
+      if (clsEl) clsEl.textContent = `${clsCount}`;
+    }
+    window.refreshUserMenuStats = refreshUserMenuStats;
+
     function toggleUserMenu(event) {
       if (event) {
         event.stopPropagation();
@@ -487,7 +511,14 @@ if (typeof window !== 'undefined') {
       }
       const dropdown = document.getElementById('user-menu-dropdown');
       if (!dropdown) return;
-      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      const isOpening = dropdown.style.display !== 'block';
+      dropdown.style.display = isOpening ? 'block' : 'none';
+      if (isOpening) {
+        refreshUserMenuStats();
+        if (typeof updateFullscreenIcon === 'function') {
+          updateFullscreenIcon();
+        }
+      }
     }
     window.toggleUserMenu = toggleUserMenu;
 
