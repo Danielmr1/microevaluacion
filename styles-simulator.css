@@ -244,18 +244,18 @@
     .card-a6-r3 .a6-grid-wrapper,
     .card-a6-r3 .focalizada-grid-slot-1p {
       width: 104mm !important;
-      height: 23mm !important;
-      max-height: 23mm !important;
-      flex: 0 0 23mm !important;
+      height: 29mm !important;
+      max-height: 29mm !important;
+      flex: 0 0 29mm !important;
       margin: 0.5mm auto 0 auto !important;
       position: relative !important;
     }
     .card-a6-r3 .notebook-grid-a6 {
-      height: 23mm !important;
-      grid-template-rows: repeat(4, 1fr) !important;
+      height: 29mm !important;
+      grid-template-rows: repeat(5, 1fr) !important;
     }
     .card-a6-r3 .a6-omr-row {
-      margin-top: 1mm !important;
+      margin-top: 3.5mm !important;
       padding: 0 10mm !important;
     }
 
@@ -405,7 +405,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 2.2mm !important;
+      margin-top: 3.5mm !important;
       padding: 0 12mm !important;
       box-sizing: border-box;
       width: 100%;
@@ -756,4 +756,21 @@
     .card-a5-v-free .v-omr-row .v-omr-option {
       width: auto !important;
       gap: 1.2mm !important;
+    }
+    .v-free-problem-2q .problem-text {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 1.5mm !important;
+      width: 100% !important;
+    }
+    .v-free-problem-2q .v-q-num {
+      font-weight: 800 !important;
+      flex: 0 0 auto !important;
+    }
+    .v-free-problem-2q .v-q-prompt {
+      font-weight: 600 !important;
+      flex: 1 1 auto !important;
+    }
+    .v-free-grid-2q {
+      margin: 3.5mm auto 0.5mm auto !important;
     }

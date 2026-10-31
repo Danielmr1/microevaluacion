@@ -242,7 +242,7 @@ function createFormativaA5VerticalCard(student, classroom, evaluation) {
         <!-- Pregunta 1 -->
         <div class="v-free-2q-block">
           <div class="v-free-problem-2q">
-            <div class="problem-text"><strong>1.</strong> ${escape(q1.prompt)}</div>
+            <div class="problem-text"><strong class="v-q-num">1.</strong><span class="v-q-prompt">${escape(q1.prompt)}</span></div>
           </div>
           <div class="v-free-grid-2q">
             <div class="notebook-grid notebook-grid-v2q">${GRID_CELLS_V_2Q}</div>
@@ -267,7 +267,7 @@ function createFormativaA5VerticalCard(student, classroom, evaluation) {
         <!-- Pregunta 2 -->
         <div class="v-free-2q-block">
           <div class="v-free-problem-2q">
-            <div class="problem-text"><strong>2.</strong> ${escape(q2.prompt)}</div>
+            <div class="problem-text"><strong class="v-q-num">2.</strong><span class="v-q-prompt">${escape(q2.prompt)}</span></div>
           </div>
           <div class="v-free-grid-2q">
             <div class="notebook-grid notebook-grid-v2q">${GRID_CELLS_V_2Q}</div>
@@ -436,12 +436,12 @@ function createFormativaA6Card(student, classroom, evaluation) {
         <div class="problem-text">${escape(q1.prompt)}</div>
       </div>
 
-      <div class="grid-wrapper a6-grid-wrapper" style="position:relative; margin:1mm auto 0 auto; height:34mm; flex:0 0 34mm;">
-        <div class="notebook-grid notebook-grid-a6" style="height:34mm; grid-template-rows:repeat(4, 1fr);">${new Array(13 * 4).fill('<i></i>').join('')}</div>
+      <div class="grid-wrapper a6-grid-wrapper" style="position:relative; margin:1mm auto 0 auto; height:29mm; flex:0 0 29mm;">
+        <div class="notebook-grid notebook-grid-a6" style="height:29mm; grid-template-rows:repeat(5, 1fr);">${new Array(13 * 5).fill('<i></i>').join('')}</div>
       </div>
 
       ${isOMR ? `
-        <div class="a6-omr-row" style="margin-top:2.2mm; padding:0 12mm;">
+        <div class="a6-omr-row" style="margin-top:3.5mm; padding:0 12mm;">
           <div class="v-omr-option"><span class="v-omr-bubble">A</span> <span class="v-omr-text">${escape(q1.options?.A || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">B</span> <span class="v-omr-text">${escape(q1.options?.B || '')}</span></div>
           <div class="v-omr-option"><span class="v-omr-bubble">C</span> <span class="v-omr-text">${escape(q1.options?.C || '')}</span></div>
