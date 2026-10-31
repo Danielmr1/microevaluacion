@@ -178,17 +178,21 @@
       return;
     }
 
+    const resolvedQuestions = evalObj.type === 'mc'
+      ? (evalObj.questions || (evalObj.options ? [{ prompt: evalObj.prompt, options: evalObj.options, correct: evalObj.correct || 'A' }] : null))
+      : null;
+
     const payload = {
       prompt: evalObj.prompt,
-      expectedAnswer: evalObj.expectedAnswer || '',
+      expectedAnswer: evalObj.expectedAnswer || (evalObj.correct ? ('Clave: ' + evalObj.correct) : ''),
       title: evalObj.title || 'Evaluación',
       rubric: evalObj.rubric || null,
       gradeStage: evalObj.gradeStage || null,
       gradeLevel: evalObj.gradeLevel || null,
       gradeText: evalObj.gradeText || null,
       type: evalObj.type === 'mc' ? 'mc' : 'free',
-      questionCount: evalObj.type === 'mc' ? (evalObj.questionCount || (evalObj.questions ? evalObj.questions.length : 1)) : 1,
-      questions: evalObj.type === 'mc' ? (evalObj.questions || null) : null
+      questionCount: evalObj.type === 'mc' ? (evalObj.questionCount || (resolvedQuestions ? resolvedQuestions.length : 1)) : 1,
+      questions: resolvedQuestions
     };
 
     if (typeof window !== 'undefined' && window.SupabaseClient && typeof window.SupabaseClient.saveEvaluation === 'function') {

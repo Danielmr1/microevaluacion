@@ -825,6 +825,14 @@ if (typeof window !== 'undefined') {
             window.history.replaceState(null, document.title, window.location.pathname);
           }
 
+          // Sincronización proactiva de datos locales pendientes con la nube en todo evento de usuario
+          if (typeof ClassroomData !== 'undefined' && ClassroomData.flushSyncQueue) {
+            ClassroomData.flushSyncQueue();
+          }
+          if (typeof ClassroomData !== 'undefined' && ClassroomData.syncAllLocalToCloud) {
+            ClassroomData.syncAllLocalToCloud();
+          }
+
           // Mismo usuario que ya está en pantalla: no se toca el asistente.
           if (usuarioMontadoEnPantalla === user.id) return;
           usuarioMontadoEnPantalla = user.id;
@@ -835,12 +843,6 @@ if (typeof window !== 'undefined') {
           const recentEvals = await SupabaseClient.loadRecentEvaluations();
           if (typeof ClassroomData !== 'undefined' && ClassroomData.setRecentEvaluations) {
             ClassroomData.setRecentEvaluations(recentEvals);
-          }
-          if (typeof ClassroomData !== 'undefined' && ClassroomData.flushSyncQueue) {
-            ClassroomData.flushSyncQueue();
-          }
-          if (typeof ClassroomData !== 'undefined' && ClassroomData.syncAllLocalToCloud) {
-            ClassroomData.syncAllLocalToCloud();
           }
 
           // ── RESTAURAR LA SESIÓN ACTIVA ──────────────────────────────
