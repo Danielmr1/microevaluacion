@@ -115,9 +115,11 @@ async function loadAndRenderResultsTable() {
   if (!container) return;
 
   container.innerHTML = `
-    <div style="padding:40px; text-align:center; color:#94a3b8; font-size:0.85rem;">
-      <div style="font-size:1.6rem; margin-bottom:8px;">⏳</div>
-      Cargando resultados de la sesión...
+    <div style="padding:40px; text-align:center; color:#A8A29E; font-size:0.85rem;">
+      <div style="margin-bottom:10px; display:inline-flex; align-items:center; justify-content:center; color:#00B4D8;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1.5s linear infinite;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </div>
+      <div>Cargando resultados de la sesión...</div>
     </div>
   `;
 
@@ -128,10 +130,12 @@ async function loadAndRenderResultsTable() {
     if (kpiCorrect) kpiCorrect.textContent = '0 (0%)';
     if (kpiIncorrect) kpiIncorrect.textContent = '0 (0%)';
     container.innerHTML = `
-      <div style="padding:40px; text-align:center; color:#94a3b8; font-size:0.85rem; border:1.5px dashed #334155; border-radius:12px;">
-        <div style="font-size:1.8rem; margin-bottom:8px;">⚙️</div>
-        <strong style="display:block; color:#f8fafc; font-size:0.95rem; margin-bottom:4px;">Sin sesión activa</strong>
-        Configurá un salón y una evaluación en el asistente para registrar o consultar resultados.
+      <div style="padding:40px; text-align:center; color:#A8A29E; font-size:0.85rem; border:1.5px dashed #3D352E; border-radius:12px; background:#211D19;">
+        <div style="margin-bottom:10px; display:inline-flex; color:#FFB703;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <strong style="display:block; color:#F9F8F3; font-size:0.95rem; margin-bottom:4px;">Sin sesión activa</strong>
+        Configura un salón y una evaluación para registrar o consultar resultados.
       </div>
     `;
     return;
@@ -155,10 +159,9 @@ async function loadAndRenderResultsTable() {
 
   if (subtitle) {
     subtitle.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:3px; margin-top:3px; font-size:0.75rem;">
-        <div><span style="color:#94a3b8;">Salón:</span> <strong style="color:#60a5fa;">${clsName}</strong></div>
-        <div><span style="color:#94a3b8;">Evaluación:</span> <strong style="color:#f1f5f9;">${session.title || 'Evaluación del Día'}</strong></div>
-        <div><span style="color:#94a3b8;">Tipo:</span> <strong style="color:#38bdf8;">${evalTypeLabel}</strong></div>
+      <div style="display:flex; flex-direction:row; gap:16px; margin-top:4px; font-size:0.78rem; flex-wrap:wrap;">
+        <div><span style="color:#A8A29E;">Salón:</span> <strong style="color:#00B4D8;">${clsName}</strong></div>
+        <div><span style="color:#A8A29E;">Evaluación:</span> <strong style="color:#F9F8F3;">${session.title || 'Evaluación del Día'}</strong></div>
       </div>
     `;
   }
@@ -265,32 +268,32 @@ async function loadAndRenderResultsTable() {
     const capturedTime = res && res.captured_at ? new Date(res.captured_at).getTime() : 0;
     const isStale = isPendingAI && capturedTime && (Date.now() - capturedTime > 40000);
 
-    let statusBadge = `<span style="background:rgba(100,116,139,0.15); color:#94a3b8; border:1px solid #334155; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; white-space:nowrap;">⏳ Pendiente</span>`;
+    let statusBadge = `<span style="background:rgba(168,162,158,0.1); color:#A8A29E; border:1px solid rgba(168,162,158,0.25); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:700; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Pendiente</span>`;
     if (isEvaluated) {
       if (isPendingAI) {
         if (res.ai_raw && res.ai_raw.aiError) {
           const isOffline = res.ai_raw.aiError === 'offline' || (typeof navigator !== 'undefined' && !navigator.onLine);
           const isTimeout = res.ai_raw.aiError === 'timeout' || res.ai_raw.aiError === 'timeout_or_offline';
-          let label = '⚠️ Error IA';
-          let badgeColor = '#f87171';
-          let borderCol = 'rgba(239,68,68,0.3)';
+          let label = 'Error IA';
+          let badgeColor = '#F87171';
+          let borderCol = 'rgba(239,68,68,0.35)';
           let bgCol = 'rgba(239,68,68,0.15)';
           if (isOffline) {
-            label = '⚠️ Sin conexión';
+            label = 'Sin conexión';
           } else if (isTimeout) {
-            label = '⏳ Tiempo excedido';
-            badgeColor = '#facc15';
-            borderCol = 'rgba(234,179,8,0.3)';
-            bgCol = 'rgba(234,179,8,0.15)';
+            label = 'Tiempo excedido';
+            badgeColor = '#FFB703';
+            borderCol = 'rgba(255,183,3,0.35)';
+            bgCol = 'rgba(255,183,3,0.15)';
           }
-          statusBadge = `<span style="background:${bgCol}; color:${badgeColor}; border:1px solid ${borderCol}; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="${res.ai_raw.errorDetail || ''}">${label}</span>`;
+          statusBadge = `<span style="background:${bgCol}; color:${badgeColor}; border:1px solid ${borderCol}; padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;" title="${res.ai_raw.errorDetail || ''}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ${label}</span>`;
         } else if (isStale) {
-          statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;" title="Tiempo de espera agotado. Puedes reintentar con el botón.">⏳ Expirado</span>`;
+          statusBadge = `<span style="background:rgba(255,183,3,0.15); color:#FFB703; border:1px solid rgba(255,183,3,0.35); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;" title="Tiempo de espera agotado. Puedes reintentar con el botón."><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Expirado</span>`;
         } else {
-          statusBadge = `<span style="background:rgba(234,179,8,0.15); color:#facc15; border:1px solid rgba(234,179,8,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">⏳ Analizando IA</span>`;
+          statusBadge = `<span style="background:rgba(255,183,3,0.15); color:#FFB703; border:1px solid rgba(255,183,3,0.35); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Analizando IA</span>`;
         }
       } else {
-        statusBadge = `<span style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap;">✅ Evaluado</span>`;
+        statusBadge = `<span style="background:rgba(52,211,153,0.12); color:#34D399; border:1px solid rgba(52,211,153,0.35); padding:2px 8px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Evaluado</span>`;
       }
     }
 
@@ -310,21 +313,21 @@ async function loadAndRenderResultsTable() {
           ? res.ai_raw.correctCount
           : (isOk ? (res.ai_raw?.totalQuestions || 20) : 0);
         const totalQ = res.ai_raw?.totalQuestions || session.questionCount || 20;
-        const gradeColor = grade20 >= 11 ? '#4ade80' : '#f87171';
+        const gradeColor = grade20 >= 11 ? '#34D399' : '#F87171';
 
         answerContent = `
           <div style="font-size:0.95rem; font-weight:800; color:${gradeColor};">Nota: ${grade20} / 20</div>
-          <div style="font-size:0.7rem; color:#94a3b8; font-weight:700; margin-top:2px;">${correctQ} / ${totalQ} aciertos</div>
-          <div style="font-size:0.67rem; color:#38bdf8; margin-top:2px; cursor:help;" title="${escape(res.ai_answer_read || '')}">🔍 Ver claves marcadas</div>
+          <div style="font-size:0.7rem; color:#A8A29E; font-weight:700; margin-top:2px;">${correctQ} / ${totalQ} aciertos</div>
+          <div style="font-size:0.67rem; color:#00B4D8; margin-top:2px; cursor:help;" title="${escape(res.ai_answer_read || '')}">Ver claves marcadas</div>
         `;
       } else {
-        answerContent = `<div style="font-size:0.88rem; font-weight:800; color:#60a5fa;">${escape(res.ai_answer_read || 'Registrado')}</div>`;
+        answerContent = `<div style="font-size:0.9rem; font-weight:800; color:#38BDF8;">${escape(res.ai_answer_read || 'Registrado')}</div>`;
         if (aiGrading) {
           if (session.type === 'mc') {
             const procOk = aiGrading.procedure_valid;
-            answerContent += `<div style="font-size:0.7rem; color:${procOk ? '#c084fc' : '#f59e0b'}; font-weight:700; margin-top:2px;">${procOk ? '🔬 Procedimiento OK' : '⚠️ Sin procedimiento'}</div>`;
+            answerContent += `<div style="font-size:0.7rem; color:${procOk ? '#C7D2FE' : '#FFB703'}; font-weight:700; margin-top:2px;">${procOk ? 'Procedimiento OK' : 'Sin procedimiento'}</div>`;
           } else {
-            answerContent += `<div style="font-size:0.7rem; color:#38bdf8; font-weight:700; margin-top:2px;">Nota: ${aiGrading.score}/4 pts</div>`;
+            answerContent += `<div style="font-size:0.7rem; color:#00B4D8; font-weight:700; margin-top:2px;">Nota: ${aiGrading.score}/4 pts</div>`;
           }
         }
       }
@@ -334,34 +337,34 @@ async function loadAndRenderResultsTable() {
     if (isBranch3) {
       const totalQ = session.questionCount || (session.questions ? session.questions.length : 20);
       expectedText = `
-        <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1;">${totalQ} Claves</div>
-        <div style="font-size:0.67rem; color:#64748b; margin-top:1px; cursor:help;" title="${escape(session.expectedAnswer || '')}">🔍 Ver pauta</div>
+        <div style="font-size:0.8rem; font-weight:700; color:#E5E3DC;">${totalQ} Claves</div>
+        <div style="font-size:0.67rem; color:#78716C; margin-top:1px; cursor:help;" title="${escape(session.expectedAnswer || '')}">Ver pauta</div>
       `;
     } else {
       expectedText = escape(session.expectedAnswer || (res ? res.expected_answer : '—') || '—');
     }
 
-    let verdictBadge = `<span style="color:#64748b; font-size:0.8rem;">—</span>`;
+    let verdictBadge = `<span style="color:#78716C; font-size:0.8rem;">—</span>`;
     if (isEvaluated) {
       if (isPendingAI) {
         if (res.ai_raw && res.ai_raw.aiError) {
           verdictBadge = `
             <button type="button" onclick="handleRetrySingleAI('${st.id}', this)"
               title="${res.ai_raw.errorDetail || 'Reintentar análisis con IA'}"
-              style="background:#1e293b; border:1px solid #f59e0b; color:#fbbf24; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
-              🔄 Reintentar IA
+              style="background:#211D19; border:1px solid #FFB703; color:#FFB703; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Reintentar IA
             </button>
           `;
         } else if (isStale) {
           verdictBadge = `
             <button type="button" onclick="handleRetrySingleAI('${st.id}', this)"
               title="Tiempo de espera agotado. Reintentar análisis."
-              style="background:#1e293b; border:1px solid #f59e0b; color:#fbbf24; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
-              🔄 Reintentar IA
+              style="background:#211D19; border:1px solid #FFB703; color:#FFB703; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Reintentar IA
             </button>
           `;
         } else {
-          verdictBadge = `<span style="color:#f59e0b; font-size:0.78rem; font-weight:700;">⏳ En proceso</span>`;
+          verdictBadge = `<span style="color:#FFB703; font-size:0.78rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> En proceso</span>`;
         }
       } else if (isBranch3) {
         const grade20 = (res.ai_raw && res.ai_raw.grade20 != null)
@@ -370,45 +373,45 @@ async function loadAndRenderResultsTable() {
             ? Math.round((res.ai_raw.correctCount / res.ai_raw.totalQuestions) * 20)
             : (isOk ? 20 : 0);
         if (grade20 >= 11) {
-          verdictBadge = `<span style="color:#22c55e; font-weight:800; font-size:0.82rem;">✓ APROBADO</span>`;
+          verdictBadge = `<span style="color:#34D399; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> APROBADO</span>`;
         } else {
-          verdictBadge = `<span style="color:#ef4444; font-weight:800; font-size:0.82rem;">✗ DESAPROBADO</span>`;
+          verdictBadge = `<span style="color:#F87171; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> DESAPROBADO</span>`;
         }
       } else if (isOk) {
-        verdictBadge = `<span style="color:#22c55e; font-weight:800; font-size:0.82rem;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}">✓ CORRECTA</span>`;
+        verdictBadge = `<span style="color:#34D399; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> CORRECTA</span>`;
       } else {
-        verdictBadge = `<span style="color:#ef4444; font-weight:800; font-size:0.82rem;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}">✗ INCORRECTA</span>`;
+        verdictBadge = `<span style="color:#F87171; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> INCORRECTA</span>`;
       }
     }
 
     const deleteBtn = isEvaluated
       ? `<button type="button" onclick="handleDeleteSingleResult('${st.id}', this)" title="Borrar este resultado para reevaluar"
-             style="background:#1e293b; border:1px solid #7f1d1d; color:#f87171; border-radius:6px; padding:3px 8px; font-size:0.72rem; cursor:pointer;">
-             🗑️
+             style="background:#211D19; border:1px solid rgba(239,68,68,0.35); color:#F87171; border-radius:6px; padding:4px 8px; font-size:0.72rem; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;">
+             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
            </button>`
       : '';
 
     const photoUrl = res && (res.grid_image_path || res.ai_raw?.gridImage);
-    let photoBadge = '<span style="color:#475569; font-size:0.75rem;">—</span>';
+    let photoBadge = '<span style="color:#57534E; font-size:0.75rem;">—</span>';
     if (photoUrl) {
       const safeName = escape(st.name || '').replace(/'/g, '&#39;');
       photoBadge = `
         <button type="button" onclick="openPhotoViewer('${st.id}', '${safeName}', '${photoUrl}')"
           title="Ver foto de la resolución del estudiante"
-          style="display:inline-flex; align-items:center; gap:4px; background:#1e293b; border:1px solid #3b82f6; color:#60a5fa; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer;">
-          📷 Ver
+          style="display:inline-flex; align-items:center; gap:4px; background:#211D19; border:1px solid rgba(0,180,216,0.45); color:#38BDF8; border-radius:6px; padding:3px 8px; font-size:0.72rem; font-weight:700; cursor:pointer;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Ver
         </button>
       `;
     }
 
     rowsHtml += `
-      <tr style="border-bottom:1px solid #1e293b; background:${isEvaluated ? 'rgba(15,23,42,0.6)' : 'transparent'};">
-        <td style="padding:10px 12px; font-size:0.75rem; color:#64748b; font-weight:700;">${idx + 1}</td>
-        <td style="padding:10px 12px; font-size:0.85rem; font-weight:700; color:#f8fafc;">${escape(st.name)}</td>
+      <tr style="border-bottom:1px solid #2D2620; background:${isEvaluated ? 'rgba(33,29,25,0.75)' : 'transparent'}; transition:background 0.15s ease;">
+        <td style="padding:10px 12px; font-size:0.75rem; color:#78716C; font-weight:700;">${idx + 1}</td>
+        <td style="padding:10px 12px; font-size:0.85rem; font-weight:700; color:#F9F8F3;">${escape(st.name)}</td>
         <td style="padding:10px 12px; text-align:center;">${photoBadge}</td>
         <td style="padding:10px 12px;">${statusBadge}</td>
         <td style="padding:10px 12px;">${answerContent}</td>
-        <td style="padding:10px 12px; font-size:0.85rem; font-weight:700; color:#94a3b8;">${expectedText}</td>
+        <td style="padding:10px 12px; font-size:0.85rem; font-weight:700; color:#A8A29E;">${expectedText}</td>
         <td style="padding:10px 12px;">${verdictBadge}</td>
         <td style="padding:10px 12px; text-align:center;">${deleteBtn}</td>
       </tr>
@@ -418,7 +421,7 @@ async function loadAndRenderResultsTable() {
   container.innerHTML = `
     <table style="width:100%; border-collapse:collapse; text-align:left;">
       <thead>
-        <tr style="border-bottom:2px solid #334155; background:#0f172a; color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em;">
+        <tr style="border-bottom:2px solid #3D352E; background:#1A1613; color:#A8A29E; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em;">
           <th style="padding:8px 12px; font-weight:800;">#</th>
           <th style="padding:8px 12px; font-weight:800;">Estudiante</th>
           <th style="padding:8px 12px; font-weight:800; text-align:center;">Foto</th>

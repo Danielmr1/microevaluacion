@@ -992,7 +992,7 @@
             <!-- Versión de la Aplicación -->
             <div id="user-menu-version"
               style="font-size:0.72rem; color:#94A3B8; font-weight:600; text-align:center; padding:4px 0 8px;">
-              Versión <span id="user-profile-version-tag">v3.10.118</span>
+              Versión <span id="user-profile-version-tag">v3.10.119</span>
             </div>
 
             <!-- Botón Salir -->
@@ -2015,71 +2015,72 @@
           <!-- Contenedor dinámico de las páginas A4 de cartillas para todos los alumnos -->
           <div id="pages-container" style="display:none;"></div>
 
-          <!-- Contenedor Integrado en Columna Derecha: Resultados de la Sesión (sin modal emergente) -->
+          <!-- Contenedor Integrado en Columna Derecha: Resultados de la Sesión (Modo Ocelo Nocturno - Paleta Mariposa) -->
           <div id="summary-inline-results-container"
-            style="display:none; width:100%; max-width:980px; margin:0 auto; flex-direction:column; background:#0f172a; border:1.5px solid #334155; border-radius:16px; box-shadow:0 12px 32px rgba(0,0,0,0.3); overflow:hidden;">
+            style="display:none; width:100%; max-width:980px; margin:0 auto; flex-direction:column; background:#181512; border:1.5px solid #3D352E; border-radius:16px; box-shadow:0 14px 36px rgba(0,0,0,0.45); overflow:hidden;">
             <!-- Header de Resultados -->
             <div
-              style="padding:16px 20px; border-bottom:1px solid #1e293b; display:flex; align-items:flex-start; justify-content:space-between; background:#1e293b;">
+              style="padding:16px 20px; border-bottom:1px solid #3D352E; display:flex; align-items:flex-start; justify-content:space-between; background:#211D19;">
               <div>
-                <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#f8fafc;">Resultados de la Sesión</h3>
-                <div id="results-modal-subtitle" style="margin:3px 0 0; font-size:0.75rem; color:#94a3b8;">Nómina de
-                  alumnos y calificaciones de la evaluación activa.</div>
+                <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#F9F8F3;">Resultados de la Sesión</h3>
+                <div id="results-modal-subtitle" style="margin:3px 0 0; font-size:0.75rem; color:#A8A29E;">Nómina de alumnos y calificaciones de la evaluación activa.</div>
               </div>
               <button type="button" onclick="toggleSummaryViewMode('pdf')"
-                style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;"
+                style="background:transparent; border:none; color:#A8A29E; font-size:1.3rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;"
                 title="Volver al PDF">✕</button>
             </div>
 
             <!-- Métricas / KPIs de la Sesión -->
             <div id="results-kpi-bar"
-              style="padding:12px 20px; background:#0b0f19; border-bottom:1px solid #1e293b; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+              style="padding:12px 20px; background:#1A1613; border-bottom:1px solid #3D352E; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
               <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <div
-                  style="background:#0f172a; border:1px solid #334155; border-radius:8px; padding:6px 12px; min-width:110px;">
-                  <div style="font-size:0.65rem; color:#64748b; font-weight:700; text-transform:uppercase;">Evaluados
-                  </div>
-                  <div id="res-kpi-total" style="font-size:1.15rem; font-weight:800; color:#38bdf8;">0 / 0</div>
+                  style="background:#211D19; border:1px solid rgba(0,180,216,0.35); border-radius:8px; padding:6px 12px; min-width:110px;">
+                  <div style="font-size:0.65rem; color:#00B4D8; font-weight:700; text-transform:uppercase;">Evaluados</div>
+                  <div id="res-kpi-total" style="font-size:1.15rem; font-weight:800; color:#38BDF8;">0 / 0</div>
                 </div>
                 <div
-                  style="background:#0f172a; border:1px solid #166534; border-radius:8px; padding:6px 12px; min-width:110px;">
-                  <div style="font-size:0.65rem; color:#4ade80; font-weight:700; text-transform:uppercase;">Aciertos
-                  </div>
-                  <div id="res-kpi-correct" style="font-size:1.15rem; font-weight:800; color:#22c55e;">0 (0%)</div>
+                  style="background:#211D19; border:1px solid rgba(4,120,87,0.45); border-radius:8px; padding:6px 12px; min-width:110px;">
+                  <div style="font-size:0.65rem; color:#34D399; font-weight:700; text-transform:uppercase;">Aciertos</div>
+                  <div id="res-kpi-correct" style="font-size:1.15rem; font-weight:800; color:#34D399;">0 (0%)</div>
                 </div>
                 <div
-                  style="background:#0f172a; border:1px solid #991b1b; border-radius:8px; padding:6px 12px; min-width:110px;">
-                  <div style="font-size:0.65rem; color:#f87171; font-weight:700; text-transform:uppercase;">Errores
-                  </div>
-                  <div id="res-kpi-incorrect" style="font-size:1.15rem; font-weight:800; color:#ef4444;">0 (0%)</div>
+                  style="background:#211D19; border:1px solid rgba(185,28,28,0.45); border-radius:8px; padding:6px 12px; min-width:110px;">
+                  <div style="font-size:0.65rem; color:#F87171; font-weight:700; text-transform:uppercase;">Errores</div>
+                  <div id="res-kpi-incorrect" style="font-size:1.15rem; font-weight:800; color:#F87171;">0 (0%)</div>
                 </div>
               </div>
 
               <!-- Botones de Acción -->
               <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <button id="btn-return-to-scan" type="button" onclick="goToScannerFromResults()"
-                  style="display:inline-flex; align-items:center; gap:6px; background:#0284c7; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #0284c730;"
+                  style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0284C7 0%, #00B4D8 100%); border:none; color:#FFFFFF; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(0,180,216,0.35);"
                   title="Ir al escáner de aula para evaluar fichas pendientes">
-                  📷 Ir al Escáner
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Ir al Escáner
                 </button>
                 <button id="btn-export-excel" type="button" onclick="exportResultsToExcel()"
-                  style="display:inline-flex; align-items:center; gap:6px; background:#16a34a; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #16a34a30;">
-                  📥 Descargar Excel (.xlsx)
+                  style="display:inline-flex; align-items:center; gap:6px; background:#1E3A2B; border:1px solid #059669; color:#A7F3D0; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(5,150,105,0.2);"
+                  title="Descargar planilla de resultados en formato Excel">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                  Descargar Excel (.xlsx)
                 </button>
                 <button id="btn-export-photos" type="button" onclick="downloadAllSessionPhotosZip()"
-                  style="display:inline-flex; align-items:center; gap:6px; background:#4f46e5; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px #4f46e530;"
+                  style="display:inline-flex; align-items:center; gap:6px; background:#232038; border:1px solid #6366F1; color:#C7D2FE; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(99,102,241,0.2);"
                   title="Descargar todas las resoluciones en un archivo ZIP">
-                  📦 Descargar Fotos (.zip)
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                  Descargar Fotos (.zip)
                 </button>
                 <button type="button" onclick="loadAndRenderResultsTable()"
-                  style="display:inline-flex; align-items:center; gap:4px; background:#1e293b; border:1px solid #334155; color:#cbd5e1; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:600; cursor:pointer;"
+                  style="display:inline-flex; align-items:center; gap:4px; background:#211D19; border:1px solid #3D352E; color:#D6D3D1; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:600; cursor:pointer;"
                   title="Actualizar">
-                  🔄
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                 </button>
                 <button id="btn-delete-all-results" type="button" onclick="handleDeleteAllSessionResults(this)"
-                  style="display:inline-flex; align-items:center; gap:6px; background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;"
+                  style="display:inline-flex; align-items:center; gap:6px; background:#2A1414; border:1px solid #DC2626; color:#FCA5A5; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;"
                   title="Borrar todos los resultados de esta sesión">
-                  🗑️ Reiniciar Sesión
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                  Reiniciar Sesión
                 </button>
               </div>
             </div>
@@ -2860,35 +2861,38 @@
 
 
   <!-- Modal Lightbox: Visor de Foto de Resolución del Alumno -->
+  <!-- Modal de visualización ampliada de la foto del alumno (Paleta Mariposa Ocelo Nocturno) -->
   <div id="photo-viewer-modal" onclick="if(event.target === this) closePhotoViewerModal()"
-    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:16px;">
+    style="display:none; position:fixed; inset:0; background:rgba(15,12,10,0.88); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center; padding:16px;">
     <div
-      style="background:#0f172a; border:1.5px solid #334155; border-radius:16px; max-width:560px; width:100%; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.9); overflow:hidden;">
+      style="background:#181512; border:1.5px solid #3D352E; border-radius:16px; max-width:560px; width:100%; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.9); overflow:hidden;">
       <div
-        style="padding:14px 18px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; background:#1e293b;">
+        style="padding:14px 18px; border-bottom:1px solid #3D352E; display:flex; align-items:center; justify-content:space-between; background:#211D19;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:1.3rem;">📝</span>
+          <div style="color:#00B4D8; display:flex; align-items:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
           <div>
-            <h4 id="photo-viewer-title" style="margin:0; font-size:0.95rem; font-weight:800; color:#f8fafc;">Resolución
-              del Alumno</h4>
-            <p id="photo-viewer-subtitle" style="margin:2px 0 0; font-size:0.72rem; color:#94a3b8;">—</p>
+            <h4 id="photo-viewer-title" style="margin:0; font-size:0.95rem; font-weight:800; color:#F9F8F3;">Resolución del Alumno</h4>
+            <p id="photo-viewer-subtitle" style="margin:2px 0 0; font-size:0.72rem; color:#A8A29E;">—</p>
           </div>
         </div>
         <button type="button" onclick="closePhotoViewerModal()"
-          style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; padding:2px 6px; line-height:1;"
+          style="background:transparent; border:none; color:#A8A29E; font-size:1.3rem; cursor:pointer; padding:2px 6px; line-height:1;"
           title="Cerrar">✕</button>
       </div>
       <div
-        style="padding:16px; display:flex; justify-content:center; align-items:center; background:#020617; max-height:65vh; overflow:auto;">
+        style="padding:16px; display:flex; justify-content:center; align-items:center; background:#110E0C; max-height:65vh; overflow:auto;">
         <img id="photo-viewer-img" src="" alt="Resolución"
-          style="max-width:100%; height:auto; border-radius:8px; border:1px solid #1e293b; box-shadow:0 4px 12px rgba(0,0,0,0.5);">
+          style="max-width:100%; height:auto; border-radius:8px; border:1px solid #3D352E; box-shadow:0 4px 14px rgba(0,0,0,0.6);">
       </div>
       <div
-        style="padding:12px 18px; border-top:1px solid #1e293b; display:flex; justify-content:space-between; align-items:center; background:#0f172a;">
-        <span id="photo-viewer-meta" style="font-size:0.75rem; color:#64748b;">Cuadrícula / Borrador de cálculo</span>
+        style="padding:12px 18px; border-top:1px solid #3D352E; display:flex; justify-content:space-between; align-items:center; background:#1A1613;">
+        <span id="photo-viewer-meta" style="font-size:0.75rem; color:#78716C;">Ficha / Captura de resolución</span>
         <button id="photo-viewer-download-btn" type="button"
-          style="display:inline-flex; align-items:center; gap:6px; background:#2563eb; border:none; color:#fff; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer;">
-          📥 Descargar Foto
+          style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0284C7 0%, #00B4D8 100%); border:none; color:#FFFFFF; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(0,180,216,0.35);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar Foto
         </button>
       </div>
     </div>
