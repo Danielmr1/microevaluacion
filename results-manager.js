@@ -16,6 +16,18 @@
 // ── Estado interno del módulo ──────────────────────────────────────────────
 let currentResultsCache = { session: null, results: [], classroom: null };
 let currentPhotoViewerData = null;
+let currentScoreScale = 'pct'; // 'pct' (% aciertos), 'vigesimal' (/20), 'decimal' (/10)
+
+function toggleScoreScale() {
+  if (currentScoreScale === 'pct') currentScoreScale = 'vigesimal';
+  else if (currentScoreScale === 'vigesimal') currentScoreScale = 'decimal';
+  else currentScoreScale = 'pct';
+
+  if (currentResultsCache && currentResultsCache.session) {
+    renderResultsTable(currentResultsCache.session, currentResultsCache.classroom, currentResultsCache.results);
+  }
+}
+window.toggleScoreScale = toggleScoreScale;
 
 // ── Apertura / cierre del panel de resultados ──────────────────────────────
 
@@ -138,12 +150,12 @@ async function loadAndRenderResultsTable() {
 
   const isBranch3 = session.branch === 'rama3' || (session.type === 'mc' && (session.questionCount > 3 || (session.questions && session.questions.length > 3)));
   const isBranch2 = session.branch === 'rama2';
+  const isR2orR3 = isBranch2 || isBranch3;
+  const qCount = session.questionCount || (session.questions ? session.questions.length : (session.prompt ? session.prompt.split('|').length : 1));
   let evalTypeLabel = 'Respuesta Libre (con rúbrica IA)';
   if (isBranch3) {
-    const qCount = session.questionCount || (session.questions ? session.questions.length : 20);
     evalTypeLabel = `Cartilla OMR (${qCount} preguntas)`;
   } else if (isBranch2) {
-    const qCount = session.questionCount || (session.questions ? session.questions.length : 1);
     evalTypeLabel = `Focalizada Contenido (${qCount} preg. ${session.withGrid ? 'con borrador' : 'sin borrador'})`;
   } else if (session.type === 'mc') {
     evalTypeLabel = 'Opción Múltiple (OMR + IA)';
@@ -212,7 +224,52 @@ async function loadAndRenderResultsTable() {
 
   if (kpiTotal) kpiTotal.textContent = `${evaluatedCount} / ${totalStudents}`;
 
-  if (isBranch3) {
+  if (isR2orR3 && (qCount > 1 || isBranch3)) {
+    let totalQEvaluated = 0;
+    let totalQCorrect = 0;
+    let studentsFull = 0;
+    let sumScore20 = 0;
+
+    resultMap.forEach(r => {
+      const isOkStudent = (r.teacher_verdict === 'CORRECTA') || (r.ai_expected_match === true) || (r.deterministic_match === true);
+      const cQ = (r.ai_raw && r.ai_raw.correctCount != null)
+        ? r.ai_raw.correctCount
+        : (isOkStudent ? qCount : 0);
+      const tQ = (r.ai_raw && r.ai_raw.totalQuestions != null) ? r.ai_raw.totalQuestions : qCount;
+      totalQEvaluated += tQ;
+      totalQCorrect += cQ;
+      if (cQ === tQ && tQ > 0) studentsFull++;
+      const s20 = tQ > 0 ? (cQ / tQ) * 20 : 0;
+      sumScore20 += s20;
+    });
+
+    const avgScore20 = evaluatedCount > 0 ? (sumScore20 / evaluatedCount) : 0;
+    const avgPct = totalQEvaluated > 0 ? Math.round((totalQCorrect / totalQEvaluated) * 100) : 0;
+
+    if (kpiCorrect) {
+      const lbl = kpiCorrect.previousElementSibling;
+      if (currentScoreScale === 'vigesimal') {
+        if (lbl) lbl.textContent = 'Promedio Salón';
+        kpiCorrect.textContent = `${avgScore20.toFixed(1)} / 20`;
+        kpiCorrect.style.color = avgScore20 >= 11 ? '#34D399' : '#F87171';
+      } else if (currentScoreScale === 'decimal') {
+        if (lbl) lbl.textContent = 'Promedio Salón';
+        kpiCorrect.textContent = `${(avgScore20 / 2).toFixed(1)} / 10`;
+        kpiCorrect.style.color = (avgScore20 / 2) >= 5.5 ? '#34D399' : '#F87171';
+      } else {
+        if (lbl) lbl.textContent = 'Efectividad Salón';
+        kpiCorrect.textContent = `${totalQCorrect}/${totalQEvaluated} (${avgPct}%)`;
+        kpiCorrect.style.color = avgPct >= 60 ? '#34D399' : (avgPct >= 40 ? '#FBBF24' : '#F87171');
+      }
+    }
+
+    if (kpiIncorrect) {
+      const lbl = kpiIncorrect.previousElementSibling;
+      if (lbl) lbl.textContent = 'Acierto Pleno';
+      const pctFull = evaluatedCount > 0 ? Math.round((studentsFull / evaluatedCount) * 100) : 0;
+      kpiIncorrect.textContent = `${studentsFull} (${pctFull}%)`;
+    }
+  } else if (isBranch3) {
     const avgGrade = evaluatedCount > 0 ? (sumGrade20 / evaluatedCount).toFixed(1) : '0';
     const pctApproved = evaluatedCount > 0 ? Math.round((approvedCount / evaluatedCount) * 100) : 0;
     if (kpiCorrect) {
@@ -294,46 +351,117 @@ async function loadAndRenderResultsTable() {
       : (t) => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     let answerContent = '—';
-    if (isEvaluated) {
-      if (isBranch3) {
-        const grade20 = (res.ai_raw && res.ai_raw.grade20 != null)
-          ? res.ai_raw.grade20
-          : (res.ai_raw && res.ai_raw.correctCount != null && res.ai_raw.totalQuestions)
-            ? Math.round((res.ai_raw.correctCount / res.ai_raw.totalQuestions) * 20)
-            : (isOk ? 20 : 0);
-        const correctQ = (res.ai_raw && res.ai_raw.correctCount != null)
-          ? res.ai_raw.correctCount
-          : (isOk ? (res.ai_raw?.totalQuestions || 20) : 0);
-        const totalQ = res.ai_raw?.totalQuestions || session.questionCount || 20;
-        const gradeColor = grade20 >= 11 ? '#34D399' : '#F87171';
+    let expectedText = '—';
 
+    // ── RAMA 2 y RAMA 3: Desglose fila por fila por cada pregunta ──
+    if (isR2orR3 && qCount > 1) {
+      let qItems = [];
+      if (res && res.ai_raw && Array.isArray(res.ai_raw.omrResults) && res.ai_raw.omrResults.length > 0) {
+        qItems = res.ai_raw.omrResults;
+      } else if (res && res.ai_answer_read && res.ai_answer_read.includes('P1:')) {
+        const parts = res.ai_answer_read.split('|').map(s => s.trim());
+        const expParts = (session.expectedAnswer || '').trim().split(/\s+/);
+        parts.forEach((p, pIdx) => {
+          const m = p.match(/P(\d+):\s*([A-D]|BLANK|MULTIPLE|.+)/i);
+          const qNum = m ? parseInt(m[1], 10) : (pIdx + 1);
+          const markedVal = m ? m[2].trim() : p;
+          const expVal = expParts[pIdx] || '—';
+          qItems.push({
+            qIndex: qNum,
+            marked: markedVal,
+            expected: expVal,
+            correct: (markedVal === expVal)
+          });
+        });
+      } else {
+        const expParts = (session.expectedAnswer || '').trim().split(/\s+/);
+        for (let k = 0; k < qCount; k++) {
+          qItems.push({
+            qIndex: k + 1,
+            marked: '—',
+            expected: expParts[k] || '—',
+            correct: false
+          });
+        }
+      }
+
+      if (isEvaluated) {
         answerContent = `
-          <div style="font-size:0.95rem; font-weight:800; color:${gradeColor};">Nota: ${grade20} / 20</div>
-          <div style="font-size:0.7rem; color:#A8A29E; font-weight:700; margin-top:2px;">${correctQ} / ${totalQ} aciertos</div>
-          <div style="font-size:0.67rem; color:#00B4D8; margin-top:2px; cursor:help;" title="${escape(res.ai_answer_read || '')}">Ver claves marcadas</div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            ${qItems.map(item => {
+              const isBlank = item.marked === 'BLANK' || item.marked === '—' || !item.marked;
+              const isMulti = item.marked === 'MULTIPLE';
+              const markColor = item.correct ? '#34D399' : (isBlank ? '#FBBF24' : '#F87171');
+              const markDisplay = isBlank ? '—' : (isMulti ? 'Doble' : escape(item.marked));
+              return `
+                <div style="display:flex; align-items:center; gap:5px; height:18px; line-height:18px;">
+                  <span style="font-size:0.75rem; color:#A8A29E; font-weight:700;">P${item.qIndex}:</span>
+                  <span style="font-size:0.88rem; font-weight:800; color:${markColor};">${markDisplay}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
         `;
       } else {
-        answerContent = `<div style="font-size:0.9rem; font-weight:800; color:#38BDF8;">${escape(res.ai_answer_read || 'Registrado')}</div>`;
-        if (aiGrading) {
-          if (session.type === 'mc') {
-            const procOk = aiGrading.procedure_valid;
-            answerContent += `<div style="font-size:0.7rem; color:${procOk ? '#C7D2FE' : '#FFB703'}; font-weight:700; margin-top:2px;">${procOk ? 'Procedimiento OK' : 'Sin procedimiento'}</div>`;
-          } else {
-            answerContent += `<div style="font-size:0.7rem; color:#00B4D8; font-weight:700; margin-top:2px;">Nota: ${aiGrading.score}/4 pts</div>`;
+        answerContent = `<span style="color:#57534E; font-size:0.85rem;">—</span>`;
+      }
+
+      const expParts = (session.expectedAnswer || '').trim().split(/\s+/);
+      expectedText = `
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          ${qItems.map(item => {
+            const expKey = item.expected || expParts[item.qIndex - 1] || '—';
+            return `
+              <div style="display:flex; align-items:center; gap:5px; height:18px; line-height:18px;">
+                <span style="font-size:0.75rem; color:#78716C; font-weight:700;">P${item.qIndex}:</span>
+                <span style="font-size:0.88rem; font-weight:800; color:#38BDF8;">${escape(expKey)}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    } else {
+      // ── RAMA 1 (FORMATIVA CON IA) Y CASO 1 PREGUNTA (Comportamiento original intacto) ──
+      if (isEvaluated) {
+        if (isBranch3) {
+          const grade20 = (res.ai_raw && res.ai_raw.grade20 != null)
+            ? res.ai_raw.grade20
+            : (res.ai_raw && res.ai_raw.correctCount != null && res.ai_raw.totalQuestions)
+              ? Math.round((res.ai_raw.correctCount / res.ai_raw.totalQuestions) * 20)
+              : (isOk ? 20 : 0);
+          const correctQ = (res.ai_raw && res.ai_raw.correctCount != null)
+            ? res.ai_raw.correctCount
+            : (isOk ? (res.ai_raw?.totalQuestions || 20) : 0);
+          const totalQ = res.ai_raw?.totalQuestions || session.questionCount || 20;
+          const gradeColor = grade20 >= 11 ? '#34D399' : '#F87171';
+
+          answerContent = `
+            <div style="font-size:0.95rem; font-weight:800; color:${gradeColor};">Nota: ${grade20} / 20</div>
+            <div style="font-size:0.7rem; color:#A8A29E; font-weight:700; margin-top:2px;">${correctQ} / ${totalQ} aciertos</div>
+            <div style="font-size:0.67rem; color:#00B4D8; margin-top:2px; cursor:help;" title="${escape(res.ai_answer_read || '')}">Ver claves marcadas</div>
+          `;
+        } else {
+          answerContent = `<div style="font-size:0.9rem; font-weight:800; color:#38BDF8;">${escape(res.ai_answer_read || 'Registrado')}</div>`;
+          if (aiGrading) {
+            if (session.type === 'mc') {
+              const procOk = aiGrading.procedure_valid;
+              answerContent += `<div style="font-size:0.7rem; color:${procOk ? '#C7D2FE' : '#FFB703'}; font-weight:700; margin-top:2px;">${procOk ? 'Procedimiento OK' : 'Sin procedimiento'}</div>`;
+            } else {
+              answerContent += `<div style="font-size:0.7rem; color:#00B4D8; font-weight:700; margin-top:2px;">Nota: ${aiGrading.score}/4 pts</div>`;
+            }
           }
         }
       }
-    }
 
-    let expectedText = '—';
-    if (isBranch3) {
-      const totalQ = session.questionCount || (session.questions ? session.questions.length : 20);
-      expectedText = `
-        <div style="font-size:0.8rem; font-weight:700; color:#E5E3DC;">${totalQ} Claves</div>
-        <div style="font-size:0.67rem; color:#78716C; margin-top:1px; cursor:help;" title="${escape(session.expectedAnswer || '')}">Ver pauta</div>
-      `;
-    } else {
-      expectedText = escape(session.expectedAnswer || (res ? res.expected_answer : '—') || '—');
+      if (isBranch3) {
+        const totalQ = session.questionCount || (session.questions ? session.questions.length : 20);
+        expectedText = `
+          <div style="font-size:0.8rem; font-weight:700; color:#E5E3DC;">${totalQ} Claves</div>
+          <div style="font-size:0.67rem; color:#78716C; margin-top:1px; cursor:help;" title="${escape(session.expectedAnswer || '')}">Ver pauta</div>
+        `;
+      } else {
+        expectedText = escape(session.expectedAnswer || (res ? res.expected_answer : '—') || '—');
+      }
     }
 
     let verdictBadge = `<span style="color:#78716C; font-size:0.8rem;">—</span>`;
@@ -358,20 +486,44 @@ async function loadAndRenderResultsTable() {
         } else {
           verdictBadge = `<span style="color:#FFB703; font-size:0.78rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> En proceso</span>`;
         }
-      } else if (isBranch3) {
-        const grade20 = (res.ai_raw && res.ai_raw.grade20 != null)
-          ? res.ai_raw.grade20
-          : (res.ai_raw && res.ai_raw.correctCount != null && res.ai_raw.totalQuestions)
-            ? Math.round((res.ai_raw.correctCount / res.ai_raw.totalQuestions) * 20)
-            : (isOk ? 20 : 0);
-        if (grade20 >= 11) {
-          verdictBadge = `<span style="color:#34D399; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> APROBADO</span>`;
+      } else if (isR2orR3) {
+        // ── VEREDICTO FLEXIBLE PARA FOCALIZADA (RAMA 2) Y CARTILLA OMR (RAMA 3) ──
+        const correctQ = (res.ai_raw && res.ai_raw.correctCount != null)
+          ? res.ai_raw.correctCount
+          : (isOk ? qCount : 0);
+        const totalQ = (res.ai_raw && res.ai_raw.totalQuestions != null)
+          ? res.ai_raw.totalQuestions
+          : qCount;
+
+        const pct = totalQ > 0 ? Math.round((correctQ / totalQ) * 100) : 0;
+        let scoreText = '';
+        if (currentScoreScale === 'vigesimal') {
+          const s20 = totalQ > 0 ? Math.round((correctQ / totalQ) * 20) : 0;
+          scoreText = `${s20} / 20`;
+        } else if (currentScoreScale === 'decimal') {
+          const s10 = totalQ > 0 ? (Math.round(((correctQ / totalQ) * 10) * 10) / 10).toFixed(1) : '0';
+          scoreText = `${s10} / 10`;
         } else {
-          verdictBadge = `<span style="color:#F87171; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> DESAPROBADO</span>`;
+          scoreText = totalQ > 1 ? `${correctQ}/${totalQ} (${pct}%)` : (correctQ === 1 ? 'CORRECTA' : 'INCORRECTA');
         }
+
+        let badgeCol = '#F87171';
+        let iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+        if (correctQ === totalQ && totalQ > 0) {
+          badgeCol = '#34D399';
+          iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        } else if (correctQ > 0) {
+          badgeCol = '#FBBF24';
+          iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        }
+
+        verdictBadge = `<span style="color:${badgeCol}; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;">${iconSvg} ${scoreText}</span>`;
       } else if (isOk) {
+        // ── FORMATIVA CON IA (RAMA 1): Comportamiento original intacto ──
         verdictBadge = `<span style="color:#34D399; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> CORRECTA</span>`;
       } else {
+        // ── FORMATIVA CON IA (RAMA 1): Comportamiento original intacto ──
         verdictBadge = `<span style="color:#F87171; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;" title="${res.ai_teacher_feedback ? res.ai_teacher_feedback.replace(/"/g, '&quot;') : ''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> INCORRECTA</span>`;
       }
     }
@@ -410,6 +562,10 @@ async function loadAndRenderResultsTable() {
     `;
   });
 
+  const verdictHeaderTitle = isR2orR3
+    ? `Veredicto <span style="font-size:0.68rem; color:#00B4D8; background:#211D19; border:1px solid rgba(0,180,216,0.35); border-radius:4px; padding:2px 6px; margin-left:4px; vertical-align:middle; text-transform:none;">${currentScoreScale === 'pct' ? '%' : (currentScoreScale === 'vigesimal' ? '/20' : '/10')} ▾</span>`
+    : 'Veredicto';
+
   container.innerHTML = `
     <table style="width:100%; min-width:680px; border-collapse:collapse; text-align:left;">
       <thead>
@@ -418,9 +574,9 @@ async function loadAndRenderResultsTable() {
           <th style="padding:8px 12px; font-weight:800;">Estudiante</th>
           <th style="padding:8px 12px; font-weight:800; text-align:center;">Foto</th>
           <th style="padding:8px 12px; font-weight:800;">Estado</th>
-          <th style="padding:8px 12px; font-weight:800;">${isBranch3 ? 'Calificación / Aciertos' : 'Marcó'}</th>
-          <th style="padding:8px 12px; font-weight:800;">${isBranch3 ? 'Pauta Claves' : 'Clave'}</th>
-          <th style="padding:8px 12px; font-weight:800;">Veredicto</th>
+          <th style="padding:8px 12px; font-weight:800;">${isBranch3 && qCount > 10 ? 'Calificación / Aciertos' : 'Marcó'}</th>
+          <th style="padding:8px 12px; font-weight:800;">${isBranch3 && qCount > 10 ? 'Pauta Claves' : 'Clave'}</th>
+          <th style="padding:8px 12px; font-weight:800; cursor:${isR2orR3 ? 'pointer' : 'default'}; user-select:none;" ${isR2orR3 ? 'onclick="toggleScoreScale()"' : ''} title="${isR2orR3 ? 'Toca para cambiar escala (% / 20 / 10)' : ''}">${verdictHeaderTitle}</th>
           <th style="padding:8px 12px; font-weight:800; text-align:center;">Acción</th>
         </tr>
       </thead>
