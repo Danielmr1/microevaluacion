@@ -44,28 +44,28 @@ window.closeResultsModal = closeResultsModal;
 
 function goToSessionResults() {
   // 1. Detener primero la cámara y el procesamiento de video
-  if (typeof window.stopCamera === 'function') {
-    try { window.stopCamera(); } catch (e) {}
-  } else if (typeof Scanner !== 'undefined' && typeof Scanner.stopCamera === 'function') {
+  if (typeof Scanner !== 'undefined' && typeof Scanner.stopCamera === 'function') {
     try { Scanner.stopCamera(); } catch (e) {}
+  } else if (typeof window.stopCamera === 'function') {
+    try { window.stopCamera(); } catch (e) {}
   }
 
-  // 2. Cerrar el modal de captura y asegurar que no quede visible
+  // 2. Cerrar el modal de captura sin dejar estilos en línea que bloqueen futuras capturas
   if (typeof closeModal === 'function') {
     try { closeModal(); } catch (e) {}
   }
   const captureModal = document.getElementById('capture-modal');
   if (captureModal) {
     captureModal.classList.remove('open');
-    captureModal.style.display = 'none';
+    captureModal.style.display = '';
   }
 
-  // 3. Liberar obligatoriamente la clase camera-active y desbloquear el scroll
+  // 3. Remover camera-active y limpiar restricciones de scroll
   document.body.classList.remove('camera-active');
   document.body.style.overflow = '';
-  document.body.style.overflowY = 'auto';
+  document.body.style.overflowY = '';
   document.documentElement.style.overflow = '';
-  document.documentElement.style.overflowY = 'auto';
+  document.documentElement.style.overflowY = '';
 
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
@@ -114,10 +114,10 @@ window.goToSessionResults = goToSessionResults;
 
 function goToScannerFromResults() {
   closeResultsModal();
-  if (typeof switchTab === 'function') {
-    switchTab('scan');
-  } else if (typeof goToScannerWithSession === 'function') {
+  if (typeof goToScannerWithSession === 'function') {
     goToScannerWithSession();
+  } else if (typeof switchTab === 'function') {
+    switchTab('scan');
   }
 }
 window.goToScannerFromResults = goToScannerFromResults;

@@ -2115,7 +2115,10 @@
         console.error('[Scanner] Error renderizando modal:', modalErr);
       } finally {
         const modal = document.getElementById('capture-modal');
-        if (modal) modal.classList.add('open');
+        if (modal) {
+          modal.style.display = '';
+          modal.classList.add('open');
+        }
       }
     }, 150);
   }
@@ -2174,7 +2177,10 @@
 
   function closeModal() {
     const modal = document.getElementById('capture-modal');
-    if (modal) modal.classList.remove('open');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.style.display = '';
+    }
     if (!isScanning && videoStream) {
       isScanning = true;
       requestAnimationFrame(processFrame);
