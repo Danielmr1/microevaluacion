@@ -47,9 +47,9 @@
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
   <script src="roi-processor.js?v=3.10.116"></script>
-  <script src="scanner.js?v=3.10.123"></script>
+  <script src="scanner.js?v=3.10.124"></script>
   <script src="scanner-result-modal.js"></script>
-  <script src="results-manager.js?v=3.10.123"></script>
+  <script src="results-manager.js?v=3.10.124"></script>
   <script src="classroom-importer.js"></script>
   <script src="classroom-roster.js"></script>
   <script src="classroom-manual-form.js"></script>
@@ -84,7 +84,7 @@
   <!-- Estilos Modulares de Microevaluación con Versionado Anti-Caché PWA -->
   <link rel="stylesheet" href="styles-core.css?v=3.10.86">
   <link rel="stylesheet" href="styles-print.css?v=3.10.111">
-  <link rel="stylesheet" href="styles-scanner.css?v=3.10.86">
+  <link rel="stylesheet" href="styles-scanner.css?v=3.10.124">
   <link rel="stylesheet" href="styles-hub.css?v=3.10.86">
   <link rel="stylesheet" href="styles-simulator.css?v=3.10.111">
   <link rel="stylesheet" href="styles-blueprint.css?v=3.10.123">
@@ -992,7 +992,7 @@
             <!-- Versión de la Aplicación -->
             <div id="user-menu-version"
               style="font-size:0.72rem; color:#94A3B8; font-weight:600; text-align:center; padding:4px 0 8px;">
-              Versión <span id="user-profile-version-tag">v3.10.123</span>
+              Versión <span id="user-profile-version-tag">v3.10.124</span>
             </div>
 
             <!-- Botón Salir -->
@@ -2342,12 +2342,12 @@
       </div>
 
       <div class="modal-col-right">
-        <div class="modal-header-row">
+        <div class="modal-header-row" style="margin-bottom:2px;">
           <span id="modal-header-title-text"
-            style="font-weight:700; color:#22c55e; font-size:0.85rem; display:flex; align-items:center; gap:6px;">📸
+            style="font-weight:800; color:#34D399; font-size:0.86rem; display:flex; align-items:center; gap:6px;">📸
             ¡FICHA CAPTURADA!</span>
           <button onclick="closeModal()"
-            style="background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; line-height:1;"
+            style="background:none; border:none; color:#A8A29E; font-size:1.3rem; cursor:pointer; line-height:1; padding:2px 6px;"
             title="Cerrar">✕</button>
         </div>
 
@@ -2373,10 +2373,12 @@
                 error de cámara.</span></span>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
             <div class="badge-name" id="res-student-name">NOMBRE DEL ALUMNO</div>
-            <span id="res-classroom-name"
-              style="color:#60a5fa; font-weight:700; background:rgba(96,165,250,0.15); border:1px solid rgba(96,165,250,0.4); border-radius:6px; padding:2px 8px; font-size:0.75rem; white-space:nowrap;">—</span>
+            <div>
+              <span id="res-classroom-name"
+                style="display:inline-flex; align-items:center; color:#00B4D8; font-weight:700; background:#1A1613; border:1px solid rgba(0,180,216,0.35); border-radius:6px; padding:2px 8px; font-size:0.75rem; white-space:nowrap;">—</span>
+            </div>
           </div>
           <div class="badge-details" style="display:none;">
             <span id="res-student-id">ID: —</span>
@@ -2395,7 +2397,7 @@
 
         <!-- Caja de Respuesta Zoom y Cotejo Inmediato -->
         <div class="answer-comparison-box"
-          style="background:#0f172a; border-radius:10px; padding:10px 12px; border:1px solid #334155; display:flex; flex-direction:column; gap:6px;">
+          style="background:#1A1613; border-radius:10px; padding:10px 12px; border:1px solid #3D352E; display:flex; flex-direction:column; gap:6px;">
           <!-- Bloque dinámico de alternativas OMR -->
           <div id="omr-result-container" style="display:none; flex-direction:column; gap:8px;"></div>
           <!-- Estado de procedimiento OMR con IA -->
@@ -2404,13 +2406,13 @@
           <!-- Bloque tradicional para escritura manuscrita -->
           <div id="handwriting-result-container">
             <div
-              style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; font-weight:700;">
+              style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#A8A29E; font-weight:700;">
               <span>CAJA DE RESPUESTA EN FICHA</span>
-              <span style="color:#94a3b8;">ESPERADO: <strong id="res-expected-val"
-                  style="color:#22c55e; font-size:0.95rem;">—</strong></span>
+              <span style="color:#A8A29E;">ESPERADO: <strong id="res-expected-val"
+                  style="color:#34D399; font-size:0.95rem;">—</strong></span>
             </div>
             <div
-              style="background:#ffffff; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; min-height:48px; max-height:64px; overflow:hidden; border:1.5px solid #cbd5e1; margin-top:4px;">
+              style="background:#ffffff; border-radius:6px; padding:4px; display:flex; align-items:center; justify-content:center; min-height:48px; max-height:64px; overflow:hidden; border:1.5px solid #3D352E; margin-top:4px;">
               <img id="captured-answer-img" src="" alt="Respuesta escrita por el alumno"
                 style="max-height:56px; width:auto; max-width:100%; object-fit:contain; filter:contrast(1.15);">
             </div>
@@ -2443,7 +2445,7 @@
         <div id="modal-pending-wrap" style="margin-top:6px;">
           <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:5px;">
             <span
-              style="font-size:0.7rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">
+              style="font-size:0.7rem; color:#A8A29E; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">
               Pendientes en esta sesión
             </span>
             <!-- El contador vive acá ADEMÁS de en la barra de sesión, porque
@@ -2451,13 +2453,13 @@
                  lugar donde el docente ve cuántos van mientras corrige. Lo
                  actualiza updateSessionCounter() en scanner.js. -->
             <span id="modal-counter"
-              style="font-size:0.72rem; color:#38bdf8; font-weight:800; white-space:nowrap;">—</span>
+              style="font-size:0.72rem; color:#00B4D8; font-weight:800; white-space:nowrap;">—</span>
           </div>
           <!-- chips generados por JS → renderModalPending() -->
           <div id="modal-pending-list" style="display:flex; flex-wrap:wrap; gap:5px; min-height:22px;">
           </div>
           <!-- mensaje cuando todos están completos -->
-          <div id="modal-pending-all-done" style="display:none; font-size:0.75rem; color:#4ade80; font-weight:700;">
+          <div id="modal-pending-all-done" style="display:none; font-size:0.75rem; color:#34D399; font-weight:700;">
             ✅ ¡Todos los alumnos fueron escaneados!
           </div>
         </div>
@@ -2467,8 +2469,9 @@
             📸 Escanear Siguiente Alumno
           </button>
           <button type="button" onclick="goToSessionResults()"
-            style="width:100%; background:#1e293b; color:#38bdf8; border:1.5px solid #0284c7; padding:9px 12px; border-radius:10px; font-weight:700; font-size:0.86rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-            📊 Ver Resultados de la Sesión
+            style="width:100%; background:#211D19; color:#00B4D8; border:1.5px solid #00B4D8; padding:9px 12px; border-radius:10px; font-weight:700; font-size:0.86rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 8px rgba(0,180,216,0.15);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Ver Resultados de la Sesión
           </button>
         </div>
       </div>

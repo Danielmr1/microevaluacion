@@ -1826,11 +1826,11 @@
             const correctionMode = (activeSession && activeSession.correctionMode) || 'quick';
             const modeHeader = document.createElement('div');
             modeHeader.style.cssText = correctionMode === 'full'
-              ? 'display:flex; justify-content:space-between; align-items:center; padding:5px 10px; background:#3b0764; border:1px solid #a855f7; border-radius:6px; font-size:0.73rem; color:#e9d5ff; font-weight:700; margin-bottom:4px;'
-              : 'display:flex; justify-content:space-between; align-items:center; padding:5px 10px; background:#0c4a6e; border:1px solid #38bdf8; border-radius:6px; font-size:0.73rem; color:#bae6fd; font-weight:700; margin-bottom:4px;';
+              ? 'display:flex; justify-content:space-between; align-items:center; padding:6px 12px; background:#211D19; border:1px solid rgba(168,85,247,0.4); border-radius:8px; font-size:0.75rem; color:#d8b4fe; font-weight:800; margin-bottom:6px;'
+              : 'display:flex; justify-content:space-between; align-items:center; padding:6px 12px; background:#211D19; border:1px solid rgba(0,180,216,0.35); border-radius:8px; font-size:0.75rem; color:#00B4D8; font-weight:800; margin-bottom:6px;';
             modeHeader.innerHTML = correctionMode === 'full'
               ? '<span>🔬 Modo: Alternativa + Procedimiento</span><span style="font-size:0.68rem; color:#d8b4fe;">(Rúbrica lista)</span>'
-              : '<span>⚡ Modo: Solo Alternativa</span><span style="font-size:0.68rem; color:#7dd3fc;">(Registro rápido)</span>';
+              : '<span>⚡ Focalizada en la Respuesta</span>';
             omrContainer.appendChild(modeHeader);
 
             let allCorrect = true;
@@ -1957,14 +1957,14 @@
                   badgeText = '⚠️ NO MARCÓ';
                   badgeBg = '#f59e0b20';
                   badgeColor = '#f59e0b';
-                  cardBorder = '#f59e0b';
+                  cardBorder = '#d97706';
                 } else if (qRes.marked === 'MULTIPLE') {
                   markedLabel = '⚠️ Doble marca';
                   markedColor = '#f87171';
                   badgeText = '⚠️ DOBLE MARCA';
-                  badgeBg = '#ef444420';
-                  badgeColor = '#ef4444';
-                  cardBorder = '#ef4444';
+                  badgeBg = 'rgba(220,38,38,0.2)';
+                  badgeColor = '#f87171';
+                  cardBorder = '#dc2626';
                 }
 
                 // Recortes visuales de la pregunta (cuadrícula y alternativas)
@@ -1973,30 +1973,30 @@
                 const bubblesImgUrl = (crop && crop.bubblesCanvas) ? crop.bubblesCanvas.toDataURL('image/jpeg', 0.90) : '';
 
                 const item = document.createElement('div');
-                item.style.background = '#0f172a';
+                item.style.background = '#211D19';
                 item.style.borderRadius = '10px';
                 item.style.padding = '10px 12px';
                 item.style.border = `1.5px solid ${cardBorder}`;
                 item.style.marginBottom = '8px';
                 item.innerHTML = `
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <span style="font-size:0.75rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.04em;">
+                    <span style="font-size:0.75rem; font-weight:800; color:#00B4D8; text-transform:uppercase; letter-spacing:0.04em;">
                       Pregunta ${qRes.qIndex}
                     </span>
                     <span style="font-weight:800; font-size:0.75rem; padding:3px 9px; border-radius:5px; background:${badgeBg}; color:${badgeColor}; white-space:nowrap;">
                       ${badgeText}
                     </span>
                   </div>
-                  <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; line-height:1.4; margin-bottom:8px;">
+                  <div style="font-weight:700; color:#F9F8F3; font-size:0.88rem; line-height:1.4; margin-bottom:8px;">
                     ${safeEscape(qPrompt)}
                   </div>
 
                   ${gridImgUrl ? `
                   <div style="margin-bottom:6px;">
-                    <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
+                    <div style="font-size:0.67rem; font-weight:700; color:#A8A29E; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
                       📝 Cuadrícula de cálculo:
                     </div>
-                    <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:85px; overflow:hidden; border:1px solid #475569;">
+                    <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:85px; overflow:hidden; border:1px solid #3D352E;">
                       <img src="${gridImgUrl}" alt="Cálculo Pregunta ${qRes.qIndex}" style="max-height:80px; width:auto; max-width:100%; object-fit:contain;">
                     </div>
                   </div>
@@ -2004,18 +2004,18 @@
 
                   ${bubblesImgUrl ? `
                   <div style="margin-bottom:6px;">
-                    <div style="font-size:0.67rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
+                    <div style="font-size:0.67rem; font-weight:700; color:#A8A29E; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">
                       🔘 Alternativas marcadas:
                     </div>
-                    <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:48px; overflow:hidden; border:1px solid #475569;">
+                    <div style="background:#ffffff; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; max-height:48px; overflow:hidden; border:1px solid #3D352E;">
                       <img src="${bubblesImgUrl}" alt="Alternativas Pregunta ${qRes.qIndex}" style="max-height:44px; width:auto; max-width:100%; object-fit:contain;">
                     </div>
                   </div>
                   ` : ''}
 
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid #334155; font-size:0.82rem; color:#94a3b8;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:6px; border-top:1px solid #3D352E; font-size:0.82rem; color:#A8A29E;">
                     <span>Marcó: <strong style="color:${markedColor}; font-size:1.15rem; margin-left:4px;">${markedLabel}</strong></span>
-                    <span>Clave esperada: <strong style="color:#22c55e; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
+                    <span>Clave esperada: <strong style="color:#34D399; font-size:1.15rem; margin-left:4px;">${expectedKey}</strong></span>
                   </div>
                 `;
                 omrContainer.appendChild(item);
