@@ -832,6 +832,9 @@ if (typeof window !== 'undefined') {
           if (typeof ClassroomData !== 'undefined' && ClassroomData.syncAllLocalToCloud) {
             ClassroomData.syncAllLocalToCloud();
           }
+          if (typeof SupabaseClient !== 'undefined' && SupabaseClient.syncPendingResultsToCloud) {
+            SupabaseClient.syncPendingResultsToCloud();
+          }
 
           // Mismo usuario que ya está en pantalla: no se toca el asistente.
           if (usuarioMontadoEnPantalla === user.id) return;

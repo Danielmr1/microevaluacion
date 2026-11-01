@@ -566,126 +566,379 @@
   }
 
   // ─────────────────────────────────────────────
-  // RESULTADOS POR ALUMNO
+  // RESULTADOS POR ALUMNO (OFFLINE-FIRST + AUTO-SYNC)
   // ─────────────────────────────────────────────
+
+  const STORAGE_KEY_LOCAL_RESULTS = 'microeval_local_results_v1';
+  const STORAGE_KEY_RESULTS_SYNC_QUEUE = 'microeval_results_sync_queue_v1';
+
+  function getLocalResultsMap() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_LOCAL_RESULTS);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      console.warn('[SupabaseClient] Error leyendo resultados locales:', e);
+      return {};
+    }
+  }
+
+  function setLocalResultsMap(map) {
+    try {
+      localStorage.setItem(STORAGE_KEY_LOCAL_RESULTS, JSON.stringify(map));
+    } catch (e) {
+      console.warn('[SupabaseClient] Error guardando resultados locales:', e);
+      // Resiliencia ante QuotaExceededError: eliminar fotos base64 para nunca perder las notas y veredictos
+      try {
+        const leanMap = {};
+        Object.keys(map).forEach(k => {
+          const item = Object.assign({}, map[k]);
+          delete item.grid_image_path;
+          delete item.answer_image_path;
+          if (item.ai_raw && item.ai_raw.gridImage) delete item.ai_raw.gridImage;
+          leanMap[k] = item;
+        });
+        localStorage.setItem(STORAGE_KEY_LOCAL_RESULTS, JSON.stringify(leanMap));
+      } catch (innerErr) {
+        console.error('[SupabaseClient] No se pudo guardar versión ligera de resultados locales:', innerErr);
+      }
+    }
+  }
+
+  function getResultsSyncQueue() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_RESULTS_SYNC_QUEUE);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function setResultsSyncQueue(queue) {
+    try {
+      localStorage.setItem(STORAGE_KEY_RESULTS_SYNC_QUEUE, JSON.stringify(queue));
+    } catch (e) {
+      console.warn('[SupabaseClient] Error guardando cola de sincronización de resultados:', e);
+    }
+  }
+
+  function enqueueResultSync(item) {
+    const queue = getResultsSyncQueue();
+    if (item.action === 'upsert' && item.key) {
+      const existingIdx = queue.findIndex(q => q.action === 'upsert' && q.key === item.key);
+      if (existingIdx >= 0) {
+        queue[existingIdx] = item;
+      } else {
+        queue.push(item);
+      }
+    } else {
+      queue.push(item);
+    }
+    setResultsSyncQueue(queue);
+  }
+
+  function dequeueResultSync(key) {
+    const queue = getResultsSyncQueue().filter(q => q.key !== key);
+    setResultsSyncQueue(queue);
+  }
 
   /**
    * Guarda (o actualiza) el resultado de un alumno en una sesión.
-   *
-   * Usa upsert con onConflict sobre el índice único
-   * (teacher_id, session_ref, student_code): si el docente reescanea al mismo
-   * alumno en la misma sesión, ACTUALIZA la fila en vez de duplicarla.
-   *
-   * `result` debe incluir al menos: session_ref, student_code.
-   * El teacher_id lo pone esta función, no el llamador.
-   *
-   * Es tolerante a que la migración no se haya aplicado: avisa y devuelve null.
+   * OFFLINE-FIRST: Se guarda de inmediato en localStorage y, si hay conexión,
+   * se sube a Supabase. Si no hay internet, se encola para auto-sync.
    *
    * @param {object} result
    * @returns {Promise<object|null>}
    */
   async function saveResult(result) {
+    if (!result || !result.session_ref || !result.student_code) {
+      console.warn('[SupabaseClient] saveResult necesita session_ref y student_code.');
+      return null;
+    }
+
+    const key = `${result.session_ref}::${result.student_code}`;
+    const user = getCachedUser();
+    const teacherId = user ? user.id : (result.teacher_id || 'offline_teacher');
+    const row = Object.assign({}, result, {
+      teacher_id: teacherId,
+      captured_at: result.captured_at || new Date().toISOString()
+    });
+
+    // 1. Guardar de inmediato en almacenamiento local (OFFLINE-FIRST)
+    const localMap = getLocalResultsMap();
+    localMap[key] = Object.assign({}, row, { pending_cloud_sync: true });
+    setLocalResultsMap(localMap);
+
+    // Encolar para sincronización
+    enqueueResultSync({ action: 'upsert', key: key, row: row });
+
+    // 2. Si hay conexión a internet y cliente autenticado, intentar upsert en Supabase
     const client = getClient();
-    if (!client) return null;
-    const user = await getCurrentUser();
-    if (!user) return null;
+    if (client && navigator.onLine && user) {
+      try {
+        const { data, error } = await client
+          .from('microeval_results')
+          .upsert(row, { onConflict: 'teacher_id,session_ref,student_code' })
+          .select()
+          .single();
 
-    if (!result || !result.session_ref) {
-      console.warn('[SupabaseClient] saveResult necesita session_ref: sin él no se ' +
-        'puede deduplicar (Postgres trata cada NULL como distinto).');
-      return null;
-    }
-
-    const row = Object.assign({}, result, { teacher_id: user.id });
-
-    const { data, error } = await client
-      .from('microeval_results')
-      .upsert(row, { onConflict: 'teacher_id,session_ref,student_code' })
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === '42P01') {
-        console.warn('[SupabaseClient] La tabla microeval_results no existe todavía. ' +
-          'Corré supabase/migrations/20260928000000_grado_y_resultados.sql en el SQL Editor.');
-      } else {
-        console.error('[SupabaseClient] Error guardando resultado:', error.message);
+        if (!error && data) {
+          const updatedMap = getLocalResultsMap();
+          if (updatedMap[key]) {
+            updatedMap[key] = Object.assign({}, updatedMap[key], data, { pending_cloud_sync: false });
+            setLocalResultsMap(updatedMap);
+          }
+          dequeueResultSync(key);
+          return data;
+        } else if (error) {
+          console.warn('[SupabaseClient] Error en upsert online (se mantiene en cola offline):', error.message);
+        }
+      } catch (netErr) {
+        console.warn('[SupabaseClient] Red no disponible al guardar resultado (guardado localmente):', netErr);
       }
-      return null;
     }
-    return data;
+
+    // Retorna el registro local para que el escáner y la UI continúen de inmediato
+    return localMap[key] || row;
   }
 
   /**
    * Carga todos los resultados de una sesión, en orden de captura.
+   * OFFLINE-FIRST: Lee primero de localStorage. Si hay red, consulta Supabase
+   * y fusiona los resultados remotos en local.
+   *
    * @param {string} sessionRef
    * @returns {Promise<Array>}
    */
   async function loadSessionResults(sessionRef) {
+    if (!sessionRef) return [];
+
+    // 1. Obtener registros locales de la sesión
+    const localMap = getLocalResultsMap();
+    const localRows = Object.values(localMap).filter(r => r && r.session_ref === sessionRef);
+
+    // 2. Si no hay conexión o no hay cliente Supabase, devolver resultados locales
     const client = getClient();
-    if (!client || !sessionRef) return [];
-
-    const { data, error } = await client
-      .from('microeval_results')
-      .select('*')
-      .eq('session_ref', sessionRef)
-      .order('captured_at', { ascending: true });
-
-    if (error) {
-      console.error('[SupabaseClient] Error cargando resultados de la sesión:', error.message);
-      return [];
+    if (!client || !navigator.onLine) {
+      localRows.sort((a, b) => (a.captured_at || '').localeCompare(b.captured_at || ''));
+      return localRows;
     }
-    return data || [];
+
+    // 3. Con conexión, consultar Supabase y sincronizar con local
+    try {
+      const { data, error } = await client
+        .from('microeval_results')
+        .select('*')
+        .eq('session_ref', sessionRef)
+        .order('captured_at', { ascending: true });
+
+      if (error) {
+        console.warn('[SupabaseClient] Error cargando resultados de la nube, usando locales:', error.message);
+        localRows.sort((a, b) => (a.captured_at || '').localeCompare(b.captured_at || ''));
+        return localRows;
+      }
+
+      // Fusionar preservando cambios locales que aún no se han subido
+      const mergedMap = new Map();
+      localRows.forEach(lr => {
+        if (lr && lr.student_code) mergedMap.set(lr.student_code, lr);
+      });
+
+      (data || []).forEach(cloudRow => {
+        const studentCode = cloudRow.student_code;
+        const localRow = mergedMap.get(studentCode);
+        if (localRow && localRow.pending_cloud_sync) {
+          // Mantener versión local pendiente de sincronización
+        } else {
+          mergedMap.set(studentCode, cloudRow);
+          const key = `${sessionRef}::${studentCode}`;
+          localMap[key] = Object.assign({}, cloudRow, { pending_cloud_sync: false });
+        }
+      });
+
+      setLocalResultsMap(localMap);
+
+      const finalResults = Array.from(mergedMap.values());
+      finalResults.sort((a, b) => (a.captured_at || '').localeCompare(b.captured_at || ''));
+      return finalResults;
+    } catch (netErr) {
+      console.warn('[SupabaseClient] Fallo de red al cargar resultados remotos, fallback local:', netErr);
+      localRows.sort((a, b) => (a.captured_at || '').localeCompare(b.captured_at || ''));
+      return localRows;
+    }
   }
 
   /**
    * Elimina el resultado de un alumno específico en una sesión.
+   * OFFLINE-FIRST: Elimina de inmediato de localStorage y encola la eliminación
+   * si no hay conexión.
+   *
    * @param {string} sessionRef
    * @param {string} studentCode
    * @returns {Promise<boolean>}
    */
   async function deleteResult(sessionRef, studentCode) {
+    if (!sessionRef || !studentCode) return false;
+
+    // 1. Purgar inmediatamente del almacenamiento local
+    const key = `${sessionRef}::${studentCode}`;
+    const localMap = getLocalResultsMap();
+    delete localMap[key];
+    setLocalResultsMap(localMap);
+
+    // Quitar de la cola de subida si estaba pendiente
+    dequeueResultSync(key);
+
+    // 2. Si hay red, eliminar en Supabase; si no, encolar eliminación
     const client = getClient();
-    if (!client || !sessionRef || !studentCode) return false;
-    const user = await getCurrentUser();
-    if (!user) return false;
-
-    const { error } = await client
-      .from('microeval_results')
-      .delete()
-      .eq('teacher_id', user.id)
-      .eq('session_ref', sessionRef)
-      .eq('student_code', studentCode);
-
-    if (error) {
-      console.error('[SupabaseClient] Error eliminando resultado:', error.message);
-      return false;
+    const user = getCachedUser();
+    if (client && navigator.onLine && user) {
+      try {
+        await client
+          .from('microeval_results')
+          .delete()
+          .eq('teacher_id', user.id)
+          .eq('session_ref', sessionRef)
+          .eq('student_code', studentCode);
+      } catch (e) {
+        console.warn('[SupabaseClient] Error eliminando en la nube (encolado offline):', e);
+        enqueueResultSync({ action: 'delete', session_ref: sessionRef, student_code: studentCode, teacher_id: user.id });
+      }
+    } else {
+      enqueueResultSync({ action: 'delete', session_ref: sessionRef, student_code: studentCode, teacher_id: user ? user.id : null });
     }
     return true;
   }
 
   /**
    * Elimina todos los resultados de una sesión (reinicio completo de sesión).
+   * OFFLINE-FIRST: Purga localmente y encola borrado en la nube.
+   *
    * @param {string} sessionRef
    * @returns {Promise<boolean>}
    */
   async function deleteSessionResults(sessionRef) {
+    if (!sessionRef) return false;
+
+    // 1. Purgar localmente todos los registros de esta sesión
+    const localMap = getLocalResultsMap();
+    Object.keys(localMap).forEach(k => {
+      if (localMap[k] && localMap[k].session_ref === sessionRef) {
+        delete localMap[k];
+      }
+    });
+    setLocalResultsMap(localMap);
+
+    // Purgar de la cola de sync los elementos de esta sesión
+    const queue = getResultsSyncQueue().filter(item => {
+      if (item.action === 'upsert' && item.row && item.row.session_ref === sessionRef) return false;
+      if (item.action === 'delete' && item.session_ref === sessionRef) return false;
+      return true;
+    });
+    setResultsSyncQueue(queue);
+
+    // 2. En la nube
     const client = getClient();
-    if (!client || !sessionRef) return false;
-    const user = await getCurrentUser();
-    if (!user) return false;
-
-    const { error } = await client
-      .from('microeval_results')
-      .delete()
-      .eq('teacher_id', user.id)
-      .eq('session_ref', sessionRef);
-
-    if (error) {
-      console.error('[SupabaseClient] Error reiniciando resultados de la sesión:', error.message);
-      return false;
+    const user = getCachedUser();
+    if (client && navigator.onLine && user) {
+      try {
+        await client
+          .from('microeval_results')
+          .delete()
+          .eq('teacher_id', user.id)
+          .eq('session_ref', sessionRef);
+      } catch (e) {
+        console.warn('[SupabaseClient] Error reiniciando sesión en la nube (encolado offline):', e);
+        enqueueResultSync({ action: 'delete_session', session_ref: sessionRef, teacher_id: user.id });
+      }
+    } else {
+      enqueueResultSync({ action: 'delete_session', session_ref: sessionRef, teacher_id: user ? user.id : null });
     }
     return true;
+  }
+
+  /**
+   * Sincroniza en segundo plano todos los resultados pendientes con Supabase.
+   * Se dispara automáticamente cuando el navegador detecta conexión a internet
+   * o al iniciar sesión.
+   */
+  async function syncPendingResultsToCloud() {
+    if (!navigator.onLine) return;
+    const client = getClient();
+    if (!client) return;
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    let queue = getResultsSyncQueue();
+    if (queue.length === 0) {
+      const localMap = getLocalResultsMap();
+      Object.keys(localMap).forEach(k => {
+        if (localMap[k] && localMap[k].pending_cloud_sync) {
+          queue.push({ action: 'upsert', key: k, row: localMap[k] });
+        }
+      });
+      if (queue.length > 0) setResultsSyncQueue(queue);
+    }
+
+    if (queue.length === 0) return;
+
+    console.log(`[SupabaseClient] Sincronizando ${queue.length} resultado(s) pendiente(s) con la nube...`);
+    const remainingQueue = [];
+    const localMap = getLocalResultsMap();
+
+    for (const item of queue) {
+      try {
+        if (item.action === 'upsert' && item.row) {
+          const rowToUpload = Object.assign({}, item.row, { teacher_id: user.id });
+          delete rowToUpload.pending_cloud_sync;
+          const { error } = await client
+            .from('microeval_results')
+            .upsert(rowToUpload, { onConflict: 'teacher_id,session_ref,student_code' });
+
+          if (!error) {
+            if (localMap[item.key]) {
+              localMap[item.key].pending_cloud_sync = false;
+            }
+          } else {
+            console.warn('[SupabaseClient] Error subiendo resultado encolado:', error.message);
+            remainingQueue.push(item);
+          }
+        } else if (item.action === 'delete') {
+          const { error } = await client
+            .from('microeval_results')
+            .delete()
+            .eq('teacher_id', user.id)
+            .eq('session_ref', item.session_ref)
+            .eq('student_code', item.student_code);
+
+          if (error) {
+            remainingQueue.push(item);
+          }
+        } else if (item.action === 'delete_session') {
+          const { error } = await client
+            .from('microeval_results')
+            .delete()
+            .eq('teacher_id', user.id)
+            .eq('session_ref', item.session_ref);
+
+          if (error) {
+            remainingQueue.push(item);
+          }
+        }
+      } catch (err) {
+        console.warn('[SupabaseClient] Excepción sincronizando resultado:', err);
+        remainingQueue.push(item);
+      }
+    }
+
+    setResultsSyncQueue(remainingQueue);
+    setLocalResultsMap(localMap);
+    console.log(`[SupabaseClient] Sincronización de resultados completada. Pendientes: ${remainingQueue.length}`);
+  }
+
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('online', () => {
+      syncPendingResultsToCloud();
+    });
   }
 
 
@@ -820,6 +1073,7 @@
     loadSessionResults,
     deleteResult,
     deleteSessionResults,
+    syncPendingResultsToCloud,
     loadSavedSessions,
     saveSessionToCloud,
     deleteSessionFromCloud

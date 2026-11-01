@@ -4455,13 +4455,14 @@ body:not(.camera-active) .quality-metrics .metric-card {
 }
 
 .card-preview-box {
-  background: #1f2937;
+  background: #181512;
   border-radius: 16px;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border: 1px solid #374151;
+  border: 1.5px solid #3D352E;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
   max-width: 480px;
   margin: auto;
   width: 100%;
@@ -4481,7 +4482,7 @@ body:not(.camera-active) .quality-metrics .metric-card {
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
-  border: 1.5px solid #22c55e;
+  border: 1.5px solid #34D399;
   background: #000;
   display: flex;
   align-items: center;
@@ -4510,21 +4511,23 @@ body:not(.camera-active) .quality-metrics .metric-card {
 }
 
 .student-badge-result {
-  background: #0f172a;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border-left: 4px solid #22c55e;
+  background: #211D19;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #3D352E;
+  border-left: 4px solid #34D399;
 }
 
 .badge-name {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: #F9F8F3;
+  line-height: 1.25;
 }
 
 .badge-details {
   font-size: 0.74rem;
-  color: #94a3b8;
+  color: #A8A29E;
   margin-top: 2px;
   display: flex;
   gap: 8px;
