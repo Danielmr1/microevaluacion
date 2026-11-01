@@ -580,6 +580,9 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
   if (cardFormat === 'a6') {
     sheetWidthMm = isPortrait ? 89 : 132;
     sheetHeightMm = isPortrait ? 132 : 89;
+  } else if (cardFormat === 'a4' || cardFormat === 'a4_vertical') {
+    sheetWidthMm = isPortrait ? 196 : 282;
+    sheetHeightMm = isPortrait ? 282 : 196;
   } else if (isPortrait) {
     sheetWidthMm = 134;
     sheetHeightMm = 186;
@@ -591,7 +594,36 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
     return null;
   }
 
-  const rowSelectors = '.b2-omr-row, .v-omr-row, .a6-nogrid-omr, .a6-v-with-grid-omr, .a6-h-2q-omr, .a6-omr-row';
+  // 1. Medición matemática exacta de la caja del código QR en la cabecera
+  const qrEl = cardEl.querySelector('.qr-box, .v-qr-box, .a6-qr-box, [id^="qr-box-"], [data-qr-id]');
+  let qrBox = null;
+  if (qrEl) {
+    const qrRect = qrEl.getBoundingClientRect();
+    if (qrRect.width > 0 && qrRect.height > 0) {
+      const xMm = ((qrRect.left - cardRect.left) / cardRect.width) * sheetWidthMm;
+      const yMm = ((qrRect.top - cardRect.top) / cardRect.height) * sheetHeightMm;
+      const wMm = (qrRect.width / cardRect.width) * sheetWidthMm;
+      const hMm = (qrRect.height / cardRect.height) * sheetHeightMm;
+      const xNorm = (qrRect.left - cardRect.left) / cardRect.width;
+      const yNorm = (qrRect.top - cardRect.top) / cardRect.height;
+      const wNorm = qrRect.width / cardRect.width;
+      const hNorm = qrRect.height / cardRect.height;
+
+      qrBox = {
+        xMm: Math.round(xMm * 10) / 10,
+        yMm: Math.round(yMm * 10) / 10,
+        wMm: Math.round(wMm * 10) / 10,
+        hMm: Math.round(hMm * 10) / 10,
+        xNorm: Math.round(xNorm * 1000) / 1000,
+        yNorm: Math.round(yNorm * 1000) / 1000,
+        wNorm: Math.round(wNorm * 1000) / 1000,
+        hNorm: Math.round(hNorm * 1000) / 1000
+      };
+    }
+  }
+
+  // 2. Medición de alternativas OMR (si la ficha cuenta con burbujas)
+  const rowSelectors = '.b2-omr-row, .v-omr-row, .a6-nogrid-omr, .a6-v-with-grid-omr, .a6-h-2q-omr, .a6-omr-row, .v-q-row';
   const rowEls = cardEl.querySelectorAll(rowSelectors);
   const rows = [];
 
@@ -601,7 +633,7 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
     const yCenterNorm = yCenterPx / cardRect.height;
     const yCenterMm = yCenterNorm * sheetHeightMm;
 
-    const bubbleEls = rowEl.querySelectorAll('.omr-bubble, .v-omr-bubble');
+    const bubbleEls = rowEl.querySelectorAll('.omr-bubble, .v-omr-bubble, .v-bubble');
     const bubbles = [];
     const keys = ['A', 'B', 'C', 'D'];
     bubbleEls.forEach((bEl, bIdx) => {
@@ -626,13 +658,14 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
 
   try { document.body.removeChild(wrap); } catch (e) {}
 
-  if (rows.length === 0) return null;
+  if (rows.length === 0 && !qrBox) return null;
 
   return {
     format: cardFormat,
     isPortrait: !!isPortrait,
     sheetWidthMm: sheetWidthMm,
     sheetHeightMm: sheetHeightMm,
+    qrBox: qrBox,
     rows: rows
   };
 }

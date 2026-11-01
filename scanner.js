@@ -1570,39 +1570,82 @@
 
         // Intento 3 (Respaldo Infalible): Extraer ROI de QR específica calibrada y aplicar contraste si no se leyó
         if (!qrText && typeof ROIProcessor !== 'undefined') {
-          let qrRoiConfig = ROIProcessor.CONFIG.QR; // A5 Horizontal (Respuesta Libre - CERO REGRESIÓN)
-          if (isA6Card) {
-            qrRoiConfig = (isCardPortrait && ROIProcessor.CONFIG_A6_VERTICAL)
-              ? ROIProcessor.CONFIG_A6_VERTICAL.QR
-              : ROIProcessor.CONFIG_A6.QR;
-          } else if (isCardPortrait && ROIProcessor.CONFIG_VERTICAL) {
-            qrRoiConfig = ROIProcessor.CONFIG_VERTICAL.QR;
+          const candidateConfigs = [];
+
+          // 1. PRIORIDAD MÁXIMA: Coordenada medida dinámicamente en la sesión (qrBox)
+          if (procOptions.omrLayout && procOptions.omrLayout.qrBox) {
+            const qb = procOptions.omrLayout.qrBox;
+            const fullW = fullWarpCanvas.width;
+            const fullH = fullWarpCanvas.height;
+            const sheetW = procOptions.omrLayout.sheetWidthMm || (isCardPortrait ? (isA6Card ? 89 : 134) : (isA6Card ? 132 : 186));
+            const sheetH = procOptions.omrLayout.sheetHeightMm || (isCardPortrait ? (isA6Card ? 132 : 186) : (isA6Card ? 89 : 134));
+            const padX = Math.round((3.0 / sheetW) * fullW);
+            const padY = Math.round((3.0 / sheetH) * fullH);
+
+            const rawX = Math.round(qb.xNorm * fullW) - padX;
+            const rawY = Math.round(qb.yNorm * fullH) - padY;
+            const rawW = Math.round(qb.wNorm * fullW) + padX * 2;
+            const rawH = Math.round(qb.hNorm * fullH) + padY * 2;
+
+            candidateConfigs.push({
+              x: Math.max(0, rawX),
+              y: Math.max(0, rawY),
+              width: Math.min(fullW - Math.max(0, rawX), rawW),
+              height: Math.min(fullH - Math.max(0, rawY), rawH),
+              label: 'QR Medido en Sesión'
+            });
           }
-          const qrRoi = ROIProcessor.extractROI(fullWarpCanvas, qrRoiConfig);
-          if (qrRoi && qrRoi.success) {
-            // Intento 3A: Detector nativo directo sobre el recorte de la cabecera
-            if (nativeBarcodeDetector) {
-              try {
-                const barcodes = await nativeBarcodeDetector.detect(qrRoi.canvas);
-                if (barcodes && barcodes.length > 0) { qrText = barcodes[0].rawValue; qrIntento = 3; }
-              } catch (e) {}
-            }
-            // Intento 3B: jsQR directo en el recorte
-            if (!qrText && typeof jsQR !== 'undefined') {
-              try {
-                const rawQr = qrRoi.canvas.getContext('2d').getImageData(0, 0, qrRoi.canvas.width, qrRoi.canvas.height);
-                const qrDirect = jsQR(rawQr.data, rawQr.width, rawQr.height, { inversionAttempts: 'attemptBoth' });
-                if (qrDirect) { qrText = qrDirect.data; qrIntento = 3; }
-              } catch (e) {}
-            }
-            // Intento 3C: jsQR con realce de contraste de grafito
-            if (!qrText && typeof jsQR !== 'undefined') {
-              try {
-                ROIProcessor.enhanceHandwritingContrast(qrRoi.canvas, { blackCutoff: 100, whiteCutoff: 160 });
-                const qrDataImg = qrRoi.canvas.getContext('2d').getImageData(0, 0, qrRoi.canvas.width, qrRoi.canvas.height);
-                const qrRetry = jsQR(qrDataImg.data, qrDataImg.width, qrDataImg.height, { inversionAttempts: 'attemptBoth' });
-                if (qrRetry) { qrText = qrRetry.data; qrIntento = 3; }
-              } catch (e) {}
+
+          // 2. CONFIGURACIÓN SEGÚN FORMATO ACTIVO
+          if (isA6Card) {
+            candidateConfigs.push(
+              (isCardPortrait && ROIProcessor.CONFIG_A6_VERTICAL)
+                ? ROIProcessor.CONFIG_A6_VERTICAL.QR
+                : ROIProcessor.CONFIG_A6.QR
+            );
+          } else if (isCardPortrait && ROIProcessor.CONFIG_VERTICAL) {
+            candidateConfigs.push(ROIProcessor.CONFIG_VERTICAL.QR);
+          } else if (ROIProcessor.CONFIG && ROIProcessor.CONFIG.QR) {
+            candidateConfigs.push(ROIProcessor.CONFIG.QR);
+          }
+
+          // 3. CANDIDATOS DE RESPALDO DE ESQUINA SUPERIOR DERECHA (Anti-fallos)
+          if (isCardPortrait) {
+            if (ROIProcessor.CONFIG_VERTICAL && ROIProcessor.CONFIG_VERTICAL.QR) candidateConfigs.push(ROIProcessor.CONFIG_VERTICAL.QR);
+            if (ROIProcessor.CONFIG_A6_VERTICAL && ROIProcessor.CONFIG_A6_VERTICAL.QR) candidateConfigs.push(ROIProcessor.CONFIG_A6_VERTICAL.QR);
+          } else {
+            if (ROIProcessor.CONFIG && ROIProcessor.CONFIG.QR) candidateConfigs.push(ROIProcessor.CONFIG.QR);
+            if (ROIProcessor.CONFIG_A6 && ROIProcessor.CONFIG_A6.QR) candidateConfigs.push(ROIProcessor.CONFIG_A6.QR);
+          }
+
+          for (const cfg of candidateConfigs) {
+            if (!cfg || qrText) break;
+            const qrRoi = ROIProcessor.extractROI(fullWarpCanvas, cfg);
+            if (qrRoi && qrRoi.success && qrRoi.canvas) {
+              // Intento 3A: Detector nativo directo sobre el recorte de la cabecera
+              if (nativeBarcodeDetector) {
+                try {
+                  const barcodes = await nativeBarcodeDetector.detect(qrRoi.canvas);
+                  if (barcodes && barcodes.length > 0) { qrText = barcodes[0].rawValue; qrIntento = 3; break; }
+                } catch (e) {}
+              }
+              // Intento 3B: jsQR directo en el recorte
+              if (!qrText && typeof jsQR !== 'undefined') {
+                try {
+                  const rawQr = qrRoi.canvas.getContext('2d').getImageData(0, 0, qrRoi.canvas.width, qrRoi.canvas.height);
+                  const qrDirect = jsQR(rawQr.data, rawQr.width, rawQr.height, { inversionAttempts: 'attemptBoth' });
+                  if (qrDirect) { qrText = qrDirect.data; qrIntento = 3; break; }
+                } catch (e) {}
+              }
+              // Intento 3C: jsQR con realce de contraste de grafito
+              if (!qrText && typeof jsQR !== 'undefined') {
+                try {
+                  ROIProcessor.enhanceHandwritingContrast(qrRoi.canvas, { blackCutoff: 100, whiteCutoff: 160 });
+                  const qrDataImg = qrRoi.canvas.getContext('2d').getImageData(0, 0, qrRoi.canvas.width, qrRoi.canvas.height);
+                  const qrRetry = jsQR(qrDataImg.data, qrDataImg.width, qrDataImg.height, { inversionAttempts: 'attemptBoth' });
+                  if (qrRetry) { qrText = qrRetry.data; qrIntento = 3; break; }
+                } catch (e) {}
+              }
             }
           }
         }

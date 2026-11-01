@@ -645,6 +645,7 @@
     if (evalData.orientation) newEval.orientation = evalData.orientation;
     if (evalData.cardOrientation) newEval.cardOrientation = evalData.cardOrientation;
     if (evalData.gridStage !== undefined) newEval.gridStage = evalData.gridStage;
+    if (evalData.omrLayout) newEval.omrLayout = evalData.omrLayout;
 
     // REGLA: Las Cartillas OMR (Rama 3) son plantillas de sesión para escanear burbujas,
     // NO son preguntas de banco. Se devuelven en memoria para la sesión pero NUNCA se guardan en el banco.

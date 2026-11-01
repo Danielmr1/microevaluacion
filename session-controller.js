@@ -515,23 +515,35 @@
             ? (mcRadio ? mcRadio.value : 'quick')
             : 'rubric');
 
-      // Medición exacta de coordenadas OMR para Focalizada en la respuesta (Fase 1)
+      // Medición exacta de coordenadas (QR + OMR) para todas las modalidades
       let omrLayout = null;
-      if (savedEval.type === 'mc' && typeof measureCardOMRLayout === 'function') {
+      if (typeof measureCardOMRLayout === 'function') {
         try {
           const dummyStudent = { id: '01', name: 'MUESTRA' };
           const dummyClassroom = { name: 'MUESTRA', gradeStage: 'primaria', gradeLevel: 4 };
           const isPort = (cardFormat === 'a6')
             ? (savedEval.isPortrait === true || cardOrientation === 'vertical' || savedEval.orientation === 'vertical')
-            : (cardFormat === 'a5_vertical' || cardOrientation === 'vertical');
+            : (cardFormat === 'a5_vertical' || cardFormat === 'a4_vertical' || cardOrientation === 'vertical');
+          
           let dummyHtml = '';
-          if (cardFormat === 'a6' && typeof createFocalizadaA6Card === 'function') {
-            dummyHtml = createFocalizadaA6Card(dummyStudent, dummyClassroom, Object.assign({}, savedEval, { isPortrait: isPort }));
-          } else if (isPort && typeof createFocalizadaA5VerticalCard === 'function') {
-            dummyHtml = createFocalizadaA5VerticalCard(dummyStudent, dummyClassroom, savedEval);
-          } else if (typeof createFocalizadaA5Card === 'function') {
-            dummyHtml = createFocalizadaA5Card(dummyStudent, dummyClassroom, savedEval);
+          const evalForMeasure = Object.assign({}, savedEval, {
+            isPortrait: isPort,
+            orientation: isPort ? 'vertical' : 'horizontal',
+            cardOrientation: isPort ? 'vertical' : 'horizontal'
+          });
+
+          if (cardFormat === 'a6') {
+            dummyHtml = typeof createA6Card === 'function' ? createA6Card(dummyStudent, dummyClassroom, evalForMeasure) : '';
+          } else if (cardFormat === 'a4' || cardFormat === 'a4_vertical') {
+            dummyHtml = isPort
+              ? (typeof createA4VerticalCard === 'function' ? createA4VerticalCard(dummyStudent, dummyClassroom, evalForMeasure) : '')
+              : (typeof createA4Card === 'function' ? createA4Card(dummyStudent, dummyClassroom, evalForMeasure) : '');
+          } else if (isPort) {
+            dummyHtml = typeof createA5VerticalCard === 'function' ? createA5VerticalCard(dummyStudent, dummyClassroom, evalForMeasure) : '';
+          } else {
+            dummyHtml = typeof createA5Card === 'function' ? createA5Card(dummyStudent, dummyClassroom, evalForMeasure) : '';
           }
+
           if (dummyHtml) {
             omrLayout = measureCardOMRLayout(dummyHtml, cardFormat, isPort);
           }

@@ -1,6 +1,6 @@
 // Service Worker para Microevaluación A5 (PWA) — v3.9.2
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.10.125';
+const CACHE_NAME = 'microeval-cache-v3.10.126';
 
 const PRECACHE_ASSETS = [
   './',
@@ -120,7 +120,7 @@ self.addEventListener('fetch', (event) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
           }
-        }).catch(() => {/* Modo offline: ignora fallo de red silenciosamente */});
+        }).catch(() => {/* Modo offline: ignora fallo de red silenciosamente */ });
 
         return cachedResponse;
       }
