@@ -2267,6 +2267,7 @@
   // llama desde un atributo onchange, y esos se resuelven en el ámbito global.
   global.handleFile = handleFile;
   global.toggleCamera = toggleCamera;
+  global.stopCamera = stopCamera;
   global.toggleTorch = toggleTorch;
   global.toggleFullscreen = toggleFullscreen;
   global.nextScan = nextScan;

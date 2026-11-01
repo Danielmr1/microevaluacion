@@ -941,11 +941,13 @@
       #summary-inline-results-container {
         border-radius: 12px !important;
         overflow: visible !important;
+        touch-action: pan-y !important;
       }
 
       #summary-inline-results-container > div:last-child {
         overflow-y: visible !important;
         max-height: none !important;
+        touch-action: pan-x pan-y !important;
       }
 
       .summary-document-viewport #pages-container,

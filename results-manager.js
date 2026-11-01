@@ -43,10 +43,30 @@ function closeResultsModal() {
 window.closeResultsModal = closeResultsModal;
 
 function goToSessionResults() {
-  if (typeof closeModal === 'function') closeModal();
-  if (typeof stopCamera === 'function') {
-    try { stopCamera(); } catch (e) {}
+  // 1. Detener primero la cámara y el procesamiento de video
+  if (typeof window.stopCamera === 'function') {
+    try { window.stopCamera(); } catch (e) {}
+  } else if (typeof Scanner !== 'undefined' && typeof Scanner.stopCamera === 'function') {
+    try { Scanner.stopCamera(); } catch (e) {}
   }
+
+  // 2. Cerrar el modal de captura y asegurar que no quede visible
+  if (typeof closeModal === 'function') {
+    try { closeModal(); } catch (e) {}
+  }
+  const captureModal = document.getElementById('capture-modal');
+  if (captureModal) {
+    captureModal.classList.remove('open');
+    captureModal.style.display = 'none';
+  }
+
+  // 3. Liberar obligatoriamente la clase camera-active y desbloquear el scroll
+  document.body.classList.remove('camera-active');
+  document.body.style.overflow = '';
+  document.body.style.overflowY = 'auto';
+  document.documentElement.style.overflow = '';
+  document.documentElement.style.overflowY = 'auto';
+
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
     if (exit) {
@@ -56,8 +76,6 @@ function goToSessionResults() {
   if (screen.orientation && screen.orientation.unlock) {
     try { screen.orientation.unlock(); } catch (e) {}
   }
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
 
   // Salir formalmente del modo Sesiones Guardadas para volver a la modalidad normal
   window.isViewingSavedSessionsMode = false;
