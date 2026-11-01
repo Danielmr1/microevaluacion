@@ -2115,10 +2115,7 @@
         console.error('[Scanner] Error renderizando modal:', modalErr);
       } finally {
         const modal = document.getElementById('capture-modal');
-        if (modal) {
-          modal.style.display = '';
-          modal.classList.add('open');
-        }
+        if (modal) modal.classList.add('open');
       }
     }, 150);
   }
@@ -2177,10 +2174,7 @@
 
   function closeModal() {
     const modal = document.getElementById('capture-modal');
-    if (modal) {
-      modal.classList.remove('open');
-      modal.style.display = '';
-    }
+    if (modal) modal.classList.remove('open');
     if (!isScanning && videoStream) {
       isScanning = true;
       requestAnimationFrame(processFrame);
@@ -2273,7 +2267,6 @@
   // llama desde un atributo onchange, y esos se resuelven en el ámbito global.
   global.handleFile = handleFile;
   global.toggleCamera = toggleCamera;
-  global.stopCamera = stopCamera;
   global.toggleTorch = toggleTorch;
   global.toggleFullscreen = toggleFullscreen;
   global.nextScan = nextScan;
