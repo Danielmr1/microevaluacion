@@ -366,12 +366,15 @@ function confirmRama2() {
     });
   }
 
+  const explicitFormat = (r2State.withGrid === false && r2State.count <= 2) ? 'a6' : 'a5';
+
   wizardEval = {
     id: 'eval_r2_' + Date.now(),
     branch: 'rama2',
     type: isOMR ? 'mc' : 'free',
     withGrid: r2State.withGrid,
     questionCount: r2State.count,
+    cardFormat: explicitFormat,
     questions: activeQuestions,
     title: `Focalizada en la Respuesta (${r2State.count}P)`,
     prompt: activeQuestions.map((q, idx) => `${idx + 1}. ${q.prompt}`).join(' | '),

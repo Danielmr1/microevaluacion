@@ -662,7 +662,7 @@
    * @param {number} darkCutoff Umbral de luminancia por debajo del cual un píxel es considerado oscuro
    * @param {string} cardFormat Formato de la ficha ('a6', 'a5_vertical', 'a5')
    */
-  function measureBubbleDarkness(sheetCanvas, cxMm, cyMm, darkCutoff = 165, cardFormat = 'a5') {
+  function measureBubbleDarkness(sheetCanvas, cxMm, cyMm, darkCutoff = 165, cardFormat = 'a5', cxNorm = null, cyNorm = null) {
     const isVertical = sheetCanvas.height > sheetCanvas.width;
     let sheetWidthMm = isVertical ? 136 : 186;
     let sheetHeightMm = isVertical ? 188 : 134;
@@ -681,6 +681,11 @@
     const pxMmX = sheetCanvas.width / sheetWidthMm;
     const pxMmY = sheetCanvas.height / sheetHeightMm;
 
+    const baseCxPx = (cxNorm !== null && cxNorm !== undefined) ? (cxNorm * sheetCanvas.width) : (cxMm * pxMmX);
+    const baseCyPx = (cyNorm !== null && cyNorm !== undefined) ? (cyNorm * sheetCanvas.height) : (cyMm * pxMmY);
+    const bubbleHalfW = Math.round(OMR_BUBBLE_HALF_SIZE_MM * pxMmX);
+    const bubbleHalfH = Math.round(OMR_BUBBLE_HALF_SIZE_MM * pxMmY);
+
     // Para ser tolerante a variaciones de impresión, corte y encuadre (+-2.8mm vertical),
     // probamos el centro y offsets de barrido vertical
     const offsets = [0, -0.7, 0.7, -1.4, 1.4, -2.1, 2.1, -2.8, 2.8];
@@ -688,11 +693,11 @@
     const ctx = sheetCanvas.getContext('2d', { willReadFrequently: true });
 
     for (let i = 0; i < offsets.length; i++) {
-      const dy = offsets[i];
-      const rx = Math.round((cxMm - OMR_BUBBLE_HALF_SIZE_MM) * pxMmX);
-      const ry = Math.round((cyMm + dy - OMR_BUBBLE_HALF_SIZE_MM) * pxMmY);
-      const rw = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * pxMmX);
-      const rh = Math.round(OMR_BUBBLE_HALF_SIZE_MM * 2 * pxMmY);
+      const dyPx = offsets[i] * pxMmY;
+      const rx = Math.round(baseCxPx - bubbleHalfW);
+      const ry = Math.round(baseCyPx + dyPx - bubbleHalfH);
+      const rw = bubbleHalfW * 2;
+      const rh = bubbleHalfH * 2;
 
       const clamped = clampROI({ x: rx, y: ry, width: rw, height: rh }, sheetCanvas.width, sheetCanvas.height);
       const imgData = ctx.getImageData(clamped.x, clamped.y, clamped.width, clamped.height);
@@ -772,7 +777,7 @@
    * @param {number} yCenterMm
    * @returns {{ marked: string, confidence: number, densities: Object }}
    */
-  function evaluateCompactRow(sheetCanvas, bubblesCoords, yCenterMm, cardFormat = 'a5') {
+  function evaluateCompactRow(sheetCanvas, bubblesCoords, yCenterMm, cardFormat = 'a5', yCenterNorm = null) {
     const paperLum = samplePaperLuminance(sheetCanvas, yCenterMm, cardFormat);
     const darkCutoff = Math.max(40, Math.round(paperLum * 0.72));
 
@@ -781,7 +786,7 @@
     let bestKey = null;
 
     bubblesCoords.forEach(b => {
-      const dens = measureBubbleDarkness(sheetCanvas, b.xMm, yCenterMm, darkCutoff, cardFormat);
+      const dens = measureBubbleDarkness(sheetCanvas, b.xMm, yCenterMm, darkCutoff, cardFormat, b.xNorm, yCenterNorm);
       densities[b.key] = Math.round(dens * 100);
       if (dens > maxDensity) {
         maxDensity = dens;
@@ -832,6 +837,7 @@
         const rowData = options.omrLayout.rows[i];
         if (!rowData) continue;
         const yCenterMm = rowData.yCenterMm;
+        const yCenterNorm = rowData.yCenterNorm;
         let bubblesCoords = rowData.bubbles;
         if (!bubblesCoords || bubblesCoords.length < 4) {
           bubblesCoords = isVertical ? [
@@ -841,7 +847,7 @@
             { key: 'D', xMm: 103.0 }
           ] : OMR_BUBBLES_X_MM;
         }
-        const res = evaluateCompactRow(sheetCanvas, bubblesCoords, yCenterMm, format);
+        const res = evaluateCompactRow(sheetCanvas, bubblesCoords, yCenterMm, format, yCenterNorm);
         results.push(Object.assign({ qIndex: i + 1 }, res));
       }
       return results;
@@ -1168,22 +1174,44 @@
       for (let i = 0; i < questionCount; i++) {
         const rowData = options.omrLayout.rows[i];
         if (!rowData) continue;
-        const yCenterMm = rowData.yCenterMm;
+        const yCenterNorm = (rowData.yCenterNorm !== undefined && rowData.yCenterNorm !== null)
+          ? rowData.yCenterNorm
+          : (rowData.yCenterMm / sheetHeightMm);
+        const yCenterPx = Math.round(yCenterNorm * sheetCanvas.height);
+        const cropH = Math.round(14.0 * scaleY);
         const marginX = isA6Sheet ? 12.0 : 10.0;
         const roiW = sheetWidthMm - 2 * marginX;
         const bubbleRoi = {
           x: Math.round(marginX * scaleX),
-          y: Math.round((yCenterMm - 7.0) * scaleY),
+          y: Math.max(0, Math.round(yCenterPx - (cropH / 2))),
           width: Math.round(roiW * scaleX),
-          height: Math.round(14.0 * scaleY)
+          height: cropH
         };
         const b = extractROI(sheetCanvas, bubbleRoi);
         if (b.success && b.canvas) enhanceHandwritingContrast(b.canvas);
+
+        let gridCanvas = null;
+        let strokeInfo = null;
+        if (rowData.gridBox && (withGrid || branch === 'rama1')) {
+          const gb = rowData.gridBox;
+          const gridRoi = {
+            x: Math.round((gb.xNorm !== undefined ? gb.xNorm : (gb.xMm / sheetWidthMm)) * sheetCanvas.width),
+            y: Math.round((gb.yNorm !== undefined ? gb.yNorm : (gb.yMm / sheetHeightMm)) * sheetCanvas.height),
+            width: Math.round((gb.wNorm !== undefined ? gb.wNorm : (gb.wMm / sheetWidthMm)) * sheetCanvas.width),
+            height: Math.round((gb.hNorm !== undefined ? gb.hNorm : (gb.hMm / sheetHeightMm)) * sheetCanvas.height)
+          };
+          const g = extractROI(sheetCanvas, gridRoi);
+          if (g.success && g.canvas) {
+            gridCanvas = g.canvas;
+            strokeInfo = preprocessCalculationGridStrokes(gridCanvas, { cols: 13, rows: 5 });
+          }
+        }
+
         list.push({
           qIndex: i + 1,
           bubblesCanvas: b.success ? b.canvas : null,
-          gridCanvas: null,
-          strokeInfo: null
+          gridCanvas: gridCanvas,
+          strokeInfo: strokeInfo
         });
       }
       return list;

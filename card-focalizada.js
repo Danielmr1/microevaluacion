@@ -564,16 +564,6 @@ function createFocalizadaA4VerticalCard(student, classroom, evaluation) {
  */
 function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
   if (typeof document === 'undefined' || !cardHtml) return null;
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:fixed; left:-9999px; top:-9999px; width:450px; opacity:0; pointer-events:none; z-index:-1000;';
-  wrap.innerHTML = cardHtml;
-  document.body.appendChild(wrap);
-
-  const cardEl = wrap.firstElementChild;
-  if (!cardEl) {
-    try { document.body.removeChild(wrap); } catch (e) {}
-    return null;
-  }
 
   let sheetWidthMm = 186;
   let sheetHeightMm = 134;
@@ -586,6 +576,17 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
   } else if (isPortrait) {
     sheetWidthMm = 134;
     sheetHeightMm = 186;
+  }
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `position:fixed; left:-9999px; top:-9999px; width:${sheetWidthMm}mm; height:${sheetHeightMm}mm; opacity:0; pointer-events:none; z-index:-1000;`;
+  wrap.innerHTML = cardHtml;
+  document.body.appendChild(wrap);
+
+  const cardEl = wrap.firstElementChild;
+  if (!cardEl) {
+    try { document.body.removeChild(wrap); } catch (e) {}
+    return null;
   }
 
   const cardRect = cardEl.getBoundingClientRect();
@@ -622,8 +623,32 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
     }
   }
 
-  // 2. Medición de alternativas OMR (si la ficha cuenta con burbujas)
-  const rowSelectors = '.b2-omr-row, .v-omr-row, .a6-nogrid-omr, .a6-v-with-grid-omr, .a6-h-2q-omr, .a6-omr-row, .v-q-row';
+  // 2. Medición de cuadrículas de cálculo (área de trabajo/procedimiento de cada pregunta)
+  const gridSelectors = '.grid-wrapper, .notebook-grid-full, .a6-grid-wrapper, .a6-v-grid-wrapper, .v-free-grid, .v-free-grid-2q, .mc-grid-2q, .a4-grid-wrapper, .focalizada-grid-area, .focalizada-grid-slot-1p, .focalizada-grid-slot-2p, .focalizada-grid-slot-3p, .focalizada-grid-slot-4p, .focalizada-grid-slot-5p';
+  const gridEls = cardEl.querySelectorAll(gridSelectors);
+  const gridBoxes = [];
+  gridEls.forEach((gEl) => {
+    const gRect = gEl.getBoundingClientRect();
+    if (gRect.width > 0 && gRect.height > 0) {
+      const gxNorm = (gRect.left - cardRect.left) / cardRect.width;
+      const gyNorm = (gRect.top - cardRect.top) / cardRect.height;
+      const gwNorm = gRect.width / cardRect.width;
+      const ghNorm = gRect.height / cardRect.height;
+      gridBoxes.push({
+        xNorm: Math.round(gxNorm * 1000) / 1000,
+        yNorm: Math.round(gyNorm * 1000) / 1000,
+        wNorm: Math.round(gwNorm * 1000) / 1000,
+        hNorm: Math.round(ghNorm * 1000) / 1000,
+        xMm: Math.round((gxNorm * sheetWidthMm) * 10) / 10,
+        yMm: Math.round((gyNorm * sheetHeightMm) * 10) / 10,
+        wMm: Math.round((gwNorm * sheetWidthMm) * 10) / 10,
+        hMm: Math.round((ghNorm * sheetHeightMm) * 10) / 10
+      });
+    }
+  });
+
+  // 3. Medición de franjas de respuesta y alternativas OMR (si cuenta con burbujas o franja Rpta)
+  const rowSelectors = '.b2-omr-row, .v-omr-row, .a6-nogrid-omr, .a6-v-with-grid-omr, .a6-h-2q-omr, .a6-omr-row, .v-q-row, .omr-row, .answer-strip, .answer-banner, .b2-free-row, .a6-nogrid-free, .v-free-answer-strip';
   const rowEls = cardEl.querySelectorAll(rowSelectors);
   const rows = [];
 
@@ -648,17 +673,20 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
       });
     });
 
+    const correspondingGrid = gridBoxes[qIdx] || (qIdx === 0 && gridBoxes.length === 1 ? gridBoxes[0] : null);
+
     rows.push({
       qIndex: qIdx + 1,
       yCenterMm: Math.round(yCenterMm * 10) / 10,
       yCenterNorm: Math.round(yCenterNorm * 1000) / 1000,
-      bubbles: bubbles.length === 4 ? bubbles : null
+      bubbles: bubbles.length === 4 ? bubbles : null,
+      gridBox: correspondingGrid || null
     });
   });
 
   try { document.body.removeChild(wrap); } catch (e) {}
 
-  if (rows.length === 0 && !qrBox) return null;
+  if (rows.length === 0 && !qrBox && gridBoxes.length === 0) return null;
 
   return {
     format: cardFormat,
@@ -666,6 +694,7 @@ function measureCardOMRLayout(cardHtml, cardFormat, isPortrait) {
     sheetWidthMm: sheetWidthMm,
     sheetHeightMm: sheetHeightMm,
     qrBox: qrBox,
+    gridBoxes: gridBoxes,
     rows: rows
   };
 }

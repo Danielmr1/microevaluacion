@@ -484,7 +484,9 @@
       const g = gradoDelSalon(classId);
       const isBranchR2orR3 = wizardEval && (wizardEval.branch === 'rama2' || wizardEval.branch === 'rama3');
       const qCount = (wizardEval && wizardEval.questionCount) || undefined;
-      const cardFormat = (wizardEval && wizardEval.cardFormat) || (wizardEval && wizardEval.branch === 'rama3' && (qCount || 10) <= 10 ? 'a6' : (wizardEval && wizardEval.cardOrientation === 'vertical' ? 'a5_vertical' : 'a5'));
+      const isA6R2 = wizardEval && wizardEval.branch === 'rama2' && wizardEval.withGrid === false && (qCount || 1) <= 2;
+      const isA6R3 = wizardEval && wizardEval.branch === 'rama3' && (qCount || 10) <= 10;
+      const cardFormat = (wizardEval && wizardEval.cardFormat) || (isA6R2 || isA6R3 ? 'a6' : (wizardEval && wizardEval.cardOrientation === 'vertical' ? 'a5_vertical' : 'a5'));
       const cardOrientation = (wizardEval && wizardEval.cardOrientation) || (wizardEval && wizardEval.orientation) || (wizardEval && wizardEval.isPortrait !== undefined ? (wizardEval.isPortrait ? 'vertical' : 'horizontal') : null) || (wizardEval && wizardEval.branch === 'rama3' && qCount > 10 ? 'vertical' : 'horizontal');
 
       const savedEval = ClassroomData.saveCustomEvaluation({
@@ -521,20 +523,23 @@
         try {
           const dummyStudent = { id: '01', name: 'MUESTRA' };
           const dummyClassroom = { name: 'MUESTRA', gradeStage: 'primaria', gradeLevel: 4 };
-          const isPort = (cardFormat === 'a6')
+          const isA6Quad = (cardFormat === 'a6') || (savedEval.branch === 'rama2' && savedEval.withGrid === false && (qCount || 1) <= 2 && cardFormat !== 'a5');
+          const effectiveFormat = isA6Quad ? 'a6' : cardFormat;
+          const isPort = (effectiveFormat === 'a6')
             ? (savedEval.isPortrait === true || cardOrientation === 'vertical' || savedEval.orientation === 'vertical')
-            : (cardFormat === 'a5_vertical' || cardFormat === 'a4_vertical' || cardOrientation === 'vertical');
+            : (effectiveFormat === 'a5_vertical' || effectiveFormat === 'a4_vertical' || cardOrientation === 'vertical');
           
           let dummyHtml = '';
           const evalForMeasure = Object.assign({}, savedEval, {
+            cardFormat: effectiveFormat,
             isPortrait: isPort,
             orientation: isPort ? 'vertical' : 'horizontal',
             cardOrientation: isPort ? 'vertical' : 'horizontal'
           });
 
-          if (cardFormat === 'a6') {
+          if (effectiveFormat === 'a6') {
             dummyHtml = typeof createA6Card === 'function' ? createA6Card(dummyStudent, dummyClassroom, evalForMeasure) : '';
-          } else if (cardFormat === 'a4' || cardFormat === 'a4_vertical') {
+          } else if (effectiveFormat === 'a4' || effectiveFormat === 'a4_vertical') {
             dummyHtml = isPort
               ? (typeof createA4VerticalCard === 'function' ? createA4VerticalCard(dummyStudent, dummyClassroom, evalForMeasure) : '')
               : (typeof createA4Card === 'function' ? createA4Card(dummyStudent, dummyClassroom, evalForMeasure) : '');
@@ -545,7 +550,13 @@
           }
 
           if (dummyHtml) {
-            omrLayout = measureCardOMRLayout(dummyHtml, cardFormat, isPort);
+            omrLayout = measureCardOMRLayout(dummyHtml, effectiveFormat, isPort);
+            if (omrLayout) {
+              omrLayout.branch = savedEval.branch || 'rama1';
+              omrLayout.withGrid = savedEval.withGrid !== undefined ? savedEval.withGrid : true;
+              omrLayout.questionCount = qCount || 1;
+              omrLayout.type = savedEval.type || 'free';
+            }
           }
         } catch (e) {
           console.warn('[SessionController] No se pudo medir omrLayout:', e);
