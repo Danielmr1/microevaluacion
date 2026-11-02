@@ -16,11 +16,12 @@
 // ── Estado interno del módulo ──────────────────────────────────────────────
 let currentResultsCache = { session: null, results: [], classroom: null };
 let currentPhotoViewerData = null;
-let currentScoreScale = 'pct'; // 'pct' (% aciertos), 'vigesimal' (/20), 'decimal' (/10)
+let currentScoreScale = 'pct'; // 'pct' (% aciertos), 'vigesimal' (/20), 'decimal' (/10), 'literal' (AD, A, B, C)
 
 function toggleScoreScale() {
   if (currentScoreScale === 'pct') currentScoreScale = 'vigesimal';
   else if (currentScoreScale === 'vigesimal') currentScoreScale = 'decimal';
+  else if (currentScoreScale === 'decimal') currentScoreScale = 'literal';
   else currentScoreScale = 'pct';
 
   if (currentResultsCache && currentResultsCache.session) {
@@ -165,7 +166,6 @@ async function loadAndRenderResultsTable() {
     subtitle.innerHTML = `
       <div style="display:flex; flex-direction:row; gap:16px; margin-top:4px; font-size:0.78rem; flex-wrap:wrap;">
         <div><span style="color:#A8A29E;">Salón:</span> <strong style="color:#00B4D8;">${clsName}</strong></div>
-        <div><span style="color:#A8A29E;">Evaluación:</span> <strong style="color:#F9F8F3;">${session.title || 'Evaluación del Día'}</strong></div>
       </div>
     `;
   }
@@ -256,6 +256,14 @@ async function loadAndRenderResultsTable() {
         if (lbl) lbl.textContent = 'Promedio Salón';
         kpiCorrect.textContent = `${(avgScore20 / 2).toFixed(1)} / 10`;
         kpiCorrect.style.color = (avgScore20 / 2) >= 5.5 ? '#34D399' : '#F87171';
+      } else if (currentScoreScale === 'literal') {
+        if (lbl) lbl.textContent = 'Logro Salón';
+        let salLetra = 'C';
+        if (avgPct >= 90) salLetra = 'AD';
+        else if (avgPct >= 65) salLetra = 'A';
+        else if (avgPct >= 50) salLetra = 'B';
+        kpiCorrect.textContent = `${salLetra} (${avgPct}%)`;
+        kpiCorrect.style.color = (salLetra === 'AD' || salLetra === 'A') ? '#34D399' : (salLetra === 'B' ? '#FBBF24' : '#F87171');
       } else {
         if (lbl) lbl.textContent = 'Efectividad Salón';
         kpiCorrect.textContent = `${totalQCorrect}/${totalQEvaluated} (${avgPct}%)`;
@@ -503,6 +511,17 @@ async function loadAndRenderResultsTable() {
         } else if (currentScoreScale === 'decimal') {
           const s10 = totalQ > 0 ? (Math.round(((correctQ / totalQ) * 10) * 10) / 10).toFixed(1) : '0';
           scoreText = `${s10} / 10`;
+        } else if (currentScoreScale === 'literal') {
+          if (totalQ === 1) {
+            scoreText = correctQ === 1 ? 'AD' : 'C';
+          } else if (totalQ === 2) {
+            scoreText = correctQ === 2 ? 'AD' : (correctQ === 1 ? 'B' : 'C');
+          } else {
+            if (pct >= 90) scoreText = 'AD';
+            else if (pct >= 65) scoreText = 'A';
+            else if (pct >= 50) scoreText = 'B';
+            else scoreText = 'C';
+          }
         } else {
           scoreText = totalQ > 1 ? `${correctQ}/${totalQ} (${pct}%)` : (correctQ === 1 ? 'CORRECTA' : 'INCORRECTA');
         }
@@ -510,12 +529,28 @@ async function loadAndRenderResultsTable() {
         let badgeCol = '#F87171';
         let iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
-        if (correctQ === totalQ && totalQ > 0) {
-          badgeCol = '#34D399';
-          iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-        } else if (correctQ > 0) {
-          badgeCol = '#FBBF24';
-          iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        if (currentScoreScale === 'literal') {
+          if (scoreText === 'AD') {
+            badgeCol = '#38BDF8';
+            iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+          } else if (scoreText === 'A') {
+            badgeCol = '#34D399';
+            iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          } else if (scoreText === 'B') {
+            badgeCol = '#FBBF24';
+            iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+          } else {
+            badgeCol = '#F87171';
+            iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+          }
+        } else {
+          if (correctQ === totalQ && totalQ > 0) {
+            badgeCol = '#34D399';
+            iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          } else if (correctQ > 0) {
+            badgeCol = '#FBBF24';
+            iconSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+          }
         }
 
         verdictBadge = `<span style="color:${badgeCol}; font-weight:800; font-size:0.82rem; display:inline-flex; align-items:center; gap:4px;">${iconSvg} ${scoreText}</span>`;
@@ -562,9 +597,18 @@ async function loadAndRenderResultsTable() {
     `;
   });
 
-  const verdictHeaderTitle = isR2orR3
-    ? `Veredicto <span style="font-size:0.68rem; color:#00B4D8; background:#211D19; border:1px solid rgba(0,180,216,0.35); border-radius:4px; padding:2px 6px; margin-left:4px; vertical-align:middle; text-transform:none;">${currentScoreScale === 'pct' ? '%' : (currentScoreScale === 'vigesimal' ? '/20' : '/10')} ▾</span>`
-    : 'Veredicto';
+  let verdictHeaderTitle = 'Veredicto';
+  if (isR2orR3) {
+    if (currentScoreScale === 'vigesimal') {
+      verdictHeaderTitle = 'Puntaje (/20)';
+    } else if (currentScoreScale === 'decimal') {
+      verdictHeaderTitle = 'Puntaje (/10)';
+    } else if (currentScoreScale === 'literal') {
+      verdictHeaderTitle = 'Nivel de Logro';
+    } else {
+      verdictHeaderTitle = 'Veredicto (%)';
+    }
+  }
 
   container.innerHTML = `
     <table style="width:100%; min-width:680px; border-collapse:collapse; text-align:left;">
@@ -576,7 +620,7 @@ async function loadAndRenderResultsTable() {
           <th style="padding:8px 12px; font-weight:800;">Estado</th>
           <th style="padding:8px 12px; font-weight:800;">${isBranch3 && qCount > 10 ? 'Calificación / Aciertos' : 'Marcó'}</th>
           <th style="padding:8px 12px; font-weight:800;">${isBranch3 && qCount > 10 ? 'Pauta Claves' : 'Clave'}</th>
-          <th style="padding:8px 12px; font-weight:800; cursor:${isR2orR3 ? 'pointer' : 'default'}; user-select:none;" ${isR2orR3 ? 'onclick="toggleScoreScale()"' : ''} title="${isR2orR3 ? 'Toca para cambiar escala (% / 20 / 10)' : ''}">${verdictHeaderTitle}</th>
+          <th style="padding:8px 12px; font-weight:800; cursor:${isR2orR3 ? 'pointer' : 'default'}; user-select:none; transition:color 0.15s ease;" ${isR2orR3 ? 'onclick="toggleScoreScale()"' : ''} title="${isR2orR3 ? 'Toca para cambiar escala: Veredicto (%) ➔ Puntaje (/20) ➔ Puntaje (/10) ➔ Nivel de Logro' : ''}">${verdictHeaderTitle}</th>
           <th style="padding:8px 12px; font-weight:800; text-align:center;">Acción</th>
         </tr>
       </thead>
