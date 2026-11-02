@@ -47,9 +47,9 @@
   <script src="aruco.bundle.js?v=3.0.6"></script>
   <script src="jsqr.min.js?v=3.0.6"></script>
   <script src="roi-processor.js?v=3.10.127"></script>
-  <script src="scanner.js?v=3.10.127"></script>
+  <script src="scanner.js?v=3.10.134"></script>
   <script src="scanner-result-modal.js"></script>
-  <script src="results-manager.js?v=3.10.133"></script>
+  <script src="results-manager.js?v=3.10.134"></script>
   <script src="classroom-importer.js"></script>
   <script src="classroom-roster.js"></script>
   <script src="classroom-manual-form.js"></script>
@@ -3904,23 +3904,15 @@
   <!-- SCRIPT DE COORDINACIÓN Y GESTIÓN DE SESIÓN DOCENTE -->
   <!-- Scripts principales modularizados: session-controller.js y app-navigation.js -->
   <script>
-    // Registro de PWA (Service Worker) con auto-refresco inmediato al detectar nueva versión
+    // Registro de PWA (Service Worker): actualización silenciosa sin recarga forzada en vivo
     if ('serviceWorker' in navigator) {
-      let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (document.body.classList.contains('camera-active') || (typeof isScanning !== 'undefined' && isScanning)) {
-          console.log('[SW] Actualización postergada: escáner activo.');
-          return;
-        }
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
+        console.log('[SW] Nueva versión activa en segundo plano (sin recarga forzada para proteger el escáner).');
       });
 
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then((reg) => {
-          // Forzar chequeo de actualización en cada carga
+          // Chequeo de actualización en segundo plano
           if (reg) reg.update();
         }).catch(err => {
           console.log('[PWA] Service Worker registration note:', err);

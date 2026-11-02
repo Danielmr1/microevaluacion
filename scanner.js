@@ -2293,6 +2293,8 @@
     },
     getEvaluatedCount: () => evaluatedStudentIds.size,
     getEvaluatedStudents: () => Array.from(evaluatedStudentIds),
+    isScanning: () => isScanning,
+    isCameraActive: () => !!(videoStream || document.body.classList.contains('camera-active')),
     onClassroomChanged,
     onEvaluationChanged,
     assignManualStudent,
