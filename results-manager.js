@@ -996,6 +996,46 @@ function exportResultsToExcel() {
   const isBranch3 = session.branch === 'rama3' || (session.type === 'mc' && (session.questionCount > 3 || (session.questions && session.questions.length > 3)));
   const totalQ = session.questionCount || (session.questions ? session.questions.length : 20);
 
+  const getVerdictForStudent = (res, isOk, qCount) => {
+    let defaultCol = 'Veredicto (%)';
+    if (currentScoreScale === 'vigesimal') defaultCol = 'Puntaje (/20)';
+    else if (currentScoreScale === 'decimal') defaultCol = 'Puntaje (/10)';
+    else if (currentScoreScale === 'literal') defaultCol = 'Nivel de Logro';
+
+    if (!res) return { colName: defaultCol, value: 'PENDIENTE' };
+    const correctQ = (res.ai_raw && res.ai_raw.correctCount != null)
+      ? res.ai_raw.correctCount
+      : (isOk ? qCount : 0);
+    const tQ = (res.ai_raw && res.ai_raw.totalQuestions != null)
+      ? res.ai_raw.totalQuestions
+      : qCount;
+    const pct = tQ > 0 ? Math.round((correctQ / tQ) * 100) : 0;
+
+    if (currentScoreScale === 'vigesimal') {
+      const s20 = tQ > 0 ? Math.round((correctQ / tQ) * 20) : 0;
+      return { colName: 'Puntaje (/20)', value: `${s20} / 20` };
+    } else if (currentScoreScale === 'decimal') {
+      const s10 = tQ > 0 ? (Math.round(((correctQ / tQ) * 10) * 10) / 10).toFixed(1) : '0';
+      return { colName: 'Puntaje (/10)', value: `${s10} / 10` };
+    } else if (currentScoreScale === 'literal') {
+      let letra = 'C';
+      if (tQ === 1) {
+        letra = correctQ === 1 ? 'AD' : 'C';
+      } else if (tQ === 2) {
+        letra = correctQ === 2 ? 'AD' : (correctQ === 1 ? 'B' : 'C');
+      } else {
+        if (pct >= 90) letra = 'AD';
+        else if (pct >= 65) letra = 'A';
+        else if (pct >= 50) letra = 'B';
+        else letra = 'C';
+      }
+      return { colName: 'Nivel de Logro', value: letra };
+    } else {
+      const val = tQ > 1 ? `${correctQ}/${tQ} (${pct}%)` : (correctQ === 1 ? 'CORRECTA' : 'INCORRECTA');
+      return { colName: 'Veredicto (%)', value: val };
+    }
+  };
+
   let rows;
   let statsRows = null;
 
@@ -1022,18 +1062,19 @@ function exportResultsToExcel() {
           : (isOk ? totalQ : 0)
       ) : '—';
 
+      const verdictData = getVerdictForStudent(res, isOk, totalQ);
+
       const rowObj = {
         'N°': idx + 1,
         'Código': s.id,
         'Estudiante': sanitizeCell(s.name),
         'Salón': sanitizeCell(classroom.name),
         'Estado': res ? (res.ai_raw?.pendingAI ? 'ANALIZANDO_IA' : 'EVALUADO') : 'PENDIENTE',
-        'Nota (0-20)': grade20,
         'Aciertos': correctCount,
         'Total Preguntas': totalQ,
-        '% Aciertos': (typeof grade20 === 'number') ? `${Math.round((grade20 / 20) * 100)}%` : '—',
-        'Veredicto': res ? (grade20 >= 11 ? 'APROBADO' : 'DESAPROBADO') : 'PENDIENTE'
+        '% Aciertos': (typeof grade20 === 'number') ? `${Math.round((grade20 / 20) * 100)}%` : '—'
       };
+      rowObj[verdictData.colName] = verdictData.value;
 
       // Mapear respuestas por pregunta P01..PN
       const omrMap = new Map();
@@ -1101,12 +1142,32 @@ function exportResultsToExcel() {
     }
 
   } else {
-    // ── EXPORTACIÓN PARA RAMA 1 Y RAMA 2 (RESPUESTA LIBRE / MC CORTO) ──
-    // Regla 1: Cero Regresión en Respuesta Libre
+    // ── EXPORTACIÓN PARA RAMA 1 Y RAMA 2 ──
+    const isBranch2 = session.branch === 'rama2' || (session.type === 'mc' && !isBranch3);
+
     rows = students.map((s, idx) => {
       const res = resultMap ? resultMap.get(s.id) : null;
       const isOk = res && ((res.teacher_verdict === 'CORRECTA') || (res.teacher_verdict === 'CORRECTO') || (res.ai_expected_match === true) || (res.deterministic_match === true));
       const aiGrading = res && res.ai_raw && (res.ai_raw.aiGrading?.data || res.ai_raw.aiGrading);
+
+      if (isBranch2) {
+        // ── EXPORTACIÓN RAMA 2 (FOCALIZADA EN LA RESPUESTA OMR) ──
+        const verdictData = getVerdictForStudent(res, isOk, totalQ);
+        const rowObj = {
+          'N°': idx + 1,
+          'Código': s.id,
+          'Estudiante': sanitizeCell(s.name),
+          'Salón': sanitizeCell(classroom.name),
+          'Estado': res ? (res.ai_raw?.pendingAI ? 'ANALIZANDO_IA' : 'EVALUADO') : 'PENDIENTE',
+          'Marcó / Respuesta': sanitizeCell(res ? (res.ai_answer_read || '—') : '—'),
+          'Clave Esperada': sanitizeCell(session.expectedAnswer || '—')
+        };
+        rowObj[verdictData.colName] = verdictData.value;
+        rowObj['Fecha y Hora'] = res && res.captured_at ? new Date(res.captured_at).toLocaleString() : '—';
+        return rowObj;
+      }
+
+      // ── RAMA 1: FORMATIVA CON IA (Comportamiento original intacto - Regla 1) ──
       return {
         'N°': idx + 1,
         'Código': s.id,
