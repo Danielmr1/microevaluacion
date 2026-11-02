@@ -87,7 +87,7 @@
   <link rel="stylesheet" href="styles-scanner.css?v=3.10.126">
   <link rel="stylesheet" href="styles-hub.css?v=3.10.86">
   <link rel="stylesheet" href="styles-simulator.css?v=3.10.111">
-  <link rel="stylesheet" href="styles-blueprint.css?v=3.10.123">
+  <link rel="stylesheet" href="styles-blueprint.css?v=3.10.137">
   <link rel="stylesheet" href="styles-copilot.css?v=3.10.86">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
@@ -3800,9 +3800,20 @@
   <!-- ========================================================= -->
   <!-- VISTA: SESIONES GUARDADAS                                  -->
   <!-- ========================================================= -->
-  <div id="view-saved-sessions" class="view-content" style="padding: 0;">
+  <div id="view-saved-sessions" class="view-content" style="padding: 0; position: relative;">
+    <!-- Fondo Fluido Orgánico en Vaivén (Exclusivo para Sesiones — Ondas suaves de la mariposa, solo en PC) -->
+    <div id="saved-sessions-fluid-backdrop" class="saved-sessions-fluid-stage" aria-hidden="true">
+      <div class="session-fluid-canvas">
+        <div class="session-fluid-layer layer-cyan"></div>
+        <div class="session-fluid-layer layer-gold"></div>
+        <div class="session-fluid-layer layer-depth"></div>
+        <div class="session-fluid-layer layer-veil"></div>
+      </div>
+      <div class="session-fluid-grain"></div>
+    </div>
+
     <div class="mgr-content-wrapper"
-      style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px;">
+      style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1;">
 
       <!-- Contenedor Maestro: Sesiones Guardadas (Paleta Mariposa: Ocelo Nocturno Cálido) -->
       <div

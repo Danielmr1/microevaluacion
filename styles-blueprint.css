@@ -1132,6 +1132,27 @@
     }
 
     /* ==========================================================
+       FONDO FLUIDO ORGÁNICO EN VAIVÉN (SESIONES GUARDADAS — SOLO PC)
+       Mismas ondas vivas de la vista de Sesiones (Cian 7.2s, Oro 9.6s, Profundidad 11.4s, Velo 13s)
+       ========================================================== */
+    .saved-sessions-fluid-stage {
+      display: none;
+      position: fixed;
+      inset: -140px;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background-color: var(--bg-paper, #F9F8F3);
+    }
+
+    @media screen and (min-width: 768px) {
+      #view-saved-sessions.active .saved-sessions-fluid-stage,
+      body:has(#view-saved-sessions.active) .saved-sessions-fluid-stage {
+        display: block;
+      }
+    }
+
+    /* ==========================================================
        FONDO FLUIDO ORGÁNICO EN VAIVÉN (SALONES Y ALUMNOS)
        Opción A: Inversión Vertical con Cian/Celeste Protagonista Cenital
        Calibración Dinámica: Ritmo 4s, Amplitud 120px, Difuminado 50px

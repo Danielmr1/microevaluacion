@@ -430,12 +430,9 @@
       const halfH3D = vDist * Math.tan((camera.fov * Math.PI) / 360);
       const halfW3D = halfH3D * (window.innerWidth / window.innerHeight);
 
-      // Referencia única y estable: el contenedor general .teacher-panel o el panel de sesiones guardadas
+      // Referencia única y estable: el contenedor general .teacher-panel (900px)
       // Garantiza que la posición horizontal no cambie antes ni después de elegir el salón.
-      const savedSessionsEl = document.querySelector('#view-saved-sessions.active .mgr-content-wrapper');
-      const panelEl = (savedSessionsEl && savedSessionsEl.offsetParent !== null)
-        ? savedSessionsEl
-        : document.querySelector('.teacher-panel');
+      const panelEl = document.querySelector('.teacher-panel');
       const panelRect = panelEl ? panelEl.getBoundingClientRect() : null;
 
       const leftMarginPx = (panelRect && panelRect.left > 20) ? panelRect.left : Math.max(window.innerWidth * 0.12, 40);
