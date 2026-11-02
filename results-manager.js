@@ -24,15 +24,19 @@ function toggleScoreScale() {
   else if (currentScoreScale === 'decimal') currentScoreScale = 'literal';
   else currentScoreScale = 'pct';
 
-  if (currentResultsCache && currentResultsCache.session) {
-    renderResultsTable(currentResultsCache.session, currentResultsCache.classroom, currentResultsCache.results);
+  if (currentResultsCache && currentResultsCache.session && currentResultsCache.classroom && currentResultsCache.resultMap) {
+    renderResultsTableBody(currentResultsCache.session, currentResultsCache.classroom, currentResultsCache.resultMap);
+  } else {
+    loadAndRenderResultsTable();
   }
 }
 function setScoreScale(newScale) {
   if (['pct', 'vigesimal', 'decimal', 'literal'].includes(newScale)) {
     currentScoreScale = newScale;
-    if (currentResultsCache && currentResultsCache.session) {
-      renderResultsTable(currentResultsCache.session, currentResultsCache.classroom, currentResultsCache.results);
+    if (currentResultsCache && currentResultsCache.session && currentResultsCache.classroom && currentResultsCache.resultMap) {
+      renderResultsTableBody(currentResultsCache.session, currentResultsCache.classroom, currentResultsCache.resultMap);
+    } else {
+      loadAndRenderResultsTable();
     }
   }
 }
@@ -202,6 +206,21 @@ async function loadAndRenderResultsTable() {
   if (typeof Scanner !== 'undefined' && Scanner.setEvaluatedStudents) {
     Scanner.setEvaluatedStudents(Array.from(resultMap.keys()));
   }
+
+  renderResultsTableBody(session, cls, resultMap);
+}
+
+function renderResultsTableBody(session, cls, resultMap) {
+  const container = document.getElementById('results-table-container');
+  const kpiTotal = document.getElementById('res-kpi-total');
+  const kpiCorrect = document.getElementById('res-kpi-correct');
+  const kpiIncorrect = document.getElementById('res-kpi-incorrect');
+  if (!container || !session) return;
+
+  const isBranch3 = session.branch === 'rama3' || (session.type === 'mc' && (session.questionCount > 3 || (session.questions && session.questions.length > 3)));
+  const isBranch2 = session.branch === 'rama2';
+  const isR2orR3 = isBranch2 || isBranch3;
+  const qCount = session.questionCount || (session.questions ? session.questions.length : (session.prompt ? session.prompt.split('|').length : 1));
 
   const students = cls ? (cls.students || []) : [];
   const totalStudents = students.length;
@@ -611,10 +630,10 @@ async function loadAndRenderResultsTable() {
       <select onchange="setScoreScale(this.value)"
         style="background:#211D19; border:1.5px solid #00B4D8; color:#00B4D8; font-size:0.74rem; font-weight:800; border-radius:6px; padding:4px 8px; cursor:pointer; text-transform:uppercase; outline:none; box-shadow:0 0 6px rgba(0,180,216,0.25);"
         title="Elegir escala de calificación">
-        <option value="pct" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'pct' ? 'selected' : ''}>Veredicto (%) ▾</option>
-        <option value="vigesimal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'vigesimal' ? 'selected' : ''}>Puntaje (/20) ▾</option>
-        <option value="decimal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'decimal' ? 'selected' : ''}>Puntaje (/10) ▾</option>
-        <option value="literal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'literal' ? 'selected' : ''}>Nivel de Logro ▾</option>
+        <option value="pct" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'pct' ? 'selected' : ''}>Veredicto (%)</option>
+        <option value="vigesimal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'vigesimal' ? 'selected' : ''}>Puntaje (/20)</option>
+        <option value="decimal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'decimal' ? 'selected' : ''}>Puntaje (/10)</option>
+        <option value="literal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'literal' ? 'selected' : ''}>Nivel de Logro</option>
       </select>
     `
     : 'Veredicto';
