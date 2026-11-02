@@ -210,28 +210,28 @@
 
         let branchBadgeHtml = '';
         if (isBranch3) {
-          branchBadgeHtml = `<span style="background:rgba(2,132,199,0.2); border:1px solid #0284c7; color:#38bdf8; font-size:0.75rem; font-weight:800; padding:3px 9px; border-radius:6px;">📝 ${escaparHtml(sess.branchTitle || 'Cartilla OMR')}</span>`;
+          branchBadgeHtml = `<span style="background:rgba(52,211,153,0.15); border:1px solid #34d399; color:#34d399; font-size:0.75rem; font-weight:800; padding:3px 9px; border-radius:6px;">📝 ${escaparHtml(sess.branchTitle || 'Cartilla OMR')}</span>`;
         } else if (isBranch2) {
-          branchBadgeHtml = `<span style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#34d399; font-size:0.75rem; font-weight:800; padding:3px 9px; border-radius:6px;">⚡ ${escaparHtml(sess.branchTitle || 'Focalizada en la Respuesta')}</span>`;
+          branchBadgeHtml = `<span style="background:rgba(255,183,3,0.15); border:1px solid #FFB703; color:#FFB703; font-size:0.75rem; font-weight:800; padding:3px 9px; border-radius:6px;">⚡ ${escaparHtml(sess.branchTitle || 'Focalizada en la Respuesta')}</span>`;
         } else {
-          branchBadgeHtml = `<span style="background:rgba(168,85,247,0.2); border:1px solid #a855f7; color:#c084fc; font-size:0.75rem; font-weight:800; padding:3px 9px; border-radius:6px;">🤖 ${escaparHtml(sess.branchTitle || 'Formativa con IA')}</span>`;
+          branchBadgeHtml = `<span style="background:rgba(0,180,216,0.15); border:1px solid #00B4D8; color:#00B4D8; font-size:0.75rem; font-weight:800; padding:3px 9px; border-radius:6px;">🤖 ${escaparHtml(sess.branchTitle || 'Formativa con IA')}</span>`;
         }
 
         const clsColor = (typeof ClassroomData !== 'undefined' && ClassroomData.getClassroomColor)
           ? ClassroomData.getClassroomColor(sess.classroomId)
-          : '#38bdf8';
+          : '#00B4D8';
 
         // Vista previa de preguntas y claves
         let questionsPreviewHtml = '';
         if (sess.questions && sess.questions.length > 0) {
           questionsPreviewHtml = `
-            <div style="background:#090d16; border:1px solid #334155; border-radius:8px; padding:10px; margin-top:10px;">
-              <div style="font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:6px;">Preguntas y Pauta de Claves:</div>
+            <div style="background:#181512; border:1px solid #3D352E; border-radius:8px; padding:10px; margin-top:10px;">
+              <div style="font-size:0.72rem; color:#A8A29E; font-weight:700; margin-bottom:6px;">Preguntas y Pauta de Claves:</div>
               <div style="display:flex; flex-direction:column; gap:6px; max-height:120px; overflow-y:auto;">
                 ${sess.questions.slice(0, 5).map((q, idx) => `
                   <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:0.78rem;">
                     <span style="color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">
-                      <strong>P${idx + 1}:</strong> ${escaparHtml((q.prompt || '').substring(0, 70))}${q.prompt && q.prompt.length > 70 ? '...' : ''}
+                      <strong style="color:#FFB703;">P${idx + 1}:</strong> ${escaparHtml((q.prompt || '').substring(0, 70))}${q.prompt && q.prompt.length > 70 ? '...' : ''}
                     </span>
                     <span style="background:#065f46; color:#4ade80; font-weight:800; font-size:0.72rem; padding:2px 8px; border-radius:4px; flex-shrink:0;">
                       ${isOMR ? ('Clave: ' + (q.correct || 'A')) : ('Rpta: ' + (q.expectedAnswer || ''))}
@@ -244,9 +244,9 @@
           `;
         } else if (sess.prompt) {
           questionsPreviewHtml = `
-            <div style="background:#090d16; border:1px solid #334155; border-radius:8px; padding:10px; margin-top:10px;">
+            <div style="background:#181512; border:1px solid #3D352E; border-radius:8px; padding:10px; margin-top:10px;">
               <div style="font-size:0.78rem; color:#e2e8f0; line-height:1.4;">
-                <strong>Consigna:</strong> ${escaparHtml(sess.prompt.substring(0, 100))}${sess.prompt.length > 100 ? '...' : ''}
+                <strong style="color:#FFB703;">Consigna:</strong> ${escaparHtml(sess.prompt.substring(0, 100))}${sess.prompt.length > 100 ? '...' : ''}
               </div>
               <div style="margin-top:6px; font-size:0.75rem; color:#4ade80; font-weight:700;">
                 Respuesta esperada: ${escaparHtml(sess.expectedAnswer || '')}
@@ -256,14 +256,14 @@
         }
 
         return `
-          <div style="background:#1e293b; border:1.5px solid #334155; border-radius:12px; padding:16px; transition:border 0.15s; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+          <div style="background:#211D19; border:1.5px solid #3D352E; border-radius:12px; padding:16px; transition:border 0.15s; box-shadow:0 4px 14px rgba(0,0,0,0.35);">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
               <div>
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                   <span style="font-size:1.05rem; font-weight:800; color:${clsColor};">${escaparHtml(sess.classroomName || 'Salón')}</span>
                   ${sess.gradeText ? `<span style="background:#064e3b; border:1px solid #10b981; color:#a7f3d0; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:6px;">${escaparHtml(sess.gradeText)}</span>` : ''}
                 </div>
-                <div style="font-size:0.72rem; color:#64748b; margin-top:3px;">
+                <div style="font-size:0.72rem; color:#A8A29E; margin-top:3px;">
                   Guardada el: ${escaparHtml(sess.savedAt || '')}
                 </div>
               </div>
@@ -274,13 +274,13 @@
 
             ${questionsPreviewHtml}
 
-            <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:14px; padding-top:12px; border-top:1px solid #334155; flex-wrap:wrap;">
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:14px; padding-top:12px; border-top:1px solid #3D352E; flex-wrap:wrap;">
               <button type="button" onclick="handleDeleteSavedSession('${sess.id}')"
-                style="background:#1e293b; border:1px solid #7f1d1d; color:#f87171; border-radius:8px; padding:8px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                style="background:#181512; border:1px solid #7f1d1d; color:#f87171; border-radius:8px; padding:8px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
                 🗑️ Eliminar
               </button>
               <button type="button" onclick="loadAndActivateSavedSession('${sess.id}')"
-                style="background:#2563eb; border:none; color:#fff; border-radius:8px; padding:8px 18px; font-size:0.82rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(37,99,235,0.4);">
+                style="background:#0284c7; border:none; color:#fff; border-radius:8px; padding:8px 18px; font-size:0.82rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(2,132,199,0.4);">
                 ▶️ Cargar Sesión
               </button>
             </div>

@@ -70,7 +70,7 @@
   <script src="card-generator.js"></script>
   <script src="card-booklet-pdf.js"></script>
   <script src="card-sheets-print.js"></script>
-  <script src="session-saved-manager.js?v=3.10.127"></script>
+  <script src="session-saved-manager.js?v=3.10.135"></script>
   <script src="session-summary-view.js"></script>
   <script src="session-controller.js?v=3.10.127"></script>
   <script src="app-scroll-effects.js"></script>
@@ -3804,21 +3804,24 @@
     <div class="mgr-content-wrapper"
       style="max-width: 980px; margin: 0 auto; width: 100%; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px;">
 
-      <!-- Contenedor Maestro: Sesiones Guardadas -->
+      <!-- Contenedor Maestro: Sesiones Guardadas (Paleta Mariposa: Ocelo Nocturno Cálido) -->
       <div
-        style="background:#0f172a; border:1.5px solid #334155; border-radius:18px; box-shadow:0 12px 32px rgba(0,0,0,0.3); overflow:hidden; display:flex; flex-direction:column;">
+        style="background:#181512; border:1.5px solid #3D352E; border-radius:18px; box-shadow:0 16px 40px rgba(0,0,0,0.45); overflow:hidden; display:flex; flex-direction:column;">
 
         <!-- Header de Sesiones -->
         <div
-          style="padding:18px 22px; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; background:#1e293b;">
+          style="padding:18px 22px; border-bottom:1px solid #2B231D; display:flex; align-items:center; justify-content:space-between; background:#211D19;">
           <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:1.6rem; line-height:1;">📁</span>
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,183,3,0.12); border:1px solid rgba(255,183,3,0.3); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+              </svg>
+            </div>
             <div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <h2 style="margin:0; font-size:1.15rem; font-weight:800; color:#f8fafc;">Sesiones Guardadas</h2>
+                <h2 style="margin:0; font-size:1.15rem; font-weight:800; color:#F8FAFC;">Sesiones Guardadas</h2>
                 <span id="saved-sessions-modal-count"
-                  style="background:rgba(217,119,6,0.2); border:1px solid #d97706; color:#fbbf24; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:6px;">0
-                  de 8 ocupadas</span>
+                  style="background:rgba(255,183,3,0.14); border:1px solid rgba(255,183,3,0.35); color:#FFB703; font-size:0.75rem; font-weight:800; padding:2px 9px; border-radius:6px;">0 de 8 ocupadas</span>
               </div>
             </div>
           </div>
@@ -3830,64 +3833,91 @@
             <!-- Renderizado dinámico de las sesiones -->
           </div>
 
-          <div id="saved-sessions-empty" style="display:none; text-align:center; padding:30px 16px;">
-            <div style="font-size:2.4rem; margin-bottom:10px;">📭</div>
-            <h4 style="color:#f8fafc; font-size:1.05rem; font-weight:800; margin:0 0 6px;">No tienes sesiones guardadas
-              todavía</h4>
-            <p style="color:#94a3b8; font-size:0.82rem; max-width:500px; margin:0 auto 20px; line-height:1.4;">
-              Para preparar una nueva sesión, primero <strong>elige la modalidad</strong> de trabajo. A continuación
-              seleccionarás tu salón con alumnos y las preguntas de la evaluación para generar el PDF y guardar tu
-              sesión:
+          <div id="saved-sessions-empty" style="display:none; text-align:center; padding:32px 16px;">
+            <!-- Ilustración central personalizada: cuaderno con destello ocelo -->
+            <div style="width:68px; height:68px; border-radius:50%; background:radial-gradient(circle, rgba(255,183,3,0.16) 0%, rgba(0,180,216,0.06) 60%, transparent 70%); display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; border:1px solid rgba(255,183,3,0.25);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13" stroke="#00B4D8"/>
+                <line x1="16" y1="17" x2="8" y2="17" stroke="#00B4D8"/>
+                <line x1="10" y1="9" x2="8" y2="9" stroke="#FFB703"/>
+              </svg>
+            </div>
+            <h4 style="color:#F8FAFC; font-size:1.1rem; font-weight:800; margin:0 0 6px;">No tienes sesiones guardadas todavía</h4>
+            <p style="color:#A8A29E; font-size:0.84rem; max-width:520px; margin:0 auto 24px; line-height:1.45;">
+              Para preparar una nueva sesión, primero <strong style="color:#F8FAFC;">elige la modalidad</strong> de trabajo. A continuación seleccionarás tu salón con alumnos y las preguntas de la evaluación para generar el PDF y guardar tu sesión:
             </p>
 
-            <!-- Selector directo de las 3 modalidades -->
+            <!-- Selector directo de las 3 modalidades con paleta Ocelo Mariposa -->
             <div
-              style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; max-width:780px; margin:0 auto; text-align:left;">
+              style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:14px; max-width:820px; margin:0 auto; text-align:left;">
 
-              <!-- Modalidad 1: Formativa con IA -->
+              <!-- Modalidad 1: Formativa con IA (Cian Escamas) -->
               <div onclick="openBranchFlow('rama1')"
-                style="background:#1e293b; border:1.5px solid #3b82f6; border-radius:12px; padding:16px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;"
-                onmouseover="this.style.borderColor='#60a5fa'" onmouseout="this.style.borderColor='#3b82f6'">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                  <span style="font-size:1.3rem;">🧠</span>
-                  <span style="color:#60a5fa; font-weight:800; font-size:0.9rem;">Formativa con IA</span>
+                style="background:#211D19; border:1.5px solid rgba(0,180,216,0.4); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s ease; box-shadow:0 4px 14px rgba(0,0,0,0.25);"
+                onmouseover="this.style.borderColor='#00B4D8'; this.style.boxShadow='0 6px 20px rgba(0,180,216,0.25)'; this.style.transform='translateY(-2px)';"
+                onmouseout="this.style.borderColor='rgba(0,180,216,0.4)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)'; this.style.transform='translateY(0)';">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(0,180,216,0.14); border:1px solid rgba(0,180,216,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00B4D8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+                    </svg>
+                  </div>
+                  <span style="color:#00B4D8; font-weight:800; font-size:0.92rem;">Formativa con IA</span>
                 </div>
-                <div style="color:#cbd5e1; font-size:0.75rem; line-height:1.35; margin-bottom:10px;">
+                <div style="color:#D6D3D1; font-size:0.77rem; line-height:1.4; margin-bottom:12px;">
                   Rúbrica de corrección pedagógica y análisis profundo de procedimientos manuscritos.
                 </div>
-                <div style="color:#38bdf8; font-size:0.72rem; font-weight:700;">
+                <div style="color:#38BDF8; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
                   ➔ Iniciar: Salón ➔ Preguntas ➔ PDF
                 </div>
               </div>
 
-              <!-- Modalidad 2: Focalizada en la Respuesta -->
+              <!-- Modalidad 2: Focalizada en la Respuesta (Ámbar Ocelo) -->
               <div onclick="openBranchFlow('rama2')"
-                style="background:#1e293b; border:1.5px solid #10b981; border-radius:12px; padding:16px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;"
-                onmouseover="this.style.borderColor='#34d399'" onmouseout="this.style.borderColor='#10b981'">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                  <span style="font-size:1.3rem;">⚡</span>
-                  <span style="color:#34d399; font-weight:800; font-size:0.9rem;">Focalizada en la Respuesta</span>
+                style="background:#211D19; border:1.5px solid rgba(255,183,3,0.4); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s ease; box-shadow:0 4px 14px rgba(0,0,0,0.25);"
+                onmouseover="this.style.borderColor='#FFB703'; this.style.boxShadow='0 6px 20px rgba(255,183,3,0.25)'; this.style.transform='translateY(-2px)';"
+                onmouseout="this.style.borderColor='rgba(255,183,3,0.4)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)'; this.style.transform='translateY(0)';">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(255,183,3,0.14); border:1px solid rgba(255,183,3,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9"/>
+                      <polyline points="9 12 11.5 14.5 15.5 9.5"/>
+                    </svg>
+                  </div>
+                  <span style="color:#FFB703; font-weight:800; font-size:0.92rem;">Focalizada en la Respuesta</span>
                 </div>
-                <div style="color:#cbd5e1; font-size:0.75rem; line-height:1.35; margin-bottom:10px;">
+                <div style="color:#D6D3D1; font-size:0.77rem; line-height:1.4; margin-bottom:12px;">
                   Validación directa de la respuesta final del alumno con área de cálculo/borrador.
                 </div>
-                <div style="color:#4ade80; font-size:0.72rem; font-weight:700;">
+                <div style="color:#FBBF24; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
                   ➔ Iniciar: Salón ➔ Preguntas ➔ PDF
                 </div>
               </div>
 
-              <!-- Modalidad 3: Cartilla OMR -->
+              <!-- Modalidad 3: Cartilla OMR (Verde Esmeralda) -->
               <div onclick="openBranchFlow('rama3')"
-                style="background:#1e293b; border:1.5px solid #f59e0b; border-radius:12px; padding:16px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;"
-                onmouseover="this.style.borderColor='#fbbf24'" onmouseout="this.style.borderColor='#f59e0b'">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                  <span style="font-size:1.3rem;">📝</span>
-                  <span style="color:#fbbf24; font-weight:800; font-size:0.9rem;">Cartilla OMR</span>
+                style="background:#211D19; border:1.5px solid rgba(52,211,153,0.4); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s ease; box-shadow:0 4px 14px rgba(0,0,0,0.25);"
+                onmouseover="this.style.borderColor='#34D399'; this.style.boxShadow='0 6px 20px rgba(52,211,153,0.25)'; this.style.transform='translateY(-2px)';"
+                onmouseout="this.style.borderColor='rgba(52,211,153,0.4)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)'; this.style.transform='translateY(0)';">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(52,211,153,0.14); border:1px solid rgba(52,211,153,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="6" cy="7" r="2.5" fill="#34D399"/>
+                      <circle cx="12" cy="7" r="2.5"/>
+                      <circle cx="18" cy="7" r="2.5"/>
+                      <circle cx="6" cy="17" r="2.5"/>
+                      <circle cx="12" cy="17" r="2.5" fill="#34D399"/>
+                      <circle cx="18" cy="17" r="2.5"/>
+                    </svg>
+                  </div>
+                  <span style="color:#34D399; font-weight:800; font-size:0.92rem;">Cartilla OMR</span>
                 </div>
-                <div style="color:#cbd5e1; font-size:0.75rem; line-height:1.35; margin-bottom:10px;">
+                <div style="color:#D6D3D1; font-size:0.77rem; line-height:1.4; margin-bottom:12px;">
                   Cartillas compactas A6/A5 con burbujas de respuesta y lectura instantánea de claves.
                 </div>
-                <div style="color:#fde047; font-size:0.72rem; font-weight:700;">
+                <div style="color:#4ADE80; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
                   ➔ Iniciar: Salón ➔ Claves/Banco ➔ PDF
                 </div>
               </div>
