@@ -370,6 +370,17 @@
       width: 100%;
     }
 
+    #summary-questions-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    #summary-questions-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #summary-questions-container::-webkit-scrollbar-thumb {
+      background: rgba(120, 108, 94, 0.3);
+      border-radius: 4px;
+    }
+
     .btn-summary-neutral {
       background: #F3EFE4 !important;
       border: 1.5px solid #D6CFC0 !important;
