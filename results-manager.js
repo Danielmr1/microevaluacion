@@ -28,7 +28,16 @@ function toggleScoreScale() {
     renderResultsTable(currentResultsCache.session, currentResultsCache.classroom, currentResultsCache.results);
   }
 }
+function setScoreScale(newScale) {
+  if (['pct', 'vigesimal', 'decimal', 'literal'].includes(newScale)) {
+    currentScoreScale = newScale;
+    if (currentResultsCache && currentResultsCache.session) {
+      renderResultsTable(currentResultsCache.session, currentResultsCache.classroom, currentResultsCache.results);
+    }
+  }
+}
 window.toggleScoreScale = toggleScoreScale;
+window.setScoreScale = setScoreScale;
 
 // ── Apertura / cierre del panel de resultados ──────────────────────────────
 
@@ -597,18 +606,18 @@ async function loadAndRenderResultsTable() {
     `;
   });
 
-  let verdictHeaderTitle = 'Veredicto';
-  if (isR2orR3) {
-    if (currentScoreScale === 'vigesimal') {
-      verdictHeaderTitle = 'Puntaje (/20)';
-    } else if (currentScoreScale === 'decimal') {
-      verdictHeaderTitle = 'Puntaje (/10)';
-    } else if (currentScoreScale === 'literal') {
-      verdictHeaderTitle = 'Nivel de Logro';
-    } else {
-      verdictHeaderTitle = 'Veredicto (%)';
-    }
-  }
+  const verdictHeaderHtml = isR2orR3
+    ? `
+      <select onchange="setScoreScale(this.value)"
+        style="background:#211D19; border:1px solid rgba(255,255,255,0.25); color:#F9F8F3; font-size:0.72rem; font-weight:800; border-radius:6px; padding:3px 6px; cursor:pointer; text-transform:uppercase; outline:none;"
+        title="Elegir escala de calificación">
+        <option value="pct" ${currentScoreScale === 'pct' ? 'selected' : ''}>Veredicto (%)</option>
+        <option value="vigesimal" ${currentScoreScale === 'vigesimal' ? 'selected' : ''}>Puntaje (/20)</option>
+        <option value="decimal" ${currentScoreScale === 'decimal' ? 'selected' : ''}>Puntaje (/10)</option>
+        <option value="literal" ${currentScoreScale === 'literal' ? 'selected' : ''}>Nivel de Logro</option>
+      </select>
+    `
+    : 'Veredicto';
 
   container.innerHTML = `
     <table style="width:100%; min-width:680px; border-collapse:collapse; text-align:left;">
@@ -620,7 +629,7 @@ async function loadAndRenderResultsTable() {
           <th style="padding:8px 12px; font-weight:800;">Estado</th>
           <th style="padding:8px 12px; font-weight:800;">${isBranch3 && qCount > 10 ? 'Calificación / Aciertos' : 'Marcó'}</th>
           <th style="padding:8px 12px; font-weight:800;">${isBranch3 && qCount > 10 ? 'Pauta Claves' : 'Clave'}</th>
-          <th style="padding:8px 12px; font-weight:800; cursor:${isR2orR3 ? 'pointer' : 'default'}; user-select:none; transition:color 0.15s ease;" ${isR2orR3 ? 'onclick="toggleScoreScale()"' : ''} title="${isR2orR3 ? 'Toca para cambiar escala: Veredicto (%) ➔ Puntaje (/20) ➔ Puntaje (/10) ➔ Nivel de Logro' : ''}">${verdictHeaderTitle}</th>
+          <th style="padding:8px 12px; font-weight:800;">${verdictHeaderHtml}</th>
           <th style="padding:8px 12px; font-weight:800; text-align:center;">Acción</th>
         </tr>
       </thead>
