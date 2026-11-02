@@ -198,8 +198,14 @@ if (typeof window !== 'undefined') {
       if (viewSavedSessions) viewSavedSessions.classList.toggle('active', flowName === 'saved-sessions');
       if (viewScan) viewScan.classList.toggle('active', flowName === 'scan');
 
-      if (flowName !== 'eval' && typeof window !== 'undefined' && window.EvaluationHologram) {
-        window.EvaluationHologram.stop();
+      // Fondo holográfico con movimiento Three.js: activo en 'eval' y, exclusivamente en PC (>=768px), en 'saved-sessions'
+      const isPcViewport = (typeof window !== 'undefined' && window.innerWidth >= 768);
+      if (typeof window !== 'undefined' && window.EvaluationHologram) {
+        if (flowName === 'eval' || (flowName === 'saved-sessions' && isPcViewport)) {
+          window.EvaluationHologram.start();
+        } else {
+          window.EvaluationHologram.stop();
+        }
       }
 
       // Botón INICIO en la barra superior: oculto en el Hub de inicio, visible en cualquier otra vista
