@@ -609,12 +609,12 @@ async function loadAndRenderResultsTable() {
   const verdictHeaderHtml = isR2orR3
     ? `
       <select onchange="setScoreScale(this.value)"
-        style="background:#211D19; border:1px solid rgba(255,255,255,0.25); color:#F9F8F3; font-size:0.72rem; font-weight:800; border-radius:6px; padding:3px 6px; cursor:pointer; text-transform:uppercase; outline:none;"
+        style="background:#211D19; border:1.5px solid #00B4D8; color:#00B4D8; font-size:0.74rem; font-weight:800; border-radius:6px; padding:4px 8px; cursor:pointer; text-transform:uppercase; outline:none; box-shadow:0 0 6px rgba(0,180,216,0.25);"
         title="Elegir escala de calificación">
-        <option value="pct" ${currentScoreScale === 'pct' ? 'selected' : ''}>Veredicto (%)</option>
-        <option value="vigesimal" ${currentScoreScale === 'vigesimal' ? 'selected' : ''}>Puntaje (/20)</option>
-        <option value="decimal" ${currentScoreScale === 'decimal' ? 'selected' : ''}>Puntaje (/10)</option>
-        <option value="literal" ${currentScoreScale === 'literal' ? 'selected' : ''}>Nivel de Logro</option>
+        <option value="pct" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'pct' ? 'selected' : ''}>Veredicto (%) ▾</option>
+        <option value="vigesimal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'vigesimal' ? 'selected' : ''}>Puntaje (/20) ▾</option>
+        <option value="decimal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'decimal' ? 'selected' : ''}>Puntaje (/10) ▾</option>
+        <option value="literal" style="background:#1A1613; color:#F9F8F3;" ${currentScoreScale === 'literal' ? 'selected' : ''}>Nivel de Logro ▾</option>
       </select>
     `
     : 'Veredicto';
