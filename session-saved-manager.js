@@ -355,6 +355,7 @@
         wizardEval = {
           id: sess.evalId || sess.id,
           branch: sess.branch,
+          branchTitle: sess.branchTitle || sess.branch_title,
           type: sess.type,
           questionCount: sess.questionCount,
           questions: sess.questions,

@@ -295,20 +295,16 @@
             if (questions.length > 1) {
               // Pauta Compacta para 2 a 5 preguntas (evita scroll vertical en la botonera de acciones)
               qContainer.innerHTML = questions.map((q, idx) => {
-                const optText = (q.options && q.correct && q.options[q.correct]) ? q.options[q.correct] : (q.expectedAnswer || '—');
-                const badgeText = isOMR ? `Clave: ${q.correct || '—'}` : `Rpta: ${escaparHtml(q.expectedAnswer || '—')}`;
+                const optText = (q.options && q.correct && q.options[q.correct]) ? q.options[q.correct] : (q.expectedAnswer || '');
                 return `
                   <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.85); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                      <div style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; flex:1; min-width:0;">
-                        <strong style="color:#0284C7; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
-                        <span style="font-size:0.78rem; font-weight:600; color:#181512; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
-                      </div>
-                      <span style="background:rgba(41, 182, 246, 0.14); color:#0284C7; font-size:0.70rem; font-weight:800; padding:1.5px 7px; border-radius:5px; border:1px solid rgba(41, 182, 246, 0.35); flex-shrink:0;">${badgeText}</span>
+                    <div style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                      <strong style="color:#0284C7; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
+                      <span style="font-size:0.78rem; font-weight:600; color:#181512; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
                     </div>
                     <div style="font-size:0.74rem; color:#0369A1; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                      <span style="color:#0284C7; font-weight:800; flex-shrink:0;">✔ ${isOMR && q.correct ? q.correct + ')' : 'Rpta:'}</span>
-                      <span style="color:#475569; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText)}">${escaparHtml(optText)}</span>
+                      <span style="color:#0284C7; font-weight:800; flex-shrink:0;">${isOMR ? `Clave: ${q.correct || '—'}` : 'Respuesta esperada:'}</span>
+                      ${optText || (!isOMR && q.expectedAnswer) ? `<span style="color:#475569; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText || q.expectedAnswer || '')}">${isOMR ? '— ' + escaparHtml(optText) : escaparHtml(q.expectedAnswer || '')}</span>` : ''}
                     </div>
                   </div>
                 `;
@@ -341,19 +337,16 @@
             // OMR clásico 2 preguntas: Pauta compacta
             const qList = wizardEval.questions;
             qContainer.innerHTML = qList.map((q, idx) => {
-              const optText = (q.options && q.correct && q.options[q.correct]) ? q.options[q.correct] : (q.expectedAnswer || '—');
+              const optText = (q.options && q.correct && q.options[q.correct]) ? q.options[q.correct] : (q.expectedAnswer || '');
               return `
                 <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.85); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <div style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; flex:1; min-width:0;">
-                      <strong style="color:#0284C7; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
-                      <span style="font-size:0.78rem; font-weight:600; color:#181512; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
-                    </div>
-                    <span style="background:rgba(41, 182, 246, 0.14); color:#0284C7; font-size:0.70rem; font-weight:800; padding:1.5px 7px; border-radius:5px; border:1px solid rgba(41, 182, 246, 0.35); flex-shrink:0;">Clave: ${q.correct || '—'}</span>
+                  <div style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                    <strong style="color:#0284C7; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
+                    <span style="font-size:0.78rem; font-weight:600; color:#181512; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
                   </div>
                   <div style="font-size:0.74rem; color:#0369A1; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                    <span style="color:#0284C7; font-weight:800; flex-shrink:0;">✔ ${q.correct || 'A'})</span>
-                    <span style="color:#475569; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText)}">${escaparHtml(optText)}</span>
+                    <span style="color:#0284C7; font-weight:800; flex-shrink:0;">Clave: ${q.correct || '—'}</span>
+                    ${optText ? `<span style="color:#475569; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText)}">— ${escaparHtml(optText)}</span>` : ''}
                   </div>
                 </div>
               `;
@@ -447,9 +440,9 @@
             modeIcon.style.color = '#B45309';
           }
           if (modeTitle) {
-            modeTitle.textContent = 'Directa';
+            modeTitle.textContent = 'Focalizada en la Respuesta';
             modeTitle.style.color = '#92400E';
-            modeTitle.title = 'Corrección directa de respuesta sin evaluar procedimiento.';
+            modeTitle.title = 'Focalizada en la Respuesta: validación de alternativas o clave con área de cálculo/borrador.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isOMR) {
