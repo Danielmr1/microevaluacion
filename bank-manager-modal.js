@@ -394,6 +394,7 @@ function renderBankManagerQuestions() {
       inSavedSessions.forEach(s => {
         const btnLink = document.createElement('button');
         btnLink.type = 'button';
+        btnLink.className = 'bm-session-link-btn';
         btnLink.title = `Abrir la sesión "${s.title}"`;
         // Desktop: ícono + texto; Móvil: solo "S1"
         btnLink.innerHTML =
@@ -586,14 +587,21 @@ function renderBankManagerQuestions() {
       rightCol.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:4px;';
 
       if (inSavedSessions && inSavedSessions.length > 0) {
-        // Pregunta en sesión: mostrar enlaces de sesión en fila
-        rightCol.style.flexDirection = 'row';
+        // Pregunta en sesión: mostrar enlaces de sesión apilados verticalmente (uno debajo de otro)
+        rightCol.style.flexDirection = 'column';
+        rightCol.style.alignItems = 'stretch';
+        rightCol.style.gap = '5px';
         inSavedSessions.forEach(s => {
           const btnLink = document.createElement('button');
           btnLink.type = 'button';
-          btnLink.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span>Sesión ${s.sessionNumber}</span>`;
+          btnLink.className = 'bm-session-link-btn';
           btnLink.title = `Abrir la sesión "${s.title}"`;
-          btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:5px 9px; font-size:0.72rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;';
+          // Desktop: ícono + texto; Móvil: solo "S1"
+          btnLink.innerHTML =
+            `<svg class="bm-full-btn-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="bm-full-btn-label">Sesión ${s.sessionNumber}</span><span class="bm-full-btn-mobile">S${s.sessionNumber}</span>`;
+          btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:5px 9px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:4px; white-space:nowrap;';
+          btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#e0f7fa'; btnLink.style.borderColor = '#00B4D8'; });
+          btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#f0fbfd'; btnLink.style.borderColor = 'rgba(0,180,216,0.35)'; });
           btnLink.onclick = (e) => {
             e.stopPropagation();
             if (typeof window.openSessionFromBank === 'function') {
