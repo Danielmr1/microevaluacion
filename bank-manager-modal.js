@@ -582,9 +582,10 @@ function renderBankManagerQuestions() {
 
       compactRow.appendChild(leftCol);
 
-      // Íconos de acción (Editar / Borrar) al lado derecho
+      // Columna derecha de acciones (Sesiones o Editar / Borrar apilados)
       const rightCol = document.createElement('div');
-      rightCol.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:4px;';
+      rightCol.className = 'bm-compact-right-col';
+      rightCol.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:stretch; gap:5px;';
 
       if (inSavedSessions && inSavedSessions.length > 0) {
         // Pregunta en sesión: mostrar enlaces de sesión apilados verticalmente (uno debajo de otro)
@@ -599,7 +600,7 @@ function renderBankManagerQuestions() {
           // Desktop: ícono + texto; Móvil: solo "S1"
           btnLink.innerHTML =
             `<svg class="bm-full-btn-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="bm-full-btn-label">Sesión ${s.sessionNumber}</span><span class="bm-full-btn-mobile">S${s.sessionNumber}</span>`;
-          btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:5px 9px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:4px; white-space:nowrap;';
+          btnLink.style.cssText = 'background:#f0fbfd; border:1px solid rgba(0,180,216,0.35); color:#007791; border-radius:7px; padding:5px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:5px; white-space:nowrap;';
           btnLink.addEventListener('mouseenter', () => { btnLink.style.background = '#e0f7fa'; btnLink.style.borderColor = '#00B4D8'; });
           btnLink.addEventListener('mouseleave', () => { btnLink.style.background = '#f0fbfd'; btnLink.style.borderColor = 'rgba(0,180,216,0.35)'; });
           btnLink.onclick = (e) => {
@@ -613,24 +614,24 @@ function renderBankManagerQuestions() {
           rightCol.appendChild(btnLink);
         });
       } else {
-        // Ícono Editar
+        // Botón Editar (con ícono y texto en PC, apilado como en Imagen 2)
         const btnEdit = document.createElement('button');
         btnEdit.type = 'button';
         btnEdit.className = 'btn-card-edit-trigger';
         btnEdit.title = 'Editar pregunta';
-        btnEdit.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
-        btnEdit.style.cssText = 'background:#f0f9ff; border:1px solid #bae6fd; color:#0284c7; border-radius:7px; padding:6px; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;';
+        btnEdit.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg><span class="bm-full-btn-label">Editar</span>';
+        btnEdit.style.cssText = 'background:#f0f9ff; border:1px solid #bae6fd; color:#0284c7; border-radius:7px; padding:5px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:5px; white-space:nowrap;';
         btnEdit.addEventListener('mouseenter', () => { btnEdit.style.background = '#0284c7'; btnEdit.style.color = '#ffffff'; });
         btnEdit.addEventListener('mouseleave', () => { btnEdit.style.background = '#f0f9ff'; btnEdit.style.color = '#0284c7'; });
         btnEdit.onclick = (e) => { e.stopPropagation(); toggleInlineQuestionEdit(q.id); };
         rightCol.appendChild(btnEdit);
 
-        // Ícono Borrar (solo si no está en ninguna sesión — ya confirmado arriba)
+        // Botón Borrar (con ícono y texto en PC, apilado como en Imagen 2)
         const btnDelete = document.createElement('button');
         btnDelete.type = 'button';
         btnDelete.title = 'Eliminar pregunta';
-        btnDelete.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
-        btnDelete.style.cssText = 'background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:7px; padding:6px; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;';
+        btnDelete.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span class="bm-full-btn-label">Eliminar</span>';
+        btnDelete.style.cssText = 'background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:7px; padding:5px 10px; font-size:0.72rem; font-weight:700; cursor:pointer; transition:all 0.15s; display:inline-flex; align-items:center; justify-content:center; gap:5px; white-space:nowrap;';
         btnDelete.addEventListener('mouseenter', () => { btnDelete.style.background = '#DC2626'; btnDelete.style.color = '#ffffff'; });
         btnDelete.addEventListener('mouseleave', () => { btnDelete.style.background = '#FEF2F2'; btnDelete.style.color = '#DC2626'; });
         btnDelete.onclick = (e) => { e.stopPropagation(); handleDeleteQuestionFromBank(q.prompt, q.prompt, q.id); };
