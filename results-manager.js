@@ -73,6 +73,9 @@ function goToSessionResults() {
   if (typeof Scanner !== 'undefined' && Scanner.stopCamera) {
     try { Scanner.stopCamera(); } catch (e) {}
   }
+  if (screen.orientation && screen.orientation.unlock) {
+    try { screen.orientation.unlock(); } catch (e) {}
+  }
   document.body.classList.remove('camera-active');
   document.body.style.overflow = '';
   document.documentElement.style.overflow = '';

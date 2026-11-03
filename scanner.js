@@ -2167,6 +2167,10 @@
       } finally {
         const modal = document.getElementById('capture-modal');
         if (modal) modal.classList.add('open');
+        // Desbloquear orientación de pantalla para que el docente pueda rotar el dispositivo libremente mientras ve los resultados
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) {}
+        }
       }
     }, 150);
   }
@@ -2214,6 +2218,14 @@
     const manualWrap = document.getElementById('manual-student-wrap');
     if (manualWrap) manualWrap.style.display = 'none';
 
+    // Restablecer el bloqueo de orientación de la cámara para la siguiente ficha
+    const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+    const isVert = isSessionVertical(sess);
+    const targetOri = isVert ? 'portrait' : 'landscape';
+    if (screen.orientation && screen.orientation.lock && (videoStream || document.body.classList.contains('camera-active'))) {
+      try { screen.orientation.lock(targetOri).catch(() => {}); } catch (e) {}
+    }
+
     isScanning = true;
     scanStartTime = Date.now();
     targetLockStartTime = null;
@@ -2227,6 +2239,13 @@
     const modal = document.getElementById('capture-modal');
     if (modal) modal.classList.remove('open');
     if (!isScanning && videoStream) {
+      // Re-bloquear orientación si la cámara sigue activa
+      const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
+      const isVert = isSessionVertical(sess);
+      const targetOri = isVert ? 'portrait' : 'landscape';
+      if (screen.orientation && screen.orientation.lock) {
+        try { screen.orientation.lock(targetOri).catch(() => {}); } catch (e) {}
+      }
       isScanning = true;
       requestAnimationFrame(processFrame);
     }
