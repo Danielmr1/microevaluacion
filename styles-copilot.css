@@ -693,6 +693,9 @@
     .mgr-student-lock-badge-desktop {
       display: inline-flex !important;
     }
+    .mgr-btn-label {
+      display: inline;
+    }
     @media (max-width: 640px) {
       .manual-classroom-top-row {
         grid-template-columns: 1fr;
@@ -706,5 +709,11 @@
       }
       .mgr-student-card-locked .mgr-student-actions {
         display: none !important;
+      }
+      .mgr-btn-label {
+        display: none !important;
+      }
+      .btn-mgr-student-action {
+        padding: 5px 8px !important;
       }
     }
