@@ -476,7 +476,6 @@ function renderBankManagerQuestions() {
           <span style="font-size:0.65rem; color:#64748B; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">Respuesta esperada</span>
           <div style="font-size:1.15rem; font-weight:900; color:#0F172A; line-height:1.2;">${expFormatted}</div>
         </div>
-        <span style="font-size:0.72rem; font-weight:800; color:#0284C7; background:rgba(2,132,199,0.10); border:1px solid rgba(2,132,199,0.25); border-radius:6px; padding:3px 8px;">✍️ Respuesta Libre</span>
       `;
       optsOrAnswerElement = ansBox;
     }
@@ -738,7 +737,7 @@ function buildInlineEditDrawerElement(q) {
   headerDiv.innerHTML = `
     <div style="font-size:0.76rem; font-weight:900; color:#0284C7; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:8px;">
       <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; background:rgba(2,132,199,0.14); color:#0284C7; font-size:0.75rem;">✏️</span>
-      <span>Edición In-Situ</span>
+      <span>Edición</span>
     </div>
   `;
   container.appendChild(headerDiv);
@@ -746,7 +745,6 @@ function buildInlineEditDrawerElement(q) {
   const promptBox = document.createElement('div');
   promptBox.style.cssText = 'background:#FAF8F5; border:1px solid #DCD8CE; border-radius:8px; padding:10px 12px;';
   promptBox.innerHTML = `
-    <span style="font-size:0.65rem; color:#64748B; font-weight:800; text-transform:uppercase; display:block; margin-bottom:2px;">Enunciado (Inmutable)</span>
     <div style="font-size:0.86rem; color:#181512; font-weight:600; line-height:1.4;">${(typeof formatMathHtml === 'function') ? formatMathHtml(escaparHtml(q.prompt || '')) : escaparHtml(q.prompt || '')}</div>
   `;
   container.appendChild(promptBox);
