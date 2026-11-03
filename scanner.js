@@ -679,6 +679,14 @@
     const sess = (typeof ClassroomData !== 'undefined') ? ClassroomData.getActiveSession() : null;
     const isVert = isSessionVertical(sess);
 
+    // Actualizar estado en reposo del placeholder de la cámara
+    const pTitle = document.getElementById('placeholder-title');
+    const pillPhone = document.getElementById('pill-phone-ori');
+    const pillCard = document.getElementById('pill-card-ori');
+    if (pTitle) pTitle.textContent = isVert ? 'Posición de Escaneo: Vertical' : 'Posición de Escaneo: Horizontal';
+    if (pillPhone) pillPhone.innerHTML = isVert ? '📱 Celular vertical' : '📱 Celular horizontal';
+    if (pillCard) pillCard.innerHTML = isVert ? '📄 Ficha vertical' : '📄 Ficha horizontal';
+
     const toast = document.getElementById('scanner-orientation-toast');
     const icon = document.getElementById('scanner-orientation-icon');
     const text = document.getElementById('scanner-orientation-text');
