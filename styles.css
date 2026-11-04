@@ -1040,9 +1040,9 @@ textarea.form-control {
 .sheet-a4-quad {
   background: #ffffff;
   width: 276mm;
-  height: 194mm;
+  height: 197mm;
   margin: 6mm auto;
-  padding: 4mm 2mm;
+  padding: 11mm 2mm 0 2mm;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
@@ -4973,6 +4973,9 @@ body:not(.camera-active) .quality-metrics .metric-card {
   body:not(.print-mode-booklet) .sheet-a4-quad {
     flex-direction: column !important;
     justify-content: space-between !important;
+    padding: 11mm 2mm 0 2mm !important;
+    height: 197mm !important;
+    max-height: 200mm !important;
   }
 
   body:not(.print-mode-booklet) .sheet-a4-split {

@@ -924,6 +924,9 @@
       body:not(.print-mode-booklet) .sheet-a4-quad {
         flex-direction: column !important;
         justify-content: space-between !important;
+        padding: 11mm 2mm 0 2mm !important;
+        height: 197mm !important;
+        max-height: 200mm !important;
       }
       body:not(.print-mode-booklet) .sheet-a4-split {
         flex-direction: row !important;
