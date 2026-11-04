@@ -928,6 +928,9 @@
       body:not(.print-mode-booklet) .sheet-a4-split {
         flex-direction: row !important;
         justify-content: space-between !important;
+        padding: 13mm 2mm 0 2mm !important;
+        height: 196mm !important;
+        max-height: 200mm !important;
       }
       body:not(.print-mode-booklet) .sheet-a4-h-single {
         align-items: center !important;
@@ -954,6 +957,7 @@
       .dual-vcut {
         width: 8mm !important;
         flex: 0 0 8mm !important;
+        height: 182mm !important;
       }
       .card-a5,
       .card-a5-v-r3,
