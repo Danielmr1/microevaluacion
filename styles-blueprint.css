@@ -1036,7 +1036,7 @@
        Paleta: Acuarela Lenta sobre fondo base #F9F8F3 (Opción A)
        ========================================================== */
     .session-fluid-stage {
-      display: none;
+      display: none !important;
       position: fixed;
       inset: -120px;
       z-index: 0;
@@ -1049,8 +1049,16 @@
 
     body.has-active-split .session-fluid-stage,
     #view-create:has(.active-split) .session-fluid-stage {
-      display: block;
-      opacity: 1;
+      display: none !important;
+      opacity: 0 !important;
+    }
+
+    body.has-active-split,
+    #view-create:has(.active-split),
+    #view-create.has-active-split,
+    body.has-active-split #view-create,
+    #view-saved-sessions {
+      background-color: var(--bg-paper, #F9F8F3) !important;
     }
 
     .session-fluid-canvas {
@@ -1147,7 +1155,7 @@
        Mismas ondas vivas de la vista de Sesiones (Cian 7.2s, Oro 9.6s, Profundidad 11.4s, Velo 13s)
        ========================================================== */
     .saved-sessions-fluid-stage {
-      display: none;
+      display: none !important;
       position: fixed;
       inset: -140px;
       z-index: 0;
@@ -1159,7 +1167,7 @@
     @media screen and (min-width: 768px) {
       #view-saved-sessions.active .saved-sessions-fluid-stage,
       body:has(#view-saved-sessions.active) .saved-sessions-fluid-stage {
-        display: block;
+        display: none !important;
       }
     }
 

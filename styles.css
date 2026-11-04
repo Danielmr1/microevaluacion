@@ -8043,20 +8043,22 @@ body.has-active-split {
   }
 }
 
+/* Fondo estático plano idéntico al móvil en PC y celular */
+.session-fluid-stage,
+.saved-sessions-fluid-stage {
+  display: none !important;
+}
+
+body.has-active-split,
+#view-create:has(.active-split),
+#view-create.has-active-split,
+body.has-active-split #view-create,
+#view-saved-sessions {
+  background-color: var(--bg-paper, #F9F8F3) !important;
+}
+
 /* Vista de Celular / Tablet: Diseño apilado con desplazamiento horizontal nativo y fondo fijo */
 @media screen and (max-width: 900px) {
-
-  /* Fondo fijo y plano en celulares (cero sobrecarga de GPU y cero oclusión) */
-  .session-fluid-stage {
-    display: none !important;
-  }
-
-  body.has-active-split,
-  #view-create:has(.active-split),
-  #view-create.has-active-split,
-  body.has-active-split #view-create {
-    background-color: var(--bg-paper, #F9F8F3) !important;
-  }
 
   .teacher-panel,
   .teacher-panel.has-active-split {
