@@ -485,7 +485,7 @@ function fitSummaryDocumentsToViewport() {
                              sheet.classList.contains('sheet-a4-quad') ||
                              sheet.classList.contains('sheet-booklet-landscape') ||
                              sheet.classList.contains('sheet-a4-h-single');
-    const naturalWidth = sheet.offsetWidth || (isLandscapeSheet ? 1039.4 : 710.5);
+    const naturalWidth = sheet.offsetWidth || (isLandscapeSheet ? 1065.8 : 710.5);
     if (naturalWidth > 0 && naturalWidth > availWidth) {
       const scale = availWidth / naturalWidth;
       sheet.style.zoom = scale;

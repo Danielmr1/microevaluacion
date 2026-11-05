@@ -929,9 +929,10 @@
         max-height: 200mm !important;
       }
       body:not(.print-mode-booklet) .sheet-a4-split {
+        width: 282mm !important;
         flex-direction: row !important;
         justify-content: space-between !important;
-        padding: 13mm 2mm 0 2mm !important;
+        padding: 13mm 5mm 0 5mm !important;
         height: 196mm !important;
         max-height: 200mm !important;
       }

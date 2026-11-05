@@ -1636,10 +1636,10 @@ textarea.form-control {
        ESTRICTAMENTE 1 SOLA COLUMNA VERTICAL de burbujas (01 al N hacia abajo). */
 .sheet-a4-split {
   background: #ffffff;
-  width: 275mm;
-  height: 188mm;
+  width: 282mm;
+  height: 196mm;
   margin: 6mm auto;
-  padding: 3mm 4mm;
+  padding: 13mm 5mm 0 5mm;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: row;
@@ -4979,9 +4979,10 @@ body:not(.camera-active) .quality-metrics .metric-card {
   }
 
   body:not(.print-mode-booklet) .sheet-a4-split {
+    width: 282mm !important;
     flex-direction: row !important;
     justify-content: space-between !important;
-    padding: 13mm 2mm 0 2mm !important;
+    padding: 13mm 5mm 0 5mm !important;
     height: 196mm !important;
     max-height: 200mm !important;
   }
