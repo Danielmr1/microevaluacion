@@ -275,9 +275,6 @@
               <div style="background:#F9F8F3; border:1px solid #e5e3dc; border-radius:10px; padding:10px 12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                   <strong style="color:#181512; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla (${qCount} Preguntas)</strong>
-                  ${(wizardEval && (wizardEval.mode === 'bank' || (typeof r3State !== 'undefined' && r3State.mode === 'bank'))) ? '' : `
-                    <span style="background:#e0f7fa; color:#007791; font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:6px; border:1px solid #b2ebf2;">OMR Puro</span>
-                  `}
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(64px, 1fr)); gap:5px; max-height:160px; overflow-y:auto; padding:1px;">
                   ${(wizardEval.questions || []).map((q, idx) => `
@@ -402,9 +399,9 @@
             modeIcon.style.color = '#B45309';
           }
           if (modeTitle) {
-            modeTitle.textContent = 'OMR';
+            modeTitle.textContent = 'Cartilla OMR';
             modeTitle.style.color = '#92400E';
-            modeTitle.title = 'Escaneo rápido de alternativas marcadas.';
+            modeTitle.title = 'Cartilla de respuestas OMR de 5 a 20 preguntas.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isBranch2) {
