@@ -247,7 +247,7 @@
         const clsInfo = document.getElementById('summary-classroom-info');
         if (clsInfo) {
           clsInfo.textContent = cls.name;
-          clsInfo.style.color = '#131722';
+          clsInfo.style.color = '#FFFFFF';
         }
         const gradeText = ClassroomData.getClassroomGrade(wizardClassroomId);
         const gradeBadge = document.getElementById('summary-grade-badge');
@@ -255,9 +255,9 @@
           if (gradeText) {
             gradeBadge.textContent = gradeText;
             gradeBadge.style.display = 'inline-block';
-            gradeBadge.style.color = '#0284C7';
-            gradeBadge.style.background = 'rgba(41, 182, 246, 0.15)';
-            gradeBadge.style.border = '1px solid rgba(41, 182, 246, 0.35)';
+            gradeBadge.style.color = '#38BDF8';
+            gradeBadge.style.background = 'rgba(14, 165, 233, 0.18)';
+            gradeBadge.style.border = '1px solid rgba(56, 189, 248, 0.45)';
             gradeBadge.style.borderRadius = '6px';
             gradeBadge.style.padding = '3px 10px';
           } else {
@@ -277,14 +277,14 @@
           if (isBranch3) {
             // RAMA 3: Visualización de Cartilla OMR
             qContainer.innerHTML = `
-              <div style="background:#F9F8F3; border:1px solid #e5e3dc; border-radius:10px; padding:10px 12px;">
+              <div style="background:#0E141E; border:1px solid rgba(255, 255, 255, 0.12); border-radius:10px; padding:10px 12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <strong style="color:#181512; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla</strong>
+                  <strong style="color:#FFFFFF; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla</strong>
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(64px, 1fr)); gap:5px; max-height:160px; overflow-y:auto; padding:1px;">
                   ${(wizardEval.questions || []).map((q, idx) => `
-                    <div style="background:#ffffff; border:1px solid #e5e3dc; border-radius:6px; padding:3px 6px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 2px rgba(24,21,18,0.03);">
-                      <span style="font-size:0.7rem; color:#57534e; font-weight:700;">P${(idx + 1).toString().padStart(2, '0')}</span>
+                    <div style="background:#1A2232; border:1px solid rgba(255, 255, 255, 0.10); border-radius:6px; padding:3px 6px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 2px rgba(0,0,0,0.25);">
+                      <span style="font-size:0.7rem; color:#94A3B8; font-weight:700;">P${(idx + 1).toString().padStart(2, '0')}</span>
                       <span style="background:#00B4D8; color:#fff; font-size:0.72rem; font-weight:800; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center;">${q.correct}</span>
                     </div>
                   `).join('')}
@@ -298,14 +298,14 @@
             qContainer.innerHTML = questions.map((q, idx) => {
               const optText = (q.options && q.correct && q.options[q.correct]) ? q.options[q.correct] : (q.expectedAnswer || '');
               return `
-                <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.85); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
+                <div style="background:#0E141E; border:1.5px solid rgba(255, 255, 255, 0.10); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
                   <div style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                    <strong style="color:#0284C7; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
-                    <span style="font-size:0.78rem; font-weight:600; color:#181512; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
+                    <strong style="color:#38BDF8; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
+                    <span style="font-size:0.78rem; font-weight:600; color:#E2E8F0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
                   </div>
-                  <div style="font-size:0.74rem; color:#0369A1; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                    <span style="color:#0284C7; font-weight:800; flex-shrink:0;">${isOMR ? `Clave: ${q.correct || '—'}` : 'Respuesta esperada:'}</span>
-                    ${optText || (!isOMR && q.expectedAnswer) ? `<span style="color:#475569; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText || q.expectedAnswer || '')}">${isOMR ? '— ' + escaparHtml(optText) : escaparHtml(q.expectedAnswer || '')}</span>` : ''}
+                  <div style="font-size:0.74rem; color:#94A3B8; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                    <span style="color:#F5B82E; font-weight:800; flex-shrink:0;">${isOMR ? `Clave: ${q.correct || '—'}` : 'Respuesta esperada:'}</span>
+                    ${optText || (!isOMR && q.expectedAnswer) ? `<span style="color:#CBD5E1; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText || q.expectedAnswer || '')}">${isOMR ? '— ' + escaparHtml(optText) : escaparHtml(q.expectedAnswer || '')}</span>` : ''}
                   </div>
                 </div>
               `;
@@ -316,14 +316,14 @@
             qContainer.innerHTML = qList.map((q, idx) => {
               const optText = (q.options && q.correct && q.options[q.correct]) ? q.options[q.correct] : (q.expectedAnswer || '');
               return `
-                <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.85); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
+                <div style="background:#0E141E; border:1.5px solid rgba(255, 255, 255, 0.10); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
                   <div style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                    <strong style="color:#0284C7; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
-                    <span style="font-size:0.78rem; font-weight:600; color:#181512; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
+                    <strong style="color:#38BDF8; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P${idx + 1}:</strong>
+                    <span style="font-size:0.78rem; font-weight:600; color:#E2E8F0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(q.prompt || '')}">${escaparHtml(q.prompt || '')}</span>
                   </div>
-                  <div style="font-size:0.74rem; color:#0369A1; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                    <span style="color:#0284C7; font-weight:800; flex-shrink:0;">Clave: ${q.correct || '—'}</span>
-                    ${optText ? `<span style="color:#475569; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText)}">— ${escaparHtml(optText)}</span>` : ''}
+                  <div style="font-size:0.74rem; color:#94A3B8; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                    <span style="color:#F5B82E; font-weight:800; flex-shrink:0;">Clave: ${q.correct || '—'}</span>
+                    ${optText ? `<span style="color:#CBD5E1; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText)}">— ${escaparHtml(optText)}</span>` : ''}
                   </div>
                 </div>
               `;
@@ -334,14 +334,14 @@
             const opts = q.options || wizardEval.options || {};
             const optText = opts[correctKey] || '';
             qContainer.innerHTML = `
-              <div style="background:#FAF8F2; border:1.5px solid rgba(220, 214, 202, 0.85); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
+              <div style="background:#0E141E; border:1.5px solid rgba(255, 255, 255, 0.10); border-radius:8px; padding:7px 10px; margin-bottom:5px; box-sizing:border-box;">
                 <div style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                  <strong style="color:#0284C7; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P1:</strong>
-                  <span style="font-size:0.78rem; font-weight:600; color:#181512; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(wizardEval.prompt || '')}">${escaparHtml(wizardEval.prompt || '')}</span>
+                  <strong style="color:#38BDF8; font-size:0.76rem; font-weight:800; text-transform:uppercase; flex-shrink:0;">P1:</strong>
+                  <span style="font-size:0.78rem; font-weight:600; color:#E2E8F0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(wizardEval.prompt || '')}">${escaparHtml(wizardEval.prompt || '')}</span>
                 </div>
-                <div style="font-size:0.74rem; color:#0369A1; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
-                  <span style="color:#0284C7; font-weight:800; flex-shrink:0;">Clave: ${correctKey}</span>
-                  ${optText ? `<span style="color:#475569; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText)}">— ${escaparHtml(optText)}</span>` : ''}
+                <div style="font-size:0.74rem; color:#94A3B8; font-weight:700; margin-top:3px; display:flex; align-items:center; gap:5px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+                  <span style="color:#F5B82E; font-weight:800; flex-shrink:0;">Clave: ${correctKey}</span>
+                  ${optText ? `<span style="color:#CBD5E1; font-weight:600; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${escaparHtml(optText)}">— ${escaparHtml(optText)}</span>` : ''}
                 </div>
               </div>
             `;
@@ -350,14 +350,14 @@
             const tiene = !!(wizardEval.rubric);
             qContainer.innerHTML = `
               <div style="margin-bottom:6px;">
-                <span style="font-size:0.65rem; font-weight:700; color:#786C5E; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Consigna</span>
-                <div style="font-size:0.86rem; font-weight:600; color:#181512; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
+                <span style="font-size:0.65rem; font-weight:700; color:#94A3B8; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Consigna</span>
+                <div style="font-size:0.86rem; font-weight:600; color:#FFFFFF; line-height:1.35;">${escaparHtml(wizardEval.prompt)}</div>
               </div>
               <div style="margin-bottom:6px;">
-                <span style="font-size:0.65rem; font-weight:700; color:#786C5E; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Respuesta esperada</span>
-                <div style="font-size:0.86rem; font-weight:800; color:#0284C7;">${escaparHtml(wizardEval.expectedAnswer)}</div>
+                <span style="font-size:0.65rem; font-weight:700; color:#94A3B8; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:2px;">Respuesta esperada</span>
+                <div style="font-size:0.86rem; font-weight:800; color:#38BDF8;">${escaparHtml(wizardEval.expectedAnswer)}</div>
               </div>
-              <div style="padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; ${tiene ? 'color:#0284C7; background:rgba(41, 182, 246, 0.14); border:1px solid rgba(41, 182, 246, 0.35);' : 'color:#92400E; background:rgba(245, 184, 46, 0.16); border:1px solid rgba(245, 184, 46, 0.40);'}">
+              <div style="padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:700; ${tiene ? 'color:#38BDF8; background:rgba(14, 165, 233, 0.18); border:1px solid rgba(56, 189, 248, 0.45);' : 'color:#F5B82E; background:rgba(245, 184, 46, 0.15); border:1px solid rgba(245, 184, 46, 0.40);'}">
                 ${tiene ? '✅ Rúbrica lista con IA' : '⚠️ Sin rúbrica'}
               </div>
             `;
@@ -393,30 +393,30 @@
         if (configBadge) configBadge.style.display = 'none';
 
         if (modeContainer) {
-          modeContainer.style.background = 'rgba(245, 184, 46, 0.16)';
-          modeContainer.style.color = '#92400E';
+          modeContainer.style.background = 'rgba(245, 184, 46, 0.15)';
+          modeContainer.style.color = '#F5B82E';
           modeContainer.style.border = '1px solid rgba(245, 184, 46, 0.40)';
         }
 
         if (isBranch3) {
           if (modeIcon) {
             modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>';
-            modeIcon.style.color = '#B45309';
+            modeIcon.style.color = '#F5B82E';
           }
           if (modeTitle) {
             modeTitle.textContent = 'Cartilla OMR';
-            modeTitle.style.color = '#92400E';
+            modeTitle.style.color = '#F5B82E';
             modeTitle.title = 'Cartilla de respuestas OMR de 5 a 20 preguntas.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
         } else if (isBranch2) {
           if (modeIcon) {
             modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
-            modeIcon.style.color = '#B45309';
+            modeIcon.style.color = '#F5B82E';
           }
           if (modeTitle) {
             modeTitle.textContent = 'Focalizada en la Respuesta';
-            modeTitle.style.color = '#92400E';
+            modeTitle.style.color = '#F5B82E';
             modeTitle.title = 'Focalizada en la Respuesta: validación de alternativas o clave con área de cálculo/borrador.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
@@ -425,21 +425,21 @@
           if (currentMode === 'quick') {
             if (modeIcon) {
               modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
-              modeIcon.style.color = '#B45309';
+              modeIcon.style.color = '#F5B82E';
             }
             if (modeTitle) {
               modeTitle.textContent = 'OMR Rápido';
-              modeTitle.style.color = '#92400E';
+              modeTitle.style.color = '#F5B82E';
               modeTitle.title = 'Rápido determinista (OMR). El procedimiento manuscrito queda fotografiado.';
             }
           } else {
             if (modeIcon) {
               modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>';
-              modeIcon.style.color = '#B45309';
+              modeIcon.style.color = '#F5B82E';
             }
             if (modeTitle) {
               modeTitle.textContent = 'Formativa IA';
-              modeTitle.style.color = '#92400E';
+              modeTitle.style.color = '#F5B82E';
               modeTitle.title = 'Evalúa las alternativas y analiza pedagógicamente el desarrollo en cuadrícula con IA.';
             }
           }
@@ -448,11 +448,11 @@
           // Respuesta Libre tradicional
           if (modeIcon) {
             modeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
-            modeIcon.style.color = '#B45309';
+            modeIcon.style.color = '#F5B82E';
           }
           if (modeTitle) {
             modeTitle.textContent = 'Respuesta Libre';
-            modeTitle.style.color = '#92400E';
+            modeTitle.style.color = '#F5B82E';
             modeTitle.title = 'Lectura de cuadrícula y respuesta manuscrita evaluadas mediante IA y rúbrica formativa.';
           }
           if (modeSubtitle) modeSubtitle.style.display = 'none';
