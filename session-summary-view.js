@@ -238,10 +238,15 @@
           summaryEl.style.display = '';
         }
 
-        // Salón seleccionado
+        // Salón seleccionado y conteo de alumnos
+        const studentsCountEl = document.getElementById('summary-students-count');
+        if (studentsCountEl) {
+          const sCount = (cls && cls.students) ? cls.students.length : 0;
+          studentsCountEl.textContent = `👥 ${sCount}`;
+        }
         const clsInfo = document.getElementById('summary-classroom-info');
         if (clsInfo) {
-          clsInfo.textContent = `${cls.name} (${cls.students.length} alumnos)`;
+          clsInfo.textContent = cls.name;
           clsInfo.style.color = '#131722';
         }
         const gradeText = ClassroomData.getClassroomGrade(wizardClassroomId);
@@ -274,7 +279,7 @@
             qContainer.innerHTML = `
               <div style="background:#F9F8F3; border:1px solid #e5e3dc; border-radius:10px; padding:10px 12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                  <strong style="color:#181512; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla (${qCount} Preguntas)</strong>
+                  <strong style="color:#181512; font-size:0.75rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase;">📝 Claves de la Cartilla</strong>
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(64px, 1fr)); gap:5px; max-height:160px; overflow-y:auto; padding:1px;">
                   ${(wizardEval.questions || []).map((q, idx) => `
