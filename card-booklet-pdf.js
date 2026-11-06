@@ -484,7 +484,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
 
     // Auto-shrink dinámico: si con el tamaño estándar se forman más de 3 filas,
     // reducir progresivamente el tamaño de letra hasta que el enunciado tenga como máximo 3 filas.
-    let promptFontSize = isCompact ? 8.5 : 9.5;
+    let promptFontSize = isCompact ? 8.5 : 10;
     doc.setFontSize(promptFontSize);
     let lines = doc.splitTextToSize(promptText, colWidth);
     while (lines.length > 3 && promptFontSize > 6.5) {
@@ -501,7 +501,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
     const isGrid2x2 = true; // Siempre 2 columnas para alternativas en Cartilla OMR
 
-    const optFontSize = isCompact ? 7.8 : (colWidth <= 90 ? 8.5 : 9.2);
+    const optFontSize = isCompact ? 7.8 : (colWidth <= 90 ? 8.5 : 9.5);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(optFontSize);
     const optLineH = optFontSize * 0.38;
@@ -628,7 +628,7 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
         });
 
         const extraGap = questions.length > 1
-          ? Math.max(3.5, Math.min(13, (availableH - naturalTotalH) / (questions.length - 1)))
+          ? Math.max(5.0, Math.min(13, (availableH - naturalTotalH) / (questions.length - 1)))
           : 6;
 
         let qY = qStartY;

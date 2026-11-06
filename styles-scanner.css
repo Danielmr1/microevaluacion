@@ -787,14 +787,14 @@
       body.print-mode-booklet .sheet-booklet-landscape {
         box-shadow: none !important;
         width: 297mm !important;
-        height: 210mm !important;
-        min-height: 210mm !important;
-        max-height: 210mm !important;
+        height: 204mm !important;
+        min-height: 204mm !important;
+        max-height: 204mm !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: hidden !important;
-        page-break-after: always !important;
-        break-after: page !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         background: #ffffff !important;
@@ -849,8 +849,11 @@
         display: flex !important;
         flex-direction: column !important;
       }
+      body.print-mode-booklet .sheet-booklet-landscape:last-child {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
       body.print-mode-booklet .sheet-booklet-quad:last-child,
-      body.print-mode-booklet .sheet-booklet-landscape:last-child,
       body.print-mode-booklet .sheet-booklet-portrait:last-child {
         page-break-after: auto !important;
         break-after: auto !important;

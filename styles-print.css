@@ -2085,7 +2085,7 @@
     .sheet-booklet-landscape {
       background: #ffffff;
       width: 297mm;
-      height: 210mm;
+      height: 204mm;
       margin: 6mm auto;
       padding: 0;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
@@ -2298,12 +2298,59 @@
       line-height: 1.20 !important;
     }
     .booklet-options-grid,
-    .sheet-booklet-portrait .booklet-options-grid,
-    .sheet-booklet-landscape .booklet-options-grid {
+    .sheet-booklet-portrait .booklet-options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.5mm 3.5mm;
       font-size: 8.5pt;
+      color: #000000;
+      margin-left: 2mm;
+    }
+
+    .sheet-booklet-landscape .booklet-title {
+      font-size: 12.5pt;
+      font-weight: 800;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+
+    .sheet-booklet-landscape .booklet-student-line {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #000000;
+      margin-top: 1.5mm;
+    }
+
+    .sheet-booklet-landscape .booklet-body-a5 {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 6.5mm;
+      overflow: hidden;
+      margin-top: 4mm;
+    }
+
+    .sheet-booklet-landscape .booklet-q-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2mm;
+    }
+
+    .sheet-booklet-landscape .booklet-q-prompt {
+      font-size: 10pt;
+      font-weight: 600;
+      color: #000000;
+      line-height: 1.30;
+    }
+
+    .sheet-booklet-landscape .booklet-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2mm 5mm;
+      font-size: 9.5pt;
       color: #000000;
       margin-left: 2mm;
     }
