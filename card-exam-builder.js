@@ -402,8 +402,6 @@ function renderRama3ExamQuestionHTML(idx) {
       <div class="r3-exam-q-prompt">
         <span class="r3-exam-q-num">${qNum}.</span>
         <span class="${promptClass}">${promptText}</span>
-        <button type="button" onclick="event.stopPropagation(); openRama3QuestionPicker(${idx})"
-          style="background:transparent; border:none; cursor:pointer; font-size:0.75rem; padding:0 2px; color:#64748b;" title="Editar">✏️</button>
       </div>
       <div class="r3-exam-opt-grid">
         <div class="r3-exam-opt-item">

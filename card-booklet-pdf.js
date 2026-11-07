@@ -279,7 +279,8 @@ function renderBookletQuestionHTML(q, idx, isCompact = false) {
   return `
     <div class="booklet-q-item${compactClass}">
       <div class="${promptClass}">
-        <span class="booklet-q-num">${num}.</span> ${prompt}
+        <span class="booklet-q-num">${num}.</span>
+        <span class="booklet-q-text">${prompt}</span>
       </div>
       <div class="${gridClass}">
         <div class="booklet-opt-item"><strong>A)</strong> <span>${escape(opts.A || '—')}</span></div>
@@ -474,11 +475,11 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     format: 'a4'
   });
 
-  // Helper para renderizar una pregunta en (startX, startY, colWidth)
+  // Helper para renderizar una pregunta en (startX, startY, colWidth) con sangría francesa
   function renderQuestion(q, idx, startX, startY, colWidth, isCompact) {
     let curY = startY;
     const num = q.num || (idx + 1);
-    const promptText = `${num}. ${q.prompt || ''}`;
+    const numPrefix = `${num}.`;
 
     doc.setFont('helvetica', 'bold');
 
@@ -486,15 +487,22 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     // reducir progresivamente el tamaño de letra hasta que el enunciado tenga como máximo 3 filas.
     let promptFontSize = isCompact ? 8.5 : 10;
     doc.setFontSize(promptFontSize);
-    let lines = doc.splitTextToSize(promptText, colWidth);
+
+    const numWidth = doc.getTextWidth(numPrefix) + 2.5; // sangría exacta del número
+    const textWidth = Math.max(30, colWidth - numWidth);
+
+    let lines = doc.splitTextToSize(q.prompt || '', textWidth);
     while (lines.length > 3 && promptFontSize > 6.5) {
       promptFontSize -= 0.5;
       doc.setFontSize(promptFontSize);
-      lines = doc.splitTextToSize(promptText, colWidth);
+      lines = doc.splitTextToSize(q.prompt || '', textWidth);
     }
 
     doc.setTextColor(0, 0, 0);
-    doc.text(lines, startX, curY);
+    doc.setFont('helvetica', 'bold');
+    doc.text(numPrefix, startX, curY);
+    doc.text(lines, startX + numWidth, curY);
+
     const promptLineH = promptFontSize * 0.38;
     curY += lines.length * promptLineH + 0.8;
 
@@ -507,37 +515,39 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     const optLineH = optFontSize * 0.38;
 
     if (isGrid2x2) {
-      const halfW = colWidth / 2;
+      const optStartX = startX + numWidth;
+      const halfW = (colWidth - numWidth) / 2;
       // Fila 1: A y B
       doc.setFont('helvetica', 'bold');
-      doc.text('A)', startX, curY);
+      doc.text('A)', optStartX, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.A || '—'), startX + 5, curY);
+      doc.text(String(opts.A || '—'), optStartX + 5, curY);
 
       doc.setFont('helvetica', 'bold');
-      doc.text('B)', startX + halfW, curY);
+      doc.text('B)', optStartX + halfW, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.B || '—'), startX + halfW + 5, curY);
+      doc.text(String(opts.B || '—'), optStartX + halfW + 5, curY);
       curY += optLineH;
 
       // Fila 2: C y D
       doc.setFont('helvetica', 'bold');
-      doc.text('C)', startX, curY);
+      doc.text('C)', optStartX, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.C || '—'), startX + 5, curY);
+      doc.text(String(opts.C || '—'), optStartX + 5, curY);
 
       doc.setFont('helvetica', 'bold');
-      doc.text('D)', startX + halfW, curY);
+      doc.text('D)', optStartX + halfW, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.D || '—'), startX + halfW + 5, curY);
+      doc.text(String(opts.D || '—'), optStartX + halfW + 5, curY);
       curY += optLineH;
     } else {
+      const optStartX = startX + numWidth;
       ['A', 'B', 'C', 'D'].forEach(optKey => {
         doc.setFont('helvetica', 'bold');
-        doc.text(`${optKey})`, startX, curY);
+        doc.text(`${optKey})`, optStartX, curY);
         doc.setFont('helvetica', 'normal');
-        const optLines = doc.splitTextToSize(String(opts[optKey] || '—'), colWidth - 6);
-        doc.text(optLines, startX + 5, curY);
+        const optLines = doc.splitTextToSize(String(opts[optKey] || '—'), colWidth - numWidth - 6);
+        doc.text(optLines, optStartX + 5, curY);
         curY += optLines.length * (isCompact ? 3.0 : 3.6);
       });
     }

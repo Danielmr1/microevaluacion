@@ -2654,6 +2654,9 @@ textarea.form-control {
 }
 
 .booklet-q-prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: 2mm;
   font-size: 8.5pt;
   font-weight: 600;
   color: #000000;
@@ -2663,6 +2666,11 @@ textarea.form-control {
 .booklet-q-num {
   font-weight: 800;
   color: #000000;
+  flex: 0 0 auto;
+}
+
+.booklet-q-text {
+  flex: 1;
 }
 
 .sheet-booklet-portrait .booklet-header {
@@ -2697,6 +2705,9 @@ textarea.form-control {
 }
 
 .sheet-booklet-portrait .booklet-q-prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: 2mm;
   font-size: 9.2pt;
   font-weight: 600;
   line-height: 1.25;
@@ -2716,7 +2727,7 @@ textarea.form-control {
   gap: 1.5mm 3.5mm;
   font-size: 8.5pt;
   color: #000000;
-  margin-left: 2mm;
+  margin-left: 5.5mm;
 }
 
 .sheet-booklet-landscape .booklet-title {
@@ -2764,7 +2775,7 @@ textarea.form-control {
   gap: 2mm 5mm;
   font-size: 9.5pt;
   color: #000000;
-  margin-left: 2mm;
+  margin-left: 5.5mm;
 }
 
 .sheet-booklet-portrait .booklet-options-list {
