@@ -288,14 +288,15 @@ function determineRama3ExamLayout(count) {
       totalPages: 1
     };
   } else if (count <= 10) {
-    // 10 preguntas (1 página A4 Vertical): 8 preguntas en Columna 1 y 2 en Columna 2
+    // 10 preguntas (1 página A4 Vertical): equilibrado simétrico (5 y 5, con tope de hasta 6 en una columna)
+    const c1 = Math.min(6, Math.ceil(count / 2));
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
       bodyClass: 'r3-exam-body-2col',
       columns: 2,
       totalPages: 1,
-      col1Count: Math.min(count, 8),
-      col2Count: Math.max(0, count - 8)
+      col1Count: c1,
+      col2Count: count - c1
     };
   } else if (count <= 15) {
     // 15 preguntas (1 sola página A4 Vertical): 8 preguntas en Columna 1 y 7 en Columna 2

@@ -2566,7 +2566,8 @@ textarea.form-control {
 .sheet-booklet-portrait {
   background: #ffffff;
   width: 210mm;
-  height: 297mm;
+  height: 282mm;
+  max-height: 282mm;
   padding: 8mm 12mm;
   margin: 6mm auto;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
@@ -2708,7 +2709,7 @@ textarea.form-control {
   display: flex;
   align-items: flex-start;
   gap: 2mm;
-  font-size: 9.2pt;
+  font-size: 9.5pt;
   font-weight: 600;
   line-height: 1.25;
   color: #000000;
@@ -2716,8 +2717,8 @@ textarea.form-control {
 
 .sheet-booklet-portrait .booklet-q-prompt-compact,
 .r3-exam-sheet .r3-exam-prompt-compact {
-  font-size: 8.4pt !important;
-  line-height: 1.20 !important;
+  font-size: 9.0pt !important;
+  line-height: 1.22 !important;
 }
 
 .booklet-options-grid,
@@ -3541,7 +3542,7 @@ textarea.form-control {
 .r3-exam-q-prompt {
   display: flex;
   gap: 2mm;
-  font-size: 9.2pt;
+  font-size: 9.5pt;
   line-height: 1.25;
   color: #0f172a;
   margin-bottom: 1.5mm;
@@ -4940,9 +4941,9 @@ body:not(.camera-active) .quality-metrics .metric-card {
   body.print-mode-booklet .sheet-booklet-portrait {
     box-shadow: none !important;
     width: 210mm !important;
-    height: 297mm !important;
-    min-height: 297mm !important;
-    max-height: 297mm !important;
+    height: 282mm !important;
+    min-height: auto !important;
+    max-height: 282mm !important;
     margin: 0 !important;
     padding: 8mm 12mm !important;
     box-sizing: border-box !important;
@@ -4957,15 +4958,11 @@ body:not(.camera-active) .quality-metrics .metric-card {
     flex-direction: column !important;
   }
 
-  body.print-mode-booklet .sheet-booklet-landscape:last-child {
+  body.print-mode-booklet .sheet-booklet-landscape:last-child,
+  body.print-mode-booklet .sheet-booklet-portrait:last-child,
+  body.print-mode-booklet .sheet-booklet-quad:last-child {
     page-break-after: avoid !important;
     break-after: avoid !important;
-  }
-
-  body.print-mode-booklet .sheet-booklet-quad:last-child,
-  body.print-mode-booklet .sheet-booklet-portrait:last-child {
-    page-break-after: auto !important;
-    break-after: auto !important;
   }
 
   /* ── UNA HOJA = UNA PÁGINA ──
