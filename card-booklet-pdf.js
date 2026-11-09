@@ -49,8 +49,19 @@ function determineBookletLayout(evaluation) {
         subColumns: 1,
         pages: [{ questions }]
       };
+    } else if (questions.length <= 10) {
+      // 10 preguntas: 2 columnas equilibradas simétricas (5 y 5, con tope de hasta 6 en una columna)
+      const col1Count = Math.min(6, Math.ceil(questions.length / 2));
+      return {
+        level: 'portrait',
+        pages: [{
+          pageNum: 1,
+          col1: questions.slice(0, col1Count),
+          col2: questions.slice(col1Count)
+        }]
+      };
     } else if (questions.length <= 15) {
-      // 10 y 15 preguntas: 1 sola página A4 Vertical en 2 columnas (Col 1 llena primero con 8 preguntas, y Col 2 recibe el resto)
+      // 15 preguntas: 1 sola página A4 Vertical en 2 columnas (Columna 1: 8 preguntas, Columna 2: 7 preguntas)
       const col1Count = Math.min(questions.length, 8);
       return {
         level: 'portrait',
@@ -484,9 +495,9 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
 
     doc.setFont('helvetica', 'bold');
 
-    // Auto-shrink dinámico: si con el tamaño estándar se forman más de 3 filas,
-    // reducir progresivamente el tamaño de letra hasta que el enunciado tenga como máximo 3 filas.
-    let promptFontSize = isCompact ? 8.5 : 10;
+    // Tamaño de letra: 9.5 pt para enunciados cortos, 9.0 pt si tiene más de 105 caracteres
+    const isPromptLong = String(q.prompt || '').length > 105;
+    let promptFontSize = isCompact ? 8.5 : (isPromptLong ? 9.0 : 9.5);
     doc.setFontSize(promptFontSize);
 
     const numWidth = doc.getTextWidth(numPrefix) + 2.5; // sangría exacta del número
