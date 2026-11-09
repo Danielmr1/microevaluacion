@@ -369,8 +369,9 @@ function renderQuestionBooklet(classId, evaluation) {
         </div>
       `;
     } else {
+      const qCountClass = questions.length >= 6 ? ' booklet-body-6q' : '';
       examHalfBodyHTML = `
-        <div class="booklet-body-a5">
+        <div class="booklet-body-a5${qCountClass}">
           ${questions.map((q, idx) => renderBookletQuestionHTML(q, idx, false)).join('')}
         </div>
       `;
@@ -638,8 +639,8 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
         });
 
         const extraGap = questions.length > 1
-          ? Math.max(5.0, Math.min(13, (availableH - naturalTotalH) / (questions.length - 1)))
-          : 6;
+          ? Math.max(2.5, Math.min(questions.length >= 6 ? 4.0 : 10.0, (availableH - naturalTotalH) / (questions.length - 1)))
+          : 5;
 
         let qY = qStartY;
         questions.forEach((q, idx) => {

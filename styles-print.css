@@ -2336,9 +2336,14 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 6.5mm;
+      gap: 5.5mm;
       overflow: hidden;
-      margin-top: 4mm;
+      margin-top: 3.5mm;
+    }
+
+    .sheet-booklet-landscape .booklet-body-a5.booklet-body-6q {
+      gap: 3.8mm;
+      margin-top: 3.0mm;
     }
 
     .sheet-booklet-landscape .booklet-q-item {
