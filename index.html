@@ -38,57 +38,57 @@
   </script>
 
   <script src="classroom-data.js"></script>
-  <script src="classroom-bank-data.js?v=3.10.126"></script>
+  <script src="classroom-bank-data.js"></script>
   <script src="classroom-session-data.js"></script>
-  <script src="daily-quota.js?v=3.5.6"></script>
-  <script src="supabase-client.js?v=3.10.125"></script>
+  <script src="daily-quota.js"></script>
+  <script src="supabase-client.js"></script>
   <script src="supabase-ai-service.js"></script>
-  <script src="qrcode.bundle.js?v=3.0.6"></script>
-  <script src="aruco.bundle.js?v=3.0.6"></script>
-  <script src="jsqr.min.js?v=3.0.6"></script>
-  <script src="roi-processor.js?v=3.10.127"></script>
-  <script src="scanner.js?v=3.10.134"></script>
+  <script src="qrcode.bundle.js"></script>
+  <script src="aruco.bundle.js"></script>
+  <script src="jsqr.min.js"></script>
+  <script src="roi-processor.js"></script>
+  <script src="scanner.js"></script>
   <script src="scanner-result-modal.js"></script>
-  <script src="results-manager.js?v=3.10.134"></script>
+  <script src="results-manager.js"></script>
   <script src="classroom-importer.js"></script>
   <script src="classroom-roster.js"></script>
   <script src="classroom-manual-form.js"></script>
-  <script src="classroom-manager.js?v=3.10.145"></script>
+  <script src="classroom-manager.js"></script>
   <script src="bank-tools-math.js"></script>
   <script src="bank-ai-rubric.js"></script>
-  <script src="bank-manager-modal.js?v=3.10.145"></script>
-  <script src="bank-manager-form.js?v=3.10.145"></script>
-  <script src="question-bank.js?v=3.10.86"></script>
+  <script src="bank-manager-modal.js"></script>
+  <script src="bank-manager-form.js"></script>
+  <script src="question-bank.js"></script>
   <script src="sim-card-layout.js"></script>
-  <script src="sim-card-picker.js?v=3.10.90"></script>
-  <script src="card-simulator.js?v=3.10.116"></script>
-  <script src="card-builder-focalizada.js?v=3.10.127"></script>
-  <script src="card-exam-builder.js?v=3.10.157"></script>
-  <script src="card-formativa.js?v=3.10.19"></script>
-  <script src="card-focalizada.js?v=3.10.127"></script>
-  <script src="card-cartilla.js?v=3.8.9"></script>
+  <script src="sim-card-picker.js"></script>
+  <script src="card-simulator.js"></script>
+  <script src="card-builder-focalizada.js"></script>
+  <script src="card-exam-builder.js"></script>
+  <script src="card-formativa.js"></script>
+  <script src="card-focalizada.js"></script>
+  <script src="card-cartilla.js"></script>
   <script src="card-generator.js"></script>
-  <script src="card-booklet-pdf.js?v=3.10.157"></script>
-  <script src="card-sheets-print.js?v=3.10.148"></script>
-  <script src="session-saved-manager.js?v=3.10.139"></script>
-  <script src="session-summary-view.js?v=3.10.151"></script>
-  <script src="session-controller.js?v=3.10.127"></script>
+  <script src="card-booklet-pdf.js"></script>
+  <script src="card-sheets-print.js"></script>
+  <script src="session-saved-manager.js"></script>
+  <script src="session-summary-view.js"></script>
+  <script src="session-controller.js"></script>
   <script src="app-scroll-effects.js"></script>
-  <script src="app-navigation.js?v=3.10.136"></script>
+  <script src="app-navigation.js"></script>
   <script src="copilot-analytics.js"></script>
   <script src="copilot-ai.js"></script>
   <script src="copilot-command.js"></script>
   <script src="three.min.js"></script>
-  <script src="evaluation-hologram.js?v=3.10.136"></script>
+  <script src="evaluation-hologram.js"></script>
 
-  <!-- Estilos Modulares de Microevaluación con Versionado Anti-Caché PWA -->
-  <link rel="stylesheet" href="styles-core.css?v=3.10.86">
-  <link rel="stylesheet" href="styles-print.css?v=3.10.157">
-  <link rel="stylesheet" href="styles-scanner.css?v=3.10.157">
-  <link rel="stylesheet" href="styles-hub.css?v=3.10.86">
-  <link rel="stylesheet" href="styles-simulator.css?v=3.10.111">
-  <link rel="stylesheet" href="styles-blueprint.css?v=3.10.151">
-  <link rel="stylesheet" href="styles-copilot.css?v=3.10.145">
+  <!-- Estilos Modulares de Microevaluación -->
+  <link rel="stylesheet" href="styles-core.css">
+  <link rel="stylesheet" href="styles-print.css">
+  <link rel="stylesheet" href="styles-scanner.css">
+  <link rel="stylesheet" href="styles-hub.css">
+  <link rel="stylesheet" href="styles-simulator.css">
+  <link rel="stylesheet" href="styles-blueprint.css">
+  <link rel="stylesheet" href="styles-copilot.css">
 
   <!-- Estilos críticos para barra superior, píldora de modalidad y botón INICIO (Anti-caché) -->
   <style>
@@ -1003,7 +1003,7 @@
             <!-- Versión de la Aplicación -->
             <div id="user-menu-version"
               style="font-size:0.72rem; color:#94A3B8; font-weight:600; text-align:center; padding:4px 0 8px;">
-              Versión <span id="user-profile-version-tag">v3.10.157</span>
+              Versión <span id="user-profile-version-tag">v3.10.158</span>
             </div>
 
             <!-- Botón Salir -->
@@ -1889,8 +1889,10 @@
               style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding-bottom:12px; border-bottom:1.5px solid rgba(255, 255, 255, 0.12);">
               <div>
                 <span id="summary-students-count"
-                  style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:700; color:#CBD5E1; margin-bottom:3px;">👥 0</span>
-                <span id="summary-classroom-info" style="font-size:1.02rem; font-weight:800; color:#FFFFFF; display:block;"></span>
+                  style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:700; color:#CBD5E1; margin-bottom:3px;">👥
+                  0</span>
+                <span id="summary-classroom-info"
+                  style="font-size:1.02rem; font-weight:800; color:#FFFFFF; display:block;"></span>
               </div>
               <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
                 <span id="summary-grade-badge"
@@ -1911,7 +1913,8 @@
             </div>
 
             <!-- Contenedor dinámico de Pregunta(s) / Pauta de Claves -->
-            <div id="summary-questions-container" style="display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto; padding-right:2px;">
+            <div id="summary-questions-container"
+              style="display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto; padding-right:2px;">
               <div style="margin-bottom:6px;">
                 <span
                   style="font-size:0.68rem; font-weight:700; color:#94A3B8; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:3px;">Consigna</span>
@@ -2033,7 +2036,8 @@
               style="padding:16px 20px; border-bottom:1px solid #3D352E; display:flex; align-items:flex-start; justify-content:space-between; background:#211D19;">
               <div>
                 <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#F9F8F3;">Resultados de la Sesión</h3>
-                <div id="results-modal-subtitle" style="margin:3px 0 0; font-size:0.75rem; color:#A8A29E;">Nómina de alumnos y calificaciones de la evaluación activa.</div>
+                <div id="results-modal-subtitle" style="margin:3px 0 0; font-size:0.75rem; color:#A8A29E;">Nómina de
+                  alumnos y calificaciones de la evaluación activa.</div>
               </div>
               <button type="button" onclick="toggleSummaryViewMode('pdf')"
                 style="background:transparent; border:none; color:#A8A29E; font-size:1.3rem; cursor:pointer; padding:4px 8px; line-height:1; border-radius:6px;"
@@ -2046,17 +2050,20 @@
               <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <div
                   style="background:#211D19; border:1px solid rgba(0,180,216,0.35); border-radius:8px; padding:6px 12px; min-width:110px;">
-                  <div style="font-size:0.65rem; color:#00B4D8; font-weight:700; text-transform:uppercase;">Evaluados</div>
+                  <div style="font-size:0.65rem; color:#00B4D8; font-weight:700; text-transform:uppercase;">Evaluados
+                  </div>
                   <div id="res-kpi-total" style="font-size:1.15rem; font-weight:800; color:#38BDF8;">0 / 0</div>
                 </div>
                 <div
                   style="background:#211D19; border:1px solid rgba(4,120,87,0.45); border-radius:8px; padding:6px 12px; min-width:110px;">
-                  <div style="font-size:0.65rem; color:#34D399; font-weight:700; text-transform:uppercase;">Aciertos</div>
+                  <div style="font-size:0.65rem; color:#34D399; font-weight:700; text-transform:uppercase;">Aciertos
+                  </div>
                   <div id="res-kpi-correct" style="font-size:1.15rem; font-weight:800; color:#34D399;">0 (0%)</div>
                 </div>
                 <div
                   style="background:#211D19; border:1px solid rgba(185,28,28,0.45); border-radius:8px; padding:6px 12px; min-width:110px;">
-                  <div style="font-size:0.65rem; color:#F87171; font-weight:700; text-transform:uppercase;">Errores</div>
+                  <div style="font-size:0.65rem; color:#F87171; font-weight:700; text-transform:uppercase;">Errores
+                  </div>
                   <div id="res-kpi-incorrect" style="font-size:1.15rem; font-weight:800; color:#F87171;">0 (0%)</div>
                 </div>
               </div>
@@ -2066,24 +2073,47 @@
                 <button id="btn-export-excel" type="button" onclick="exportResultsToExcel()"
                   style="display:inline-flex; align-items:center; gap:6px; background:#1E3A2B; border:1px solid #059669; color:#A7F3D0; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(5,150,105,0.2);"
                   title="Descargar planilla de resultados en formato Excel">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="8" y1="13" x2="16" y2="13" />
+                    <line x1="8" y1="17" x2="16" y2="17" />
+                  </svg>
                   Descargar Excel (.xlsx)
                 </button>
                 <button id="btn-export-photos" type="button" onclick="downloadAllSessionPhotosZip()"
                   style="display:inline-flex; align-items:center; gap:6px; background:#232038; border:1px solid #6366F1; color:#C7D2FE; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(99,102,241,0.2);"
                   title="Descargar todas las resoluciones en un archivo ZIP">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                      d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                  </svg>
                   Descargar Fotos (.zip)
                 </button>
                 <button type="button" onclick="loadAndRenderResultsTable()"
                   style="display:inline-flex; align-items:center; gap:4px; background:#211D19; border:1px solid #3D352E; color:#D6D3D1; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:600; cursor:pointer;"
                   title="Actualizar">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                  </svg>
                 </button>
                 <button id="btn-delete-all-results" type="button" onclick="handleDeleteAllSessionResults(this)"
                   style="display:inline-flex; align-items:center; gap:6px; background:#2A1414; border:1px solid #DC2626; color:#FCA5A5; border-radius:8px; padding:7px 12px; font-size:0.78rem; font-weight:700; cursor:pointer;"
                   title="Borrar todos los resultados de esta sesión">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                  </svg>
                   Reiniciar Sesión
                 </button>
               </div>
@@ -2240,9 +2270,14 @@
       <!-- Guardarraíl Bloqueador de Orientación Activo (Impide escanear si el teléfono está en orientación contraria) -->
       <div id="scanner-orientation-blocker"
         style="display:none; position:absolute; inset:0; z-index:46; background:rgba(15,23,42,0.92); backdrop-filter:blur(8px); flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; color:#ffffff;">
-        <div id="scanner-orientation-blocker-icon" style="font-size:3.2rem; margin-bottom:14px; animation:pulse 1.8s infinite ease-in-out;">🔄</div>
-        <h3 id="scanner-orientation-blocker-title" style="margin:0 0 8px 0; font-size:1.15rem; font-weight:800; color:#38bdf8;">Gira tu dispositivo a HORIZONTAL</h3>
-        <p id="scanner-orientation-blocker-desc" style="margin:0; font-size:0.86rem; color:#cbd5e1; max-width:290px; line-height:1.45;">Esta evaluación utiliza fichas apaisadas (A6 Horizontal). Coloca el celular en horizontal para que el encuadre calce con la hoja.</p>
+        <div id="scanner-orientation-blocker-icon"
+          style="font-size:3.2rem; margin-bottom:14px; animation:pulse 1.8s infinite ease-in-out;">🔄</div>
+        <h3 id="scanner-orientation-blocker-title"
+          style="margin:0 0 8px 0; font-size:1.15rem; font-weight:800; color:#38bdf8;">Gira tu dispositivo a HORIZONTAL
+        </h3>
+        <p id="scanner-orientation-blocker-desc"
+          style="margin:0; font-size:0.86rem; color:#cbd5e1; max-width:290px; line-height:1.45;">Esta evaluación utiliza
+          fichas apaisadas (A6 Horizontal). Coloca el celular en horizontal para que el encuadre calce con la hoja.</p>
       </div>
 
       <!-- Estado vacío del visor cuando la cámara está apagada.
@@ -2254,7 +2289,8 @@
            elige updatePlaceholderHint() según haya o no sesión configurada,
            para no contradecir al banner G7. -->
       <div class="camera-placeholder" id="camera-placeholder">
-        <svg class="placeholder-device-svg" id="placeholder-device-svg" viewBox="0 0 240 130" width="220" height="120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg class="placeholder-device-svg" id="placeholder-device-svg" viewBox="0 0 240 130" width="220" height="120"
+          fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs>
             <linearGradient id="scanBeamGrad" x1="120" y1="46" x2="120" y2="82" gradientUnits="userSpaceOnUse">
               <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45" />
@@ -2268,19 +2304,20 @@
 
           <!-- Haz de escaneo cónico proyectado hacia la ficha -->
           <polygon points="68,44 172,44 205,82 35,82" fill="url(#scanBeamGrad)" />
-          <line x1="35" y1="82" x2="205" y2="82" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.85" />
+          <line x1="35" y1="82" x2="205" y2="82" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 3"
+            opacity="0.85" />
 
           <!-- 1. FICHA EN HORIZONTAL (Base / Mesa) -->
           <g id="card-group-horizontal">
             <!-- Papel blanco apaisado -->
             <rect x="35" y="82" width="170" height="42" rx="4" fill="#F8FAFC" stroke="#0284c7" stroke-width="1.5" />
-            
+
             <!-- 4 Marcadores ArUco negros en las esquinas -->
             <rect x="39" y="86" width="8" height="8" fill="#0F172A" rx="1" />
             <rect x="193" y="86" width="8" height="8" fill="#0F172A" rx="1" />
             <rect x="39" y="112" width="8" height="8" fill="#0F172A" rx="1" />
             <rect x="193" y="112" width="8" height="8" fill="#0F172A" rx="1" />
-            
+
             <!-- Mini QR en esquina superior derecha de la ficha -->
             <rect x="176" y="86" width="12" height="12" fill="#0F172A" rx="1" />
             <rect x="179" y="89" width="6" height="6" fill="#F8FAFC" />
@@ -2309,17 +2346,18 @@
             <circle cx="136" cy="112" r="2.2" fill="#0284C7" />
 
             <!-- Cuadrícula de cálculo insinuada a la izquierda -->
-            <rect x="52" y="96" width="38" height="18" fill="none" stroke="#CBD5E1" stroke-width="0.8" stroke-dasharray="2 2" />
+            <rect x="52" y="96" width="38" height="18" fill="none" stroke="#CBD5E1" stroke-width="0.8"
+              stroke-dasharray="2 2" />
           </g>
 
           <!-- 2. CELULAR EN HORIZONTAL (Arriba, enfocando) -->
           <g id="phone-group-horizontal" filter="url(#phoneShadow)">
             <!-- Chasis del teléfono en horizontal -->
             <rect x="66" y="6" width="108" height="42" rx="7" fill="#0F172A" stroke="#38BDF8" stroke-width="1.8" />
-            
+
             <!-- Pantalla del teléfono -->
             <rect x="73" y="10" width="94" height="34" rx="4" fill="#082F49" />
-            
+
             <!-- Notch / cámara frontal del celular (a la izquierda en horizontal) -->
             <circle cx="69.5" cy="27" r="1.8" fill="#38BDF8" opacity="0.9" />
 
@@ -2361,7 +2399,7 @@
                 que sí tiene la proporción real porque sale de los marcadores
                 ArUco impresos.
            El diseño original ya la había desactivado por lo mismo
-           (backup v2.5.0, "DESHABILITADO PARA MODO CUADRILÁTERO DINÁMICO"). -->
+           ("DESHABILITADO PARA MODO CUADRILÁTERO DINÁMICO"). -->
 
       <!-- Medidores de calidad: Cobertura, Nitidez, Estabilidad.
            Con la cámara encendida flotan sobre el borde inferior del video.
@@ -2561,7 +2599,12 @@
           </button>
           <button type="button" onclick="goToSessionResults()"
             style="width:100%; background:#211D19; color:#00B4D8; border:1.5px solid #00B4D8; padding:9px 12px; border-radius:10px; font-weight:700; font-size:0.86rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 8px rgba(0,180,216,0.15);">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
             Ver Resultados de la Sesión
           </button>
         </div>
@@ -2964,10 +3007,15 @@
         style="padding:14px 18px; border-bottom:1px solid #3D352E; display:flex; align-items:center; justify-content:space-between; background:#211D19;">
         <div style="display:flex; align-items:center; gap:10px;">
           <div style="color:#00B4D8; display:flex; align-items:center;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
           </div>
           <div>
-            <h4 id="photo-viewer-title" style="margin:0; font-size:0.95rem; font-weight:800; color:#F9F8F3;">Resolución del Alumno</h4>
+            <h4 id="photo-viewer-title" style="margin:0; font-size:0.95rem; font-weight:800; color:#F9F8F3;">Resolución
+              del Alumno</h4>
             <p id="photo-viewer-subtitle" style="margin:2px 0 0; font-size:0.72rem; color:#A8A29E;">—</p>
           </div>
         </div>
@@ -2985,7 +3033,12 @@
         <span id="photo-viewer-meta" style="font-size:0.75rem; color:#78716C;">Ficha / Captura de resolución</span>
         <button id="photo-viewer-download-btn" type="button"
           style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #0284C7 0%, #00B4D8 100%); border:none; color:#FFFFFF; border-radius:8px; padding:7px 14px; font-size:0.78rem; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(0,180,216,0.35);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
           Descargar Foto
         </button>
       </div>
@@ -3920,16 +3973,20 @@
         <div
           style="padding:18px 22px; border-bottom:1px solid #2B231D; display:flex; align-items:center; justify-content:space-between; background:#211D19;">
           <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,183,3,0.12); border:1px solid rgba(255,183,3,0.3); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+            <div
+              style="width:36px; height:36px; border-radius:10px; background:rgba(255,183,3,0.12); border:1px solid rgba(255,183,3,0.3); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
               </svg>
             </div>
             <div>
               <div style="display:flex; align-items:center; gap:8px;">
                 <h2 style="margin:0; font-size:1.15rem; font-weight:800; color:#F8FAFC;">Sesiones Guardadas</h2>
                 <span id="saved-sessions-modal-count"
-                  style="background:rgba(255,183,3,0.14); border:1px solid rgba(255,183,3,0.35); color:#FFB703; font-size:0.75rem; font-weight:800; padding:2px 9px; border-radius:6px;">0 de 8 ocupadas</span>
+                  style="background:rgba(255,183,3,0.14); border:1px solid rgba(255,183,3,0.35); color:#FFB703; font-size:0.75rem; font-weight:800; padding:2px 9px; border-radius:6px;">0
+                  de 8 ocupadas</span>
               </div>
             </div>
           </div>
@@ -3943,18 +4000,23 @@
 
           <div id="saved-sessions-empty" style="display:none; text-align:center; padding:32px 16px;">
             <!-- Ilustración central personalizada: cuaderno con destello ocelo -->
-            <div style="width:68px; height:68px; border-radius:50%; background:radial-gradient(circle, rgba(255,183,3,0.16) 0%, rgba(0,180,216,0.06) 60%, transparent 70%); display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; border:1px solid rgba(255,183,3,0.25);">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13" stroke="#00B4D8"/>
-                <line x1="16" y1="17" x2="8" y2="17" stroke="#00B4D8"/>
-                <line x1="10" y1="9" x2="8" y2="9" stroke="#FFB703"/>
+            <div
+              style="width:68px; height:68px; border-radius:50%; background:radial-gradient(circle, rgba(255,183,3,0.16) 0%, rgba(0,180,216,0.06) 60%, transparent 70%); display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; border:1px solid rgba(255,183,3,0.25);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" stroke="#00B4D8" />
+                <line x1="16" y1="17" x2="8" y2="17" stroke="#00B4D8" />
+                <line x1="10" y1="9" x2="8" y2="9" stroke="#FFB703" />
               </svg>
             </div>
-            <h4 style="color:#F8FAFC; font-size:1.1rem; font-weight:800; margin:0 0 6px;">No tienes sesiones guardadas todavía</h4>
+            <h4 style="color:#F8FAFC; font-size:1.1rem; font-weight:800; margin:0 0 6px;">No tienes sesiones guardadas
+              todavía</h4>
             <p style="color:#A8A29E; font-size:0.84rem; max-width:520px; margin:0 auto 24px; line-height:1.45;">
-              Para preparar una nueva sesión, primero <strong style="color:#F8FAFC;">elige la modalidad</strong> de trabajo. A continuación seleccionarás tu salón con alumnos y las preguntas de la evaluación para generar el PDF y guardar tu sesión:
+              Para preparar una nueva sesión, primero <strong style="color:#F8FAFC;">elige la modalidad</strong> de
+              trabajo. A continuación seleccionarás tu salón con alumnos y las preguntas de la evaluación para generar
+              el PDF y guardar tu sesión:
             </p>
 
             <!-- Selector directo de las 3 modalidades con paleta Ocelo Mariposa -->
@@ -3967,9 +4029,12 @@
                 onmouseover="this.style.borderColor='#00B4D8'; this.style.boxShadow='0 6px 20px rgba(0,180,216,0.25)'; this.style.transform='translateY(-2px)';"
                 onmouseout="this.style.borderColor='rgba(0,180,216,0.4)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)'; this.style.transform='translateY(0)';">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(0,180,216,0.14); border:1px solid rgba(0,180,216,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00B4D8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+                  <div
+                    style="width:34px; height:34px; border-radius:8px; background:rgba(0,180,216,0.14); border:1px solid rgba(0,180,216,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00B4D8" stroke-width="2.2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path
+                        d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
                     </svg>
                   </div>
                   <span style="color:#00B4D8; font-weight:800; font-size:0.92rem;">Formativa con IA</span>
@@ -3977,7 +4042,8 @@
                 <div style="color:#D6D3D1; font-size:0.77rem; line-height:1.4; margin-bottom:12px;">
                   Rúbrica de corrección pedagógica y análisis profundo de procedimientos manuscritos.
                 </div>
-                <div style="color:#38BDF8; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
+                <div
+                  style="color:#38BDF8; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
                   ➔ Iniciar: Salón ➔ Preguntas ➔ PDF
                 </div>
               </div>
@@ -3988,10 +4054,12 @@
                 onmouseover="this.style.borderColor='#FFB703'; this.style.boxShadow='0 6px 20px rgba(255,183,3,0.25)'; this.style.transform='translateY(-2px)';"
                 onmouseout="this.style.borderColor='rgba(255,183,3,0.4)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)'; this.style.transform='translateY(0)';">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(255,183,3,0.14); border:1px solid rgba(255,183,3,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="9"/>
-                      <polyline points="9 12 11.5 14.5 15.5 9.5"/>
+                  <div
+                    style="width:34px; height:34px; border-radius:8px; background:rgba(255,183,3,0.14); border:1px solid rgba(255,183,3,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFB703" stroke-width="2.2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" />
+                      <polyline points="9 12 11.5 14.5 15.5 9.5" />
                     </svg>
                   </div>
                   <span style="color:#FFB703; font-weight:800; font-size:0.92rem;">Focalizada en la Respuesta</span>
@@ -3999,7 +4067,8 @@
                 <div style="color:#D6D3D1; font-size:0.77rem; line-height:1.4; margin-bottom:12px;">
                   Validación directa de la respuesta final del alumno con área de cálculo/borrador.
                 </div>
-                <div style="color:#FBBF24; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
+                <div
+                  style="color:#FBBF24; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
                   ➔ Iniciar: Salón ➔ Preguntas ➔ PDF
                 </div>
               </div>
@@ -4010,14 +4079,16 @@
                 onmouseover="this.style.borderColor='#34D399'; this.style.boxShadow='0 6px 20px rgba(52,211,153,0.25)'; this.style.transform='translateY(-2px)';"
                 onmouseout="this.style.borderColor='rgba(52,211,153,0.4)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.25)'; this.style.transform='translateY(0)';">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                  <div style="width:34px; height:34px; border-radius:8px; background:rgba(52,211,153,0.14); border:1px solid rgba(52,211,153,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="6" cy="7" r="2.5" fill="#34D399"/>
-                      <circle cx="12" cy="7" r="2.5"/>
-                      <circle cx="18" cy="7" r="2.5"/>
-                      <circle cx="6" cy="17" r="2.5"/>
-                      <circle cx="12" cy="17" r="2.5" fill="#34D399"/>
-                      <circle cx="18" cy="17" r="2.5"/>
+                  <div
+                    style="width:34px; height:34px; border-radius:8px; background:rgba(52,211,153,0.14); border:1px solid rgba(52,211,153,0.35); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="6" cy="7" r="2.5" fill="#34D399" />
+                      <circle cx="12" cy="7" r="2.5" />
+                      <circle cx="18" cy="7" r="2.5" />
+                      <circle cx="6" cy="17" r="2.5" />
+                      <circle cx="12" cy="17" r="2.5" fill="#34D399" />
+                      <circle cx="18" cy="17" r="2.5" />
                     </svg>
                   </div>
                   <span style="color:#34D399; font-weight:800; font-size:0.92rem;">Cartilla OMR</span>
@@ -4025,7 +4096,8 @@
                 <div style="color:#D6D3D1; font-size:0.77rem; line-height:1.4; margin-bottom:12px;">
                   Cartillas compactas A6/A5 con burbujas de respuesta y lectura instantánea de claves.
                 </div>
-                <div style="color:#4ADE80; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
+                <div
+                  style="color:#4ADE80; font-size:0.74rem; font-weight:700; display:flex; align-items:center; gap:4px;">
                   ➔ Iniciar: Salón ➔ Claves/Banco ➔ PDF
                 </div>
               </div>

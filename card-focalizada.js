@@ -1,6 +1,6 @@
 // =============================================================================
 // card-focalizada.js — Submódulo 2: Focalizada en la Respuesta (Rama 2)
-// Microevaluación v3.1.85
+// Microevaluación
 //
 // MÓDULO AUTÓNOMO:
 //   * Diseñado para evaluaciones directas de 1 a 5 preguntas (sin cuadrícula o con borrador opcional).

@@ -66,7 +66,7 @@ function fixMojibake(valor) {
 }
 
 
-/* ── VALIDACIÓN Y REGLAS DE NOMBRES (v3.1.28) ─────────────────────────
+/* ── VALIDACIÓN Y REGLAS DE NOMBRES ─────────────────────────
    - Longitud de salón: 3 a 50 caracteres.
    - Longitud de alumno: 3 a 60 caracteres.
    - Longitud de nombre corto: 2 a 20 caracteres.

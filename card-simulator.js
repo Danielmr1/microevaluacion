@@ -1,5 +1,5 @@
 // =============================================================================
-// card-simulator.js — Microevaluación v3.10.27
+// card-simulator.js — Microevaluación
 // MÓDULO PRINCIPAL: SIMULADOR INTERACTIVO DE FICHAS (ORQUESTADOR)
 //
 // Submódulos auxiliares vinculados:

@@ -1,6 +1,6 @@
 // =============================================================================
 // card-cartilla.js — Submódulo 3: Cartilla OMR y Cuadernillo de Preguntas (Rama 3)
-// Microevaluación v3.8.9
+// Microevaluación
 //
 // MÓDULO AISLADO:
 //   * Generación de Cartilla OMR en A5 Vertical (9 a 20 preguntas) y A6 (hasta 8 preguntas).

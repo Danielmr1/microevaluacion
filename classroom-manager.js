@@ -1,5 +1,5 @@
 // =============================================================================
-// classroom-manager.js — Microevaluación v3.10.34
+// classroom-manager.js — Microevaluación
 // MÓDULO: GESTOR DE SALONES DEL CAMPUS Y BLUEPRINT ARQUITECTÓNICO
 //
 // Submódulos auxiliares vinculados:
@@ -459,7 +459,7 @@ function switchManagerCreateTab(tab) {
   if (contentManual) contentManual.style.display = !isImport ? 'block' : 'none';
 }
 
-/* ── GESTIÓN DE FILAS DINÁMICAS NUMERADAS DE ALUMNOS (v3.1.28) ── */
+/* ── GESTIÓN DE FILAS DINÁMICAS NUMERADAS DE ALUMNOS ── */
 function resetMgrStudentRows(initialNames = []) {
   const container = document.getElementById('mgr-manual-students-rows-container');
   if (!container) return;

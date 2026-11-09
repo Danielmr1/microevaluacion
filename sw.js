@@ -1,6 +1,6 @@
-// Service Worker para Microevaluación A5 (PWA) — v3.10.157
+// Service Worker para Microevaluación A5 (PWA) — v3.10.158
 // Arquitectura Offline Total (Pre-Caché + Resiliencia de Aula + Cero Dependencias Externas)
-const CACHE_NAME = 'microeval-cache-v3.10.157';
+const CACHE_NAME = 'microeval-cache-v3.10.158';
 
 const PRECACHE_ASSETS = [
   './',
@@ -10,7 +10,7 @@ const PRECACHE_ASSETS = [
   './styles-scanner.css',
   './styles-hub.css',
   './styles-simulator.css',
-  './styles-blueprint.css?v=3.10.86',
+  './styles-blueprint.css',
   './styles-copilot.css',
   './manifest.json',
   './icon-192.png',
@@ -22,18 +22,19 @@ const PRECACHE_ASSETS = [
   './gsap.min.js',
   './ScrollTrigger.min.js',
   './three.min.js',
-  './aruco.bundle.js?v=3.0.6',
-  './jsqr.min.js?v=3.0.6',
+  './qrcode.bundle.js',
+  './aruco.bundle.js',
+  './jsqr.min.js',
   // Módulos de la aplicación
   './classroom-data.js',
   './classroom-bank-data.js',
   './classroom-session-data.js',
   './supabase-client.js',
   './supabase-ai-service.js',
-  './roi-processor.js?v=3.2.50',
-  './scanner.js?v=3.3.8',
+  './roi-processor.js',
+  './scanner.js',
   './scanner-result-modal.js',
-  './results-manager.js?v=3.10.133',
+  './results-manager.js',
   './classroom-importer.js',
   './classroom-roster.js',
   './classroom-manual-form.js',
@@ -48,9 +49,9 @@ const PRECACHE_ASSETS = [
   './card-simulator.js',
   './card-builder-focalizada.js',
   './card-exam-builder.js',
-  './card-formativa.js?v=3.10.16',
-  './card-focalizada.js?v=3.10.16',
-  './card-cartilla.js?v=3.8.9',
+  './card-formativa.js',
+  './card-focalizada.js',
+  './card-cartilla.js',
   './card-booklet-pdf.js',
   './card-sheets-print.js',
   './card-generator.js',
@@ -62,9 +63,8 @@ const PRECACHE_ASSETS = [
   './copilot-analytics.js',
   './copilot-ai.js',
   './copilot-command.js',
-  './daily-quota.js?v=3.5.6',
-  './qrcode.bundle.js?v=3.0.6',
-  './evaluation-hologram.js?v=3.8.8'
+  './daily-quota.js',
+  './evaluation-hologram.js'
 ];
 
 self.addEventListener('install', (event) => {

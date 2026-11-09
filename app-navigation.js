@@ -1,10 +1,5 @@
 // =============================================================================
-// app-navigation.js — Microevaluación A5 v3.10.37
-// MÓDULO: NAVEGACIÓN, HUB INTERACTIVO, VISTAS Y AUTENTICACIÓN
-// =============================================================================
-
-// =============================================================================
-// app-navigation.js — Microevaluación A5 v3.2.61
+// app-navigation.js — Microevaluación A5
 // MÓDULO: NAVEGACIÓN, HUB INTERACTIVO, VISTAS Y AUTENTICACIÓN
 // =============================================================================
 // =============================================================================
@@ -114,7 +109,7 @@ if (typeof window !== 'undefined') {
     var wizardEvalType = null; // 'mc1' | 'mc2' | 'free'
     var wizardEval = null;     // { id, title, prompt, expectedAnswer, type, ... }
 
-    /* ── NAVEGACIÓN Y CONTROLADOR DE FLUJOS (v3.1.28) ── */
+    /* ── NAVEGACIÓN Y CONTROLADOR DE FLUJOS ── */
 // currentFlow defined in globals
 
     function onBrandClick() {
@@ -466,7 +461,7 @@ if (typeof window !== 'undefined') {
     }
 
 
-    // [classroom-manager.js] GESTOR DE SALONES + ALUMNOS extraído en Tanda 3 (v3.1.31)
+    // [classroom-manager.js] GESTOR DE SALONES + ALUMNOS extraído en Tanda 3
 
     /**
      * Oculta o muestra los botones de creación e importación de salón en el Paso 1.
@@ -793,7 +788,7 @@ if (typeof window !== 'undefined') {
     }
 
 
-    // [classroom-manager.js] CODIFICACIÓN + VALIDACIÓN + ALTA MANUAL + BORRAR extraído en Tanda 3 (v3.1.31)
+    // [classroom-manager.js] CODIFICACIÓN + VALIDACIÓN + ALTA MANUAL + BORRAR extraído en Tanda 3
 
     // ── Inicialización al cargar la página ──
     document.addEventListener('DOMContentLoaded', () => {

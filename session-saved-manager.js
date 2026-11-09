@@ -615,7 +615,7 @@
     window.updateHubSavedSessionsBadge = updateHubSavedSessionsBadge;
 
 
-    // [card-generator.js] GENERADOR DE FICHAS A5 + MAQUETACIÓN A4 extraído en Tanda 5 (v3.1.31)
+    // [card-generator.js] GENERADOR DE FICHAS A5 + MAQUETACIÓN A4 extraído en Tanda 5
 
         /**
      * Activa (o reactiva) la sesión de escaneo desde el estado del wizard.

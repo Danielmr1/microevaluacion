@@ -1,5 +1,5 @@
 // =============================================================================
-// daily-quota.js — Microevaluación A5 v3.5.5
+// daily-quota.js — Microevaluación A5
 // MÓDULO: GESTOR DE CUOTAS DIARIAS DE INTELIGENCIA ARTIFICIAL
 //
 // Guardarraíles de Cuota Canónicos (según MANUAL_SISTEMA.md Sección 8):

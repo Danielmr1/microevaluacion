@@ -1,5 +1,5 @@
 // =============================================================================
-// question-bank.js — Microevaluación v3.10.26
+// question-bank.js — Microevaluación
 // MÓDULO PRINCIPAL: BANCO DE PREGUNTAS Y SELECTOR DE EVALUACIONES
 //
 // Submódulos auxiliares vinculados:

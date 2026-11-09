@@ -1,6 +1,6 @@
 // =============================================================================
 // card-formativa.js — Submódulo 1: Formativa con IA (Rama 1)
-// Microevaluación v3.1.85
+// Microevaluación
 //
 // MÓDULO BLINDADO:
 //   * Evaluaciones de 1 a 2 preguntas (Alternativas OMR o Respuesta Libre).

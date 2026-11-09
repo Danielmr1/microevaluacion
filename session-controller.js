@@ -1,5 +1,5 @@
 // =============================================================================
-// session-controller.js — Microevaluación v3.10.28
+// session-controller.js — Microevaluación
 // MÓDULO PRINCIPAL: CONTROLADOR DE SESIÓN ACTIVA Y ENLACE AL ESCÁNER
 //
 // Submódulos auxiliares vinculados:
@@ -291,7 +291,7 @@
       }
     }
 
-    // [question-bank.js] BANCO DE PREGUNTAS + RÚBRICA IA + EVALUACIONES extraído en Tanda 4 (v3.1.31)
+    // [question-bank.js] BANCO DE PREGUNTAS + RÚBRICA IA + EVALUACIONES extraído en Tanda 4
 
 
     /**

@@ -1,5 +1,5 @@
 /**
- * EVA Copilot: Barra de Comandos Inteligente, Gestión y Orquestador Principal (v3.10.30)
+ * EVA Copilot: Barra de Comandos Inteligente, Gestión y Orquestador Principal
  * Microevaluación Formativa
  *
  * Submódulos auxiliares vinculados:

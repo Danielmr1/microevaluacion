@@ -1,5 +1,5 @@
 // =============================================================================
-// results-manager.js — Microevaluación A5 v3.1.38
+// results-manager.js — Microevaluación A5
 // MÓDULO: RESULTADOS DE LA SESIÓN ACTIVA (CONSULTA, EXCEL Y BORRADO)
 //
 // Guardarraíles activos:

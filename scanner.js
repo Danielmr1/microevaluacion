@@ -1,6 +1,6 @@
 /**
  * Módulo de Aplicación: Scanner de Aula A5
- * Microevaluación Formativa de Clase v2.5.0
+ * Microevaluación Formativa de Clase
  * 
  * Funcionalidad:
  * - Ciclo de tracking de visión en tiempo real (Marcadores ArUco 0, 1, 2, 3)

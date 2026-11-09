@@ -1,5 +1,5 @@
 // =============================================================================
-// card-generator.js — Microevaluación v3.10.31
+// card-generator.js — Microevaluación
 // MÓDULO PRINCIPAL: CONSTRUCTORES DE FICHAS FÍSICAS (A4, A5, A6) Y ARUCO
 //
 // Submódulos auxiliares vinculados:
