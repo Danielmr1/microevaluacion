@@ -208,22 +208,22 @@ function getBookletPdfExportTitle(classroom, evaluation) {
   const sanitizeFn = (typeof sanitizeExportFileName === 'function')
     ? sanitizeExportFileName
     : (name) => (name || 'Salon')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim()
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9_\-]/g, '');
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_\-]/g, '');
 
   const timestampFn = (typeof getExportTimestamp === 'function')
     ? getExportTimestamp
     : () => {
-        const d = new Date();
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const mins = String(d.getMinutes()).padStart(2, '0');
-        return `${day}-${month}_${hours}-${mins}`;
-      };
+      const d = new Date();
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${day}-${month}_${hours}-${mins}`;
+    };
 
   let cls = classroom;
   if (!cls) {
@@ -274,9 +274,9 @@ function renderBookletQuestionHTML(q, idx, isCompact = false) {
   const escape = (typeof escaparHtml === 'function')
     ? (t => (typeof formatMathHtml === 'function' ? formatMathHtml(escaparHtml(t)) : escaparHtml(t)))
     : (t => {
-        const s = String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        return (typeof formatMathHtml === 'function') ? formatMathHtml(s) : s;
-      });
+      const s = String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return (typeof formatMathHtml === 'function') ? formatMathHtml(s) : s;
+    });
 
   const num = q.num || (idx + 1);
   const prompt = escape(q.prompt || `Pregunta ${num}`);
@@ -429,25 +429,25 @@ function renderQuestionBooklet(classId, evaluation) {
         <div class="booklet-columns" style="display:block;">
           <div class="booklet-col" style="width:100%; display:flex; flex-direction:column; gap:4mm;">
             ${p.col1.map((q) => {
-              const globalIdx = questions.indexOf(q);
-              return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
-            }).join('')}
+        const globalIdx = questions.indexOf(q);
+        return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
+      }).join('')}
           </div>
         </div>
         ` : `
-        <div class="booklet-columns">
+        <div class="booklet-columns${(p.col1 && p.col1.length <= 6) ? ' is-balanced-10q' : ''}">
           <div class="booklet-col">
             ${p.col1.map((q) => {
-              const globalIdx = questions.indexOf(q);
-              return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
-            }).join('')}
+        const globalIdx = questions.indexOf(q);
+        return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
+      }).join('')}
           </div>
           <div class="booklet-col-divider"></div>
           <div class="booklet-col">
             ${p.col2.map((q) => {
-              const globalIdx = questions.indexOf(q);
-              return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
-            }).join('')}
+        const globalIdx = questions.indexOf(q);
+        return renderBookletQuestionHTML(q, globalIdx >= 0 ? globalIdx : 0, false);
+      }).join('')}
           </div>
         </div>
         `}
@@ -495,16 +495,16 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
 
     doc.setFont('helvetica', 'bold');
 
-    // Tamaño de letra: 9.5 pt para enunciados cortos, 9.0 pt si tiene más de 105 caracteres
-    const isPromptLong = String(q.prompt || '').length > 105;
-    let promptFontSize = isCompact ? 8.5 : (isPromptLong ? 9.0 : 9.5);
+    // Tamaño de letra: para 10 preguntas en A4 vertical tenemos espacio para letras estándar y legibles
+    const isPromptLong = String(q.prompt || '').length > 120;
+    let promptFontSize = isCompact ? (isPromptLong ? 8.0 : 8.5) : (isPromptLong ? 10.0 : 10.5);
     doc.setFontSize(promptFontSize);
 
     const numWidth = doc.getTextWidth(numPrefix) + 2.5; // sangría exacta del número
     const textWidth = Math.max(30, colWidth - numWidth);
 
     let lines = doc.splitTextToSize(q.prompt || '', textWidth);
-    while (lines.length > 3 && promptFontSize > 6.5) {
+    while (lines.length > 3 && promptFontSize > 7.0) {
       promptFontSize -= 0.5;
       doc.setFontSize(promptFontSize);
       lines = doc.splitTextToSize(q.prompt || '', textWidth);
@@ -515,16 +515,16 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
     doc.text(numPrefix, startX, curY);
     doc.text(lines, startX + numWidth, curY);
 
-    const promptLineH = promptFontSize * 0.38;
-    curY += lines.length * promptLineH + 0.8;
+    const promptLineH = promptFontSize * 0.40;
+    curY += lines.length * promptLineH + (isCompact ? 0.8 : 1.6);
 
     const opts = q.options || { A: 'A', B: 'B', C: 'C', D: 'D' };
     const isGrid2x2 = true; // Siempre 2 columnas para alternativas en Cartilla OMR
 
-    const optFontSize = isCompact ? 7.8 : (colWidth <= 90 ? 8.5 : 9.5);
+    const optFontSize = isCompact ? 7.8 : 9.5;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(optFontSize);
-    const optLineH = optFontSize * 0.38;
+    const optLineH = optFontSize * 0.40;
 
     if (isGrid2x2) {
       const optStartX = startX + numWidth;
@@ -533,24 +533,24 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       doc.setFont('helvetica', 'bold');
       doc.text('A)', optStartX, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.A || '—'), optStartX + 5, curY);
+      doc.text(String(opts.A || '—'), optStartX + 5.5, curY);
 
       doc.setFont('helvetica', 'bold');
       doc.text('B)', optStartX + halfW, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.B || '—'), optStartX + halfW + 5, curY);
-      curY += optLineH;
+      doc.text(String(opts.B || '—'), optStartX + halfW + 5.5, curY);
+      curY += optLineH + (isCompact ? 0.5 : 1.2);
 
       // Fila 2: C y D
       doc.setFont('helvetica', 'bold');
       doc.text('C)', optStartX, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.C || '—'), optStartX + 5, curY);
+      doc.text(String(opts.C || '—'), optStartX + 5.5, curY);
 
       doc.setFont('helvetica', 'bold');
       doc.text('D)', optStartX + halfW, curY);
       doc.setFont('helvetica', 'normal');
-      doc.text(String(opts.D || '—'), optStartX + halfW + 5, curY);
+      doc.text(String(opts.D || '—'), optStartX + halfW + 5.5, curY);
       curY += optLineH;
     } else {
       const optStartX = startX + numWidth;
@@ -696,17 +696,21 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       const availableH = pageBottomLimit - col1StartY;
 
       function calcQHeight(q, globalIdx) {
-        let fSize = 9.5;
+        const isPromptLong = String(q.prompt || '').length > 120;
+        let fSize = isPromptLong ? 10.0 : 10.5;
         doc.setFontSize(fSize);
-        let pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW);
-        while (pLines.length > 3 && fSize > 6.5) {
+        const numPrefix = `${globalIdx + 1}.`;
+        const numW = doc.getTextWidth(numPrefix) + 2.5;
+        const textW = Math.max(30, colW - numW);
+        let pLines = doc.splitTextToSize(q.prompt || '', textW);
+        while (pLines.length > 3 && fSize > 7.0) {
           fSize -= 0.5;
           doc.setFontSize(fSize);
-          pLines = doc.splitTextToSize(`${globalIdx + 1}. ${q.prompt || ''}`, colW);
+          pLines = doc.splitTextToSize(q.prompt || '', textW);
         }
-        const pLineH = fSize * 0.38;
-        const optLineH = 8.5 * 0.38;
-        return (pLines.length * pLineH) + (2 * optLineH) + 2.4;
+        const pLineH = fSize * 0.40;
+        const optLineH = 9.5 * 0.40;
+        return (pLines.length * pLineH) + 1.6 + (2 * optLineH) + 1.2;
       }
 
       // Calcular altura natural de Columna 1
@@ -714,29 +718,33 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       p.col1.forEach((q, idx) => {
         natH1 += calcQHeight(q, accumulatedQCount + idx);
       });
-      const gapCol1 = p.col1.length > 1
-        ? Math.max(2.0, Math.min(10, (availableH - natH1) / (p.col1.length - 1)))
-        : 4;
 
       // Calcular altura natural de Columna 2
       let natH2 = 0;
       p.col2.forEach((q, idx) => {
         natH2 += calcQHeight(q, accumulatedQCount + p.col1.length + idx);
       });
-      const gapCol2 = p.col2.length > 1
-        ? Math.max(2.0, Math.min(10, (availableH - natH2) / (p.col2.length - 1)))
+
+      // Distribución armónica sin tope artificial de 10mm cuando hay 6 o menos preguntas por columna (ej. 10 preguntas)
+      const maxAllowedGap = (p.col1.length <= 6) ? 34.0 : 12.0;
+
+      const gapCol1 = p.col1.length > 1
+        ? Math.max(2.5, Math.min(maxAllowedGap, (availableH - natH1) / (p.col1.length - 1)))
         : 4;
 
-      // Si ambas columnas tienen la misma cantidad de preguntas, usar un gap uniforme simétrico
-      const finalGap1 = (p.col1.length === p.col2.length && p.col1.length > 0) ? Math.min(gapCol1, gapCol2) : gapCol1;
-      const finalGap2 = (p.col1.length === p.col2.length && p.col1.length > 0) ? Math.min(gapCol1, gapCol2) : gapCol2;
+      const gapCol2 = p.col2.length > 1
+        ? Math.max(2.5, Math.min(maxAllowedGap, (availableH - natH2) / (p.col2.length - 1)))
+        : 4;
+
+      // Usar gap uniforme simétrico para ambas columnas
+      const finalGap = Math.min(gapCol1, gapCol2);
 
       // Render Col 1 con espaciado dinámico
       let curCol1Y = col1StartY;
       p.col1.forEach((q, idx) => {
         const globalIdx = accumulatedQCount + idx;
         const usedH = renderQuestion(q, globalIdx, col1X, curCol1Y, colW, false);
-        curCol1Y += usedH + finalGap1;
+        curCol1Y += usedH + finalGap;
       });
 
       // Render Col 2 con espaciado dinámico
@@ -744,8 +752,14 @@ function generateBookletWithJsPDF(evalObj, classroomName, customJsPDF) {
       p.col2.forEach((q, idx) => {
         const globalIdx = accumulatedQCount + p.col1.length + idx;
         const usedH = renderQuestion(q, globalIdx, col2X, curCol2Y, colW, false);
-        curCol2Y += usedH + finalGap2;
+        curCol2Y += usedH + finalGap;
       });
+
+      // Línea divisoria vertical entre columnas en el PDF
+      const maxContentY = Math.max(curCol1Y - finalGap, curCol2Y - finalGap);
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.3);
+      doc.line(105, headerEndY + 2, 105, maxContentY + 2);
 
       accumulatedQCount += p.col1.length + p.col2.length;
     });

@@ -292,7 +292,7 @@ function determineRama3ExamLayout(count) {
     const c1 = Math.min(6, Math.ceil(count / 2));
     return {
       sheetClass: 'r3-exam-sheet-a4-v',
-      bodyClass: 'r3-exam-body-2col',
+      bodyClass: 'r3-exam-body-2col is-balanced-10q',
       columns: 2,
       totalPages: 1,
       col1Count: c1,
