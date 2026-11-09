@@ -405,19 +405,19 @@ function renderRama3ExamQuestionHTML(idx) {
       </div>
       <div class="r3-exam-opt-grid">
         <div class="r3-exam-opt-item">
-          <span class="r3-exam-opt-bubble ${correctKey === 'A' ? 'is-correct' : ''}">A</span>
+          <strong class="r3-exam-opt-prefix ${correctKey === 'A' ? 'is-correct' : ''}">A)</strong>
           <span>${escaparHtml(opts.A || '—')}</span>
         </div>
         <div class="r3-exam-opt-item">
-          <span class="r3-exam-opt-bubble ${correctKey === 'B' ? 'is-correct' : ''}">B</span>
+          <strong class="r3-exam-opt-prefix ${correctKey === 'B' ? 'is-correct' : ''}">B)</strong>
           <span>${escaparHtml(opts.B || '—')}</span>
         </div>
         <div class="r3-exam-opt-item">
-          <span class="r3-exam-opt-bubble ${correctKey === 'C' ? 'is-correct' : ''}">C</span>
+          <strong class="r3-exam-opt-prefix ${correctKey === 'C' ? 'is-correct' : ''}">C)</strong>
           <span>${escaparHtml(opts.C || '—')}</span>
         </div>
         <div class="r3-exam-opt-item">
-          <span class="r3-exam-opt-bubble ${correctKey === 'D' ? 'is-correct' : ''}">D</span>
+          <strong class="r3-exam-opt-prefix ${correctKey === 'D' ? 'is-correct' : ''}">D)</strong>
           <span>${escaparHtml(opts.D || '—')}</span>
         </div>
       </div>

@@ -3563,12 +3563,25 @@ textarea.form-control {
   gap: 1.5mm 3mm;
   font-size: 8.5pt;
   line-height: 1.25;
+  margin-left: 5.5mm;
 }
 
 .r3-exam-opt-item {
   display: flex;
-  align-items: flex-start;
-  gap: 2mm;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.r3-exam-opt-prefix {
+  font-weight: 800;
+  color: #0f172a;
+  min-width: 15px;
+  flex: 0 0 auto;
+}
+
+.r3-exam-opt-prefix.is-correct {
+  color: #047857;
+  font-weight: 800;
 }
 
 .r3-exam-opt-bubble {
