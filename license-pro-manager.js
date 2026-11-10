@@ -25,6 +25,11 @@
   const YAPE_HOLDER = 'Daniel Morales Rodriguez';
   const WHATSAPP_LINK_BASE = 'https://wa.me/51944020941';
 
+  // Configuración de Precios (Modificables según mercado o promociones)
+  const PRICE_MONTHLY = 'S/ 9.90';
+  const PRICE_ANNUAL = 'S/ 69.00';
+  const DISCOUNT_ANNUAL_TEXT = 'Ahorras más del 40%';
+
   /**
    * Obtiene el estado local de la licencia.
    * @returns {LicenseState}
@@ -82,8 +87,8 @@
     } catch (e) {}
 
     const text = encodeURIComponent(
-      `Hola Daniel, acabo de realizar mi transferencia por Yape/Plin para activar mi cuenta PRO en Microevaluación.\n\n` +
-      `👤 Titular: ${email}\n` +
+      `Hola Daniel, acabo de realizar mi transferencia por Yape para activar mi cuenta PRO en Microevaluación.\n\n` +
+      `👤 Correo docente: ${email}\n` +
       `Adjunto mi captura de comprobante:`
     );
     return `${WHATSAPP_LINK_BASE}?text=${text}`;
@@ -331,12 +336,12 @@
     if (document.getElementById('modal-pro-activation')) return;
 
     const markup = `
-    <!-- Modal: Activación y Suscripción PRO (Yape / Plin Perú) -->
+    <!-- Modal: Activación y Suscripción PRO (Yape Perú) -->
     <div id="modal-pro-activation" class="classroom-glass-backdrop"
       onclick="if(event.target === this) closeProModal()"
       style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.72); backdrop-filter:blur(8px); z-index:10060; align-items:center; justify-content:center; padding:16px;">
       <div class="classroom-glass-card"
-        style="border-radius:20px; max-width:560px; width:100%; max-height:92vh; background:#FFFFFF; border:2px solid #2B2118; box-shadow:0 25px 60px -15px rgba(0,0,0,0.5); display:flex; flex-direction:column; overflow:hidden;">
+        style="border-radius:20px; max-width:540px; width:100%; max-height:92vh; background:#FFFFFF; border:2px solid #2B2118; box-shadow:0 25px 60px -15px rgba(0,0,0,0.5); display:flex; flex-direction:column; overflow:hidden;">
 
         <!-- Cabecera del Modal -->
         <div style="background:linear-gradient(135deg, #18202F 0%, #0F172A 100%); padding:16px 20px; border-bottom:3px solid #FFB703; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
@@ -354,7 +359,7 @@
         </div>
 
         <!-- Contenido Scrollable -->
-        <div style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+        <div style="padding:18px 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:14px;">
 
           <!-- Banner si ya es PRO -->
           <div id="pro-active-banner" style="display:none; background:#F0FDF4; border:2px solid #22C55E; border-radius:14px; padding:16px; text-align:center;">
@@ -367,65 +372,65 @@
           </div>
 
           <!-- Sección de Pago y Beneficios -->
-          <div id="pro-payment-section" style="display:flex; flex-direction:column; gap:16px;">
+          <div id="pro-payment-section" style="display:flex; flex-direction:column; gap:14px;">
 
             <!-- Beneficios PRO -->
-            <div style="background:#FAF8F5; border:1.2px solid #E2D9CC; border-radius:12px; padding:12px 14px;">
-              <div style="font-size:0.70rem; font-weight:900; color:#78350F; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px;">
+            <div style="background:#FAF8F5; border:1.2px solid #E2D9CC; border-radius:12px; padding:10px 14px;">
+              <div style="font-size:0.68rem; font-weight:900; color:#78350F; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">
                 🚀 ¿Qué incluye tu membresía PRO?
               </div>
-              <ul style="margin:0; padding-left:18px; font-size:0.78rem; color:#334155; line-height:1.6; font-weight:600;">
+              <ul style="margin:0; padding-left:18px; font-size:0.76rem; color:#334155; line-height:1.55; font-weight:600;">
                 <li><strong>Salones ilimitados:</strong> Crea todas tus secciones (1°A, 1°B, 2°A, etc.).</li>
                 <li><strong>Escaneo OMR ilimitado:</strong> Califica cientos de cartillas sin límite mensual.</li>
-                <li><strong>Rúbricas analíticas IA con Gemini:</strong> Soluciones y criterios de evaluación pedagógica.</li>
-                <li><strong>Sincronización multi-dispositivo:</strong> Úsalo en tu laptop, tablet y celular con la misma cuenta.</li>
+                <li><strong>Rúbricas analíticas IA con Gemini:</strong> Soluciones y criterios pedagógicos.</li>
+                <li><strong>Sincronización multi-dispositivo:</strong> Misma cuenta en laptop, tablet y celular.</li>
               </ul>
             </div>
 
             <!-- Precios Transparentes Perú -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
               <!-- Plan Mensual -->
-              <div style="border:1.5px solid #E2E8F0; border-radius:12px; padding:12px; text-align:center; background:#FFFFFF;">
+              <div style="border:1.5px solid #E2E8F0; border-radius:12px; padding:10px; text-align:center; background:#FFFFFF;">
                 <div style="font-size:0.68rem; font-weight:800; color:#64748B; text-transform:uppercase;">Plan Mensual</div>
-                <div style="font-size:1.35rem; font-weight:900; color:#0F172A; margin:4px 0 2px;">S/ 9.90</div>
-                <div style="font-size:0.66rem; color:#94A3B8;">Renovación mensual</div>
+                <div style="font-size:1.35rem; font-weight:900; color:#0F172A; margin:3px 0 2px;">${PRICE_MONTHLY}</div>
+                <div style="font-size:0.65rem; color:#94A3B8;">Renovación mensual</div>
               </div>
               <!-- Plan Anual (Destacado) -->
-              <div style="border:2px solid #FFB703; border-radius:12px; padding:12px; text-align:center; background:#FFFBEB; position:relative; box-shadow:0 4px 14px rgba(255,183,3,0.25);">
+              <div style="border:2px solid #FFB703; border-radius:12px; padding:10px; text-align:center; background:#FFFBEB; position:relative; box-shadow:0 4px 14px rgba(255,183,3,0.22);">
                 <span style="position:absolute; top:-9px; right:10px; background:#D97706; color:#FFFFFF; font-size:0.58rem; font-weight:900; padding:1px 6px; border-radius:6px; letter-spacing:0.03em;">MÁS POPULAR</span>
                 <div style="font-size:0.68rem; font-weight:800; color:#B45309; text-transform:uppercase;">Año Escolar (12 meses)</div>
-                <div style="font-size:1.35rem; font-weight:900; color:#B45309; margin:4px 0 2px;">S/ 69.00</div>
-                <div style="font-size:0.66rem; color:#92400E; font-weight:700;">Ahorras más del 40%</div>
+                <div style="font-size:1.35rem; font-weight:900; color:#B45309; margin:3px 0 2px;">${PRICE_ANNUAL}</div>
+                <div style="font-size:0.65rem; color:#92400E; font-weight:700;">${DISCOUNT_ANNUAL_TEXT}</div>
               </div>
             </div>
 
-            <!-- Tarjeta de Pago con Yape / Plin -->
-            <div style="background:#5B21B6; color:#FFFFFF; border-radius:14px; padding:16px; display:flex; flex-direction:column; align-items:center; text-align:center; box-shadow:0 8px 24px rgba(91,33,182,0.3);">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                <span style="font-size:1.1rem; font-weight:900; background:#00D1B2; color:#0F172A; padding:2px 8px; border-radius:6px;">Yape</span>
-                <span style="font-size:0.9rem; font-weight:800; opacity:0.9;">o Plin al instante</span>
+            <!-- Tarjeta de Pago con Yape -->
+            <div style="background:linear-gradient(145deg, #6D28D9 0%, #4C1D95 100%); color:#FFFFFF; border-radius:14px; padding:14px; display:flex; flex-direction:column; align-items:center; text-align:center; box-shadow:0 8px 24px rgba(109,40,217,0.32);">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <span style="font-size:1.05rem; font-weight:900; background:#00D1B2; color:#0F172A; padding:2px 9px; border-radius:6px; letter-spacing:0.02em;">Yape</span>
+                <span style="font-size:0.88rem; font-weight:800; color:#EDE9FE;">Paga al instante</span>
               </div>
 
-              <!-- Imagen del QR Yape -->
-              <div style="background:#FFFFFF; padding:8px; border-radius:12px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.25);">
-                <img src="qr-yape.jpg" alt="QR Yape Daniel Morales Rodriguez" style="width:145px; height:185px; object-fit:contain; border-radius:8px; display:block;" onerror="this.style.display='none';">
+              <!-- Imagen del QR Yape Grande y Nítida sin fondo morado sobrante -->
+              <div style="background:#FFFFFF; padding:8px; border-radius:12px; margin-bottom:10px; box-shadow:0 6px 16px rgba(0,0,0,0.25); display:inline-flex; align-items:center; justify-content:center;">
+                <img src="qr-yape.png" alt="QR Yape Daniel Morales Rodriguez" style="width:210px; max-width:85vw; height:auto; border-radius:8px; display:block;" onerror="this.src='qr-yape.jpg'">
               </div>
 
-              <div style="font-size:0.75rem; opacity:0.9; margin-bottom:2px;">Titular registrado:</div>
-              <div style="font-size:0.92rem; font-weight:900; letter-spacing:0.02em; margin-bottom:8px;">${YAPE_HOLDER}</div>
+              <div style="font-size:0.74rem; color:#DDD6FE; margin-bottom:2px;">Titular registrado:</div>
+              <div style="font-size:0.95rem; font-weight:900; letter-spacing:0.02em; margin-bottom:8px; color:#FFFFFF;">${YAPE_HOLDER}</div>
 
               <!-- Número con botón de copia -->
-              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:10px; padding:6px 12px; margin-bottom:12px;">
-                <span style="font-size:1.1rem; font-weight:900; letter-spacing:0.08em; color:#FFD166;">944 020 941</span>
+              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.16); border:1.5px solid rgba(255,255,255,0.32); border-radius:10px; padding:5px 12px; margin-bottom:12px;">
+                <span style="font-size:1.15rem; font-weight:900; letter-spacing:0.08em; color:#FDE047;">944 020 941</span>
                 <button type="button" id="btn-copy-yape" onclick="window._copyYapeNumber()"
-                  style="background:#F1F5F9; border:none; color:#1E293B; border-radius:6px; padding:4px 8px; font-size:0.70rem; font-weight:800; cursor:pointer;">
+                  style="background:#F1F5F9; border:none; color:#1E293B; border-radius:6px; padding:4px 8px; font-size:0.72rem; font-weight:800; cursor:pointer;">
                   📋 Copiar
                 </button>
               </div>
 
               <!-- Botón WhatsApp -->
               <a href="${getWhatsAppUrl()}" target="_blank" rel="noopener noreferrer"
-                style="width:100%; background:#22C55E; color:#FFFFFF; text-decoration:none; border-radius:10px; padding:10px 14px; font-size:0.84rem; font-weight:900; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(34,197,94,0.35); transition:transform 0.15s;">
+                style="width:100%; max-width:320px; background:#22C55E; color:#FFFFFF; text-decoration:none; border-radius:10px; padding:10px 14px; font-size:0.86rem; font-weight:900; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(34,197,94,0.35); transition:transform 0.15s;">
                 <span>💬 Enviar comprobante al WhatsApp</span>
               </a>
             </div>
