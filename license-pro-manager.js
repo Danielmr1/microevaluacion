@@ -365,10 +365,14 @@
           <div id="pro-active-banner" style="display:none; background:#F0FDF4; border:2px solid #22C55E; border-radius:14px; padding:16px; text-align:center;">
             <div style="font-size:2rem; margin-bottom:4px;">👑</div>
             <h3 style="font-size:1rem; font-weight:900; color:#15803D; margin:0 0 4px;">¡Eres Docente PRO Activo!</h3>
-            <p style="font-size:0.78rem; color:#166534; margin:0;">
-              Tu membresía cuenta con salones ilimitados, escaneo continuo y rúbricas completas.<br>
+            <p style="font-size:0.78rem; color:#166534; margin:0 0 10px;">
+              Tu membresía cuenta con salones ilimitados, escaneo continuo, rúbricas IA y Aula en Vivo PRO.<br>
               <strong>Vigente hasta:</strong> <span id="pro-active-expiration" style="font-weight:900;">—</span>
             </p>
+            <div style="background:#FFFFFF; border:1px solid #86EFAC; border-radius:10px; padding:10px 12px; font-size:0.74rem; color:#166534; text-align:left;">
+              <strong>💻 ¿Usas Aula en Vivo en tu laptop?</strong><br>
+              Tu suscripción PRO incluye las 30 tablets y salones ilimitados para tu aula offline. Envíanos el código de 16 caracteres de tu laptop al WhatsApp para entregarte tu clave de licencia.
+            </div>
           </div>
 
           <!-- Sección de Pago y Beneficios -->
@@ -380,9 +384,9 @@
                 🚀 ¿Qué incluye tu membresía PRO?
               </div>
               <ul style="margin:0; padding-left:18px; font-size:0.76rem; color:#334155; line-height:1.55; font-weight:600;">
-                <li><strong>Salones ilimitados:</strong> Crea todas tus secciones (1°A, 1°B, 2°A, etc.).</li>
-                <li><strong>Escaneo OMR ilimitado:</strong> Califica cientos de cartillas sin límite mensual.</li>
-                <li><strong>Rúbricas analíticas IA con Gemini:</strong> Soluciones y criterios pedagógicos.</li>
+                <li><strong>Microevaluación:</strong> Salones ilimitados, escaneo OMR y rúbricas IA con Gemini.</li>
+                <li><strong>Aula en Vivo (Incluido):</strong> Hasta 30 tablets en simultáneo, proyector y red local 100% offline.</li>
+                <li><strong>Mando Móvil Táctil:</strong> Controla tu clase desde el celular mientras caminas por el aula.</li>
                 <li><strong>Sincronización multi-dispositivo:</strong> Misma cuenta en laptop, tablet y celular.</li>
               </ul>
             </div>
